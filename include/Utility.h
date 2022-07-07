@@ -55,4 +55,14 @@ std::vector<TH1D*> CreateQ2NuHistList(int NQ2, int NNu, std::string name)
     return Vector_tmp;
 }
 
+void SetVariableSize(THnSparse *hist, Int_t nbins[], Double_t Q2_limits[], Double_t Nu_limits[],
+					Double_t Zh_limits[], Double_t Pt2_limits[], Double_t PhiPQ_limits[])
+{
+	hist->GetAxis(0)->Set(nbins[0], Q2_limits);
+	hist->GetAxis(1)->Set(nbins[1], Nu_limits);
+	hist->GetAxis(2)->Set(nbins[2], Zh_limits);
+	hist->GetAxis(3)->Set(nbins[3], Pt2_limits);
+	hist->GetAxis(4)->Set(nbins[4], PhiPQ_limits);
+}
+
 #endif // #ifdef Utility_h

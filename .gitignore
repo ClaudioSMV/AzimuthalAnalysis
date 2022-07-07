@@ -36,3 +36,6 @@
 *.pdf
 *.gif
 *.pcm
+
+# Unwanted folders
+.vscode

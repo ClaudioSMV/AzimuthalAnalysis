@@ -489,8 +489,8 @@ Bool_t Acceptance::GoodElectron_MC(Long64_t entry, vector<vector<float>> DISLimi
     // returns  1 if entry is accepted.
     // returns -1 otherwise.
 
-    return (mc_TargType==_targTypeCut && DISLimits[0][0]<mc_Q2 && mc_Q2<DISLimits[0][1] && mc_Yb<0.85 && mc_W>2 &&
-            DISLimits[1][0]<mc_Nu && mc_Nu<DISLimits[1][1]);
+    return (mc_TargType==_targTypeCut && DISLimits[0][0]<mc_Q2 && mc_Q2<DISLimits[1][0] && mc_Yb<0.85 && mc_W>2 &&
+            DISLimits[0][1]<mc_Nu && mc_Nu<DISLimits[1][1]);
 
     // return 1;
 }
@@ -501,8 +501,8 @@ Bool_t Acceptance::GoodPiPlus_MC(Long64_t entry, int ivec, vector<vector<float>>
     // returns  1 if entry is accepted.
     // returns -1 otherwise.
 
-    return (mc_pid->at(ivec)==211 && DISLimits[2][0]<mc_Zh->at(ivec) && mc_Zh->at(ivec)<DISLimits[2][1] &&
-            DISLimits[3][0]<mc_Pt2->at(ivec) && mc_Pt2->at(ivec)<DISLimits[3][1] && DISLimits[4][0]<mc_PhiPQ->at(ivec) && mc_PhiPQ->at(ivec)<DISLimits[4][1]);
+    return (mc_pid->at(ivec)==211 && DISLimits[0][2]<mc_Zh->at(ivec) && mc_Zh->at(ivec)<DISLimits[1][2] &&
+            DISLimits[0][3]<mc_Pt2->at(ivec) && mc_Pt2->at(ivec)<DISLimits[1][3] && DISLimits[0][4]<mc_PhiPQ->at(ivec) && mc_PhiPQ->at(ivec)<DISLimits[1][4]);
 
     // return 1;
 }
@@ -517,8 +517,8 @@ Bool_t Acceptance::GoodElectron(Long64_t entry, vector<vector<float>> DISLimits)
     // returns  1 if entry is accepted.
     // returns -1 otherwise.
 
-    return (TargType==_targTypeCut && DISLimits[0][0]<Q2 && Q2<DISLimits[0][1] && Yb<0.85 && W>2 && -1.4<vyec && vyec<1.4 &&
-            DISLimits[1][0]<Nu && Nu<DISLimits[1][1]);
+    return (TargType==_targTypeCut && DISLimits[0][0]<Q2 && Q2<DISLimits[1][0] && Yb<0.85 && W>2 && -1.4<vyec && vyec<1.4 &&
+            DISLimits[0][1]<Nu && Nu<DISLimits[1][1]);
 
     // return 1;
 }
@@ -529,8 +529,8 @@ Bool_t Acceptance::GoodPiPlus(Long64_t entry, int ivec, vector<vector<float>> DI
     // returns  1 if entry is accepted.
     // returns -1 otherwise.
 
-    return (pid->at(ivec)==211 && DISLimits[2][0]<Zh->at(ivec) && Zh->at(ivec)<DISLimits[2][1] &&
-            DISLimits[3][0]<Pt2->at(ivec) && Pt2->at(ivec)<DISLimits[3][1] && DISLimits[4][0]<PhiPQ->at(ivec) && PhiPQ->at(ivec)<DISLimits[4][1]);
+    return (pid->at(ivec)==211 && DISLimits[0][2]<Zh->at(ivec) && Zh->at(ivec)<DISLimits[1][2] &&
+            DISLimits[0][3]<Pt2->at(ivec) && Pt2->at(ivec)<DISLimits[1][3] && DISLimits[0][4]<PhiPQ->at(ivec) && PhiPQ->at(ivec)<DISLimits[1][4]);
 
     // return 1;
 }

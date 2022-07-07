@@ -1,6 +1,7 @@
 #define Acceptance_cxx
 #include "Acceptance.h"
 #include "Utility.h"
+#include "Style.h"
 #include <TEfficiency.h>
 #include <TH1.h>
 #include <TH2.h>
@@ -15,7 +16,9 @@
 
 const int elBINS = 9;
 // DIS limits
-vector<vector<float>> DISLimits = {{1.0, 4.1}, {2.2, 4.2}, {0.0, 1.0}, {0.0, 1.0}, {-180.0, 180.0}}; // Q2, Nu, Zh, Pt2, PhiPQ
+// vector<vector<float>> DISLimits = {{1.0, 4.1}, {2.2, 4.2}, {0.0, 1.0}, {0.0, 1.0}, {-180.0, 180.0}}; // Q2, Nu, Zh, Pt2, PhiPQ
+vector<vector<double>> DISLimits = { {1.0, 2.2, 0.0, 0.0,-180.0},
+                                    {4.1, 4.2, 1.0, 1.0, 180.0}}; // Q2, Nu, Zh, Pt2, PhiPQ
 
 // add underflow and overflow bins?
 vector<double> Q2_binning = {1.0, 1.3, 1.8, 4.1};
@@ -62,10 +65,38 @@ void Acceptance::Loop()
 
     TFile *fout = TFile::Open("../output/test_acceptance.root", "RECREATE");
 
+    // Define binning
+    // OR : Original: {3, 3, 5, 5, 12} = 2700
+	// CP : PhiPQ central peak: {3, 3, 5, 5, 40} = 9000 // PhiPQ binning is really important due to the features seen!
+	Int_t nbins[Ndim] = {3, 3, 5, 5, 40};
+    double* minbins = &DISLimits[0][0];
+    double* maxbins = &DISLimits[1][0];
+
+    // Set variable width bins
+	Double_t Q2_limits[]  = &Q2_binning[0]; // {1.0, 1.3, 1.8, 4.1};
+	Double_t Nu_limits[]  = &Nu_binning[0]; // {2.2, 3.2, 3.7, 4.2};
+	Double_t Zh_limits[]  = {0.0, 0.15, 0.25, 0.4, 0.7, 1.0};
+	Double_t Pt2_limits[] = {0.0, 0.03, 0.06, 0.1, 0.18, 1.0};
+    Double_t PhiPQ_limits[nbins[4]+1];
+	for (int i=0; i<nbins[4]+1; i++) PhiPQ_limits[i] = -180. + i*360./nbins[4];
+
     // TH1::SetDefaultSumw2();
 
     // one-dimensional efficiency histogramss
     TH1F *h_test = new TH1F("h_test","Testing", 180,-180.,180.);
+
+    // THnSparse
+    THnSparse *hreco = new THnSparseD("hreco","Reco Classic",5,nbins,minbins,maxbins);
+    THnSparse *htrue = new THnSparseD("htrue","True",5,nbins,minbins,maxbins);
+	THnSparse *hacc  = new THnSparseD("hacc" ,"Acc Classic",5,nbins,minbins,maxbins);
+
+    SetVariableSize(hreco, nbins, Q2_limits, Nu_limits, Zh_limits, Pt2_limits, PhiPQ_limits);
+    SetVariableSize(htrue, nbins, Q2_limits, Nu_limits, Zh_limits, Pt2_limits, PhiPQ_limits);
+    SetVariableSize(hacc,  nbins, Q2_limits, Nu_limits, Zh_limits, Pt2_limits, PhiPQ_limits);
+
+	hreco->Sumw2();
+	htrue->Sumw2();
+	hacc->Sumw2();
 
     // std::cout << "Setting up unfolding objects done" << std::endl;
 
@@ -77,11 +108,11 @@ void Acceptance::Loop()
     const int entries_to_process = nentries / 2;
     int global_bin;
     int vec_entries=0, vec_entries_MC=0;
-    std::map<std::string, int> error_counter = {{"Wrong TargType",0}, {"Out of DIS range",0}, {"Out of VertexY Correction",0}, {"Different vector size",0}};
-    std::map<std::string, int> particle_counter = {{"Leading Pion",0}, {"No Leading Pion",0}, {"Total Pions",0},
+    std::map<std::string, unsigned int> error_counter = {{"Wrong TargType",0}, {"Out of DIS range",0}, {"Out of VertexY Correction",0}, {"Different vector size",0}};
+    std::map<std::string, unsigned int> particle_counter = {{"Leading Pion",0}, {"No Leading Pion",0}, {"Total Pions",0},
                                {"Good mc_Electron",0}, {"Good mc_Pion",0}};
     std::vector<double> kinematical_vars, mc_kinematical_vars;
-    for (Long64_t jentry = 0; jentry < entries_to_process; jentry++)
+    for (unsigned int jentry = 0; jentry < entries_to_process; jentry++)
     {
         if (jentry % 1000000 == 0)
             std::cout << "Processing entry " << jentry << ", progress at " << (double)jentry/(entries_to_process) << "%" << std::endl;
@@ -96,7 +127,7 @@ void Acceptance::Loop()
         if (!GoodElectron(ientry, DISLimits))
         {
             if (TargType!=_targTypeCut) error_counter["Wrong TargType"]++;
-            if (Q2<DISLimits[0][0] || DISLimits[0][1]<Q2 || Yb>0.85 || W<2 || Nu<DISLimits[1][0] || DISLimits[1][1]<Nu) error_counter["Out of DIS range"]++;
+            if (Q2<DISLimits[0][0] || DISLimits[1][0]<Q2 || 0.85<Yb || W<2 || Nu<DISLimits[0][1] || DISLimits[1][1]<Nu) error_counter["Out of DIS range"]++;
             if (vyec<-1.4 || 1.4<vyec) error_counter["Out of VertexY Correction"]++;
             continue;
         }
@@ -116,7 +147,7 @@ void Acceptance::Loop()
         }   // loop over tracks
     }       // loop over entries
 
-    
+    PrintSummaryTable(particle_counter, entries_to_process, "Particles summary");
 
     fout->Write();
     fout->Close();
