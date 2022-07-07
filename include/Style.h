@@ -4,14 +4,15 @@
 #include <iostream>
 #include <map>
 
-void PrintSummaryTable(std::map<std::string, unsigned int> &list, int total, std::string title)
+void PrintSummaryTable(std::map<std::string, unsigned int> &list, std::string title, int total=0)
 {
     std::cout << "-------------------------------------------------------" << std::endl;
     std::cout << "||  " << title << std::endl;
     std::cout << "-------------------------------------------------------" << std::endl;
     for (auto elem : list)
     {
-        printf("%-30s: %10u (%6.2f%%)\n", elem.first.c_str(), elem.second, (float)elem.second/total*100);
+        if (total!=0)   printf("%-30s: %10u (%6.2f%%)\n", elem.first.c_str(), elem.second, (float)elem.second/total*100);
+        else            printf("%-30s: %10u\n", elem.first.c_str(), elem.second);
     }
     std::cout << "-------------------------------------------------------" << std::endl;
 }

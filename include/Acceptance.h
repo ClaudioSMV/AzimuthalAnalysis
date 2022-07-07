@@ -165,10 +165,10 @@ public:
     Acceptance(TTree *tree = 0);
     virtual ~Acceptance();
     virtual Int_t Cut(Long64_t entry);
-    virtual Bool_t GoodElectron_MC(Long64_t entry, vector<vector<float>> DISLimits);
-    virtual Bool_t GoodPiPlus_MC(Long64_t entry, int ivec, vector<vector<float>> DISLimits);
-    virtual Bool_t GoodElectron(Long64_t entry, vector<vector<float>> DISLimits);
-    virtual Bool_t GoodPiPlus(Long64_t entry, int ivec, vector<vector<float>> DISLimits);
+    virtual Bool_t GoodElectron_MC(Long64_t entry, vector<vector<double>> DISLimits);
+    virtual Bool_t GoodPiPlus_MC(Long64_t entry, int ivec, vector<vector<double>> DISLimits);
+    virtual Bool_t GoodElectron(Long64_t entry, vector<vector<double>> DISLimits);
+    virtual Bool_t GoodPiPlus(Long64_t entry, int ivec, vector<vector<double>> DISLimits);
     virtual Int_t GetEntry(Long64_t entry);
     virtual Long64_t LoadTree(Long64_t entry);
     virtual void Init(TTree *tree);
@@ -483,7 +483,7 @@ void Acceptance::Show(Long64_t entry)
 //// Generated (MC) Cuts
 /////////////////////////
 
-Bool_t Acceptance::GoodElectron_MC(Long64_t entry, vector<vector<float>> DISLimits)
+Bool_t Acceptance::GoodElectron_MC(Long64_t entry, vector<vector<double>> DISLimits)
 {
     // This function may be called from Loop.
     // returns  1 if entry is accepted.
@@ -495,7 +495,7 @@ Bool_t Acceptance::GoodElectron_MC(Long64_t entry, vector<vector<float>> DISLimi
     // return 1;
 }
 
-Bool_t Acceptance::GoodPiPlus_MC(Long64_t entry, int ivec, vector<vector<float>> DISLimits)
+Bool_t Acceptance::GoodPiPlus_MC(Long64_t entry, int ivec, vector<vector<double>> DISLimits)
 {
     // This function may be called from Loop.
     // returns  1 if entry is accepted.
@@ -511,7 +511,7 @@ Bool_t Acceptance::GoodPiPlus_MC(Long64_t entry, int ivec, vector<vector<float>>
 //// Reconstructed Cuts
 /////////////////////////
 
-Bool_t Acceptance::GoodElectron(Long64_t entry, vector<vector<float>> DISLimits)
+Bool_t Acceptance::GoodElectron(Long64_t entry, vector<vector<double>> DISLimits)
 {
     // This function may be called from Loop.
     // returns  1 if entry is accepted.
@@ -523,7 +523,7 @@ Bool_t Acceptance::GoodElectron(Long64_t entry, vector<vector<float>> DISLimits)
     // return 1;
 }
 
-Bool_t Acceptance::GoodPiPlus(Long64_t entry, int ivec, vector<vector<float>> DISLimits)
+Bool_t Acceptance::GoodPiPlus(Long64_t entry, int ivec, vector<vector<double>> DISLimits)
 {
     // This function may be called from Loop.
     // returns  1 if entry is accepted.

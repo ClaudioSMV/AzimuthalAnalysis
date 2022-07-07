@@ -1,13 +1,14 @@
 #ifndef Utility_h
 #define Utility_h
 #include <TH1.h>
+#include <THnSparse.h>
 
 #include <iostream>
 #include <vector>
 
 int VarPosition(double var, std::vector<double> *var_limits)
 {
-	for (int ivar=0; ivar<(var_limits->size()-1); ivar++)
+	for (unsigned int ivar=0; ivar<(var_limits->size()-1); ivar++)
     {
 		if (var_limits->at(ivar)<=var && var<var_limits->at(ivar+1))
         {
@@ -20,13 +21,13 @@ int VarPosition(double var, std::vector<double> *var_limits)
 int GlobalVarPosition(std::vector<double> *var_values, std::vector<std::vector<double>> *var_limits)
 {
     int global_position = 0, pos_tmp = -1;
-    double nVars = var_values->size();
+    unsigned int nVars = var_values->size();
     double total_size = 1;
-    for (int i=0; i<nVars; i++)
+    for (unsigned int i=0; i<nVars; i++)
     {
         total_size*=((var_limits->at(i)).size()-1);
     }
-    for (int i=0; i<nVars; i++)
+    for (unsigned int i=0; i<nVars; i++)
     {
         pos_tmp = VarPosition(var_values->at(i), &(var_limits->at(i)));
         if (pos_tmp!=-9999)
