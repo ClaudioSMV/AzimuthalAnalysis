@@ -69,7 +69,7 @@ void Acceptance::Loop()
         fChain->SetBranchStatus(activeBranch.c_str(), 1);
     }
 
-    TFile *fout = TFile::Open("../output/test_acceptance.root", "RECREATE");
+    TFile *fout = TFile::Open(Form("../output/Acceptance_%s.root", getNameTarget().c_str()), "RECREATE");
 
     // Define binning
     // OR : Original: {3, 3, 5, 5, 12} = 2700
@@ -107,20 +107,20 @@ void Acceptance::Loop()
     THnSparse *histReco_mc = new THnSparseD("histReco_mc","Reconstructed with mc_vars", 5,nbins,minbins,maxbins);
     THnSparse *histReco_rec = new THnSparseD("histReco_rec","Reconstructed with reco_vars", 5,nbins,minbins,maxbins);
     THnSparse *histTrue = new THnSparseD("histTrue","True", 5,nbins,minbins,maxbins);
-	THnSparse *histAcce_mc  = new THnSparseD("histAcce_mc","Acceptance with mc_vars", 5,nbins,minbins,maxbins);
-	THnSparse *histAcce_rec  = new THnSparseD("histAcce_rec","Acceptance with reco_vars", 5,nbins,minbins,maxbins);
+	// THnSparse *histAcce_mc  = new THnSparseD("histAcce_mc","Acceptance with mc_vars", 5,nbins,minbins,maxbins);
+	// THnSparse *histAcce_rec  = new THnSparseD("histAcce_rec","Acceptance with reco_vars", 5,nbins,minbins,maxbins);
 
     SetVariableSize(histReco_mc, nbins, Q2_Lmts, Nu_Lmts, Zh_Lmts, Pt2_Lmts, PhiPQ_Lmts);
     SetVariableSize(histReco_rec, nbins, Q2_Lmts, Nu_Lmts, Zh_Lmts, Pt2_Lmts, PhiPQ_Lmts);
     SetVariableSize(histTrue, nbins, Q2_Lmts, Nu_Lmts, Zh_Lmts, Pt2_Lmts, PhiPQ_Lmts);
-    SetVariableSize(histAcce_mc,  nbins, Q2_Lmts, Nu_Lmts, Zh_Lmts, Pt2_Lmts, PhiPQ_Lmts);
-    SetVariableSize(histAcce_rec,  nbins, Q2_Lmts, Nu_Lmts, Zh_Lmts, Pt2_Lmts, PhiPQ_Lmts);
+    // SetVariableSize(histAcce_mc,  nbins, Q2_Lmts, Nu_Lmts, Zh_Lmts, Pt2_Lmts, PhiPQ_Lmts);
+    // SetVariableSize(histAcce_rec,  nbins, Q2_Lmts, Nu_Lmts, Zh_Lmts, Pt2_Lmts, PhiPQ_Lmts);
 
 	histReco_mc->Sumw2();
 	histReco_rec->Sumw2();
 	histTrue->Sumw2();
-	histAcce_mc->Sumw2();
-	histAcce_rec->Sumw2();
+	// histAcce_mc->Sumw2();
+	// histAcce_rec->Sumw2();
 
     // std::cout << "Setting up unfolding objects done" << std::endl;
 
@@ -221,9 +221,9 @@ void Acceptance::Loop()
     }       // loop over entries
 
     // Acceptance
-    histAcce_mc = (THnSparse*)histReco_mc->Clone();
+    THnSparse *histAcce_mc = (THnSparse*)histReco_mc->Clone("histAcce_mc");
     histAcce_mc->Divide(histTrue);
-    histAcce_rec = (THnSparse*)histReco_rec->Clone();
+    THnSparse *histAcce_rec = (THnSparse*)histReco_rec->Clone("histAcce_rec");
     histAcce_rec->Divide(histTrue);
 
     // Summary tables

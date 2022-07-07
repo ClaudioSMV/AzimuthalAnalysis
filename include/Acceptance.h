@@ -6,16 +6,19 @@
 #include <TFile.h>
 
 // Header file for the classes stored in the TTree if any.
+#include <iostream>
 #include "vector"
-#include "vector"
+#include "string"
 
 class Acceptance
 {
 private:
     int _targTypeCut = 1;
+    std::string _nameTarget;
 
 public:
     void setTargTypeCut(size_t targTypeCut) { _targTypeCut = targTypeCut; }
+    std::string getNameTarget() { return _nameTarget; }
 
 public:
     TTree *fChain;  //! pointer to the analyzed TTree or TChain
@@ -164,6 +167,7 @@ public:
 
     Acceptance(TTree *tree = 0);
     virtual ~Acceptance();
+    virtual void setTargName(std::string name);
     virtual Int_t Cut(Long64_t entry);
     virtual Bool_t GoodElectron_MC(Long64_t entry, vector<vector<double>> DISLimits);
     virtual Bool_t GoodPiPlus_MC(Long64_t entry, int ivec, vector<vector<double>> DISLimits);
@@ -181,7 +185,7 @@ public:
 #endif // #ifndef Acceptance_h
 
 #ifdef Acceptance_cxx
-Acceptance::Acceptance(TTree *tree) : fChain(0)
+Acceptance::Acceptance(TTree *tree) : fChain(0), _nameTarget("D")
 {
     // if parameter tree is not specified (or zero), connect the file
     // used to generate this class and read the Tree.
@@ -226,6 +230,12 @@ Long64_t Acceptance::LoadTree(Long64_t entry)
         Notify();
     }
     return centry;
+}
+
+void Acceptance::setTargName(std::string name)
+{
+    _nameTarget = name;
+    if (name!="D") setTargTypeCut(2);
 }
 
 void Acceptance::Init(TTree *tree)
