@@ -176,8 +176,9 @@ public:
     virtual Int_t GetEntry(Long64_t entry);
     virtual Long64_t LoadTree(Long64_t entry);
     virtual void Init(TTree *tree);
-    virtual void Loop();
-    // virtual void ClosureTest();
+    virtual void Loop(bool SaveAcceptance);
+    // virtual void Correction();
+    virtual void ClosureTest();
     virtual Bool_t Notify();
     virtual void Show(Long64_t entry = -1);
 };

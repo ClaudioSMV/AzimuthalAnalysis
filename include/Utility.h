@@ -41,15 +41,15 @@ int GlobalVarPosition(std::vector<double> *var_values, std::vector<std::vector<d
     return global_position;
 }
 
-std::vector<TH1D*> CreateQ2NuHistList(int NQ2, int NNu, std::string name)
+template<class T, typename... Args> std::vector<T*> CreateQ2NuHistList(int NQ2, int NNu, std::string name, Args... args)
 {
-    std::vector<TH1D*> Vector_tmp;
-    TH1D* hist_tmp;
+    std::vector<T*> Vector_tmp;
+    T* hist_tmp;
     for (int iQ2=0; iQ2<NQ2; iQ2++)
     {
         for (int iNu=0; iNu<NNu; iNu++)
         {
-            hist_tmp = new TH1D(Form("%s_Q2%iNu%i",name.c_str(),iQ2,iNu), Form("%s_Q2%iNu%i",name.c_str(),iQ2,iNu), 180, -180., 180.);
+            hist_tmp = new T(Form("%s_Q%iN%i",name.c_str(),iQ2,iNu), Form("%s_Q%iN%i",name.c_str(),iQ2,iNu), args...);
             Vector_tmp.push_back(hist_tmp);
         }
     }

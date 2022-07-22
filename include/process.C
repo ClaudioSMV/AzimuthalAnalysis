@@ -13,6 +13,6 @@ void process(std::string target = "Fe", std::string nfold = "*")
     // ch.Add("data/hsim_Fe3.root");
     Acceptance acc(&ch);
     acc.setTargName(target);
-    acc.Loop();
-    // acc.ClosureTest();
+    // acc.Loop();
+    acc.ClosureTest();
 }
