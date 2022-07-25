@@ -15,10 +15,12 @@ class Acceptance
 private:
     int _targTypeCut = 1;
     std::string _nameTarget;
+    bool _isData = false;
 
 public:
     void setTargTypeCut(size_t targTypeCut) { _targTypeCut = targTypeCut; }
     std::string getNameTarget() { return _nameTarget; }
+    void setDataType() { _isData = true; }
 
 public:
     TTree *fChain;  //! pointer to the analyzed TTree or TChain
@@ -165,7 +167,7 @@ public:
     vector<float> *mc_Xf;
     vector<float> *mc_deltaZ;
 
-    Acceptance(TTree *tree = 0);
+    Acceptance(TTree *tree = 0, bool isData=false);
     virtual ~Acceptance();
     virtual void setTargName(std::string name);
     virtual Int_t Cut(Long64_t entry);
@@ -176,8 +178,9 @@ public:
     virtual Int_t GetEntry(Long64_t entry);
     virtual Long64_t LoadTree(Long64_t entry);
     virtual void Init(TTree *tree);
-    virtual void ActivateBranches(bool add_mc);
+    virtual void ActivateBranches();
     virtual void Loop(bool SaveAcceptance);
+    virtual void Get2DProj();
     // virtual void Correction();
     virtual void ClosureTest();
     virtual Bool_t Notify();
@@ -187,7 +190,7 @@ public:
 #endif // #ifndef Acceptance_h
 
 #ifdef Acceptance_cxx
-Acceptance::Acceptance(TTree *tree) : fChain(0), _nameTarget("D")
+Acceptance::Acceptance(TTree *tree, bool isData) : fChain(0), _nameTarget("D")
 {
     // if parameter tree is not specified (or zero), connect the file
     // used to generate this class and read the Tree.
@@ -200,6 +203,7 @@ Acceptance::Acceptance(TTree *tree) : fChain(0), _nameTarget("D")
         }
         f->GetObject("ntuple_sim", tree);
     }
+    if (isData) setDataType();
     Init(tree);
 }
 
@@ -301,29 +305,32 @@ void Acceptance::Init(TTree *tree)
     NRowsEC = 0;
     NRowsSC = 0;
     NRowsCC = 0;
-    mc_Eh = 0;
-    mc_Zh = 0;
-    mc_ThetaPQ = 0;
-    mc_Pt2 = 0;
-    mc_Pl2 = 0;
-    mc_PhiPQ = 0;
-    mc_Mx2 = 0;
-    mc_T = 0;
-    mc_ThetaLab = 0;
-    mc_PhiLab = 0;
-    mc_vxh = 0;
-    mc_vyh = 0;
-    mc_vzh = 0;
-    mc_Sector = 0;
-    mc_Px = 0;
-    mc_Py = 0;
-    mc_Pz = 0;
-    mc_P = 0;
-    mc_Betta = 0;
-    mc_Mass2 = 0;
-    mc_pid = 0;
-    mc_Xf = 0;
-    mc_deltaZ = 0;
+    if (!_isData)
+    {
+        mc_Eh = 0;
+        mc_Zh = 0;
+        mc_ThetaPQ = 0;
+        mc_Pt2 = 0;
+        mc_Pl2 = 0;
+        mc_PhiPQ = 0;
+        mc_Mx2 = 0;
+        mc_T = 0;
+        mc_ThetaLab = 0;
+        mc_PhiLab = 0;
+        mc_vxh = 0;
+        mc_vyh = 0;
+        mc_vzh = 0;
+        mc_Sector = 0;
+        mc_Px = 0;
+        mc_Py = 0;
+        mc_Pz = 0;
+        mc_P = 0;
+        mc_Betta = 0;
+        mc_Mass2 = 0;
+        mc_pid = 0;
+        mc_Xf = 0;
+        mc_deltaZ = 0;
+    }
     // Set branch addresses and branch pointers
     if (!tree)
         return;
@@ -428,46 +435,49 @@ void Acceptance::Init(TTree *tree)
     fChain->SetBranchAddress("NRowsSC", &NRowsSC);
     fChain->SetBranchAddress("NRowsCC", &NRowsCC);
     fChain->SetBranchAddress("evnt", &evnt);
-    fChain->SetBranchAddress("mc_Q2", &mc_Q2);
-    fChain->SetBranchAddress("mc_W", &mc_W);
-    fChain->SetBranchAddress("mc_Nu", &mc_Nu);
-    fChain->SetBranchAddress("mc_Xb", &mc_Xb);
-    fChain->SetBranchAddress("mc_Yb", &mc_Yb);
-    fChain->SetBranchAddress("mc_vxe", &mc_vxe);
-    fChain->SetBranchAddress("mc_vye", &mc_vye);
-    fChain->SetBranchAddress("mc_vze", &mc_vze);
-    fChain->SetBranchAddress("mc_SectorEl", &mc_SectorEl);
-    fChain->SetBranchAddress("mc_TargType", &mc_TargType);
-    fChain->SetBranchAddress("mc_Pex", &mc_Pex);
-    fChain->SetBranchAddress("mc_Pey", &mc_Pey);
-    fChain->SetBranchAddress("mc_Pez", &mc_Pez);
-    fChain->SetBranchAddress("mc_Pe", &mc_Pe);
-    fChain->SetBranchAddress("mc_BettaEl", &mc_BettaEl);
-    fChain->SetBranchAddress("mc_ThetaLabEl", &mc_ThetaLabEl);
-    fChain->SetBranchAddress("mc_PhiLabEl", &mc_PhiLabEl);
-    fChain->SetBranchAddress("mc_Eh", &mc_Eh);
-    fChain->SetBranchAddress("mc_Zh", &mc_Zh);
-    fChain->SetBranchAddress("mc_ThetaPQ", &mc_ThetaPQ);
-    fChain->SetBranchAddress("mc_Pt2", &mc_Pt2);
-    fChain->SetBranchAddress("mc_Pl2", &mc_Pl2);
-    fChain->SetBranchAddress("mc_PhiPQ", &mc_PhiPQ);
-    fChain->SetBranchAddress("mc_Mx2", &mc_Mx2);
-    fChain->SetBranchAddress("mc_T", &mc_T);
-    fChain->SetBranchAddress("mc_ThetaLab", &mc_ThetaLab);
-    fChain->SetBranchAddress("mc_PhiLab", &mc_PhiLab);
-    fChain->SetBranchAddress("mc_vxh", &mc_vxh);
-    fChain->SetBranchAddress("mc_vyh", &mc_vyh);
-    fChain->SetBranchAddress("mc_vzh", &mc_vzh);
-    fChain->SetBranchAddress("mc_Sector", &mc_Sector);
-    fChain->SetBranchAddress("mc_Px", &mc_Px);
-    fChain->SetBranchAddress("mc_Py", &mc_Py);
-    fChain->SetBranchAddress("mc_Pz", &mc_Pz);
-    fChain->SetBranchAddress("mc_P", &mc_P);
-    fChain->SetBranchAddress("mc_Betta", &mc_Betta);
-    fChain->SetBranchAddress("mc_Mass2", &mc_Mass2);
-    fChain->SetBranchAddress("mc_pid", &mc_pid);
-    fChain->SetBranchAddress("mc_Xf", &mc_Xf);
-    fChain->SetBranchAddress("mc_deltaZ", &mc_deltaZ);
+    if (!_isData)
+    {
+        fChain->SetBranchAddress("mc_Q2", &mc_Q2);
+        fChain->SetBranchAddress("mc_W", &mc_W);
+        fChain->SetBranchAddress("mc_Nu", &mc_Nu);
+        fChain->SetBranchAddress("mc_Xb", &mc_Xb);
+        fChain->SetBranchAddress("mc_Yb", &mc_Yb);
+        fChain->SetBranchAddress("mc_vxe", &mc_vxe);
+        fChain->SetBranchAddress("mc_vye", &mc_vye);
+        fChain->SetBranchAddress("mc_vze", &mc_vze);
+        fChain->SetBranchAddress("mc_SectorEl", &mc_SectorEl);
+        fChain->SetBranchAddress("mc_TargType", &mc_TargType);
+        fChain->SetBranchAddress("mc_Pex", &mc_Pex);
+        fChain->SetBranchAddress("mc_Pey", &mc_Pey);
+        fChain->SetBranchAddress("mc_Pez", &mc_Pez);
+        fChain->SetBranchAddress("mc_Pe", &mc_Pe);
+        fChain->SetBranchAddress("mc_BettaEl", &mc_BettaEl);
+        fChain->SetBranchAddress("mc_ThetaLabEl", &mc_ThetaLabEl);
+        fChain->SetBranchAddress("mc_PhiLabEl", &mc_PhiLabEl);
+        fChain->SetBranchAddress("mc_Eh", &mc_Eh);
+        fChain->SetBranchAddress("mc_Zh", &mc_Zh);
+        fChain->SetBranchAddress("mc_ThetaPQ", &mc_ThetaPQ);
+        fChain->SetBranchAddress("mc_Pt2", &mc_Pt2);
+        fChain->SetBranchAddress("mc_Pl2", &mc_Pl2);
+        fChain->SetBranchAddress("mc_PhiPQ", &mc_PhiPQ);
+        fChain->SetBranchAddress("mc_Mx2", &mc_Mx2);
+        fChain->SetBranchAddress("mc_T", &mc_T);
+        fChain->SetBranchAddress("mc_ThetaLab", &mc_ThetaLab);
+        fChain->SetBranchAddress("mc_PhiLab", &mc_PhiLab);
+        fChain->SetBranchAddress("mc_vxh", &mc_vxh);
+        fChain->SetBranchAddress("mc_vyh", &mc_vyh);
+        fChain->SetBranchAddress("mc_vzh", &mc_vzh);
+        fChain->SetBranchAddress("mc_Sector", &mc_Sector);
+        fChain->SetBranchAddress("mc_Px", &mc_Px);
+        fChain->SetBranchAddress("mc_Py", &mc_Py);
+        fChain->SetBranchAddress("mc_Pz", &mc_Pz);
+        fChain->SetBranchAddress("mc_P", &mc_P);
+        fChain->SetBranchAddress("mc_Betta", &mc_Betta);
+        fChain->SetBranchAddress("mc_Mass2", &mc_Mass2);
+        fChain->SetBranchAddress("mc_pid", &mc_pid);
+        fChain->SetBranchAddress("mc_Xf", &mc_Xf);
+        fChain->SetBranchAddress("mc_deltaZ", &mc_deltaZ);
+    }
     Notify();
 }
 
