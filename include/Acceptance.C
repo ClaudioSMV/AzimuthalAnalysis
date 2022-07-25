@@ -37,6 +37,25 @@ inline float DEG2RAD(float x)
     return 0.017453293 * x;
 }
 
+void Acceptance::ActivateBranches(bool add_mc = true)
+{
+    fChain->SetBranchStatus("*",0);
+    std::vector<string> activeBranches = {"TargType", "Q2", "Nu", "Xb", "Yb", "W", "vyec", "Zh", "Pt2", "PhiPQ", "pid"}; // , "Nphe"}; //, "Xf"};
+    std::vector<string> activeBranches_mc = {"mc_TargType", "mc_Q2", "mc_Nu", "mc_Xb", "mc_Yb", "mc_W", "mc_Zh", "mc_Pt2", "mc_PhiPQ", "mc_pid"}; //, "mc_Xf"};
+    for (const auto &activeBranch : activeBranches)
+    {
+        fChain->SetBranchStatus(activeBranch.c_str(), 1);
+    }
+
+    if (add_mc)
+    {
+        for (const auto &activeBranch : activeBranches_mc)
+        {
+            fChain->SetBranchStatus(activeBranch.c_str(), 1);
+        }
+    }
+}
+
 void Acceptance::Loop(bool SaveAcceptance=true)
 {
     //   In a ROOT session, you can do:
@@ -60,14 +79,7 @@ void Acceptance::Loop(bool SaveAcceptance=true)
     //    fChain->SetBranchStatus("*",0);  // disable all branches
     //    fChain->SetBranchStatus("branchname",1);  // activate branchname
 
-    fChain->SetBranchStatus("*",0);
-    std::vector<string> activeBranches = {"TargType", "mc_TargType", "Q2", "mc_Q2", "Nu", "mc_Nu", "Xb", "mc_Xb",
-                                          "Yb", "mc_Yb", "W", "mc_W", "vyec", "Zh", "mc_Zh", "Pt2", "mc_Pt2",
-                                          "PhiPQ", "mc_PhiPQ", "pid", "mc_pid"}; // , "Nphe"}; //, "Xf"};
-    for (const auto &activeBranch : activeBranches)
-    {
-        fChain->SetBranchStatus(activeBranch.c_str(), 1);
-    }
+    ActivateBranches(true);
 
     TFile *fout;
     if (SaveAcceptance) fout = TFile::Open(Form("../output/Acceptance_%s.root", getNameTarget().c_str()), "RECREATE");
@@ -131,27 +143,27 @@ void Acceptance::Loop(bool SaveAcceptance=true)
         return;
     Long64_t nentries = fChain->GetEntries();
     Long64_t nbytes = 0, nb = 0;
-    // for (Long64_t jentry = 0; jentry < nentries; jentry++) {
     unsigned int entries_to_process;
     if (SaveAcceptance) entries_to_process = nentries;
     else                entries_to_process = nentries/2;
-    int global_bin;
+    int global_bin=-1, inclusive_count=0;
     int vec_entries_MC=0, vec_entries=0;
     bool good_electron_mc = false, good_electron = false;
     bool good_pion_mc = false, good_pion = false;
 
-    std::map<std::string, unsigned int> general_counter = {{"Total mc_El entries",0}, {"Total mc_Pi entries",0}};
-    // std::map<std::string, unsigned int> general_counter = {{"Good MC_El",0}, {"Good MC_Pi",0}, {"Good Reco El",0}, {"Good Reco Pi",0}};
-    // std::map<std::string, unsigned int> general_reco_counter = {{"Good Reco El",0}, {"Good Reco Pi",0}};
-    std::map<std::string, unsigned int> mc_El_Bad_counter = {{"Wrong mc_TargType",0}, {"Out of DIS range",0}};
-    std::map<std::string, unsigned int> mc_Pi_Bad_counter = {{"Wrong mc_pid",0}, {"Out of DIS range",0}};
-    // std::map<std::string, unsigned int> mc_El_Good_counter = {{"Good mc_Electron",0}};
-    // std::map<std::string, unsigned int> mc_Pi_Good_counter = {{"Leading mc_Pion",0}, {"No Leading mc_Pion",0}};
-    std::map<std::string, unsigned int> rec_El_Bad_counter = {{"Wrong TargType",0}, {"Out of DIS range",0}, {"Out of VertexY Correction",0},
-                                                              {"Different vector size",0}};
-    std::map<std::string, unsigned int> rec_Pi_Bad_counter = {{"Bad Reconstructed Pion",0}};
-    std::map<std::string, unsigned int> rec_El_Good_counter = {{"Good Reco Electron",0}};
-    std::map<std::string, unsigned int> rec_Pi_Good_counter = {{"Good Reco Pi",0}}; // ,{"Leading Pion",0}, {"No Leading Pion",0}};
+    std::map<std::string, unsigned int> general_El_count = {{"Total mc_El",0}, {"Total rec_El",0}, {"Different vector size",0}};
+    std::map<std::string, unsigned int> mc_El_Reject_count = {{"Wrong mc_TargType",0}, {"Out of DIS range",0}, {"Not accepted",0}};
+    std::map<std::string, unsigned int> mc_El_Accept_count = {{"Well reconstructed",0}};
+    std::map<std::string, unsigned int> rec_El_Reject_count = {{"Wrong TargType",0}, {"Out of DIS range",0}, {"Out of VertexY Correction",0},{"Not good El",0}};
+    std::map<std::string, unsigned int> rec_El_Accept_count = {{"Good match with mc",0}, {"Bad match with mc",0}};
+    std::map<std::string, unsigned int> general_Pi_count = {{"Total mc_Pi",0}, {"Total rec_Pi",0}};
+    std::map<std::string, unsigned int> mc_Pi_Reject_count = {{"Wrong mc_pid",0}, {"Out of DIS range",0}, {"Not accepted",0}};
+    std::map<std::string, unsigned int> mc_Pi_Accept_count = {{"Well reconstructed",0}};
+    std::map<std::string, unsigned int> rec_Pi_Reject_count = {{"Wrong pid",0}, {"Out of DIS range",0}, {"Not accepted",0}};
+    std::map<std::string, unsigned int> rec_Pi_Accept_count = {{"Good match with mc",0}, {"Bad match with mc",0}};
+
+    // std::map<std::string, unsigned int> mc_Pi_Good_count = {{"Leading mc_Pion",0}, {"No Leading mc_Pion",0}};
+    // std::map<std::string, unsigned int> rec_Pi_Good_count = {{"Good Reco Pi",0}}; // ,{"Leading Pion",0}, {"No Leading Pion",0}};
 
     std::vector<double> leptonic_vars_mc, leptonic_vars;
     for (unsigned int jentry = 0; jentry < entries_to_process; jentry++)
@@ -171,24 +183,32 @@ void Acceptance::Loop(bool SaveAcceptance=true)
         if (GoodElectron_MC(ientry, DISLimits))
         {
             good_electron_mc = true;
-            general_counter["Total mc_El entries"]++;
+            general_El_count["Total mc_El"]++;
         }
         else
         {
-            if (mc_TargType!=_targTypeCut) mc_El_Bad_counter["Wrong mc_TargType"]++;
-            if (mc_Q2<DISLimits[0][0] || DISLimits[1][0]<mc_Q2 || 0.85<mc_Yb || mc_W<2 || mc_Nu<DISLimits[0][1] || DISLimits[1][1]<mc_Nu) mc_El_Bad_counter["Out of DIS range"]++;
+            mc_El_Reject_count["Not accepted"]++;
+            if (mc_TargType!=_targTypeCut) mc_El_Reject_count["Wrong mc_TargType"]++;
+            if (mc_Q2<DISLimits[0][0] || DISLimits[1][0]<mc_Q2 || 0.85<mc_Yb || mc_W<2 || mc_Nu<DISLimits[0][1] || DISLimits[1][1]<mc_Nu) mc_El_Reject_count["Out of DIS range"]++;
         }
 
         if (GoodElectron(ientry, DISLimits))
         {
             good_electron = true;
-            rec_El_Good_counter["Good Reco Electron"]++;
+            general_El_count["Total rec_El"]++;
+            if (good_electron_mc)
+            {
+                rec_El_Accept_count["Good match with mc"]++;
+                mc_El_Accept_count["Well reconstructed"]++;
+            }
+            else rec_El_Accept_count["Bad match with mc"]++;
         }
         else
         {
-            if (TargType!=_targTypeCut) rec_El_Bad_counter["Wrong TargType"]++;
-            if (Q2<DISLimits[0][0] || DISLimits[1][0]<Q2 || 0.85<Yb || W<2 || Nu<DISLimits[0][1] || DISLimits[1][1]<Nu) rec_El_Bad_counter["Out of DIS range"]++;
-            if (vyec<-1.4 || 1.4<vyec) rec_El_Bad_counter["Out of VertexY Correction"]++;
+            rec_El_Reject_count["Not good El"]++;
+            if (TargType!=_targTypeCut) rec_El_Reject_count["Wrong TargType"]++;
+            if (Q2<DISLimits[0][0] || DISLimits[1][0]<Q2 || 0.85<Yb || W<2 || Nu<DISLimits[0][1] || DISLimits[1][1]<Nu) rec_El_Reject_count["Out of DIS range"]++;
+            if (vyec<-1.4 || 1.4<vyec) rec_El_Reject_count["Out of VertexY Correction"]++;
         }
 
         leptonic_vars = {Q2, Nu};
@@ -198,7 +218,7 @@ void Acceptance::Loop(bool SaveAcceptance=true)
         vec_entries_MC = mc_PhiPQ->size();
         if (vec_entries!=vec_entries_MC)
         {
-            rec_El_Bad_counter["Different vector size"]++;
+            general_El_count["Different vector size"]++;
             continue;
         }
 
@@ -206,27 +226,38 @@ void Acceptance::Loop(bool SaveAcceptance=true)
         {
             good_pion_mc = false, good_pion = false;
             bool pion_passed(false);
+            inclusive_count++;
 
             if (good_electron_mc && GoodPiPlus_MC(ientry, i, DISLimits))
             {
                 good_pion_mc = true;
-                general_counter["Total mc_Pi entries"]++;
+                general_Pi_count["Total mc_Pi"]++;
             }
             else
             {
-                if (mc_pid->at(i)!=211) mc_Pi_Bad_counter["Wrong mc_pid"]++;
+                mc_Pi_Reject_count["Not accepted"]++;
+                if (mc_pid->at(i)!=211) mc_Pi_Reject_count["Wrong mc_pid"]++;
                 if (mc_Zh->at(i)<DISLimits[0][2] || DISLimits[1][2]<mc_Zh->at(i) || mc_Pt2->at(i)<DISLimits[0][3] || DISLimits[1][3]<mc_Pt2->at(i) ||
-                    mc_PhiPQ->at(i)<DISLimits[0][4] || DISLimits[1][4]<mc_PhiPQ->at(i)) mc_Pi_Bad_counter["Out of DIS range"]++;
+                    mc_PhiPQ->at(i)<DISLimits[0][4] || DISLimits[1][4]<mc_PhiPQ->at(i)) mc_Pi_Reject_count["Out of DIS range"]++;
             }
             
             if (good_electron && GoodPiPlus(ientry, i, DISLimits))
             {
                 good_pion = true;
-                rec_Pi_Good_counter["Good Reco Pi"]++;
+                general_Pi_count["Total rec_Pi"]++;
+                if (good_pion_mc)
+                {
+                    mc_Pi_Accept_count["Well reconstructed"]++;
+                    rec_Pi_Accept_count["Good match with mc"]++;
+                }
+                else rec_Pi_Accept_count["Bad match with mc"]++;
             }
             else
             {
-                rec_Pi_Bad_counter["Bad Reconstructed Pion"]++;
+                rec_Pi_Reject_count["Not accepted"]++;
+                if (pid->at(i)!=211) rec_Pi_Reject_count["Wrong pid"]++;
+                if (Zh->at(i)<DISLimits[0][2] || DISLimits[1][2]<Zh->at(i) || Pt2->at(i)<DISLimits[0][3] || DISLimits[1][3]<Pt2->at(i) ||
+                    PhiPQ->at(i)<DISLimits[0][4] || DISLimits[1][4]<PhiPQ->at(i)) rec_Pi_Reject_count["Out of DIS range"]++;
             }
 
             if (!good_pion_mc && !good_pion) continue;
@@ -270,14 +301,17 @@ void Acceptance::Loop(bool SaveAcceptance=true)
     histAcc_RecGoodGen_rec->Divide(histTrue);
 
     // Summary tables
-    PrintSummaryTable(general_counter, "Good Particles Summary");
-    // PrintSummaryTable(general_reco_counter, "Pass GoodParticle cut");
-    PrintSummaryTable(mc_El_Bad_counter, "Doesn't pass MC Electron cuts", entries_to_process);
-    PrintSummaryTable(mc_Pi_Bad_counter, "Doesn't pass MC Pion cuts");
-    PrintSummaryTable(rec_El_Bad_counter, "Doesn't pass GoodElectron cut", general_counter["Total mc_El entries"]);
-    PrintSummaryTable(rec_Pi_Bad_counter, "Doesn't pass GoodPion cut");
-    PrintSummaryTable(rec_El_Good_counter, "Pass GoodElectron cut", general_counter["Total mc_El entries"]);
-    PrintSummaryTable(rec_Pi_Good_counter, "Pass GoodPion cut", general_counter["Total mc_Pi entries"]);
+    std::cout << std::endl;
+    PrintSummaryTable(general_El_count,     "General Electron Summary", entries_to_process);
+    PrintSummaryTable(mc_El_Reject_count,   "Rejected MC Electron", entries_to_process);
+    PrintSummaryTable(mc_El_Accept_count,   "Correctly reconstructed MC Electrons", general_El_count["Total mc_El"]);
+    PrintSummaryTable(rec_El_Reject_count,  "Rejected reco Electrons", entries_to_process);
+    PrintSummaryTable(rec_El_Accept_count,  "Matching of reconstructed Electrons", general_El_count["Total rec_El"]);
+    PrintSummaryTable(general_Pi_count,     "General Pion Summary", inclusive_count);
+    PrintSummaryTable(mc_Pi_Reject_count,   "Rejected MC Pion", inclusive_count);
+    PrintSummaryTable(mc_Pi_Accept_count,   "Correctly reconstructed MC Pions", general_Pi_count["Total mc_Pi"]);
+    PrintSummaryTable(rec_Pi_Reject_count,  "Rejected reco Pions", inclusive_count);
+    PrintSummaryTable(rec_Pi_Accept_count,  "Matching of reconstructed Pions", general_Pi_count["Total rec_Pi"]);
 
     histTrue->Write();
     histReco_rec->Write();
@@ -735,15 +769,6 @@ void Acceptance::ClosureTest()
 
     // Begin Closure Test
     std::cout << "\n\nBeginning Closure Test calculations\n" << std::endl;
-
-    // fChain->SetBranchStatus("*",0);
-    // std::vector<string> activeBranches = {"TargType", "mc_TargType", "Q2", "mc_Q2", "Nu", "mc_Nu", "Xb", "mc_Xb",
-    //                                       "Yb", "mc_Yb", "W", "mc_W", "vyec", "Zh", "mc_Zh", "Pt2", "mc_Pt2",
-    //                                       "PhiPQ", "mc_PhiPQ", "pid", "mc_pid", "Nphe"}; //, "Xf"};
-    // for (const auto &activeBranch : activeBranches)
-    // {
-    //     fChain->SetBranchStatus(activeBranch.c_str(), 1);
-    // }
 
     TFile *facc = TFile::Open("../output/Acc_ClosureTest.root", "READ");
     TFile *fout = TFile::Open(Form("../output/ClosureTest_%s.root", getNameTarget().c_str()), "RECREATE");

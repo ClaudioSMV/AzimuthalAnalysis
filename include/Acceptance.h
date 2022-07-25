@@ -176,6 +176,7 @@ public:
     virtual Int_t GetEntry(Long64_t entry);
     virtual Long64_t LoadTree(Long64_t entry);
     virtual void Init(TTree *tree);
+    virtual void ActivateBranches(bool add_mc);
     virtual void Loop(bool SaveAcceptance);
     // virtual void Correction();
     virtual void ClosureTest();
