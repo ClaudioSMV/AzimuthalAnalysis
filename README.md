@@ -15,6 +15,5 @@ root [0] >> .L Acceptance.C+
 After that, you can run any 'macro', for instance:
 ```
 root [1] >> .x process.C("Fe") // Get Acceptance for all of the Fe simulation files
-root [2] >> .L get2DProj.C     // Loads macro to be used by runAll
-root [3] >> .x runAll_2DProj.C // Get all 2D projections of all of the data and simulation targets
+root [2] >> .x runAll_2DProj.C // Get all 2D projections of all of the data and simulation targets
 ```
