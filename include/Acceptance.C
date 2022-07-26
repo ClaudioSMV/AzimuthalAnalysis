@@ -353,24 +353,50 @@ void Acceptance::Get2DProj()
     // TH1::SetDefaultSumw2();
 
     //// Define Histograms
-    TH2D* hist2D_Q2_Nu = new TH2D("hist2D_Q2_Nu", "Two dimensional Map;Q^{2} [GeV^{2}];#nu [GeV]",          50, DISLimits[0][0], DISLimits[1][0],  50, DISLimits[0][1], DISLimits[1][1]);
-    TH2D* hist2D_Q2_Zh = new TH2D("hist2D_Q2_Zh", "Two dimensional Map;Q^{2} [GeV^{2}];Z_{h}",              50, DISLimits[0][0], DISLimits[1][0],  50, DISLimits[0][2], DISLimits[1][2]);
-    TH2D* hist2D_Q2_Pt = new TH2D("hist2D_Q2_Pt", "Two dimensional Map;Q^{2} [GeV^{2}];P_{t}^{2} [GeV^{2}]",50, DISLimits[0][0], DISLimits[1][0],  50, DISLimits[0][3], DISLimits[1][3]);
-    TH2D* hist2D_Q2_PQ = new TH2D("hist2D_Q2_PQ", "Two dimensional Map;Q^{2} [GeV^{2}];#phi_{PQ} [deg]",    50, DISLimits[0][0], DISLimits[1][0], 180, DISLimits[0][4], DISLimits[1][4]);
-    TH2D* hist2D_Nu_Zh = new TH2D("hist2D_Nu_Zh", "Two dimensional Map;#nu [GeV];Z_{h}",                    50, DISLimits[0][1], DISLimits[1][1],  50, DISLimits[0][2], DISLimits[1][2]);
-    TH2D* hist2D_Nu_Pt = new TH2D("hist2D_Nu_Pt", "Two dimensional Map;#nu [GeV];P_{t}^{2} [GeV^{2}]",      50, DISLimits[0][1], DISLimits[1][1],  50, DISLimits[0][3], DISLimits[1][3]);
-    TH2D* hist2D_Nu_PQ = new TH2D("hist2D_Nu_PQ", "Two dimensional Map;#nu [GeV];#phi_{PQ} [deg]",          50, DISLimits[0][1], DISLimits[1][1], 180, DISLimits[0][4], DISLimits[1][4]);
-    TH2D* hist2D_Zh_Pt = new TH2D("hist2D_Zh_Pt", "Two dimensional Map;Z_{h};P_{t}^{2} [GeV^{2}]",          50, DISLimits[0][2], DISLimits[1][2],  50, DISLimits[0][3], DISLimits[1][3]);
-    TH2D* hist2D_Zh_PQ = new TH2D("hist2D_Zh_PQ", "Two dimensional Map;Z_{h};#phi_{PQ} [deg]",              50, DISLimits[0][2], DISLimits[1][2], 180, DISLimits[0][4], DISLimits[1][4]);
-    TH2D* hist2D_Pt_PQ = new TH2D("hist2D_Pt_PQ", "Two dimensional Map;P_{t}^{2} [GeV^{2}];#phi_{PQ} [deg]",50, DISLimits[0][3], DISLimits[1][3], 180, DISLimits[0][4], DISLimits[1][4]);
+    // Reconstructed or data
+    TH2D* hist2D_Q2_Nu_reco = new TH2D("hist2D_Q2_Nu_reco", "Two dimensional Map;Q^{2} [GeV^{2}];#nu [GeV]",          50, DISLimits[0][0], DISLimits[1][0],  50, DISLimits[0][1], DISLimits[1][1]);
+    TH2D* hist2D_Q2_Zh_reco = new TH2D("hist2D_Q2_Zh_reco", "Two dimensional Map;Q^{2} [GeV^{2}];Z_{h}",              50, DISLimits[0][0], DISLimits[1][0],  50, DISLimits[0][2], DISLimits[1][2]);
+    TH2D* hist2D_Q2_Pt_reco = new TH2D("hist2D_Q2_Pt_reco", "Two dimensional Map;Q^{2} [GeV^{2}];P_{t}^{2} [GeV^{2}]",50, DISLimits[0][0], DISLimits[1][0],  50, DISLimits[0][3], DISLimits[1][3]);
+    TH2D* hist2D_Q2_PQ_reco = new TH2D("hist2D_Q2_PQ_reco", "Two dimensional Map;Q^{2} [GeV^{2}];#phi_{PQ} [deg]",    50, DISLimits[0][0], DISLimits[1][0], 180, DISLimits[0][4], DISLimits[1][4]);
+    TH2D* hist2D_Nu_Zh_reco = new TH2D("hist2D_Nu_Zh_reco", "Two dimensional Map;#nu [GeV];Z_{h}",                    50, DISLimits[0][1], DISLimits[1][1],  50, DISLimits[0][2], DISLimits[1][2]);
+    TH2D* hist2D_Nu_Pt_reco = new TH2D("hist2D_Nu_Pt_reco", "Two dimensional Map;#nu [GeV];P_{t}^{2} [GeV^{2}]",      50, DISLimits[0][1], DISLimits[1][1],  50, DISLimits[0][3], DISLimits[1][3]);
+    TH2D* hist2D_Nu_PQ_reco = new TH2D("hist2D_Nu_PQ_reco", "Two dimensional Map;#nu [GeV];#phi_{PQ} [deg]",          50, DISLimits[0][1], DISLimits[1][1], 180, DISLimits[0][4], DISLimits[1][4]);
+    TH2D* hist2D_Zh_Pt_reco = new TH2D("hist2D_Zh_Pt_reco", "Two dimensional Map;Z_{h};P_{t}^{2} [GeV^{2}]",          50, DISLimits[0][2], DISLimits[1][2],  50, DISLimits[0][3], DISLimits[1][3]);
+    TH2D* hist2D_Zh_PQ_reco = new TH2D("hist2D_Zh_PQ_reco", "Two dimensional Map;Z_{h};#phi_{PQ} [deg]",              50, DISLimits[0][2], DISLimits[1][2], 180, DISLimits[0][4], DISLimits[1][4]);
+    TH2D* hist2D_Pt_PQ_reco = new TH2D("hist2D_Pt_PQ_reco", "Two dimensional Map;P_{t}^{2} [GeV^{2}];#phi_{PQ} [deg]",50, DISLimits[0][3], DISLimits[1][3], 180, DISLimits[0][4], DISLimits[1][4]);
+
+    // Reconstructed match
+    TH2D* hist2D_Q2_Nu_mtch = new TH2D("hist2D_Q2_Nu_mtch", "Two dimensional Map (Reco match);Q^{2} [GeV^{2}];#nu [GeV]",          50, DISLimits[0][0], DISLimits[1][0],  50, DISLimits[0][1], DISLimits[1][1]);
+    TH2D* hist2D_Q2_Zh_mtch = new TH2D("hist2D_Q2_Zh_mtch", "Two dimensional Map (Reco match);Q^{2} [GeV^{2}];Z_{h}",              50, DISLimits[0][0], DISLimits[1][0],  50, DISLimits[0][2], DISLimits[1][2]);
+    TH2D* hist2D_Q2_Pt_mtch = new TH2D("hist2D_Q2_Pt_mtch", "Two dimensional Map (Reco match);Q^{2} [GeV^{2}];P_{t}^{2} [GeV^{2}]",50, DISLimits[0][0], DISLimits[1][0],  50, DISLimits[0][3], DISLimits[1][3]);
+    TH2D* hist2D_Q2_PQ_mtch = new TH2D("hist2D_Q2_PQ_mtch", "Two dimensional Map (Reco match);Q^{2} [GeV^{2}];#phi_{PQ} [deg]",    50, DISLimits[0][0], DISLimits[1][0], 180, DISLimits[0][4], DISLimits[1][4]);
+    TH2D* hist2D_Nu_Zh_mtch = new TH2D("hist2D_Nu_Zh_mtch", "Two dimensional Map (Reco match);#nu [GeV];Z_{h}",                    50, DISLimits[0][1], DISLimits[1][1],  50, DISLimits[0][2], DISLimits[1][2]);
+    TH2D* hist2D_Nu_Pt_mtch = new TH2D("hist2D_Nu_Pt_mtch", "Two dimensional Map (Reco match);#nu [GeV];P_{t}^{2} [GeV^{2}]",      50, DISLimits[0][1], DISLimits[1][1],  50, DISLimits[0][3], DISLimits[1][3]);
+    TH2D* hist2D_Nu_PQ_mtch = new TH2D("hist2D_Nu_PQ_mtch", "Two dimensional Map (Reco match);#nu [GeV];#phi_{PQ} [deg]",          50, DISLimits[0][1], DISLimits[1][1], 180, DISLimits[0][4], DISLimits[1][4]);
+    TH2D* hist2D_Zh_Pt_mtch = new TH2D("hist2D_Zh_Pt_mtch", "Two dimensional Map (Reco match);Z_{h};P_{t}^{2} [GeV^{2}]",          50, DISLimits[0][2], DISLimits[1][2],  50, DISLimits[0][3], DISLimits[1][3]);
+    TH2D* hist2D_Zh_PQ_mtch = new TH2D("hist2D_Zh_PQ_mtch", "Two dimensional Map (Reco match);Z_{h};#phi_{PQ} [deg]",              50, DISLimits[0][2], DISLimits[1][2], 180, DISLimits[0][4], DISLimits[1][4]);
+    TH2D* hist2D_Pt_PQ_mtch = new TH2D("hist2D_Pt_PQ_mtch", "Two dimensional Map (Reco match);P_{t}^{2} [GeV^{2}];#phi_{PQ} [deg]",50, DISLimits[0][3], DISLimits[1][3], 180, DISLimits[0][4], DISLimits[1][4]);
+
+    // Generated (MC)
+    TH2D* hist2D_Q2_Nu_gene = new TH2D("hist2D_Q2_Nu_gene", "Two dimensional Map (Generated);Q^{2} [GeV^{2}];#nu [GeV]",          50, DISLimits[0][0], DISLimits[1][0],  50, DISLimits[0][1], DISLimits[1][1]);
+    TH2D* hist2D_Q2_Zh_gene = new TH2D("hist2D_Q2_Zh_gene", "Two dimensional Map (Generated);Q^{2} [GeV^{2}];Z_{h}",              50, DISLimits[0][0], DISLimits[1][0],  50, DISLimits[0][2], DISLimits[1][2]);
+    TH2D* hist2D_Q2_Pt_gene = new TH2D("hist2D_Q2_Pt_gene", "Two dimensional Map (Generated);Q^{2} [GeV^{2}];P_{t}^{2} [GeV^{2}]",50, DISLimits[0][0], DISLimits[1][0],  50, DISLimits[0][3], DISLimits[1][3]);
+    TH2D* hist2D_Q2_PQ_gene = new TH2D("hist2D_Q2_PQ_gene", "Two dimensional Map (Generated);Q^{2} [GeV^{2}];#phi_{PQ} [deg]",    50, DISLimits[0][0], DISLimits[1][0], 180, DISLimits[0][4], DISLimits[1][4]);
+    TH2D* hist2D_Nu_Zh_gene = new TH2D("hist2D_Nu_Zh_gene", "Two dimensional Map (Generated);#nu [GeV];Z_{h}",                    50, DISLimits[0][1], DISLimits[1][1],  50, DISLimits[0][2], DISLimits[1][2]);
+    TH2D* hist2D_Nu_Pt_gene = new TH2D("hist2D_Nu_Pt_gene", "Two dimensional Map (Generated);#nu [GeV];P_{t}^{2} [GeV^{2}]",      50, DISLimits[0][1], DISLimits[1][1],  50, DISLimits[0][3], DISLimits[1][3]);
+    TH2D* hist2D_Nu_PQ_gene = new TH2D("hist2D_Nu_PQ_gene", "Two dimensional Map (Generated);#nu [GeV];#phi_{PQ} [deg]",          50, DISLimits[0][1], DISLimits[1][1], 180, DISLimits[0][4], DISLimits[1][4]);
+    TH2D* hist2D_Zh_Pt_gene = new TH2D("hist2D_Zh_Pt_gene", "Two dimensional Map (Generated);Z_{h};P_{t}^{2} [GeV^{2}]",          50, DISLimits[0][2], DISLimits[1][2],  50, DISLimits[0][3], DISLimits[1][3]);
+    TH2D* hist2D_Zh_PQ_gene = new TH2D("hist2D_Zh_PQ_gene", "Two dimensional Map (Generated);Z_{h};#phi_{PQ} [deg]",              50, DISLimits[0][2], DISLimits[1][2], 180, DISLimits[0][4], DISLimits[1][4]);
+    TH2D* hist2D_Pt_PQ_gene = new TH2D("hist2D_Pt_PQ_gene", "Two dimensional Map (Generated);P_{t}^{2} [GeV^{2}];#phi_{PQ} [deg]",50, DISLimits[0][3], DISLimits[1][3], 180, DISLimits[0][4], DISLimits[1][4]);
 
     if (fChain == 0)
         return;
     Long64_t nentries = fChain->GetEntries();
     Long64_t nbytes = 0, nb = 0;
     unsigned int entries_to_process = nentries;
-    int n_inclusive_part = 0;
-    bool good_electron = false;
+    int n_pions = 0, n_pions_match = 0;
+    bool good_electron_mc = false, good_electron = false;
+    bool good_pion_mc = false, good_pion = false;
 
     for (unsigned int jentry = 0; jentry < entries_to_process; jentry++)
     {
@@ -384,35 +410,102 @@ void Acceptance::Get2DProj()
         nb = fChain->GetEntry(jentry);
         nbytes += nb;
         // if (Cut(ientry) < 0) continue;
-        good_electron = false;
+        good_electron_mc = false, good_electron = false;
 
         if (GoodElectron(ientry, DISLimits))
         {
             good_electron = true;
-            hist2D_Q2_Nu->Fill(Q2,Nu);
+            hist2D_Q2_Nu_reco->Fill(Q2,Nu);
+        }
+
+        if (!_isData && GoodElectron_MC(ientry, DISLimits))
+        {
+            good_electron_mc = true;
+            hist2D_Q2_Nu_gene->Fill(mc_Q2,mc_Nu);
+        }
+
+        if (good_electron && good_electron_mc)
+        {
+            hist2D_Q2_Nu_mtch->Fill(Q2,Nu);
         }
 
         int vec_entries = PhiPQ->size();
 
 		for (int i=0; i<vec_entries; i++)
         {
+            good_pion_mc = false, good_pion = false;
             if (good_electron && GoodPiPlus(ientry, i, DISLimits))
             {
-                n_inclusive_part++;
-                hist2D_Q2_Zh->Fill(Q2, Zh->at(i));
-                hist2D_Q2_Pt->Fill(Q2, Pt2->at(i));
-                hist2D_Q2_PQ->Fill(Q2, PhiPQ->at(i));
-                hist2D_Nu_Zh->Fill(Nu, Zh->at(i));
-                hist2D_Nu_Pt->Fill(Nu, Pt2->at(i));
-                hist2D_Nu_PQ->Fill(Nu, PhiPQ->at(i));
-                hist2D_Zh_Pt->Fill(Zh->at(i), Pt2->at(i));
-                hist2D_Zh_PQ->Fill(Zh->at(i), PhiPQ->at(i));
-                hist2D_Pt_PQ->Fill(Pt2->at(i), PhiPQ->at(i));
+                n_pions++;
+                good_pion = true;
+                hist2D_Q2_Zh_reco->Fill(Q2, Zh->at(i));
+                hist2D_Q2_Pt_reco->Fill(Q2, Pt2->at(i));
+                hist2D_Q2_PQ_reco->Fill(Q2, PhiPQ->at(i));
+                hist2D_Nu_Zh_reco->Fill(Nu, Zh->at(i));
+                hist2D_Nu_Pt_reco->Fill(Nu, Pt2->at(i));
+                hist2D_Nu_PQ_reco->Fill(Nu, PhiPQ->at(i));
+                hist2D_Zh_Pt_reco->Fill(Zh->at(i), Pt2->at(i));
+                hist2D_Zh_PQ_reco->Fill(Zh->at(i), PhiPQ->at(i));
+                hist2D_Pt_PQ_reco->Fill(Pt2->at(i), PhiPQ->at(i));
+            }
+
+            if (!_isData && good_electron_mc && GoodPiPlus_MC(ientry, i, DISLimits))
+            {
+                good_pion_mc = true;
+                hist2D_Q2_Zh_gene->Fill(mc_Q2, mc_Zh->at(i));
+                hist2D_Q2_Pt_gene->Fill(mc_Q2, mc_Pt2->at(i));
+                hist2D_Q2_PQ_gene->Fill(mc_Q2, mc_PhiPQ->at(i));
+                hist2D_Nu_Zh_gene->Fill(mc_Nu, mc_Zh->at(i));
+                hist2D_Nu_Pt_gene->Fill(mc_Nu, mc_Pt2->at(i));
+                hist2D_Nu_PQ_gene->Fill(mc_Nu, mc_PhiPQ->at(i));
+                hist2D_Zh_Pt_gene->Fill(mc_Zh->at(i), mc_Pt2->at(i));
+                hist2D_Zh_PQ_gene->Fill(mc_Zh->at(i), mc_PhiPQ->at(i));
+                hist2D_Pt_PQ_gene->Fill(mc_Pt2->at(i), mc_PhiPQ->at(i));
+            }
+
+            if (good_pion && good_pion_mc)
+            {
+                n_pions_match++;
+                hist2D_Q2_Zh_mtch->Fill(Q2, Zh->at(i));
+                hist2D_Q2_Pt_mtch->Fill(Q2, Pt2->at(i));
+                hist2D_Q2_PQ_mtch->Fill(Q2, PhiPQ->at(i));
+                hist2D_Nu_Zh_mtch->Fill(Nu, Zh->at(i));
+                hist2D_Nu_Pt_mtch->Fill(Nu, Pt2->at(i));
+                hist2D_Nu_PQ_mtch->Fill(Nu, PhiPQ->at(i));
+                hist2D_Zh_Pt_mtch->Fill(Zh->at(i), Pt2->at(i));
+                hist2D_Zh_PQ_mtch->Fill(Zh->at(i), PhiPQ->at(i));
+                hist2D_Pt_PQ_mtch->Fill(Pt2->at(i), PhiPQ->at(i));
             }
         }   // loop over tracks
     }       // loop over entries
 
-    std::cout << "There are " << n_inclusive_part << " final state Pions." << std::endl;
+    std::cout << "There are " << n_pions << " final state Pions." << std::endl;
+    if (!_isData) std::cout << "There are " << n_pions_match << " final state Pions matching generated." << std::endl;
+
+    if (_isData)
+    {
+        hist2D_Q2_Nu_gene->Delete();
+        hist2D_Q2_Zh_gene->Delete();
+        hist2D_Q2_Pt_gene->Delete();
+        hist2D_Q2_PQ_gene->Delete();
+        hist2D_Nu_Zh_gene->Delete();
+        hist2D_Nu_Pt_gene->Delete();
+        hist2D_Nu_PQ_gene->Delete();
+        hist2D_Zh_Pt_gene->Delete();
+        hist2D_Zh_PQ_gene->Delete();
+        hist2D_Pt_PQ_gene->Delete();
+
+        hist2D_Q2_Nu_mtch->Delete();
+        hist2D_Q2_Zh_mtch->Delete();
+        hist2D_Q2_Pt_mtch->Delete();
+        hist2D_Q2_PQ_mtch->Delete();
+        hist2D_Nu_Zh_mtch->Delete();
+        hist2D_Nu_Pt_mtch->Delete();
+        hist2D_Nu_PQ_mtch->Delete();
+        hist2D_Zh_Pt_mtch->Delete();
+        hist2D_Zh_PQ_mtch->Delete();
+        hist2D_Pt_PQ_mtch->Delete();
+    }
 
     fout->Write();
     fout->Close();

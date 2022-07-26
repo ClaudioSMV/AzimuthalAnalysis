@@ -167,7 +167,7 @@ public:
     vector<float> *mc_Xf;
     vector<float> *mc_deltaZ;
 
-    Acceptance(TTree *tree = 0, bool isData=false);
+    Acceptance(TTree *tree = 0, bool isData = false);
     virtual ~Acceptance();
     virtual void setTargName(std::string name);
     virtual Int_t Cut(Long64_t entry);
