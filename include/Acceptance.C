@@ -85,6 +85,8 @@ void Acceptance::Loop(bool SaveAcceptance=true)
     if (SaveAcceptance) fout = TFile::Open(Form("../output/Acceptance_%s.root", getNameTarget().c_str()), "RECREATE");
     else                fout = TFile::Open("../output/Acc_ClosureTest.root", "RECREATE");
 
+    std::cout << "\n\nBeginning Acceptance calculations for " << _nameTarget << " target\n" << std::endl;
+
     // Define binning
     // OR : Original: {3, 3, 5, 5, 12} = 2700
 	// CP : PhiPQ central peak: {3, 3, 5, 5, 40} = 9000 // PhiPQ binning is really important due to the features seen!
@@ -389,6 +391,13 @@ void Acceptance::Get2DProj()
     TH2D* hist2D_Zh_PQ_gene = new TH2D("hist2D_Zh_PQ_gene", "Two dimensional Map (Generated);Z_{h};#phi_{PQ} [deg]",              50, DISLimits[0][2], DISLimits[1][2], 180, DISLimits[0][4], DISLimits[1][4]);
     TH2D* hist2D_Pt_PQ_gene = new TH2D("hist2D_Pt_PQ_gene", "Two dimensional Map (Generated);P_{t}^{2} [GeV^{2}];#phi_{PQ} [deg]",50, DISLimits[0][3], DISLimits[1][3], 180, DISLimits[0][4], DISLimits[1][4]);
 
+    // Bin migration
+    TH2D* histMigrationMatrixQ2 = new TH2D("histMigrationMatrixQ2", "Migration Q^{2};True Q^{2} [GeV^{2}]; Reco Q^{2} [GeV^{2}]"           , 50,DISLimits[0][0],DISLimits[1][0], 50,DISLimits[0][0],DISLimits[1][0]);
+    TH2D* histMigrationMatrixNu = new TH2D("histMigrationMatrixNu", "Migration #nu;True Nu [GeV]; Reco Nu [GeV]"                           , 50,DISLimits[0][1],DISLimits[1][1], 50,DISLimits[0][1],DISLimits[1][1]);
+    TH2D* histMigrationMatrixZh = new TH2D("histMigrationMatrixZh", "Migration Z_{h};True Z_{h}; Reco Z_{h}"                               , 50,DISLimits[0][2],DISLimits[1][2], 50,DISLimits[0][2],DISLimits[1][2]);
+    TH2D* histMigrationMatrixPt = new TH2D("histMigrationMatrixPt", "Migration P_{T}^{2};True P_{T}^{2} [GeV^{2}];Reco P_{T}^{2} [GeV^{2}]", 50,DISLimits[0][3],DISLimits[1][3], 50,DISLimits[0][3],DISLimits[1][3]);
+    TH2D* histMigrationMatrixPQ = new TH2D("histMigrationMatrixPQ", "Migration #phi_{PQ};True #phi_{PQ} [deg];Reco #phi_{PQ} [deg]"        ,180,DISLimits[0][4],DISLimits[1][4],180,DISLimits[0][4],DISLimits[1][4]);
+
     if (fChain == 0)
         return;
     Long64_t nentries = fChain->GetEntries();
@@ -427,6 +436,9 @@ void Acceptance::Get2DProj()
         if (good_electron && good_electron_mc)
         {
             hist2D_Q2_Nu_mtch->Fill(Q2,Nu);
+
+            histMigrationMatrixQ2->Fill(mc_Q2,Q2);
+            histMigrationMatrixNu->Fill(mc_Nu,Nu);
         }
 
         int vec_entries = PhiPQ->size();
@@ -475,6 +487,10 @@ void Acceptance::Get2DProj()
                 hist2D_Zh_Pt_mtch->Fill(Zh->at(i), Pt2->at(i));
                 hist2D_Zh_PQ_mtch->Fill(Zh->at(i), PhiPQ->at(i));
                 hist2D_Pt_PQ_mtch->Fill(Pt2->at(i), PhiPQ->at(i));
+
+                histMigrationMatrixZh->Fill(mc_Zh->at(i), Zh->at(i));
+                histMigrationMatrixPt->Fill(mc_Pt2->at(i), Pt2->at(i));
+                histMigrationMatrixPQ->Fill(mc_PhiPQ->at(i), PhiPQ->at(i));
             }
         }   // loop over tracks
     }       // loop over entries
@@ -505,6 +521,12 @@ void Acceptance::Get2DProj()
         hist2D_Zh_Pt_mtch->Delete();
         hist2D_Zh_PQ_mtch->Delete();
         hist2D_Pt_PQ_mtch->Delete();
+
+        histMigrationMatrixQ2->Delete();
+        histMigrationMatrixNu->Delete();
+        histMigrationMatrixZh->Delete();
+        histMigrationMatrixPt->Delete();
+        histMigrationMatrixPQ->Delete();
     }
 
     fout->Write();
