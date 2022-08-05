@@ -18,6 +18,7 @@ int VarPosition(double var, std::vector<double> *var_limits)
 	return -9999;
 }
 
+// GlobalVarPosition() Gives the position in an ordered vector following ibin = iA + iB*Total_A + iC*Total_B*Total_A + ...
 int GlobalVarPosition(std::vector<double> *var_values, std::vector<std::vector<double>> *var_limits)
 {
     int global_position = 0, pos_tmp = -1;
@@ -41,7 +42,7 @@ int GlobalVarPosition(std::vector<double> *var_values, std::vector<std::vector<d
     return global_position;
 }
 
-template<class T, typename... Args> std::vector<T*> CreateQ2NuHistList(int NQ2, int NNu, std::string name, Args... args)
+template<class T, typename... Args> std::vector<T*> CreateHistList_Q2Nu(int NQ2, int NNu, std::string name, Args... args)
 {
     std::vector<T*> Vector_tmp;
     T* hist_tmp;
@@ -51,6 +52,24 @@ template<class T, typename... Args> std::vector<T*> CreateQ2NuHistList(int NQ2, 
         {
             hist_tmp = new T(Form("%s_Q%iN%i",name.c_str(),iQ2,iNu), Form("%s_Q%iN%i",name.c_str(),iQ2,iNu), args...);
             Vector_tmp.push_back(hist_tmp);
+        }
+    }
+    return Vector_tmp;
+}
+
+template<class T, typename... Args> std::vector<T*> CreateHistList_Q2NuZh(int NQ2, int NNu, int NZh, std::string name, Args... args)
+{
+    std::vector<T*> Vector_tmp;
+    T* hist_tmp;
+    for (int iQ2=0; iQ2<NQ2; iQ2++)
+    {
+        for (int iNu=0; iNu<NNu; iNu++)
+        {
+            for (int iZh=0; iZh<NZh; iZh++)
+            {
+                hist_tmp = new T(Form("%s_Q%iN%iZ%i",name.c_str(),iQ2,iNu,iZh), Form("%s_Q%iN%iZ%i",name.c_str(),iQ2,iNu,iZh), args...);
+                Vector_tmp.push_back(hist_tmp);
+            }
         }
     }
     return Vector_tmp;

@@ -18,11 +18,7 @@ void get2DProj(std::string target = "Fe", bool isData = true)
         ch.SetName("ntuple_sim");
         ch.Add(Form("../../clas-HSim/hsim_%s*.root",target.c_str()));
     }
-    // ch.Add("data/hsim_D2.root");
-    // ch.Add("data/hsim_D3.root");
-    // ch.Add("data/hsim_Fe1.root");
-    // ch.Add("data/hsim_Fe2.root");
-    // ch.Add("data/hsim_Fe3.root");
+    
     std::cout << "\n >> Running Get2DProj for " << target << " target [file type: " << isData << "]\n" << std::endl;
     Acceptance acc(&ch, isData);
     acc.setTargName(target);

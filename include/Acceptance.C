@@ -16,7 +16,7 @@
 #include <vector>
 #include <string>
 
-// Don't forget to define >> using namespace DIS_original; << Inside every method, depending on the binning needed.
+using namespace DIS;
 
 inline float DEG2RAD(float x)
 {
@@ -65,7 +65,6 @@ void Acceptance::Loop(bool SaveAcceptance=true)
     //    fChain->SetBranchStatus("*",0);  // disable all branches
     //    fChain->SetBranchStatus("branchname",1);  // activate branchname
 
-    using namespace DIS_original;
     ActivateBranches();
 
     TFile *fout;
@@ -80,13 +79,18 @@ void Acceptance::Loop(bool SaveAcceptance=true)
 	// Int_t nbins[5] = {3, 3, 5, 5, 40};
     double* minbins = &DISLimits[0][0];
     double* maxbins = &DISLimits[1][0];
+    int nbins[5] = {static_cast<int>(Bin_List[_binning][0].size()-1), static_cast<int>(Bin_List[_binning][1].size()-1),
+                    static_cast<int>(Bin_List[_binning][2].size()-1), static_cast<int>(Bin_List[_binning][3].size()-1),
+                    static_cast<int>(Bin_List[_binning][4].size()-1)};
 
     // Set variable width bins
-	Double_t *Q2_Lmts  = &Q2_binng[0]; // {1.0, 1.3, 1.8, 4.1};
-	Double_t *Nu_Lmts  = &Nu_binng[0]; // {2.2, 3.2, 3.7, 4.2};
-	Double_t *Zh_Lmts  = &Zh_binng[0]; // {0.0, 0.15, 0.25, 0.4, 0.7, 1.0};
-	Double_t *Pt2_Lmts = &Pt2_binng[0];// {0.0, 0.03, 0.06, 0.1, 0.18, 1.0};
-    Double_t *PhiPQ_Lmts = &PhiPQ_binng[0];
+	Double_t *Q2_Lmts    = &Bin_List[_binning][0][0]; // Q2_binng = {1.0, 1.3, 1.8, 4.1};
+	Double_t *Nu_Lmts    = &Bin_List[_binning][1][0]; // Nu_binng = {2.2, 3.2, 3.7, 4.2};
+	Double_t *Zh_Lmts    = &Bin_List[_binning][2][0]; // Zh_binng = {0.0, 0.15, 0.25, 0.4, 0.7, 1.0};
+	Double_t *Pt2_Lmts   = &Bin_List[_binning][3][0]; // Pt2_binng = {0.0, 0.03, 0.06, 0.1, 0.18, 1.0};
+    Double_t *PhiPQ_Lmts = &Bin_List[_binning][4][0]; // PhiPQ_binng 40 bins
+
+    std::vector<std::vector<double>> leptonic_limits = {Bin_List[_binning][0], Bin_List[_binning][1]}; // {Q2_binng, Nu_binng}
 
     // TH1::SetDefaultSumw2();
 
@@ -312,7 +316,6 @@ void Acceptance::Loop(bool SaveAcceptance=true)
 
 void Acceptance::Get2DProj()
 {
-    using namespace DIS_original;
     ActivateBranches();
 
     TFile *fout;
@@ -938,8 +941,12 @@ void Acceptance::ClosureTest()
 {
     // Run over half of the sim and save in "../output/Acceptance_ClosureTest.root"
     Loop(false);
-    using namespace DIS_original;
 
+    int nbins[5] = {static_cast<int>(Bin_List[_binning][0].size()-1), static_cast<int>(Bin_List[_binning][1].size()-1),
+                    static_cast<int>(Bin_List[_binning][2].size()-1), static_cast<int>(Bin_List[_binning][3].size()-1),
+                    static_cast<int>(Bin_List[_binning][4].size()-1)};
+
+    std::vector<std::vector<double>> leptonic_limits = {Bin_List[_binning][0], Bin_List[_binning][1]}; // {Q2_binng, Nu_binng}
 
     // Begin Closure Test
     std::cout << "\n\nBeginning Closure Test calculations\n" << std::endl;
@@ -951,16 +958,16 @@ void Acceptance::ClosureTest()
     THnSparse *histAcc_RecGoodGen_mc  = (THnSparse*)facc->Get("histAcc_RecGoodGen_mc");
     THnSparse *histAcc_RecGoodGen_rec = (THnSparse*)facc->Get("histAcc_RecGoodGen_rec");
 
-    std::vector<TH3D*> histCorr_Reconstructed  = CreateQ2NuHistList<TH3D>(Q2_binng.size()-1, Nu_binng.size()-1, "Corr_Reconstructed", 10, DISLimits[0][2], DISLimits[1][2],
+    std::vector<TH3D*> histCorr_Reconstructed  = CreateHistList_Q2Nu<TH3D>(nbins[0], nbins[1], "Corr_Reconstructed", 10, DISLimits[0][2], DISLimits[1][2],
                                                         10, DISLimits[0][3], DISLimits[1][3], 40, DISLimits[0][4], DISLimits[1][4]);
-    std::vector<TH3D*> histCorr_RecGoodGen_mc  = CreateQ2NuHistList<TH3D>(Q2_binng.size()-1, Nu_binng.size()-1, "Corr_RecGoodGen_mc", 10, DISLimits[0][2], DISLimits[1][2],
+    std::vector<TH3D*> histCorr_RecGoodGen_mc  = CreateHistList_Q2Nu<TH3D>(nbins[0], nbins[1], "Corr_RecGoodGen_mc", 10, DISLimits[0][2], DISLimits[1][2],
                                                         10, DISLimits[0][3], DISLimits[1][3], 40, DISLimits[0][4], DISLimits[1][4]);
-    std::vector<TH3D*> histCorr_RecGoodGen_rec = CreateQ2NuHistList<TH3D>(Q2_binng.size()-1, Nu_binng.size()-1, "Corr_RecGoodGen_rec", 10, DISLimits[0][2], DISLimits[1][2],
+    std::vector<TH3D*> histCorr_RecGoodGen_rec = CreateHistList_Q2Nu<TH3D>(nbins[0], nbins[1], "Corr_RecGoodGen_rec", 10, DISLimits[0][2], DISLimits[1][2],
                                                         10, DISLimits[0][3], DISLimits[1][3], 40, DISLimits[0][4], DISLimits[1][4]);
     // True has always good thrown pions. True_GivenReco is filled only when the Reco particle associated is well detected.
-    std::vector<TH3D*> histTrue = CreateQ2NuHistList<TH3D>(Q2_binng.size()-1, Nu_binng.size()-1, "True", 10, DISLimits[0][2], DISLimits[1][2],
+    std::vector<TH3D*> histTrue = CreateHistList_Q2Nu<TH3D>(nbins[0], nbins[1], "True", 10, DISLimits[0][2], DISLimits[1][2],
                                                         10, DISLimits[0][3], DISLimits[1][3], 40, DISLimits[0][4], DISLimits[1][4]);
-    std::vector<TH3D*> histTrue_PionReco = CreateQ2NuHistList<TH3D>(Q2_binng.size()-1, Nu_binng.size()-1, "True_PionReco", 10, DISLimits[0][2], DISLimits[1][2],
+    std::vector<TH3D*> histTrue_PionReco = CreateHistList_Q2Nu<TH3D>(nbins[0], nbins[1], "True_PionReco", 10, DISLimits[0][2], DISLimits[1][2],
                                                         10, DISLimits[0][3], DISLimits[1][3], 40, DISLimits[0][4], DISLimits[1][4]);
 
     Long64_t nentries = fChain->GetEntries();
@@ -1056,12 +1063,13 @@ void Acceptance::ClosureTest()
     std::string var_name[] = {"Zh", "Pt2", "PhiPQ"}; 
     std::string axis_title[] = {"Zh", "P_{t}^{2} [GeV]", "#phi_{PQ} [deg]"};
     std::string axis_proj[] = {"x","y","z"};
-    for (unsigned int iQ2=0; iQ2<(Q2_binng.size()-1); iQ2++)
+    for (int iQ2=0; iQ2<nbins[0]; iQ2++)
     {
-		for (unsigned int iNu=0; iNu<(Nu_binng.size()-1); iNu++)
+		for (int iNu=0; iNu<nbins[1]; iNu++)
         {
-			std::string bin_title = Form("%.1f<Q2<%.1f, %.1f<Nu<%.1f",Q2_binng[iQ2],Q2_binng[iQ2+1],Nu_binng[iNu],Nu_binng[iNu+1]);
-			int ibin = iNu+iQ2*(Nu_binng.size()-1);
+			std::string bin_title = Form("%.1f<Q2<%.1f, %.1f<Nu<%.1f",Bin_List[_binning][0][iQ2],Bin_List[_binning][0][iQ2+1],
+                                                                      Bin_List[_binning][1][iNu],Bin_List[_binning][1][iNu+1]);
+			int ibin = iNu+iQ2*nbins[1];
 
 			for (int ivar=0; ivar<3; ivar++)
             {

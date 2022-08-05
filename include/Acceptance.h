@@ -16,11 +16,13 @@ private:
     int _targTypeCut = 1;
     std::string _nameTarget;
     bool _isData = false;
+    int _binning = 0;
 
 public:
     void setTargTypeCut(size_t targTypeCut) { _targTypeCut = targTypeCut; }
     std::string getNameTarget() { return _nameTarget; }
     void setDataType() { _isData = true; }
+    void setBinningType(int binning_number) { _binning = binning_number; }
 
 public:
     TTree *fChain;  //! pointer to the analyzed TTree or TChain
