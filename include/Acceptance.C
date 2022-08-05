@@ -1,4 +1,5 @@
 #define Acceptance_cxx
+#include "Binning.h"
 #include "Acceptance.h"
 #include "Utility.h"
 #include "Style.h"
@@ -15,22 +16,7 @@
 #include <vector>
 #include <string>
 
-const int elBINS = 9;
-// DIS limits
-// vector<vector<float>> DISLimits = {{1.0, 4.1}, {2.2, 4.2}, {0.0, 1.0}, {0.0, 1.0}, {-180.0, 180.0}}; // Q2, Nu, Zh, Pt2, PhiPQ
-vector<vector<double>> DISLimits = { {1.0, 2.2, 0.0, 0.0,-180.0},
-                                    {4.1, 4.2, 1.0, 1.0, 180.0}}; // Q2, Nu, Zh, Pt2, PhiPQ
-
-int nbins[5] = {3, 3, 5, 5, 40};
-
-// add underflow and overflow bins?
-vector<double> Q2_binng  = {1.0, 1.3, 1.8, 4.1};
-vector<double> Nu_binng  = {2.2, 3.2, 3.7, 4.2};
-vector<double> Zh_binng  = {0.0, 0.15, 0.25, 0.4, 0.7, 1.0};
-vector<double> Pt2_binng = {0.0, 0.03, 0.06, 0.1, 0.18, 1.0};
-vector<double> PhiPQ_binng;
-
-vector<vector<double>> leptonic_limits = {Q2_binng, Nu_binng};
+// Don't forget to define >> using namespace DIS_original; << Inside every method, depending on the binning needed.
 
 inline float DEG2RAD(float x)
 {
@@ -79,6 +65,7 @@ void Acceptance::Loop(bool SaveAcceptance=true)
     //    fChain->SetBranchStatus("*",0);  // disable all branches
     //    fChain->SetBranchStatus("branchname",1);  // activate branchname
 
+    using namespace DIS_original;
     ActivateBranches();
 
     TFile *fout;
@@ -93,11 +80,6 @@ void Acceptance::Loop(bool SaveAcceptance=true)
 	// Int_t nbins[5] = {3, 3, 5, 5, 40};
     double* minbins = &DISLimits[0][0];
     double* maxbins = &DISLimits[1][0];
-
-    for (int i=0; i<nbins[4]+1; i++)
-    {
-        PhiPQ_binng.push_back(-180. + i*360./nbins[4]);
-    }
 
     // Set variable width bins
 	Double_t *Q2_Lmts  = &Q2_binng[0]; // {1.0, 1.3, 1.8, 4.1};
@@ -330,29 +312,12 @@ void Acceptance::Loop(bool SaveAcceptance=true)
 
 void Acceptance::Get2DProj()
 {
+    using namespace DIS_original;
     ActivateBranches();
 
     TFile *fout;
     if (_isData) fout = TFile::Open(Form("../output/Get2DProj_%s_data.root", getNameTarget().c_str()), "RECREATE");
     else         fout = TFile::Open(Form("../output/Get2DProj_%s_hsim.root", getNameTarget().c_str()), "RECREATE");
-
-    // // Define binning
-    // double* minbins = &DISLimits[0][0];
-    // double* maxbins = &DISLimits[1][0];
-
-    for (int i=0; i<nbins[4]+1; i++)
-    {
-        PhiPQ_binng.push_back(-180. + i*360./nbins[4]);
-    }
-
-    // Set variable width bins
-	// Double_t *Q2_Lmts  = &Q2_binng[0]; // {1.0, 1.3, 1.8, 4.1};
-	// Double_t *Nu_Lmts  = &Nu_binng[0]; // {2.2, 3.2, 3.7, 4.2};
-	// Double_t *Zh_Lmts  = &Zh_binng[0]; // {0.0, 0.15, 0.25, 0.4, 0.7, 1.0};
-	// Double_t *Pt2_Lmts = &Pt2_binng[0];// {0.0, 0.03, 0.06, 0.1, 0.18, 1.0};
-    // Double_t *PhiPQ_Lmts = &PhiPQ_binng[0];
-
-    // TH1::SetDefaultSumw2();
 
     //// Define Histograms
     // Reconstructed or data
@@ -973,6 +938,8 @@ void Acceptance::ClosureTest()
 {
     // Run over half of the sim and save in "../output/Acceptance_ClosureTest.root"
     Loop(false);
+    using namespace DIS_original;
+
 
     // Begin Closure Test
     std::cout << "\n\nBeginning Closure Test calculations\n" << std::endl;
@@ -990,7 +957,7 @@ void Acceptance::ClosureTest()
                                                         10, DISLimits[0][3], DISLimits[1][3], 40, DISLimits[0][4], DISLimits[1][4]);
     std::vector<TH3D*> histCorr_RecGoodGen_rec = CreateQ2NuHistList<TH3D>(Q2_binng.size()-1, Nu_binng.size()-1, "Corr_RecGoodGen_rec", 10, DISLimits[0][2], DISLimits[1][2],
                                                         10, DISLimits[0][3], DISLimits[1][3], 40, DISLimits[0][4], DISLimits[1][4]);
-    // True has always good thrown pions. True_GivenReco is filled only when the Reco particle associated is well detected. 
+    // True has always good thrown pions. True_GivenReco is filled only when the Reco particle associated is well detected.
     std::vector<TH3D*> histTrue = CreateQ2NuHistList<TH3D>(Q2_binng.size()-1, Nu_binng.size()-1, "True", 10, DISLimits[0][2], DISLimits[1][2],
                                                         10, DISLimits[0][3], DISLimits[1][3], 40, DISLimits[0][4], DISLimits[1][4]);
     std::vector<TH3D*> histTrue_PionReco = CreateQ2NuHistList<TH3D>(Q2_binng.size()-1, Nu_binng.size()-1, "True_PionReco", 10, DISLimits[0][2], DISLimits[1][2],
@@ -1129,3 +1096,189 @@ void Acceptance::ClosureTest()
     fout->Close();
     facc->Close();
 }
+
+/*
+void Acceptance::ClosureTestMultiDimensional()
+{
+    // Run over half of the sim and save in "../output/Acceptance_ClosureTest.root"
+    Loop(false);
+
+    // Begin Closure Test
+    std::cout << "\n\nBeginning Closure Test calculations\n" << std::endl;
+
+    TFile *facc = TFile::Open("../output/Acc_ClosureTest.root", "READ");
+    TFile *fout = TFile::Open(Form("../output/ClosureTestMD_%s.root", getNameTarget().c_str()), "RECREATE");
+
+    double* minbins = &DISLimits[0][0];
+    double* maxbins = &DISLimits[1][0];
+
+    // Set variable width bins
+	Double_t *Q2_Lmts  = &Q2_binng[0]; // {1.0, 1.3, 1.8, 4.1};
+	Double_t *Nu_Lmts  = &Nu_binng[0]; // {2.2, 3.2, 3.7, 4.2};
+	Double_t *Zh_Lmts  = &Zh_binng[0]; // {0.0, 0.15, 0.25, 0.4, 0.7, 0.9, 1.0};
+	Double_t *Pt2_Lmts = &Pt2_binng[0];// {0.0, 0.03, 0.06, 0.1, 0.18, 1.0};
+    Double_t *PhiPQ_Lmts = &PhiPQ_binng[0];
+
+    THnSparse *histAcc_Reconstructed  = (THnSparse*)facc->Get("histAcc_Reconstructed");
+    THnSparse *histAcc_RecGoodGen_mc  = (THnSparse*)facc->Get("histAcc_RecGoodGen_mc");
+    THnSparse *histAcc_RecGoodGen_rec = (THnSparse*)facc->Get("histAcc_RecGoodGen_rec");
+
+    THnSparse *histCorr_Reconstructed  = new THnSparseD("histCorr_Reconstructed","Corr_Reconstructed"  , 5,nbins,minbins,maxbins);
+    THnSparse *histCorr_RecGoodGen_mc  = new THnSparseD("histCorr_RecGoodGen_mc","Corr_RecGoodGen_mc"  , 5,nbins,minbins,maxbins);
+    THnSparse *histCorr_RecGoodGen_rec = new THnSparseD("histCorr_RecGoodGen_rec","Corr_RecGoodGen_rec", 5,nbins,minbins,maxbins);
+    // True has always good thrown pions. True_GivenReco is filled only when the Reco particle associated is well detected.
+    THnSparse *histTrue                = new THnSparseD("histTrue","True"                              , 5,nbins,minbins,maxbins);
+    THnSparse *histTrue_PionReco       = new THnSparseD("histTrue_PionReco","True_PionReco"            , 5,nbins,minbins,maxbins);
+    
+    SetVariableSize(histCorr_Reconstructed , nbins, Q2_Lmts, Nu_Lmts, Zh_Lmts, Pt2_Lmts, PhiPQ_Lmts);
+    SetVariableSize(histCorr_RecGoodGen_mc , nbins, Q2_Lmts, Nu_Lmts, Zh_Lmts, Pt2_Lmts, PhiPQ_Lmts);
+    SetVariableSize(histCorr_RecGoodGen_rec, nbins, Q2_Lmts, Nu_Lmts, Zh_Lmts, Pt2_Lmts, PhiPQ_Lmts);
+    SetVariableSize(histTrue               , nbins, Q2_Lmts, Nu_Lmts, Zh_Lmts, Pt2_Lmts, PhiPQ_Lmts);
+    SetVariableSize(histTrue_PionReco      , nbins, Q2_Lmts, Nu_Lmts, Zh_Lmts, Pt2_Lmts, PhiPQ_Lmts);
+
+    histCorr_Reconstructed->Sumw2();
+    histCorr_RecGoodGen_mc->Sumw2();
+    histCorr_RecGoodGen_rec->Sumw2();
+    histTrue->Sumw2();
+    histTrue_PionReco->Sumw2();
+
+    // histCorr_Reconstructed
+    // histCorr_RecGoodGen_mc
+    // histCorr_RecGoodGen_rec
+    // histTrue
+    // histTrue_PionReco
+
+    Long64_t nentries = fChain->GetEntries();
+    unsigned int entries_to_process = nentries/2;
+
+    Long64_t nbytes = 0, nb = 0;
+    
+    int global_bin=-1, global_bin_True=-1;
+    int vec_entries=0, count = 0;
+    bool good_electron_mc = false, good_electron = false;
+    bool good_pion_mc = false, good_pion = false;
+    std::vector<double> leptonic_vars, leptonic_vars_True;
+    for (unsigned int jentry = entries_to_process; jentry < nentries; jentry++)
+    {
+        count++;
+        if ((jentry-entries_to_process) % 1000000 == 0)
+            printf("Processing entry %9u, progress at %6.2f%%\n",jentry-entries_to_process,100.*(double)(jentry-entries_to_process)/(nentries-entries_to_process));
+
+        Long64_t ientry = LoadTree(jentry); // FINISH THE IMPLEMENTATION OF THIS MULTI DIMENSIONAL CLOSURE TEST!!!
+        if (ientry < 0)
+            break;
+        nb = fChain->GetEntry(jentry);
+        nbytes += nb;
+        good_electron_mc = false, good_electron = false;
+
+        if (GoodElectron(ientry, DISLimits))
+        {
+            good_electron = true;
+            leptonic_vars = {Q2, Nu};
+            global_bin = GlobalVarPosition(&leptonic_vars, &leptonic_limits);
+        }
+
+        if (GoodElectron_MC(ientry, DISLimits))
+        {
+            good_electron_mc = true;
+            leptonic_vars_True = {mc_Q2, mc_Nu};
+            global_bin_True = GlobalVarPosition(&leptonic_vars_True, &leptonic_limits);
+        }
+
+        if (!good_electron && !good_electron_mc) continue;
+        
+        vec_entries = PhiPQ->size();
+
+		for (int i=0; i<vec_entries; i++)
+        {
+            good_pion_mc = false, good_pion = false;
+
+            if (good_electron_mc && GoodPiPlus_MC(ientry, i, DISLimits))
+            {
+                good_pion_mc = true;
+            }
+
+            if (good_electron && GoodPiPlus(ientry, i, DISLimits))
+            {
+                good_pion = true;
+            }
+
+            if (!good_pion_mc && !good_pion) continue;
+
+            if (good_pion_mc)
+            {
+                histTrue[global_bin_True]->Fill(mc_Zh->at(i), mc_Pt2->at(i), mc_PhiPQ->at(i));
+            }
+
+            if (good_pion)
+            {
+                double find_this_bin[] = {Q2, Nu, Zh->at(i), Pt2->at(i), PhiPQ->at(i)};
+
+                int bin_Reconstructed  = histAcc_Reconstructed->GetBin(find_this_bin);
+                int bin_RecGoodGen_mc  = histAcc_RecGoodGen_mc->GetBin(find_this_bin);
+                int bin_RecGoodGen_rec = histAcc_RecGoodGen_rec->GetBin(find_this_bin);
+
+                double value_Reconstructed  = histAcc_Reconstructed->GetBinContent(bin_Reconstructed);
+                double value_RecGoodGen_mc  = histAcc_RecGoodGen_mc->GetBinContent(bin_RecGoodGen_mc);
+                double value_RecGoodGen_rec = histAcc_RecGoodGen_rec->GetBinContent(bin_RecGoodGen_rec);
+
+                if (value_Reconstructed  != 0) histCorr_Reconstructed[global_bin]->Fill(Zh->at(i), Pt2->at(i), PhiPQ->at(i), 1./value_Reconstructed);
+                if (value_RecGoodGen_mc  != 0) histCorr_RecGoodGen_mc[global_bin]->Fill(Zh->at(i), Pt2->at(i), PhiPQ->at(i), 1./value_RecGoodGen_mc);
+                if (value_RecGoodGen_rec != 0) histCorr_RecGoodGen_rec[global_bin]->Fill(Zh->at(i),Pt2->at(i), PhiPQ->at(i), 1./value_RecGoodGen_rec);
+            }
+
+            if (good_pion_mc && good_pion)
+            {
+                histTrue_PionReco[global_bin_True]->Fill(mc_Zh->at(i), mc_Pt2->at(i), mc_PhiPQ->at(i));
+            }
+
+        }   // loop over tracks
+    }       // loop over entries
+
+    std::cout << "There are " << count << " entries!" << std::endl;
+
+    TH1D *histCT_tmp;
+    std::string var_name[] = {"Zh", "Pt2", "PhiPQ"}; 
+    std::string axis_title[] = {"Zh", "P_{t}^{2} [GeV]", "#phi_{PQ} [deg]"};
+    std::string axis_proj[] = {"x","y","z"};
+    for (unsigned int iQ2=0; iQ2<(Q2_binng.size()-1); iQ2++)
+    {
+		for (unsigned int iNu=0; iNu<(Nu_binng.size()-1); iNu++)
+        {
+			std::string bin_title = Form("%.1f<Q2<%.1f, %.1f<Nu<%.1f",Q2_binng[iQ2],Q2_binng[iQ2+1],Nu_binng[iNu],Nu_binng[iNu+1]);
+			int ibin = iNu+iQ2*(Nu_binng.size()-1);
+
+			for (int ivar=0; ivar<3; ivar++)
+            {
+                // histCorr_Reconstructed[global_bin]
+                // histCorr_RecGoodGen_mc[global_bin]
+                // histCorr_RecGoodGen_rec[global_bin]
+                // histTrue[global_bin_True]
+                // histTrue_PionReco[global_bin_True]
+
+                // Corrected with Only Reco Acc / True (RO-T)
+                histCT_tmp = (TH1D*) histCorr_Reconstructed[ibin]->Project3D(axis_proj[ivar].c_str());
+                histCT_tmp->SetName(Form("histCT_RO-T_Q%iN%i",iQ2,iNu));
+                histCT_tmp->Divide(histTrue[ibin]->Project3D(axis_proj[ivar].c_str()));
+                histCT_tmp->SetTitle(Form("Closure Test: Corrected with Only Reco Acc / True, %s;%s;Corr_AccReco/True",bin_title.c_str(),axis_title[ivar].c_str()));
+
+                // Corrected with MC vars when Reco matches Gen Acc / True (MC-T)
+                histCT_tmp = (TH1D*) histCorr_RecGoodGen_mc[ibin]->Project3D(axis_proj[ivar].c_str());
+                histCT_tmp->SetName(Form("histCT_MC-T_Q%iN%i",iQ2,iNu));
+                histCT_tmp->Divide(histTrue[ibin]->Project3D(axis_proj[ivar].c_str()));
+                histCT_tmp->SetTitle(Form("Closure Test: Corrected with MC_vars Reco when GoodGen Acc / True, %s;%s;Corr_AccMCGoodG/True",bin_title.c_str(),axis_title[ivar].c_str()));
+
+                // Corrected with Reco vars when Reco matches Gen Acc / True (RR-T)
+                histCT_tmp = (TH1D*) histCorr_RecGoodGen_rec[ibin]->Project3D(axis_proj[ivar].c_str());
+                histCT_tmp->SetName(Form("histCT_RR-T_Q%iN%i",iQ2,iNu));
+                histCT_tmp->Divide(histTrue[ibin]->Project3D(axis_proj[ivar].c_str()));
+                histCT_tmp->SetTitle(Form("Closure Test: Corrected with Rec_vars Reco when GoodGen Acc / True, %s;%s;Corr_AccRRGoodG/True",bin_title.c_str(),axis_title[ivar].c_str()));
+			}
+		}
+	}
+
+    fout->Write();
+    fout->Close();
+    facc->Close();
+}
+*/
