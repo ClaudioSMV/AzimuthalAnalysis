@@ -14,5 +14,4 @@ void getAcceptance(std::string target = "Fe", std::string nfold = "*")
     Acceptance acc(&ch);
     acc.setTargName(target);
     acc.Loop();
-    // acc.ClosureTest();
 }
