@@ -68,7 +68,7 @@ void Acceptance::Loop(bool SaveAcceptance=true)
     ActivateBranches();
 
     TFile *fout;
-    if (SaveAcceptance) fout = TFile::Open(Form("../output/Acceptance_%s_B%i_%iD.root", getNameTarget().c_str(),_binIndex,_binNdims), "RECREATE");
+    if (SaveAcceptance) fout = TFile::Open(Form("../output/Acceptance_%s_B%i.root", getNameTarget().c_str(),_binIndex), "RECREATE");
     else                fout = TFile::Open(Form("../output/AccCT_%s_B%i_%iD.root", getNameTarget().c_str(),_binIndex,_binNdims), "RECREATE");
 
     std::cout << "\n\nBeginning Acceptance calculations for " << _nameTarget << " target\n" << std::endl;

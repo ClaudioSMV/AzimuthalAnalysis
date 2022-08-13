@@ -1,6 +1,6 @@
 
 //
-R__LOAD_LIBRARY(Acceptance_C.so)
+R__LOAD_LIBRARY(../include/Acceptance_C.so)
 
 void get2DProj(std::string target = "Fe", bool isData = true)
 {
@@ -23,5 +23,4 @@ void get2DProj(std::string target = "Fe", bool isData = true)
     Acceptance acc(&ch, isData);
     acc.setTargName(target);
     acc.Get2DProj();
-    // acc.ClosureTest();
 }
