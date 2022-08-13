@@ -2,13 +2,14 @@
 #define Binning_h
 
 #include <vector>
+#include <map>
 
 namespace DIS
 {
     // DIS limits
     // vector<vector<float>> DISLimits = {{1.0, 4.1}, {2.2, 4.2}, {0.0, 1.0}, {0.0, 1.0}, {-180.0, 180.0}}; // Q2, Nu, Zh, Pt2, PhiPQ
-    std::vector<std::vector<double>> DISLimits = {  {1.0, 2.2, 0.0, 0.0,-180.0},
-                                                    {4.1, 4.2, 1.0, 1.0, 180.0}}; // Q2, Nu, Zh, Pt2, PhiPQ
+    std::vector<std::vector<double>> DISLimits = {{1.0, 2.2, 0.0, 0.0,-180.0},
+                                                  {4.1, 4.2, 1.0, 1.0, 180.0}}; // Q2, Nu, Zh, Pt2, PhiPQ
 
     // int nbins[5] = {3, 3, 5, 5, 40};
 
@@ -33,6 +34,12 @@ namespace DIS
 
 
     std::vector<std::vector<std::vector<double>>> Bin_List = {Bin_Origin, Bin_SplitZ};
+
+    namespace Correction
+    {
+      // This map uses _binNdims as input, and says if the final bins need to be redefined (irregular = 1) or remain regular (i.e. same length each = 0)
+      std::map<int,std::vector<int>> NIrregBins = {{2,{1,1,0,0,0}}, {3,{1,1,1,0,0}}};
+    }
 }
 
 #endif

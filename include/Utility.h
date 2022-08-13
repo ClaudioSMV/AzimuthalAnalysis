@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <vector>
+#include <map>
 
 int VarPosition(double var, std::vector<double> *var_limits)
 {
@@ -42,47 +43,41 @@ int GlobalVarPosition(std::vector<double> *var_values, std::vector<std::vector<d
     return global_position;
 }
 
-template<class T, typename... Args> std::vector<T*> CreateHistList_Q2Nu(int NQ2, int NNu, std::string name, Args... args)
-{
-    std::vector<T*> Vector_tmp;
-    T* hist_tmp;
-    for (int iQ2=0; iQ2<NQ2; iQ2++)
-    {
-        for (int iNu=0; iNu<NNu; iNu++)
-        {
-            hist_tmp = new T(Form("%s_Q%iN%i",name.c_str(),iQ2,iNu), Form("%s_Q%iN%i",name.c_str(),iQ2,iNu), args...);
-            Vector_tmp.push_back(hist_tmp);
-        }
-    }
-    return Vector_tmp;
-}
-
-template<class T, typename... Args> std::vector<T*> CreateHistList_Q2NuZh(int NQ2, int NNu, int NZh, std::string name, Args... args)
-{
-    std::vector<T*> Vector_tmp;
-    T* hist_tmp;
-    for (int iQ2=0; iQ2<NQ2; iQ2++)
-    {
-        for (int iNu=0; iNu<NNu; iNu++)
-        {
-            for (int iZh=0; iZh<NZh; iZh++)
-            {
-                hist_tmp = new T(Form("%s_Q%iN%iZ%i",name.c_str(),iQ2,iNu,iZh), Form("%s_Q%iN%iZ%i",name.c_str(),iQ2,iNu,iZh), args...);
-                Vector_tmp.push_back(hist_tmp);
-            }
-        }
-    }
-    return Vector_tmp;
-}
-
 void SetVariableSize(THnSparse *hist, Int_t nbins[], Double_t Q2_limits[], Double_t Nu_limits[],
-					Double_t Zh_limits[], Double_t Pt2_limits[], Double_t PhiPQ_limits[])
+					Double_t Zh_limits[], Double_t Pt2_limits[], Double_t PhiPQ_limits[], std::vector<int> *IrregBinBool = NULL)
 {
-	hist->GetAxis(0)->Set(nbins[0], Q2_limits);
-	hist->GetAxis(1)->Set(nbins[1], Nu_limits);
-	hist->GetAxis(2)->Set(nbins[2], Zh_limits);
-	hist->GetAxis(3)->Set(nbins[3], Pt2_limits);
-	hist->GetAxis(4)->Set(nbins[4], PhiPQ_limits);
+    std::vector<int> v_tmp = {nbins[0], nbins[1], nbins[2], nbins[3], nbins[4]};
+    if (!IrregBinBool)
+    {
+        IrregBinBool = &v_tmp;
+    }
+	if(IrregBinBool->at(0)) hist->GetAxis(0)->Set(nbins[0], Q2_limits);
+	if(IrregBinBool->at(1)) hist->GetAxis(1)->Set(nbins[1], Nu_limits);
+	if(IrregBinBool->at(2)) hist->GetAxis(2)->Set(nbins[2], Zh_limits);
+	if(IrregBinBool->at(3)) hist->GetAxis(3)->Set(nbins[3], Pt2_limits);
+	if(IrregBinBool->at(4)) hist->GetAxis(4)->Set(nbins[4], PhiPQ_limits);
+}
+
+THnSparse* CreateFinalHist(TString name, int nbins[], std::vector<int> *reBinBool, std::vector<std::vector<double>> thisBinning, vector<vector<double>> DISLimits)
+{
+    int nbins_tmp[] = {10,10,10,10,40};
+    for (unsigned int b=0; b<(reBinBool->size()); b++)
+    {
+        if ((reBinBool->at(b))!=0) nbins_tmp[b] = nbins[b];
+    }
+
+    THnSparse* hist_tmp = new THnSparseD(name,name, 5,nbins_tmp,&DISLimits[0][0],&DISLimits[1][0]);
+
+    Double_t *Q2_Lmts    = &thisBinning[0][0];
+	Double_t *Nu_Lmts    = &thisBinning[1][0];
+	Double_t *Zh_Lmts    = &thisBinning[2][0];
+	Double_t *Pt2_Lmts   = &thisBinning[3][0];
+    Double_t *PhiPQ_Lmts = &thisBinning[4][0];
+
+    SetVariableSize(hist_tmp, nbins, Q2_Lmts, Nu_Lmts, Zh_Lmts, Pt2_Lmts, PhiPQ_Lmts, reBinBool);
+
+	hist_tmp->Sumw2();
+    return hist_tmp;
 }
 
 #endif // #ifdef Utility_h

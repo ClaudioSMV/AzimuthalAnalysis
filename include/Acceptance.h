@@ -16,13 +16,15 @@ private:
     int _targTypeCut = 1;
     std::string _nameTarget;
     bool _isData = false;
-    int _binning = 0;
+    int _binIndex = 0;
+    int _binNdims = 2; // Leptonic
 
 public:
     void setTargTypeCut(size_t targTypeCut) { _targTypeCut = targTypeCut; }
     std::string getNameTarget() { return _nameTarget; }
     void setDataType() { _isData = true; }
-    void setBinningType(int binning_number) { _binning = binning_number; }
+    void setBinningType(int binning_number) { _binIndex = binning_number; }
+    void setBinNdims(int binningNdims) { _binNdims = binningNdims; }
 
 public:
     TTree *fChain;  //! pointer to the analyzed TTree or TChain
