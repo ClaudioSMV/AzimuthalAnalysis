@@ -185,7 +185,7 @@ public:
     virtual void ActivateBranches();
     virtual void Loop(bool SaveAcceptance);
     virtual void Get2DProj();
-    // virtual void Correction();
+    virtual void Correction();
     virtual void ClosureTest();
     virtual Bool_t Notify();
     virtual void Show(Long64_t entry = -1);
