@@ -13,6 +13,7 @@
 #include <TCanvas.h>
 
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <string>
 
@@ -305,6 +306,25 @@ void Acceptance::Loop(bool SaveAcceptance=true)
     PrintSummaryTable(mc_Pi_Accept_count,   "Correctly reconstructed MC Pions", general_Pi_count["Total mc_Pi"]);
     PrintSummaryTable(rec_Pi_Reject_count,  "Rejected reco Pions", inclusive_count);
     PrintSummaryTable(rec_Pi_Accept_count,  "Matching of reconstructed Pions", general_Pi_count["Total rec_Pi"]);
+
+    // Save Summary tables
+    if (SaveAcceptance)
+    {
+        ofstream fileSummary;
+        fileSummary.open(Form("../output/Acceptance/Summary_%s_B%i.txt", getNameTarget().c_str(),_binIndex));
+        fileSummary << Form(">> Summary table %s Target:\n\n",getNameTarget().c_str());
+        SaveSummaryTable(general_El_count,     "General Electron Summary", fileSummary, entries_to_process);
+        SaveSummaryTable(mc_El_Reject_count,   "Rejected MC Electron", fileSummary, entries_to_process);
+        SaveSummaryTable(mc_El_Accept_count,   "Correctly reconstructed MC Electrons", fileSummary, general_El_count["Total mc_El"]);
+        SaveSummaryTable(rec_El_Reject_count,  "Rejected reco Electrons", fileSummary, entries_to_process);
+        SaveSummaryTable(rec_El_Accept_count,  "Matching of reconstructed Electrons", fileSummary, general_El_count["Total rec_El"]);
+        SaveSummaryTable(general_Pi_count,     "General Pion Summary", fileSummary, inclusive_count);
+        SaveSummaryTable(mc_Pi_Reject_count,   "Rejected MC Pion", fileSummary, inclusive_count);
+        SaveSummaryTable(mc_Pi_Accept_count,   "Correctly reconstructed MC Pions", fileSummary, general_Pi_count["Total mc_Pi"]);
+        SaveSummaryTable(rec_Pi_Reject_count,  "Rejected reco Pions", fileSummary, inclusive_count);
+        SaveSummaryTable(rec_Pi_Accept_count,  "Matching of reconstructed Pions", fileSummary, general_Pi_count["Total rec_Pi"]);
+        fileSummary.close();
+    }
 
     histTrue->Write();
     histReco_rec->Write();
