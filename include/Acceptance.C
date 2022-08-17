@@ -279,11 +279,11 @@ void Acceptance::Loop(bool SaveAcceptance=true)
 
     // Acceptance
     THnSparse *histAcc_Reconstructed = (THnSparse*)histReco_rec->Clone("histAcc_Reconstructed");
-    histAcc_Reconstructed->Divide(histTrue);
+    histAcc_Reconstructed->Divide(histReco_rec,histTrue,1,1,"B");
     THnSparse *histAcc_RecGoodGen_mc = (THnSparse*)histReco_mc->Clone( "histAcc_RecGoodGen_mc");
-    histAcc_RecGoodGen_mc->Divide(histTrue);
+    histAcc_RecGoodGen_mc->Divide(histReco_mc,histTrue,1,1,"B");
     THnSparse *histAcc_RecGoodGen_rec = (THnSparse*)histTrue_rec->Clone("histAcc_RecGoodGen_rec");
-    histAcc_RecGoodGen_rec->Divide(histTrue);
+    histAcc_RecGoodGen_rec->Divide(histTrue_rec,histTrue,1,1,"B");
 
     // Summary tables
     std::cout << std::endl;
