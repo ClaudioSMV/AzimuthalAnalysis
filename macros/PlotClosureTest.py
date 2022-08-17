@@ -68,17 +68,13 @@ options, args = parser.parse_args()
 
 debugMode = options.debugMode
 dataset = options.Dataset
+
+infoDict = myStyle.getNameFormattedDict(dataset)
+
 inputPath = myStyle.getInputFile("ClosureTest",dataset) # ClosureTest_%s_B%i_%iD.root
 inputfile = TFile(inputPath,"READ")
 
-outputPath = myStyle.getOutputDir("ClosureTest")
-
-#outdir = outputPath+myStyle.getNameFormatted(dataset)
-
-# xlength = float(options.xlength)
-# ylength = float(options.ylength)
-
-infoDict = myStyle.getNameFormattedDict(dataset)
+outputPath = myStyle.getOutputDir("ClosureTest",infoDict["Target"])
 
 histCorr_Reconstructed  = inputfile.Get("Corr_Reconstructed")
 histCorr_RecGoodGen_mc  = inputfile.Get("Corr_RecGoodGen_mc")
@@ -87,6 +83,7 @@ histTrue                = inputfile.Get("True")
 histTrue_PionRec        = inputfile.Get("True_PionReco")
 
 inputTHnSparse_list = [histCorr_Reconstructed, histCorr_RecGoodGen_mc, histCorr_RecGoodGen_rec, histTrue, histTrue_PionRec]
+prefixType = ["Correction", "Corr GoodGen_mc", "Corr GoodGen_rec", "True", "True GoodPionRec"]
 
 
 bins_list = [] # [3, 3, 5]
@@ -139,7 +136,7 @@ outputfile = TFile(outputPath+myStyle.getNameFormatted(dataset)+".root","RECREAT
 for i,info in enumerate(names_list):
     for p,proj in enumerate(Proj1DTHnSparse_list):
         this_proj = proj[i]
-        htemp = TH1F("htemp","",1,-181.,181.)
+        htemp = TH1F("htemp","",1,-180.,180.)
         htemp.SetStats(0)
         htemp.SetMinimum(0.0001)
         # ylim = 30000
@@ -162,30 +159,49 @@ for i,info in enumerate(names_list):
         # list_Corr_Reconstructed[i].Draw("AXIS same")
         this_proj.Draw("hist e same")
 
-
-        # legend = TLegend(myStyle.GetPadCenter()-0.27,1-myStyle.GetMargin()-0.3,myStyle.GetPadCenter()+0.27,1-myStyle.GetMargin()-0.1)
-        # # legend.SetBorderSize(0)
-        # # legend.SetFillColor(kWhite)
-        # # legend.SetTextFont(myStyle.GetFont())
-        # # legend.SetTextSize(myStyle.GetSize())
-        # #legend.SetFillStyle(0)
-
-        # if ('oneStrip' in info.outHistoName):
-        #     legend.AddEntry(list_Corr_Reconstructed[i], "One strip reconstruction")
-        # elif ('twoStrips' in info.outHistoName):
-        #     legend.AddEntry(list_Corr_Reconstructed[i], "Two strips reconstruction")
-        # else:
-        #     legend.AddEntry(list_Corr_Reconstructed[i], "Full reconstruction")
-            
-
         # legend.Draw();
-        myStyle.DrawPreliminaryInfo()
+        myStyle.DrawPreliminaryInfo(prefixType[p])
         myStyle.DrawTargetInfo(infoDict["Target"], "Simulation")
 
         canvas.SaveAs(outputPath+this_proj.GetName()+".gif")
         # canvas.SaveAs(outputPath+"CT_"+info+".pdf")
         this_proj.Write()
         htemp.Delete()
+
+    # Get ClosureTest
+    htemp = TH1F("htemp","",1,-180.,180.)
+    htemp.SetStats(0)
+    htemp.SetMinimum(0.3)
+    htemp.SetMaximum(1.7)
+    # htemp.SetLineColor(kBlack)
+    htemp.GetXaxis().SetTitle("#phi_{PQ} (deg)")
+    htemp.GetYaxis().SetTitle("Corr / True")
+    htemp.Draw("AXIS")
+
+    hCT = Proj1DTHnSparse_list[0][i].Clone("ClosureTest_"+info)
+    hCT.Divide(Proj1DTHnSparse_list[0][i],Proj1DTHnSparse_list[3][i],1,1,"B")
+
+    hCT.SetLineColor(kBlack)
+    # hCT.GetXaxis().SetTitle(info.xlabel)
+    # hCT.GetXaxis().SetRangeUser(-0.32, 0.32)
+    # hCT.GetYaxis().SetTitle(info.ylabel)
+
+    # gPad.RedrawAxis("g")
+
+    # htemp.Draw("AXIS same")
+    # list_Corr_Reconstructed[i].Draw("AXIS same")
+    hCT.Draw("hist e same")
+
+    # legend.Draw();
+    myStyle.DrawPreliminaryInfo("ClosureTest")
+    myStyle.DrawTargetInfo(infoDict["Target"], "Simulation")
+
+    gPad.RedrawAxis("g")
+
+    canvas.SaveAs(outputPath+"ClosureTest_"+info+".gif")
+    # canvas.SaveAs(outputPath+"CT_"+info+".pdf")
+    this_proj.Write()
+    htemp.Delete()
 
 outputfile.Close()
 

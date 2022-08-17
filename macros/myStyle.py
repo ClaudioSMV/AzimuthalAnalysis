@@ -37,8 +37,11 @@ def getInputFile(nameMethod,nameFormat):
     file = "%s_%s"%(nameMethod,fileName)
     return indir+file+".root"
 
-def getOutputDir(nameMethod):
+def getOutputDir(nameMethod, target=""):
     outdir = "../macros/plots/%s/" % nameMethod
+    if target: outdir+=target+"/"
+    if not os.path.exists(outdir):
+        os.mkdir(outdir)
     return outdir
 
 def CreateFolder(outdir, title, overwrite = False):
@@ -113,11 +116,11 @@ def ForceStyle():
 def DrawPreliminaryInfo(text = ""):
     upLeft_text = ROOT.TLatex()
     upLeft_text.SetTextSize(tsize-4)
-    upLeft_text.DrawLatexNDC(2*marg+0.005,1-marg+0.01,"#bf{%s}"%(text))
+    upLeft_text.DrawLatexNDC(2*marg+0.005,1-marg+0.01,"#bf{%s} Preliminary"%(text))
 
-    prelimilar = ROOT.TLatex()
-    prelimilar.SetTextSize(tsize-4)
-    prelimilar.DrawLatexNDC(2*marg+0.005,1-marg+0.01,"#bf{Preliminary}")
+    # prelimilar = ROOT.TLatex()
+    # prelimilar.SetTextSize(tsize-4)
+    # prelimilar.DrawLatexNDC(2*marg+0.005,1-marg+0.01,"#bf{Preliminary}")
 
 def DrawTargetInfo(target="X", fileType="SimOrData"):
     text = ROOT.TLatex()
