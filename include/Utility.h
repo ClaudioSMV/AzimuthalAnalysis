@@ -4,8 +4,21 @@
 #include <THnSparse.h>
 
 #include <iostream>
+#include <stdlib.h>
+#include <sys/stat.h>
 #include <vector>
 #include <map>
+
+bool FileExists(const std::string& name) // Also works with folders
+{
+  struct stat buffer;
+  return (stat (name.c_str(), &buffer) == 0);
+}
+
+void CreateDir(std::string path)
+{
+    system(Form("mkdir -p %s",path.c_str()));
+}
 
 int VarPosition(double var, std::vector<double> *var_limits)
 {

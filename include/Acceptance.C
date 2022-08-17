@@ -68,8 +68,16 @@ void Acceptance::Loop(bool SaveAcceptance=true)
     ActivateBranches();
 
     TFile *fout;
-    if (SaveAcceptance) fout = TFile::Open(Form("../output/Acceptance_%s_B%i.root", getNameTarget().c_str(),_binIndex), "RECREATE");
-    else                fout = TFile::Open(Form("../output/AccCT_%s_B%i_%iD.root", getNameTarget().c_str(),_binIndex,_binNdims), "RECREATE");
+    if (SaveAcceptance)
+    {
+        CreateDir("../output/Acceptance");
+        fout = TFile::Open(Form("../output/Acceptance/Acceptance_%s_B%i.root", getNameTarget().c_str(),_binIndex), "RECREATE");
+    }
+    else
+    {
+        CreateDir("../output/ClosureTest");
+        fout = TFile::Open(Form("../output/ClosureTest/AccCT_%s_B%i_%iD.root", getNameTarget().c_str(),_binIndex,_binNdims), "RECREATE");
+    }
 
     std::cout << "\n\nBeginning Acceptance calculations for " << _nameTarget << " target\n" << std::endl;
 
@@ -316,8 +324,9 @@ void Acceptance::Get2DProj()
     ActivateBranches();
 
     TFile *fout;
-    if (_isData) fout = TFile::Open(Form("../output/Get2DProj_%s_data.root", getNameTarget().c_str()), "RECREATE");
-    else         fout = TFile::Open(Form("../output/Get2DProj_%s_hsim.root", getNameTarget().c_str()), "RECREATE");
+    CreateDir("../output/Proj2D");
+    if (_isData) fout = TFile::Open(Form("../output/Proj2D/Get2DProj_%s_data.root", getNameTarget().c_str()), "RECREATE");
+    else         fout = TFile::Open(Form("../output/Proj2D/Get2DProj_%s_hsim.root", getNameTarget().c_str()), "RECREATE");
 
     //// Define Histograms
     // Reconstructed or data
@@ -749,11 +758,13 @@ void Acceptance::Correction()
                     static_cast<int>(ThisBins[2].size()-1), static_cast<int>(ThisBins[3].size()-1),
                     static_cast<int>(ThisBins[4].size()-1)};
 
-    // Begin Closure Test
+    // Begin Correction
     std::cout << "\n\nBeginning Correction\n" << std::endl;
 
-    TFile *facc = TFile::Open(Form("../output/Acceptance_%s_B%i.root", getNameTarget().c_str(),_binIndex), "READ");
-    TFile *fout = TFile::Open(Form("../output/Corrected_%s_B%i_%iD.root", getNameTarget().c_str(),_binIndex,_binNdims), "RECREATE");
+    CreateDir("../output/Correction");
+
+    TFile *facc = TFile::Open(Form("../output/Acceptance/Acceptance_%s_B%i.root", getNameTarget().c_str(),_binIndex), "READ");
+    TFile *fout = TFile::Open(Form("../output/Correction/Corrected_%s_B%i_%iD.root", getNameTarget().c_str(),_binIndex,_binNdims), "RECREATE");
 
     // Get Acceptance THnSparse
     THnSparse *histAcc_Reconstructed  = (THnSparse*)facc->Get("histAcc_Reconstructed");
@@ -851,8 +862,8 @@ void Acceptance::ClosureTest()
     // Begin Closure Test
     std::cout << "\n\nBeginning Closure Test calculations\n" << std::endl;
 
-    TFile *facc = TFile::Open(Form("../output/AccCT_%s_B%i_%iD.root", getNameTarget().c_str(),_binIndex,_binNdims), "READ");
-    TFile *fout = TFile::Open(Form("../output/ClosureTest_%s_B%i_%iD.root", getNameTarget().c_str(),_binIndex,_binNdims), "RECREATE");
+    TFile *facc = TFile::Open(Form("../output/ClosureTest/AccCT_%s_B%i_%iD.root", getNameTarget().c_str(),_binIndex,_binNdims), "READ");
+    TFile *fout = TFile::Open(Form("../output/ClosureTest/ClosureTest_%s_B%i_%iD.root", getNameTarget().c_str(),_binIndex,_binNdims), "RECREATE");
 
     // Get Acceptance THnSparse
     THnSparse *histAcc_Reconstructed  = (THnSparse*)facc->Get("histAcc_Reconstructed");
