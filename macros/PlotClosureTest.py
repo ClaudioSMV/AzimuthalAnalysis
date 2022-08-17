@@ -61,12 +61,12 @@ parser = optparse.OptionParser("usage: %prog [options]\n")
 # parser.add_option('-x','--xlength', dest='xlength', default = 4.0, help="X axis range [-x, x]")
 # parser.add_option('-y','--ylength', dest='ylength', default = 200.0, help="Y axis upper limit")
 parser.add_option('-D', dest='Dataset', default = "", help="Dataset in format <targ>_<binType>_<Ndims>")
-parser.add_option('-d', dest='debugMode', action='store_true', default = False, help="Run debug mode")
+parser.add_option('-a', dest='saveAll', action='store_true', default = False, help="Save All plots")
 
 # IDEA: input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
 
-debugMode = options.debugMode
+saveAll = options.saveAll
 dataset = options.Dataset
 
 infoDict = myStyle.getNameFormattedDict(dataset)
@@ -134,39 +134,41 @@ gStyle.SetOptStat(0)
 # Plot 2D histograms
 outputfile = TFile(outputPath+myStyle.getNameFormatted(dataset)+".root","RECREATE")
 for i,info in enumerate(names_list):
-    for p,proj in enumerate(Proj1DTHnSparse_list):
-        this_proj = proj[i]
-        htemp = TH1F("htemp","",1,-180.,180.)
-        htemp.SetStats(0)
-        htemp.SetMinimum(0.0001)
-        # ylim = 30000
-        ylim = this_proj.GetMaximum()*1.2
-        htemp.SetMaximum(ylim)
-        # htemp.SetLineColor(kBlack)
-        htemp.GetXaxis().SetTitle("#phi_{PQ} (deg)")
-        htemp.GetYaxis().SetTitle("Counts")
-        htemp.Draw("AXIS")
 
-        this_proj.SetLineColor(kBlack)
-        # list_Corr_Reconstructed[i].SetTitle(info.title)
-        # list_Corr_Reconstructed[i].GetXaxis().SetTitle(info.xlabel)
-        # list_Corr_Reconstructed[i].GetXaxis().SetRangeUser(-0.32, 0.32)
-        # list_Corr_Reconstructed[i].GetYaxis().SetTitle(info.ylabel)
+    if saveAll:
+        for p,proj in enumerate(Proj1DTHnSparse_list):
+            this_proj = proj[i]
+            htemp = TH1F("htemp","",1,-180.,180.)
+            htemp.SetStats(0)
+            htemp.SetMinimum(0.0001)
+            # ylim = 30000
+            ylim = this_proj.GetMaximum()*1.2
+            htemp.SetMaximum(ylim)
+            # htemp.SetLineColor(kBlack)
+            htemp.GetXaxis().SetTitle("#phi_{PQ} (deg)")
+            htemp.GetYaxis().SetTitle("Counts")
+            htemp.Draw("AXIS")
 
-        # gPad.RedrawAxis("g")
+            this_proj.SetLineColor(kBlack)
+            # list_Corr_Reconstructed[i].SetTitle(info.title)
+            # list_Corr_Reconstructed[i].GetXaxis().SetTitle(info.xlabel)
+            # list_Corr_Reconstructed[i].GetXaxis().SetRangeUser(-0.32, 0.32)
+            # list_Corr_Reconstructed[i].GetYaxis().SetTitle(info.ylabel)
 
-        # htemp.Draw("AXIS same")
-        # list_Corr_Reconstructed[i].Draw("AXIS same")
-        this_proj.Draw("hist e same")
+            # gPad.RedrawAxis("g")
 
-        # legend.Draw();
-        myStyle.DrawPreliminaryInfo(prefixType[p])
-        myStyle.DrawTargetInfo(infoDict["Target"], "Simulation")
+            # htemp.Draw("AXIS same")
+            # list_Corr_Reconstructed[i].Draw("AXIS same")
+            this_proj.Draw("hist e same")
 
-        canvas.SaveAs(outputPath+this_proj.GetName()+".gif")
-        # canvas.SaveAs(outputPath+"CT_"+info+".pdf")
-        this_proj.Write()
-        htemp.Delete()
+            # legend.Draw();
+            myStyle.DrawPreliminaryInfo(prefixType[p])
+            myStyle.DrawTargetInfo(infoDict["Target"], "Simulation")
+
+            canvas.SaveAs(outputPath+this_proj.GetName()+".gif")
+            # canvas.SaveAs(outputPath+"CT_"+info+".pdf")
+            this_proj.Write()
+            htemp.Delete()
 
     # Get ClosureTest
     htemp = TH1F("htemp","",1,-180.,180.)
@@ -200,7 +202,7 @@ for i,info in enumerate(names_list):
 
     canvas.SaveAs(outputPath+"ClosureTest_"+info+".gif")
     # canvas.SaveAs(outputPath+"CT_"+info+".pdf")
-    this_proj.Write()
+    hCT.Write()
     htemp.Delete()
 
 outputfile.Close()
