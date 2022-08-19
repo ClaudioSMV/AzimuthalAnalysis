@@ -40,3 +40,4 @@
 
 # Unwanted folders
 .vscode
+/output
