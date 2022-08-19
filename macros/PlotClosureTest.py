@@ -132,7 +132,8 @@ gStyle.SetOptStat(0)
 
 
 # Plot 2D histograms
-outputfile = TFile(outputPath+myStyle.getNameFormatted(dataset)+".root","RECREATE")
+nameFormatted = myStyle.getNameFormatted(dataset)
+outputfile = TFile(outputPath+nameFormatted+".root","RECREATE")
 for i,info in enumerate(names_list):
 
     if saveAll:
@@ -163,9 +164,9 @@ for i,info in enumerate(names_list):
 
             # legend.Draw();
             myStyle.DrawPreliminaryInfo(prefixType[p])
-            myStyle.DrawTargetInfo(infoDict["Target"], "Simulation")
+            myStyle.DrawTargetInfo(nameFormatted, "Simulation")
 
-            canvas.SaveAs(outputPath+this_proj.GetName()+".gif")
+            canvas.SaveAs(outputPath+nameFormatted+"-"+this_proj.GetName()+".gif")
             # canvas.SaveAs(outputPath+"CT_"+info+".pdf")
             this_proj.Write()
             htemp.Delete()
@@ -196,11 +197,11 @@ for i,info in enumerate(names_list):
 
     # legend.Draw();
     myStyle.DrawPreliminaryInfo("ClosureTest")
-    myStyle.DrawTargetInfo(infoDict["Target"], "Simulation")
+    myStyle.DrawTargetInfo(nameFormatted, "Simulation")
 
     gPad.RedrawAxis("g")
 
-    canvas.SaveAs(outputPath+"ClosureTest_"+info+".gif")
+    canvas.SaveAs(outputPath+nameFormatted+"-ClosureTest_"+info+".gif")
     # canvas.SaveAs(outputPath+"CT_"+info+".pdf")
     hCT.Write()
     htemp.Delete()

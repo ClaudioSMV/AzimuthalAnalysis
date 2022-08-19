@@ -35,13 +35,14 @@ def getInputFile(nameMethod,nameFormat):
     indir = "../output/%s/" % nameMethod # ex. Acceptance, Correction
     fileName = getNameFormatted(nameFormat)
     file = "%s_%s"%(nameMethod,fileName)
+    if nameMethod=="Correction": file = "Corrected_%s"%(fileName)
     return indir+file+".root"
 
 def getOutputDir(nameMethod, target=""):
     outdir = "../macros/plots/%s/" % nameMethod
     if target: outdir+=target+"/"
     if not os.path.exists(outdir):
-        os.mkdir(outdir)
+        os.makedirs(outdir)
     return outdir
 
 def CreateFolder(outdir, title, overwrite = False):
@@ -126,7 +127,9 @@ def DrawTargetInfo(target="X", fileType="SimOrData"):
     text = ROOT.TLatex()
     text.SetTextSize(tsize-4)
     text.SetTextAlign(31)
-    text.DrawLatexNDC(1-marg-0.005,1-marg+0.01,"#bf{"+str(target) + " target, "+str(fileType)+"}")
+    nameCode = target.split("_")
+    if len(nameCode)==1: text.DrawLatexNDC(1-marg-0.005,1-marg+0.01,"#bf{"+str(target) + " target, "+str(fileType)+"}")
+    else:                text.DrawLatexNDC(1-marg-0.005,1-marg+0.01,"#bf{"+str(target) + ", "+str(fileType)+"}")
 
 def GetMargin():
     return marg

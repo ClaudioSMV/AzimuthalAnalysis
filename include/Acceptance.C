@@ -779,7 +779,7 @@ void Acceptance::Correction()
                     static_cast<int>(ThisBins[4].size()-1)};
 
     // Begin Correction
-    std::cout << "\n\nBeginning Correction\n" << std::endl;
+    std::cout << "\n\nBeginning Correction "<< getNameTarget() <<" target:\n" << std::endl;
 
     CreateDir("../output/Correction");
 
@@ -795,7 +795,7 @@ void Acceptance::Correction()
     THnSparse *histCorr_Reconstructed  = CreateFinalHist("Corr_Reconstructed",  nbins, &(Correction::NIrregBins[_binNdims]), ThisBins, DISLimits);
     THnSparse *histCorr_RecGoodGen_mc  = CreateFinalHist("Corr_RecGoodGen_mc",  nbins, &(Correction::NIrregBins[_binNdims]), ThisBins, DISLimits);
     THnSparse *histCorr_RecGoodGen_rec = CreateFinalHist("Corr_RecGoodGen_rec", nbins, &(Correction::NIrregBins[_binNdims]), ThisBins, DISLimits);
-    THnSparse *histRaw                 = CreateFinalHist("Raw data",            nbins, &(Correction::NIrregBins[_binNdims]), ThisBins, DISLimits);
+    THnSparse *histRaw                 = CreateFinalHist("Raw_data",            nbins, &(Correction::NIrregBins[_binNdims]), ThisBins, DISLimits);
 
     Long64_t nentries = fChain->GetEntries();
     // unsigned int entries_to_process = nentries/2;
@@ -871,8 +871,17 @@ void Acceptance::Correction()
 
 void Acceptance::ClosureTest()
 {
-    // Run over half of the sim and save in "../output/Acceptance_ClosureTest.root"
-    Loop(false);
+    // Run over half of the sim and save in "../output/ClosureTest/AccCT_%s_B%i_%iD.root"
+    if (!FileExists(Form("../output/ClosureTest/AccCT_%s_B%i_%iD.root", getNameTarget().c_str(),_binIndex,_binNdims)))
+    {
+        std::cout << "Acceptance for ClosureTest doesn't exist. Creating file." << std::endl;
+        Loop(false);
+    }
+    else
+    {
+        std::cout << "Acceptance for ClosureTest already exists! Using it." << std::endl;
+        ActivateBranches();
+    }
 
     auto& ThisBins = Bin_List[_binIndex];
     int nbins[5] = {static_cast<int>(ThisBins[0].size()-1), static_cast<int>(ThisBins[1].size()-1),
@@ -880,7 +889,7 @@ void Acceptance::ClosureTest()
                     static_cast<int>(ThisBins[4].size()-1)};
 
     // Begin Closure Test
-    std::cout << "\n\nBeginning Closure Test calculations\n" << std::endl;
+    std::cout << "\n\nBeginning Closure Test for " << _nameTarget << " target\n" << std::endl;
 
     TFile *facc = TFile::Open(Form("../output/ClosureTest/AccCT_%s_B%i_%iD.root", getNameTarget().c_str(),_binIndex,_binNdims), "READ");
     TFile *fout = TFile::Open(Form("../output/ClosureTest/ClosureTest_%s_B%i_%iD.root", getNameTarget().c_str(),_binIndex,_binNdims), "RECREATE");
