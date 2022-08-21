@@ -14,6 +14,6 @@ void getAcceptance(std::string target = "Fe", int binName = 0, int binNdim = 2, 
     Acceptance acc(&ch);
     acc.setTargName(target);
     acc.setBinningType(binName);
-    acc.setBinNdims(binNdim);
+    // acc.useCut_Xf();
     acc.Loop();
 }

@@ -27,8 +27,8 @@ inline float DEG2RAD(float x)
 void Acceptance::ActivateBranches()
 {
     fChain->SetBranchStatus("*",0);
-    std::vector<string> activeBranches = {"TargType", "Q2", "Nu", "Xb", "Yb", "W", "vyec", "Zh", "Pt2", "PhiPQ", "pid"}; // , "Nphe"}; //, "Xf"};
-    std::vector<string> activeBranches_mc = {"mc_TargType", "mc_Q2", "mc_Nu", "mc_Xb", "mc_Yb", "mc_W", "mc_Zh", "mc_Pt2", "mc_PhiPQ", "mc_pid"}; //, "mc_Xf"};
+    std::vector<string> activeBranches = {"TargType", "Q2", "Nu", "Xb", "Yb", "W", "vyec", "Zh", "Pt2", "PhiPQ", "pid", "Xf"}; // , "Nphe"};
+    std::vector<string> activeBranches_mc = {"mc_TargType", "mc_Q2", "mc_Nu", "mc_Xb", "mc_Yb", "mc_W", "mc_Zh", "mc_Pt2", "mc_PhiPQ", "mc_pid", "mc_Xf"};
     for (const auto &activeBranch : activeBranches)
     {
         fChain->SetBranchStatus(activeBranch.c_str(), 1);
@@ -41,9 +41,11 @@ void Acceptance::ActivateBranches()
             fChain->SetBranchStatus(activeBranch.c_str(), 1);
         }
     }
+
+    setNameFormat();
 }
 
-void Acceptance::Loop(bool SaveAcceptance=true)
+void Acceptance::Loop()
 {
     //   In a ROOT session, you can do:
     //      root> .L Acceptance.C
@@ -69,15 +71,15 @@ void Acceptance::Loop(bool SaveAcceptance=true)
     ActivateBranches();
 
     TFile *fout;
-    if (SaveAcceptance)
+    if (!_isClosureTest)
     {
         CreateDir("../output/Acceptance");
-        fout = TFile::Open(Form("../output/Acceptance/Acceptance_%s_B%i.root", getNameTarget().c_str(),_binIndex), "RECREATE");
+        fout = TFile::Open(Form("../output/Acceptance/Acceptance_%s.root", getNameAccFormat().c_str()), "RECREATE");
     }
     else
     {
         CreateDir("../output/ClosureTest");
-        fout = TFile::Open(Form("../output/ClosureTest/AccCT_%s_B%i_%iD.root", getNameTarget().c_str(),_binIndex,_binNdims), "RECREATE");
+        fout = TFile::Open(Form("../output/ClosureTest/AccCT_%s.root", getNameAccFormat().c_str()), "RECREATE");
     }
 
     std::cout << "\n\nBeginning Acceptance calculations for " << _nameTarget << " target\n" << std::endl;
@@ -141,7 +143,7 @@ void Acceptance::Loop(bool SaveAcceptance=true)
     Long64_t nentries = fChain->GetEntries();
     Long64_t nbytes = 0, nb = 0;
     unsigned int entries_to_process;
-    if (SaveAcceptance) entries_to_process = nentries;
+    if (!_isClosureTest) entries_to_process = nentries;
     else                entries_to_process = nentries/2;
     int inclusive_count=0; // global_bin=-1,
     int vec_entries_MC=0, vec_entries=0;
@@ -308,10 +310,10 @@ void Acceptance::Loop(bool SaveAcceptance=true)
     PrintSummaryTable(rec_Pi_Accept_count,  "Matching of reconstructed Pions", general_Pi_count["Total rec_Pi"]);
 
     // Save Summary tables
-    if (SaveAcceptance)
+    if (!_isClosureTest)
     {
         ofstream fileSummary;
-        fileSummary.open(Form("../output/Acceptance/Summary_%s_B%i.txt", getNameTarget().c_str(),_binIndex));
+        fileSummary.open(Form("../output/Acceptance/Summary_%s.txt", _nameFormatted.c_str()));
         fileSummary << Form(">> Summary table %s Target:\n\n",getNameTarget().c_str());
         SaveSummaryTable(general_El_count,     "General Electron Summary", fileSummary, entries_to_process);
         SaveSummaryTable(mc_El_Reject_count,   "Rejected MC Electron", fileSummary, entries_to_process);
@@ -345,8 +347,8 @@ void Acceptance::Get2DProj()
 
     TFile *fout;
     CreateDir("../output/Proj2D");
-    if (_isData) fout = TFile::Open(Form("../output/Proj2D/Get2DProj_%s_data.root", getNameTarget().c_str()), "RECREATE");
-    else         fout = TFile::Open(Form("../output/Proj2D/Get2DProj_%s_hsim.root", getNameTarget().c_str()), "RECREATE");
+    if (_isData) fout = TFile::Open(Form("../output/Proj2D/Get2DProj_%s_data.root", _nameFormatted.c_str()), "RECREATE");
+    else         fout = TFile::Open(Form("../output/Proj2D/Get2DProj_%s_hsim.root", _nameFormatted.c_str()), "RECREATE");
 
     //// Define Histograms
     // Reconstructed or data
@@ -783,8 +785,8 @@ void Acceptance::Correction()
 
     CreateDir("../output/Correction");
 
-    TFile *facc = TFile::Open(Form("../output/Acceptance/Acceptance_%s_B%i.root", getNameTarget().c_str(),_binIndex), "READ");
-    TFile *fout = TFile::Open(Form("../output/Correction/Corrected_%s_B%i_%iD.root", getNameTarget().c_str(),_binIndex,_binNdims), "RECREATE");
+    TFile *facc = TFile::Open(Form("../output/Acceptance/Acceptance_%s.root", getNameAccFormat().c_str()), "READ");
+    TFile *fout = TFile::Open(Form("../output/Correction/Corrected_%s.root", _nameFormatted.c_str()), "RECREATE");
 
     // Get Acceptance THnSparse
     THnSparse *histAcc_Reconstructed  = (THnSparse*)facc->Get("histAcc_Reconstructed");
@@ -872,10 +874,11 @@ void Acceptance::Correction()
 void Acceptance::ClosureTest()
 {
     // Run over half of the sim and save in "../output/ClosureTest/AccCT_%s_B%i_%iD.root"
-    if (!FileExists(Form("../output/ClosureTest/AccCT_%s_B%i_%iD.root", getNameTarget().c_str(),_binIndex,_binNdims)))
+    setClosureTest();
+    if (!FileExists(Form("../output/ClosureTest/AccCT_%s.root", getNameAccFormat().c_str())))
     {
         std::cout << "Acceptance for ClosureTest doesn't exist. Creating file." << std::endl;
-        Loop(false);
+        Loop();
     }
     else
     {
@@ -891,8 +894,8 @@ void Acceptance::ClosureTest()
     // Begin Closure Test
     std::cout << "\n\nBeginning Closure Test for " << _nameTarget << " target\n" << std::endl;
 
-    TFile *facc = TFile::Open(Form("../output/ClosureTest/AccCT_%s_B%i_%iD.root", getNameTarget().c_str(),_binIndex,_binNdims), "READ");
-    TFile *fout = TFile::Open(Form("../output/ClosureTest/ClosureTest_%s_B%i_%iD.root", getNameTarget().c_str(),_binIndex,_binNdims), "RECREATE");
+    TFile *facc = TFile::Open(Form("../output/ClosureTest/AccCT_%s.root", getNameAccFormat().c_str()), "READ");
+    TFile *fout = TFile::Open(Form("../output/ClosureTest/ClosureTest_%s.root", _nameFormatted.c_str()), "RECREATE");
 
     // Get Acceptance THnSparse
     THnSparse *histAcc_Reconstructed  = (THnSparse*)facc->Get("histAcc_Reconstructed");

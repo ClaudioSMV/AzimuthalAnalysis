@@ -13,18 +13,25 @@
 class Acceptance
 {
 private:
+    std::string _nameFormatted = "";
     int _targTypeCut = 1;
     std::string _nameTarget;
     bool _isData = false;
-    int _binIndex = 0;
-    int _binNdims = 2; // Leptonic
+    bool _isClosureTest = false;
+    int _binIndex = -1;
+    int _binNdims = 0; // 2: Leptonic, 3: Leptonic+Zh
+    bool _cutXf = false;
 
-public:
+public: // Internal values
     void setTargTypeCut(size_t targTypeCut) { _targTypeCut = targTypeCut; }
     std::string getNameTarget() { return _nameTarget; }
     void setDataType() { _isData = true; }
+    void setClosureTest() { _isClosureTest = true; }
     void setBinningType(int binning_number) { _binIndex = binning_number; }
     void setBinNdims(int binningNdims) { _binNdims = binningNdims; }
+
+public: // Cuts
+    void useCut_Xf() { _cutXf = true; }
 
 public:
     TTree *fChain;  //! pointer to the analyzed TTree or TChain
@@ -174,6 +181,8 @@ public:
     Acceptance(TTree *tree = 0, bool isData = false);
     virtual ~Acceptance();
     virtual void setTargName(std::string name);
+    virtual void setNameFormat();
+    std::string getNameAccFormat();
     virtual Int_t Cut(Long64_t entry);
     virtual Bool_t GoodElectron_MC(Long64_t entry, vector<vector<double>> DISLimits);
     virtual Bool_t GoodPiPlus_MC(Long64_t entry, int ivec, vector<vector<double>> DISLimits);
@@ -183,7 +192,7 @@ public:
     virtual Long64_t LoadTree(Long64_t entry);
     virtual void Init(TTree *tree);
     virtual void ActivateBranches();
-    virtual void Loop(bool SaveAcceptance);
+    virtual void Loop();
     virtual void Get2DProj();
     virtual void Correction();
     virtual void ClosureTest();
@@ -246,6 +255,40 @@ void Acceptance::setTargName(std::string name)
 {
     _nameTarget = name;
     if (name!="D") setTargTypeCut(2);
+}
+
+void Acceptance::setNameFormat()
+{
+    // <target>_B<_binIndex>_<_binNdims>D_<extra cuts, ex. Xf>
+    _nameFormatted = _nameTarget;
+    if (_binIndex>-1)
+    {
+        _nameFormatted+="_B"+std::to_string(_binIndex);
+    }
+    if (_binNdims)
+    {
+        _nameFormatted+="_"+std::to_string(_binNdims)+"D";
+    }
+    if (_cutXf)
+    {
+        _nameFormatted+="_Xf";
+    }
+    std::cout << "Name formatted extension: " << _nameFormatted << std::endl;
+}
+
+std::string Acceptance::getNameAccFormat()
+{
+    // <target>_B<_binIndex>_<extra cuts, ex. Xf>
+    std::string this_name = _nameTarget;
+    if (_binIndex>-1)
+    {
+        this_name+="_B"+std::to_string(_binIndex);
+    }
+    if (_cutXf)
+    {
+        this_name+="_Xf";
+    }
+    return this_name;
 }
 
 void Acceptance::Init(TTree *tree)
@@ -512,25 +555,25 @@ void Acceptance::Show(Long64_t entry)
 Bool_t Acceptance::GoodElectron_MC(Long64_t entry, vector<vector<double>> DISLimits)
 {
     // This function may be called from Loop.
-    // returns  1 if entry is accepted.
-    // returns -1 otherwise.
 
-    return (mc_TargType==_targTypeCut && DISLimits[0][0]<mc_Q2 && mc_Q2<DISLimits[1][0] && mc_Yb<0.85 && mc_W>2 &&
-            DISLimits[0][1]<mc_Nu && mc_Nu<DISLimits[1][1]);
+    bool pass_DIS = (mc_TargType==_targTypeCut && DISLimits[0][0]<mc_Q2 && mc_Q2<DISLimits[1][0] && mc_Yb<0.85 && mc_W>2 &&
+                     DISLimits[0][1]<mc_Nu && mc_Nu<DISLimits[1][1]);
 
-    // return 1;
+    return pass_DIS;
 }
 
 Bool_t Acceptance::GoodPiPlus_MC(Long64_t entry, int ivec, vector<vector<double>> DISLimits)
 {
     // This function may be called from Loop.
-    // returns  1 if entry is accepted.
-    // returns -1 otherwise.
 
-    return (mc_pid->at(ivec)==211 && DISLimits[0][2]<mc_Zh->at(ivec) && mc_Zh->at(ivec)<DISLimits[1][2] &&
+    bool pass_DIS = (mc_pid->at(ivec)==211 && DISLimits[0][2]<mc_Zh->at(ivec) && mc_Zh->at(ivec)<DISLimits[1][2] &&
             DISLimits[0][3]<mc_Pt2->at(ivec) && mc_Pt2->at(ivec)<DISLimits[1][3] && DISLimits[0][4]<mc_PhiPQ->at(ivec) && mc_PhiPQ->at(ivec)<DISLimits[1][4]);
+    if (_cutXf)
+    {
+        pass_DIS = pass_DIS && (mc_Xf->at(ivec))>0;
+    }
 
-    // return 1;
+    return pass_DIS;
 }
 
 /////////////////////////
@@ -540,25 +583,25 @@ Bool_t Acceptance::GoodPiPlus_MC(Long64_t entry, int ivec, vector<vector<double>
 Bool_t Acceptance::GoodElectron(Long64_t entry, vector<vector<double>> DISLimits)
 {
     // This function may be called from Loop.
-    // returns  1 if entry is accepted.
-    // returns -1 otherwise.
 
-    return (TargType==_targTypeCut && DISLimits[0][0]<Q2 && Q2<DISLimits[1][0] && Yb<0.85 && W>2 && -1.4<vyec && vyec<1.4 &&
+    bool pass_DIS = (TargType==_targTypeCut && DISLimits[0][0]<Q2 && Q2<DISLimits[1][0] && Yb<0.85 && W>2 && -1.4<vyec && vyec<1.4 &&
             DISLimits[0][1]<Nu && Nu<DISLimits[1][1]);
 
-    // return 1;
+    return pass_DIS;
 }
 
 Bool_t Acceptance::GoodPiPlus(Long64_t entry, int ivec, vector<vector<double>> DISLimits)
 {
     // This function may be called from Loop.
-    // returns  1 if entry is accepted.
-    // returns -1 otherwise.
 
-    return (pid->at(ivec)==211 && DISLimits[0][2]<Zh->at(ivec) && Zh->at(ivec)<DISLimits[1][2] &&
+    bool pass_DIS = (pid->at(ivec)==211 && DISLimits[0][2]<Zh->at(ivec) && Zh->at(ivec)<DISLimits[1][2] &&
             DISLimits[0][3]<Pt2->at(ivec) && Pt2->at(ivec)<DISLimits[1][3] && DISLimits[0][4]<PhiPQ->at(ivec) && PhiPQ->at(ivec)<DISLimits[1][4]);
+    if (_cutXf)
+    {
+        pass_DIS = pass_DIS && (Xf->at(ivec))>0;
+    }
 
-    // return 1;
+    return pass_DIS;
 }
 
 Int_t Acceptance::Cut(Long64_t entry)
