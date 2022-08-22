@@ -12,13 +12,17 @@ tsize=38 #35
 # Corrected_%s_B%i_%iD.root   ; <Target>,<_binIndex>,<_binNdims (non-integrated dims)>
 # ClosureTest_%s_B%i_%iD.root ; <Target>,<_binIndex>,<_binNdims (non-integrated dims)>
 
-def getNameFormattedDict(nameFormat): #input: <target>_<binningType number>_<non-integrated dimensions>
+def getNameFormattedDict(nameFormat): #input: <target>_<binningType number>_<non-integrated dimensions>_<extra cuts>
     targetDict = {}
     targetList = nameFormat.split("_")
     targetDict["Target"] = targetList[0]
     targetDict["BinningType"] = int(targetList[1])
-    if targetList[2]: targetDict["NDims"] = int(targetList[2])
-
+    targetDict["NDims"] = int(targetList[2])
+    targetDict["Cuts"] = []
+    if len(targetList)>3:
+        numElem = len(targetList)
+        for i in range(len(targetDict)-1,numElem):
+            targetDict["Cuts"].append(targetList[i])
     return targetDict
 
 def getNameFormatted(nameFormat):
@@ -26,8 +30,11 @@ def getNameFormatted(nameFormat):
     fileName = "%s_B%i"%(formDict["Target"],formDict["BinningType"])
     if formDict["NDims"]:
         fileName+="_%iD"%(formDict["NDims"])
+    if formDict["Cuts"]:
+        for e in formDict["Cuts"]:
+            fileName+="_"+e
 
-    return fileName #output: <target>_B<binningType number>_<non-integrated dimensions>D
+    return fileName #output: <target>_B<binningType number>_<non-integrated dimensions>D_<extra cuts>
 
 
 ### Paths and directories' functions
