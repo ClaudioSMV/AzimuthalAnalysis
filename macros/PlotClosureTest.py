@@ -61,20 +61,22 @@ parser = optparse.OptionParser("usage: %prog [options]\n")
 # parser.add_option('-x','--xlength', dest='xlength', default = 4.0, help="X axis range [-x, x]")
 # parser.add_option('-y','--ylength', dest='ylength', default = 200.0, help="Y axis upper limit")
 parser.add_option('-D', dest='Dataset', default = "", help="Dataset in format <targ>_<binType>_<Ndims>")
+parser.add_option('-p', dest='rootpath', default = "", help="Add path to files, if needed")
 parser.add_option('-a', dest='saveAll', action='store_true', default = False, help="Save All plots")
 
 # IDEA: input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
 
 saveAll = options.saveAll
+rootpath = options.rootpath
 dataset = options.Dataset
 
 infoDict = myStyle.getNameFormattedDict(dataset)
 
-inputPath = myStyle.getInputFile("ClosureTest",dataset) # ClosureTest_%s_B%i_%iD.root
+inputPath = myStyle.getInputFile("ClosureTest",dataset,rootpath) # ClosureTest_%s_B%i_%iD.root
 inputfile = TFile(inputPath,"READ")
 
-outputPath = myStyle.getOutputDir("ClosureTest",infoDict["Target"])
+outputPath = myStyle.getOutputDir("ClosureTest",infoDict["Target"],rootpath)
 
 histCorr_Reconstructed  = inputfile.Get("Corr_Reconstructed")
 histCorr_RecGoodGen_mc  = inputfile.Get("Corr_RecGoodGen_mc")
