@@ -44,7 +44,7 @@ echo "#SBATCH -J ${jobname}"                                              >> ${j
 echo "#SBATCH -o ${TMPDIR}/${jobname}.out"                                >> ${jobfile}
 echo "#SBATCH -e ${TMPDIR}/${jobname}.err"                                >> ${jobfile}
 echo "#SBATCH --time=4:00:00"                                             >> ${jobfile} # 4hrs or 15min for test
-echo "#SBATCH --mem-per-cpu=500M"                                         >> ${jobfile}
+echo "#SBATCH --mem-per-cpu=1G"                                           >> ${jobfile}
 echo "#SBATCH --mail-user=claudio.sanmartinval@gmail.com"                 >> ${jobfile}
 echo "#SBATCH --mail-type=BEGIN,END,FAIL"                                 >> ${jobfile}
 echo ""                                                                   >> ${jobfile}
