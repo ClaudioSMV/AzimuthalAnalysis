@@ -337,6 +337,8 @@ void Acceptance::Loop()
     histAcc_RecGoodGen_mc->Write();
     histAcc_RecGoodGen_rec->Write();
 
+    std::cout << "Made it to the end. Saving..." << std::endl;
+
     fout->Write();
     fout->Close();
 }
@@ -524,6 +526,8 @@ void Acceptance::Get2DProj()
         histMigrationMatrixPt->Delete();
         histMigrationMatrixPQ->Delete();
     }
+
+    std::cout << "Made it to the end. Saving..." << std::endl;
 
     fout->Write();
     fout->Close();
@@ -866,6 +870,8 @@ void Acceptance::Correction()
     histCorr_RecGoodGen_rec->Write();
     histRaw->Write();
 
+    std::cout << "Made it to the end. Saving..." << std::endl;
+
     fout->Write();
     fout->Close();
     facc->Close();
@@ -999,6 +1005,8 @@ void Acceptance::ClosureTest()
     histCorr_RecGoodGen_rec->Write();
     histTrue->Write();
     histTrue_PionReco->Write();
+
+    std::cout << "Made it to the end. Saving..." << std::endl;
 
     fout->Write();
     fout->Close();
