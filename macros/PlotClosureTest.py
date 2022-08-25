@@ -12,50 +12,6 @@ gStyle.SetOptFit(1011)
 ## Defining Style
 myStyle.ForceStyle()
 
-# class HistoInfo:
-#     def __init__(self, inHistoName, f, outHistoName, doFits=True, yMax=30.0, title="", xlabel="", ylabel="Position resolution [#mum]", sensor=""):
-#         self.inHistoName = inHistoName
-#         self.f = f
-#         self.outHistoName = outHistoName
-#         self.doFits = doFits
-#         self.yMax = yMax
-#         self.title = title
-#         self.xlabel = xlabel
-#         self.ylabel = ylabel
-#         self.th2 = self.getTH2(f, inHistoName, sensor)
-#         self.th1 = self.getTH1(self.th2, outHistoName, self.shift(), self.fine_tuning(sensor))
-
-#     def getTH2(self, f, name, sensor):
-#         th2 = f.Get(name)
-#         return th2
-
-#     def getTH1(self, th2, name, centerShift, fine_value):
-#         th1_temp = TH1D(name,"",th2.GetXaxis().GetNbins(),th2.GetXaxis().GetXmin()-centerShift-fine_value,th2.GetXaxis().GetXmax()-centerShift-fine_value)
-#         return th1_temp
-
-#     def shift(self):
-#         return self.f.Get("stripBoxInfo03").GetMean(1)
-
-#     def fine_tuning(self, sensor):
-#         value = 0.0
-#         return value
-
-# def GetBinSufix(list):
-#     totalsize = np.prod(list)
-#     name_list = []
-#     symbol_list = ["Q","N","Z"]
-#     for i in range(totalsize):
-#         total_tmp = totalsize
-#         i_tmp = i
-#         txt_tmp = ""
-#         for j,nbin in enumerate(list):
-#             total_tmp /= nbin
-#             index = i_tmp/(total_tmp)
-#             i_tmp -= index*total_tmp
-#             txt_tmp += (symbol_list[j]+str(index))
-#         name_list.append(txt_tmp)
-#     return name_list
-
 # Construct the argument parser
 parser = optparse.OptionParser("usage: %prog [options]\n")
 # parser.add_option('-x','--xlength', dest='xlength', default = 4.0, help="X axis range [-x, x]")

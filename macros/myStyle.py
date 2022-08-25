@@ -39,17 +39,17 @@ def getNameFormatted(nameFormat):
 
 ### Paths and directories' functions
 def getInputFile(nameMethod,nameFormat, extra_path=""):
-    indir = "../output/%s/" % nameMethod # ex. Acceptance, Correction
     if extra_path: extra_path+="/"
+    indir = "../output/%s%s/" % (extra_path,nameMethod) # ex. Acceptance, Correction
     fileName = getNameFormatted(nameFormat)
     file = "%s_%s"%(nameMethod,fileName)
     if nameMethod=="Correction": file = "Corrected_%s"%(fileName)
-    return indir+extra_path+file+".root"
+    return indir+file+".root"
 
 def getOutputDir(nameMethod, target="", extra_path=""):
-    outdir = "../macros/plots/%s/" % nameMethod
+    if extra_path: extra_path+="/"
+    outdir = "../macros/plots/%s%s/" % (extra_path,nameMethod)
     if target: outdir+=target+"/"
-    if extra_path: outdir+=extra_path+"/"
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     return outdir
