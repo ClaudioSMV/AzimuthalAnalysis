@@ -156,6 +156,7 @@ for i,info in enumerate(names_list):
     # legend.Draw();
     myStyle.DrawPreliminaryInfo("ClosureTest")
     myStyle.DrawTargetInfo(nameFormatted, "Simulation")
+    myStyle.DrawBinInfo(info)
 
     gPad.RedrawAxis("g")
 

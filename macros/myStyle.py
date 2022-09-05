@@ -44,6 +44,9 @@ def getInputFile(nameMethod,nameFormat, extra_path=""):
     fileName = getNameFormatted(nameFormat)
     file = "%s_%s"%(nameMethod,fileName)
     if nameMethod=="Correction": file = "Corrected_%s"%(fileName)
+    elif nameMethod=="Proj2D":
+        file = "Get2DProj_%s_"%(getNameFormattedDict(nameFormat)["Target"])
+        return indir+file # Still needs "data" or "hsim" + .root
     return indir+file+".root"
 
 def getOutputDir(nameMethod, target="", extra_path=""):
@@ -140,6 +143,25 @@ def DrawTargetInfo(target="X", fileType="SimOrData"):
     if len(nameCode)==1: text.DrawLatexNDC(1-marg-0.005,1-marg+0.01,"#bf{"+str(target) + " target, "+str(fileType)+"}")
     else:                text.DrawLatexNDC(1-marg-0.005,1-marg+0.01,"#bf{"+str(target) + ", "+str(fileType)+"}")
 
+def DrawBinInfo(bin_name="X0X0"):
+    text = ROOT.TLatex()
+    text.SetTextSize(tsize-4)
+    text.SetTextAlign(33)
+    tmp_txt = ""
+    for i,c in enumerate(bin_name):
+        if i%2 == 0:
+
+            num_index = int(bin_name[i+1])
+
+            vmin = bin_dict[c]['Bins'][num_index]
+            vmax = bin_dict[c]['Bins'][num_index+1]
+
+            tmp_txt+="%.2f < %s < %.2f"%(vmin, bin_dict[c]['Name'], vmax)
+
+            if i<(len(bin_name)-2): tmp_txt+="; "
+    # text.DrawLatexNDC(1-marg-0.005,1-marg-0.01,"#bf{"+tmp_txt+"}")
+    text.DrawLatexNDC(1-marg-0.005,1-marg-0.01,tmp_txt)
+
 def GetMargin():
     return marg
 
@@ -163,3 +185,8 @@ def GetColors(color_blind = False):
             colors_list[i] = ROOT.TColor.GetColor(color_RGB[i][0],color_RGB[i][1],color_RGB[i][2])
 
     return colors_list
+
+bin_dict = {'Q': {'Name': "Q^{2}",      'Bins': [1.00, 1.30, 1.80, 4.10]},
+            'N': {'Name': "#nu",        'Bins': [2.20, 3.20, 3.70, 4.20]},
+            'Z': {'Name': "Z_{h}",      'Bins': [0.00, 0.15, 0.25, 0.40, 0.70, 1.00]},
+            'P': {'Name': "P_{t}^{2}",  'Bins': [0.00, 0.03, 0.06, 0.10, 0.18, 1.00]}}
