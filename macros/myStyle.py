@@ -147,20 +147,20 @@ def DrawBinInfo(bin_name="X0X0"):
     text = ROOT.TLatex()
     text.SetTextSize(tsize-4)
     text.SetTextAlign(33)
+    title = GetBinInfo(bin_name)
+    # text.DrawLatexNDC(1-marg-0.005,1-marg-0.01,"#bf{"+title+"}")
+    text.DrawLatexNDC(1-marg-0.005,1-marg-0.01,title)
+
+def GetBinInfo(bin_name="X0X0"):
     tmp_txt = ""
     for i,c in enumerate(bin_name):
         if i%2 == 0:
-
             num_index = int(bin_name[i+1])
-
             vmin = bin_dict[c]['Bins'][num_index]
             vmax = bin_dict[c]['Bins'][num_index+1]
-
             tmp_txt+="%.2f < %s < %.2f"%(vmin, bin_dict[c]['Name'], vmax)
-
             if i<(len(bin_name)-2): tmp_txt+="; "
-    # text.DrawLatexNDC(1-marg-0.005,1-marg-0.01,"#bf{"+tmp_txt+"}")
-    text.DrawLatexNDC(1-marg-0.005,1-marg-0.01,tmp_txt)
+    return tmp_txt
 
 def GetMargin():
     return marg
