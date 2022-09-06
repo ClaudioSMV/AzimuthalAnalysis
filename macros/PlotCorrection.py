@@ -121,6 +121,7 @@ for i,info in enumerate(names_list):
         # legend.Draw();
         myStyle.DrawPreliminaryInfo(prefixType[p])
         myStyle.DrawTargetInfo(nameFormatted, "Data")
+        myStyle.DrawBinInfo(info)
 
         canvas.SaveAs(outputPath+nameFormatted+"-"+this_proj.GetName()+".gif")
         # canvas.SaveAs(outputPath+"CT_"+info+".pdf")
