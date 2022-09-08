@@ -47,8 +47,8 @@ gStyle.SetOptStat(0)
 
 line = TLine()
 line.SetLineColor(ROOT.kPink+10)
-line.SetLineWidth(2)
-line.SetLineStyle(2)
+line.SetLineWidth(3)
+line.SetLineStyle(9)
 
 for h in list_of_hists:
     if (h.ReadObj().Class_Name() == "TH2D"):
