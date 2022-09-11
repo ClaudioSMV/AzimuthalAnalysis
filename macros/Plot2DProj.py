@@ -21,6 +21,7 @@ parser.add_option('-D', dest='Dataset', default = "", help="Dataset in format <t
 parser.add_option('-p', dest='rootpath', default = "", help="Add path to files, if needed")
 parser.add_option('-l', dest='drawLines', action='store_true', default = False, help="Draw lines to see bins")
 parser.add_option('-d', dest='isData', action='store_true', default = False, help="HSim: False (default); Data: True")
+parser.add_option('-J', dest='JLabCluster', action='store_true', default = False, help="Use folder from JLab_cluster")
 
 # IDEA: input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
@@ -29,6 +30,7 @@ isData = options.isData
 drawLines = options.drawLines
 rootpath = options.rootpath
 dataset = options.Dataset
+if options.JLabCluster: rootpath = "JLab_cluster"
 
 infoDict = myStyle.getNameFormattedDict(dataset)
 inputPath = myStyle.getInputFile("Proj2D",dataset,rootpath) # ClosureTest_%s_B%i_%iD.root

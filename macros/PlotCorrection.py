@@ -19,6 +19,7 @@ parser = optparse.OptionParser("usage: %prog [options]\n")
 parser.add_option('-D', dest='Dataset', default = "", help="Dataset in format <targ>_<binType>_<Ndims>")
 parser.add_option('-p', dest='rootpath', default = "", help="Add path to files, if needed")
 parser.add_option('-a', dest='saveAll', action='store_true', default = False, help="Save All plots")
+parser.add_option('-J', dest='JLabCluster', action='store_true', default = False, help="Use folder from JLab_cluster")
 
 # IDEA: input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
@@ -26,6 +27,7 @@ options, args = parser.parse_args()
 saveAll = options.saveAll
 rootpath = options.rootpath
 dataset = options.Dataset
+if options.JLabCluster: rootpath = "JLab_cluster"
 
 infoDict = myStyle.getNameFormattedDict(dataset)
 
@@ -102,6 +104,7 @@ for i,info in enumerate(names_list):
         ylim = this_proj.GetMaximum()*1.2
         htemp.SetMaximum(ylim)
         # htemp.SetLineColor(kBlack)
+        htemp.GetYaxis().SetMaxDigits(3)
         htemp.GetXaxis().SetTitle("#phi_{PQ} (deg)")
         htemp.GetYaxis().SetTitle("Counts")
         htemp.Draw("AXIS")
