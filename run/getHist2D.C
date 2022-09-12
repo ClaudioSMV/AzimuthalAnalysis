@@ -3,7 +3,7 @@
 R__LOAD_LIBRARY(../include/Acceptance_C.so)
 #include "../include/Utility.h"
 
-void get2DProj(std::string target = "Fe", bool isData = true)
+void getHist2D(std::string target = "Fe", bool isData = true, std::string vars = "KinVars")
 {
     TChain ch("ntuple_data");
 
@@ -48,8 +48,16 @@ void get2DProj(std::string target = "Fe", bool isData = true)
         }
     }
     
-    std::cout << "\n >> Running Get2DProj for " << target << " target [file type: " << isData << "]\n" << std::endl;
     Acceptance acc(&ch, isData);
     acc.setTargName(target);
-    acc.Get2DProj();
+    if (vars.find("KinVars") != string::npos)
+    {
+        std::cout << "\n >> Running Hist2D_KinVars for " << target << " target [file type: " << isData << "]\n" << std::endl;
+        acc.Hist2D_KinVars();
+    }
+    else if (vars.find("Yh") != string::npos)
+    {
+        std::cout << "\n >> Running Hist2D_XfVsYh for " << target << " target [file type: " << isData << "]\n" << std::endl;
+        acc.Hist2D_XfVsYh();
+    }
 }

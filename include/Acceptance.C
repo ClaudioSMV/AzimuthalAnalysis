@@ -823,14 +823,14 @@ void Acceptance::ClosureTest()
     facc->Close();
 }
 
-void Acceptance::Get2DProj()
+void Acceptance::Hist2D_KinVars()
 {
     ActivateBranches();
 
     TFile *fout;
-    CreateDir("../output/Proj2D");
-    if (_isData) fout = TFile::Open(Form("../output/Proj2D/Get2DProj_%s_data.root", _nameFormatted.c_str()), "RECREATE");
-    else         fout = TFile::Open(Form("../output/Proj2D/Get2DProj_%s_hsim.root", _nameFormatted.c_str()), "RECREATE");
+    CreateDir("../output/Hist2D");
+    if (_isData) fout = TFile::Open(Form("../output/Hist2D/KinVars_%s_data.root", _nameFormatted.c_str()), "RECREATE");
+    else         fout = TFile::Open(Form("../output/Hist2D/KinVars_%s_hsim.root", _nameFormatted.c_str()), "RECREATE");
 
     //// Define Histograms
     // Reconstructed or data
@@ -1013,37 +1013,49 @@ void Acceptance::Get2DProj()
     fout->Close();
 }
 
-/* WIP
-void Acceptance::GetXfVSYh()
+void Acceptance::Hist2D_XfVsYh()
 {
     ActivateBranches();
-    fChain->SetBranchStatus("Eh", 1);
     fChain->SetBranchStatus("Pl2", 1);
 
     if (!_isData)
     {
-        fChain->SetBranchStatus("mc_Eh", 1);
         fChain->SetBranchStatus("mc_Pl2", 1);
     }
 
+    double PlCM=0, mc_PlCM=0;
+    double EhCM=0, mc_EhCM=0;
+    double Yh=0, mc_Yh=0;
+    double kMassProton = 0.938272;
+    double kMassPiPlus = 0.139570;
+
     TFile *fout;
-    CreateDir("../output/Hist2D_XfVsYh");
-    if (_isData) fout = TFile::Open(Form("../output/Hist2D_XfVsYh/XfVsYh_%s_data.root", _nameFormatted.c_str()), "RECREATE");
-    else         fout = TFile::Open(Form("../output/Hist2D_XfVsYh/XfVsYh_%s_hsim.root", _nameFormatted.c_str()), "RECREATE");
+    CreateDir("../output/Hist2D");
+    if (_isData) fout = TFile::Open(Form("../output/Hist2D/XfVsYh_%s_data.root", _nameFormatted.c_str()), "RECREATE");
+    else         fout = TFile::Open(Form("../output/Hist2D/XfVsYh_%s_hsim.root", _nameFormatted.c_str()), "RECREATE");
 
     //// Define Histograms
+    // Simple TH1
+    TH1D* hist1D_Xf_reco = new TH1D("hist1D_Xf_reco", "Histogram 1D Reconstructed;X_{f};Counts", 120,-1.1,1.1);
+    TH1D* hist1D_Xf_mtch = new TH1D("hist1D_Xf_mtch", "Histogram 1D Reconstructed match;X_{f};Counts", 120,-1.1,1.1);
+    TH1D* hist1D_Xf_gene = new TH1D("hist1D_Xf_gene", "Histogram 1D Generated;X_{f};Counts", 120,-1.1,1.1);
+
+    TH1D* hist1D_Yh_reco = new TH1D("hist1D_Yh_reco", "Histogram 1D Reconstructed;Y_{h};Counts", 100,-2.5,2.5);
+    TH1D* hist1D_Yh_mtch = new TH1D("hist1D_Yh_mtch", "Histogram 1D Reconstructed match;Y_{h};Counts", 100,-2.5,2.5);
+    TH1D* hist1D_Yh_gene = new TH1D("hist1D_Yh_gene", "Histogram 1D Generated;Y_{h};Counts", 100,-2.5,2.5);
+
     // Reconstructed or data
-    TH2D* hist2D_Xf_Yh_reco = new TH2D("hist2D_Xf_Yh_reco", "Two dimensional Map;X_{f};Y_{h}"               , 50,-1.0,1.0, 50,-5.0,5.0);
+    TH2D* hist2D_Xf_Yh_reco = new TH2D("hist2D_Xf_Yh_reco", "Two dimensional Map;X_{f};Y_{h}"               , 60,-1.0,1.0, 100,-2.5,2.5);
 
     // Reconstructed match
-    TH2D* hist2D_Xf_Yh_mtch = new TH2D("hist2D_Xf_Yh_mtch", "Two dimensional Map (Reco match);X_{f};Y_{h}"  , 50,-1.0,1.0, 50,-5.0,5.0);
+    TH2D* hist2D_Xf_Yh_mtch = new TH2D("hist2D_Xf_Yh_mtch", "Two dimensional Map (Reco match);X_{f};Y_{h}"  , 60,-1.0,1.0, 100,-2.5,2.5);
 
     // Generated (MC)
-    TH2D* hist2D_Xf_Yh_gene = new TH2D("hist2D_Xf_Yh_gene", "Two dimensional Map (Generated);X_{f};Y_{h}"   , 50,-1.0,1.0, 50,-5.0,5.0);
+    TH2D* hist2D_Xf_Yh_gene = new TH2D("hist2D_Xf_Yh_gene", "Two dimensional Map (Generated);X_{f};Y_{h}"   , 60,-1.0,1.0, 100,-2.5,2.5);
 
     // Bin migration
-    TH2D* histMigrationMatrixXf = new TH2D("histMigrationMatrixXf", "Migration X_{f};True X_{f}; Reco X_{f}", 50,-1.0,1.0, 50,-1.0,1.0);
-    TH2D* histMigrationMatrixYh = new TH2D("histMigrationMatrixYh", "Migration Y_{h};True Y_{h}; Reco Y_{h}", 50,-5.0,5.0, 50,-5.0,5.0);
+    TH2D* histMigrationMatrixXf = new TH2D("histMigrationMatrixXf", "Migration X_{f};True X_{f}; Reco X_{f}", 60,-1.0,1.0, 60,-1.0,1.0);
+    TH2D* histMigrationMatrixYh = new TH2D("histMigrationMatrixYh", "Migration Y_{h};True Y_{h}; Reco Y_{h}", 100,-2.5,2.5, 100,-2.5,2.5);
 
     if (fChain == 0)
         return;
@@ -1088,26 +1100,48 @@ void Acceptance::GetXfVSYh()
 		for (int i=0; i<vec_entries; i++)
         {
             good_pion_mc = false, good_pion = false;
+            PlCM=0, EhCM=0, Yh=0;
+            mc_PlCM=0, mc_EhCM=0, mc_Yh=0;
+
             if (good_electron && GoodPiPlus(ientry, i, DISLimits))
             {
                 n_pions++;
                 good_pion = true;
-                hist2D_Xf_Yh_reco->Fill(Xf->at(i), Yh->at(i));
+
+                PlCM = (TMath::Sqrt(Pl2->at(i)) - Zh->at(i) * Nu * TMath::Sqrt(Q2 + Nu * Nu) / (Nu + kMassProton)) * (Nu + kMassProton) / W;
+                EhCM = (W * W + kMassPiPlus - kMassProton)/(2*W);
+
+                Yh = TMath::Log((EhCM + PlCM)/(EhCM - PlCM))/2.;
+
+                hist1D_Xf_reco->Fill(Xf->at(i));
+                hist1D_Yh_reco->Fill(Yh);
+                hist2D_Xf_Yh_reco->Fill(Xf->at(i), Yh);
             }
 
             if (!_isData && good_electron_mc && GoodPiPlus_MC(ientry, i, DISLimits))
             {
                 good_pion_mc = true;
-                hist2D_Xf_Yh_gene->Fill(mc_Xf->at(i), mc_Yh->at(i));
+
+                mc_PlCM = (TMath::Sqrt(mc_Pl2->at(i)) - mc_Zh->at(i) * mc_Nu * TMath::Sqrt(mc_Q2 + mc_Nu * mc_Nu) / (mc_Nu + kMassProton)) * (mc_Nu + kMassProton) / mc_W;
+                mc_EhCM = (mc_W * mc_W + kMassPiPlus - kMassProton)/(2*mc_W);
+
+                mc_Yh = TMath::Log((mc_EhCM + mc_PlCM)/(mc_EhCM - mc_PlCM))/2.;
+
+                hist1D_Xf_gene->Fill(mc_Xf->at(i));
+                hist1D_Yh_gene->Fill(mc_Yh);
+                hist2D_Xf_Yh_gene->Fill(mc_Xf->at(i), mc_Yh);
             }
 
             if (good_pion && good_pion_mc)
             {
                 n_pions_match++;
-                hist2D_Xf_Yh_mtch->Fill(Xf->at(i), Yh->at(i));
+
+                hist1D_Xf_mtch->Fill(Xf->at(i));
+                hist1D_Yh_mtch->Fill(Yh);
+                hist2D_Xf_Yh_mtch->Fill(Xf->at(i), Yh);
 
                 histMigrationMatrixXf->Fill(mc_Xf->at(i), Xf->at(i));
-                histMigrationMatrixYh->Fill(mc_Yh->at(i), Yh->at(i));
+                histMigrationMatrixYh->Fill(mc_Yh, Yh);
             }
         }   // loop over tracks
     }       // loop over entries
@@ -1117,8 +1151,12 @@ void Acceptance::GetXfVSYh()
 
     if (_isData)
     {
-        hist2D_Xf_Yh_gene->Delete();
+        hist1D_Xf_mtch->Delete();
+        hist1D_Xf_gene->Delete();
+        hist1D_Yh_mtch->Delete();
+        hist1D_Yh_gene->Delete();
 
+        hist2D_Xf_Yh_gene->Delete();
         hist2D_Xf_Yh_mtch->Delete();
 
         histMigrationMatrixXf->Delete();
@@ -1130,4 +1168,3 @@ void Acceptance::GetXfVSYh()
     fout->Write();
     fout->Close();
 }
-*/

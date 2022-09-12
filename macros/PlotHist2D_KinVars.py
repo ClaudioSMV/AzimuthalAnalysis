@@ -33,12 +33,12 @@ dataset = options.Dataset
 if options.JLabCluster: rootpath = "JLab_cluster"
 
 infoDict = myStyle.getNameFormattedDict(dataset)
-inputPath = myStyle.getInputFile("Proj2D",dataset,rootpath) # ClosureTest_%s_B%i_%iD.root
+inputPath = myStyle.getInputFile("Hist2D",dataset,rootpath) # ClosureTest_%s_B%i_%iD.root
 if isData:  inputPath += "data.root"
 else:       inputPath += "hsim.root"
 inputfile = TFile(inputPath,"READ")
 
-outputPath = myStyle.getOutputDir("Proj2D",infoDict["Target"],rootpath)
+outputPath = myStyle.getOutputDir("Hist2D",infoDict["Target"],rootpath)
 
 correct_prefix = {"reco": "Reconstructed", "mtch": "Reconstructed", "gene": "Generated"}
 
@@ -90,6 +90,6 @@ for h in list_of_hists:
             to_write = "%s vs %s, %s"%(myStyle.bin_dict[var1]['Name'], myStyle.bin_dict[var2]['Name'], dataOrSim)
             text_UpRight.DrawLatexNDC(1-2*myStyle.GetMargin()-0.005,1-myStyle.GetMargin()+0.01, to_write)
 
-            canvas.SaveAs(outputPath+dataOrSim+"_"+type_hist+"_"+var1+"_"+var2+".gif")
+            canvas.SaveAs(outputPath+"KinVars_"+dataOrSim+"_"+type_hist+"_"+var1+"_"+var2+".gif")
             canvas.Clear()
 

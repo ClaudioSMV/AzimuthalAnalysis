@@ -44,8 +44,8 @@ def getInputFile(nameMethod,nameFormat, extra_path=""):
     fileName = getNameFormatted(nameFormat)
     file = "%s_%s"%(nameMethod,fileName)
     if nameMethod=="Correction": file = "Corrected_%s"%(fileName)
-    elif nameMethod=="Proj2D":
-        file = "Get2DProj_%s_"%(getNameFormattedDict(nameFormat)["Target"])
+    elif nameMethod=="Hist2D":
+        file = "KinVars_%s_"%(getNameFormattedDict(nameFormat)["Target"])
         return indir+file # Still needs "data" or "hsim" + .root
     return indir+file+".root"
 
@@ -188,5 +188,5 @@ def GetColors(color_blind = False):
 
 bin_dict = {'Q': {'Name': "Q^{2}",      'Bins': [1.00, 1.30, 1.80, 4.10]},
             'N': {'Name': "#nu",        'Bins': [2.20, 3.20, 3.70, 4.20]},
-            'Z': {'Name': "Z_{h}",      'Bins': [0.00, 0.15, 0.25, 0.40, 0.70, 1.00]},
+            'Z': {'Name': "Z_{h}",      'Bins': [0.00, 0.15, 0.25, 0.40, 0.70, 0.90, 1.00]}, # REMEMBER TO UPDATE THIS SO WE CAN CHENGE BETWEEN DIFFERENT BINNINGS
             'P': {'Name': "P_{t}^{2}",  'Bins': [0.00, 0.03, 0.06, 0.10, 0.18, 1.00]}}
