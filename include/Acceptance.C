@@ -121,22 +121,16 @@ void Acceptance::Loop()
     THnSparse *histReco_rec = new THnSparseD("histReco_rec","Reconstructed only", 5,nbins,minbins,maxbins);
     THnSparse *histReco_mc = new THnSparseD("histReco_mc","Good reconstructed with mc_vars", 5,nbins,minbins,maxbins);
     THnSparse *histTrue_rec = new THnSparseD("histTrue_rec","Good reconstructed with reco_vars", 5,nbins,minbins,maxbins);
-	// THnSparse *histAcce_mc  = new THnSparseD("histAcce_mc","Acceptance with mc_vars", 5,nbins,minbins,maxbins);
-	// THnSparse *histAcce_rec  = new THnSparseD("histAcce_rec","Acceptance with reco_vars", 5,nbins,minbins,maxbins);
 
     SetVariableSize(histTrue, nbins, Q2_Lmts, Nu_Lmts, Zh_Lmts, Pt2_Lmts, PhiPQ_Lmts);     // Good Generated (Doesn't care of Reco), filled with Generated kinematic vars
     SetVariableSize(histReco_rec, nbins, Q2_Lmts, Nu_Lmts, Zh_Lmts, Pt2_Lmts, PhiPQ_Lmts); // Good Reco (Doesn't care of Generated), filled with Reco kinematic vars
     SetVariableSize(histReco_mc, nbins, Q2_Lmts, Nu_Lmts, Zh_Lmts, Pt2_Lmts, PhiPQ_Lmts);  // Good Reco & Generated, filled with Generated kinematic vars
     SetVariableSize(histTrue_rec, nbins, Q2_Lmts, Nu_Lmts, Zh_Lmts, Pt2_Lmts, PhiPQ_Lmts); // Good Reco & Generated, filled with Reco kinematic vars
-    // SetVariableSize(histAcce_mc,  nbins, Q2_Lmts, Nu_Lmts, Zh_Lmts, Pt2_Lmts, PhiPQ_Lmts);
-    // SetVariableSize(histAcce_rec,  nbins, Q2_Lmts, Nu_Lmts, Zh_Lmts, Pt2_Lmts, PhiPQ_Lmts);
 
 	histTrue->Sumw2();
 	histReco_rec->Sumw2();
 	histReco_mc->Sumw2();
 	histTrue_rec->Sumw2();
-	// histAcce_mc->Sumw2();
-	// histAcce_rec->Sumw2();
 
     if (fChain == 0)
         return;

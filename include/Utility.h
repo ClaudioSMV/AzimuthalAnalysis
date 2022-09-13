@@ -32,6 +32,18 @@ int VarPosition(double var, std::vector<double> *var_limits)
 	return -9999;
 }
 
+int VarPosition(double var, double var_limits[], int nlimts)
+{
+	for (unsigned int ivar=0; ivar<nlimts; ivar++)
+    {
+		if (var_limits[ivar]<=var && var<var_limits[ivar+1])
+        {
+			return ivar;
+		}
+	}
+	return -9999;
+}
+
 // GlobalVarPosition() Gives the position in an ordered vector following ibin = iA + iB*Total_A + iC*Total_B*Total_A + ...
 int GlobalVarPosition(std::vector<double> *var_values, std::vector<std::vector<double>> *var_limits)
 {

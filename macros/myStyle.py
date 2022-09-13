@@ -41,9 +41,12 @@ def getNameFormatted(nameFormat):
 def getInputFile(nameMethod,nameFormat, extra_path=""):
     if extra_path: extra_path+="/"
     indir = "../output/%s%s/" % (extra_path,nameMethod) # ex. Acceptance, Correction
+
     fileName = getNameFormatted(nameFormat)
+    # Default as ClosureTest_Fe_B0_2D
     file = "%s_%s"%(nameMethod,fileName)
-    if nameMethod=="Correction": file = "Corrected_%s"%(fileName)
+    if nameMethod=="Acceptance": file = "Acceptance_%s"%(fileName)
+    elif nameMethod=="Correction": file = "Corrected_%s"%(fileName)
     elif nameMethod=="Hist2D":
         file = "KinVars_%s_"%(getNameFormattedDict(nameFormat)["Target"])
         return indir+file # Still needs "data" or "hsim" + .root
