@@ -34,7 +34,7 @@ int VarPosition(double var, std::vector<double> *var_limits)
 
 int VarPosition(double var, double var_limits[], int nlimts)
 {
-	for (unsigned int ivar=0; ivar<nlimts; ivar++)
+	for (int ivar=0; ivar<nlimts; ivar++)
     {
 		if (var_limits[ivar]<=var && var<var_limits[ivar+1])
         {
