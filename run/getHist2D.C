@@ -60,4 +60,9 @@ void getHist2D(std::string target = "Fe", bool isData = true, std::string vars =
         std::cout << "\n >> Running Hist2D_XfVsYh for " << target << " target [file type: " << isData << "]\n" << std::endl;
         acc.Hist2D_XfVsYh();
     }
+    else if (vars.find("ThetaPQ") != string::npos)
+    {
+        std::cout << "\n >> Running Hist2D_ThetaPQ for " << target << " target [file type: " << isData << "]\n" << std::endl;
+        acc.Hist2D_ThetaPQ();
+    }
 }
