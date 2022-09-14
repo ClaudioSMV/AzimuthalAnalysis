@@ -107,11 +107,22 @@ void Acceptance::Loop()
 
     //// Define Histograms
     // one-dimensional efficiency histogramss
+    // TEfficiency* effQ2 = new TEfficiency("effQ2", "effQ2;Q^{2} (GeV^{2});Reconstruction Efficiency", 20, DISLimits[0][0], DISLimits[1][0]);
+    // TEfficiency* effNu = new TEfficiency("effNu", "effNu;#nu (GeV);Reconstruction Efficiency", 20, DISLimits[0][1], DISLimits[1][1]);
     TEfficiency* effZh = new TEfficiency("effZh", "effZh;z_{h};Reconstruction Efficiency", 20, DISLimits[0][2], DISLimits[1][2]);
     TEfficiency* effPt2 = new TEfficiency("effPt2", "effPt2;p_{T}^{2} (GeV^{2});Reconstruction Efficiency", 20, DISLimits[0][3], DISLimits[1][3]);
     TEfficiency* effPhiPQ = new TEfficiency("effPhiPQ", "effPhiPQ;#phi_{PQ} (deg);Reconstruction Efficiency", 60, DISLimits[0][4], DISLimits[1][4]);
 
+    // one-dimensional resolution histograms
+    TH1F* resQ2 = new TH1F("resQ2", "ResolutionQ2;Q^{2}-mc_Q^{2};Counts", 64, -0.8, 0.8);
+    TH1F* resNu = new TH1F("resNu", "ResolutionNu;#nu-mc_#nu;Counts", 64, -0.8, 0.8);
+    TH1F* resZh = new TH1F("resZh", "ResolutionZh;z_{h}-mc_z_{h};Counts", 32, -0.4, 0.4);
+    TH1F* resPt2 = new TH1F("resPt2", "ResolutionPt2;p_{T}^{2}-mc_p_{T}^{2};Counts", 32, -0.4, 0.4);
+    TH1F* resPhiPQ = new TH1F("resPhiPQ", "ResolutionPhiPQ;#phi_{PQ}-mc_#phi_{PQ};Counts", 80, -4.0, 4.0);
+
     // bin Migration
+    TH2F* histMigrationMatrixQ2 = new TH2F("histMigrationMatrixQ2", "MigrationQ2;True Q^{2}; Reco Q^{2}", 50, DISLimits[0][0], DISLimits[1][0], 50, DISLimits[0][0], DISLimits[1][0]);
+    TH2F* histMigrationMatrixNu = new TH2F("histMigrationMatrixNu", "MigrationNu;True #nu; Reco #nu", 50, DISLimits[0][1], DISLimits[1][1], 50, DISLimits[0][1], DISLimits[1][1]);
     TH2F* histMigrationMatrixZh = new TH2F("histMigrationMatrixZh", "MigrationZh;True z_{h}; Reco z_{h}", 50, DISLimits[0][2], DISLimits[1][2], 50, DISLimits[0][2], DISLimits[1][2]);
     TH2F* histMigrationMatrixPt2 = new TH2F("histMigrationMatrixPt2", "MigrationPt2;True p_{T}^{2} (GeV^{2});Reco p_{T}^{2} (GeV^{2})", 50, DISLimits[0][3], DISLimits[1][3], 50, DISLimits[0][3], DISLimits[1][3]);
     TH2F* histMigrationMatrixPhiPQ = new TH2F("histMigrationMatrixPhiPQ", "MigrationPhiPQ;True #phi_{PQ} (deg);Reco #phi_{PQ} (deg)", 120, DISLimits[0][4], DISLimits[1][4], 120, DISLimits[0][4], DISLimits[1][4]);
@@ -143,6 +154,7 @@ void Acceptance::Loop()
     int vec_entries_MC=0, vec_entries=0;
     bool good_electron_mc = false, good_electron = false;
     bool good_pion_mc = false, good_pion = false;
+    bool save_lepton_vars = true;
 
     std::map<std::string, unsigned int> general_El_count = {{"Total mc_El",0}, {"Total rec_El",0}, {"Different vector size",0}};
     std::map<std::string, unsigned int> mc_El_Reject_count = {{"Wrong mc_TargType",0}, {"Out of DIS range",0}, {"Not accepted",0}};
@@ -172,6 +184,9 @@ void Acceptance::Loop()
         nbytes += nb;
         // if (Cut(ientry) < 0) continue;
         good_electron_mc = false, good_electron = false;
+        
+        // Save leptonic variables only when there is at least one pion
+        save_lepton_vars=true;
 
         if (GoodElectron_MC(ientry, DISLimits))
         {
@@ -272,13 +287,39 @@ void Acceptance::Loop()
                 histMigrationMatrixPt2->Fill(mc_Pt2->at(i), Pt2->at(i));
                 histMigrationMatrixPhiPQ->Fill(mc_PhiPQ->at(i), PhiPQ->at(i));
 
+                resZh->Fill(Zh->at(i) - mc_Zh->at(i));
+                resPt2->Fill(Pt2->at(i) - mc_Pt2->at(i));
+
+                // Save PhiPQ considering that it's a cyclic variable
+                double delta_PhiPQ = PhiPQ->at(i) - mc_PhiPQ->at(i);
+                if (abs(delta_PhiPQ) > 350.)
+                {
+                    if (delta_PhiPQ>0) resPhiPQ->Fill(delta_PhiPQ-360);
+                    else               resPhiPQ->Fill(delta_PhiPQ+360);
+                }
+                else
+                {
+                    resPhiPQ->Fill(delta_PhiPQ);
+                }
+
                 histReco_mc->Fill(mc_bin);
                 histTrue_rec->Fill(rec_bin);
+
+                if (save_lepton_vars)
+                {
+                    histMigrationMatrixQ2->Fill(mc_Q2, Q2);
+                    histMigrationMatrixNu->Fill(mc_Nu, Nu);
+
+                    resQ2->Fill(Q2 - mc_Q2);
+                    resNu->Fill(Nu - mc_Nu);
+
+                    save_lepton_vars = false;
+                }
             }
 
-            effZh->Fill(pion_passed ,mc_Zh->at(i));
-            effPt2->Fill(pion_passed ,mc_Pt2->at(i));
-            effPhiPQ->Fill(pion_passed ,mc_PhiPQ->at(i));
+            effZh->Fill(pion_passed, mc_Zh->at(i));
+            effPt2->Fill(pion_passed, mc_Pt2->at(i));
+            effPhiPQ->Fill(pion_passed, mc_PhiPQ->at(i));
         }   // loop over tracks
     }       // loop over entries
 
