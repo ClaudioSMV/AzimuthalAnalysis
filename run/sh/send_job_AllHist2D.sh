@@ -49,7 +49,18 @@ echo "#SBATCH --mail-type=BEGIN,END,FAIL"                                 >> ${j
 echo ""                                                                   >> ${jobfile}
 echo "source ${HOME}/.bashrc"                                             >> ${jobfile}
 echo "cd ${REPODIR}/run"                                                  >> ${jobfile}
-echo "root -l -b 'runAll_Hist2D.C(\"${VARNAME}\")'"                       >> ${jobfile}
+
+echo "-- Data --"                                                         >> ${jobfile}
+echo "root -l -b 'getHist2D.C(\"Fe\", true, \"${VARNAME}\")'"             >> ${jobfile}
+echo "root -l -b 'getHist2D.C(\"C\", true, \"${VARNAME}\")'"              >> ${jobfile}
+echo "root -l -b 'getHist2D.C(\"Pb\", true, \"${VARNAME}\")'"             >> ${jobfile}
+echo "root -l -b 'getHist2D.C(\"D\", true, \"${VARNAME}\")'"              >> ${jobfile}
+
+echo "-- Simulations --"                                                  >> ${jobfile}
+echo "root -l -b 'getHist2D.C(\"Fe\", false, \"${VARNAME}\")'"            >> ${jobfile}
+echo "root -l -b 'getHist2D.C(\"C\", false, \"${VARNAME}\")'"             >> ${jobfile}
+echo "root -l -b 'getHist2D.C(\"Pb\", false, \"${VARNAME}\")'"            >> ${jobfile}
+echo "root -l -b 'getHist2D.C(\"D\", false, \"${VARNAME}\")'"             >> ${jobfile}
 
 echo "Submitting job: ${jobfile}"
 sbatch ${jobfile} # submit job!
