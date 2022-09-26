@@ -65,4 +65,9 @@ void getHist2D(std::string target = "Fe", bool isData = true, std::string vars =
         std::cout << "\n >> Running Hist2D_ThetaPQ for " << target << " target [file type: " << isData << "]\n" << std::endl;
         acc.Hist2D_ThetaPQ();
     }
+    else if (vars.find("LabAngles") != string::npos)
+    {
+        std::cout << "\n >> Running Hist2D_LabAngles for " << target << " target [file type: " << isData << "]\n" << std::endl;
+        acc.Hist2D_LabAngles();
+    }
 }
