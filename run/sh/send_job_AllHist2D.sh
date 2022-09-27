@@ -3,10 +3,11 @@
 #################################################
 # ./send_job_AllHist2D.sh <vars>                #
 #    <target> = (D, C, Fe, Pb)                  #
-#    <vars> =  "KinVars", "Yh","ThetaPQ"        #
+#    <vars> = "KinVars", "Yh", "ThetaPQ",       #
+#             "LabAngles"                       #
 #                                               #
-# EG: ./send_job_AllHist2D.sh C KinVars         #
-#     ./send_job_AllHist2D.sh Fe ThetaPQ        #
+# EG: ./send_job_AllHist2D.sh KinVars           #
+#     ./send_job_AllHist2D.sh ThetaPQ           #
 #################################################
 
 #####
