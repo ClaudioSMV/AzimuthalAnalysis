@@ -25,10 +25,10 @@ def getNameFormattedDict(nameFormat): #input: <target>_<binningType number>_<non
             targetDict["Cuts"].append(targetList[i])
     return targetDict
 
-def getNameFormatted(nameFormat):
+def getNameFormatted(nameFormat, isAcc = False):
     formDict = getNameFormattedDict(nameFormat)
     fileName = "%s_B%i"%(formDict["Target"],formDict["BinningType"])
-    if formDict["NDims"]:
+    if (not isAcc) and formDict["NDims"]:
         fileName+="_%iD"%(formDict["NDims"])
     if formDict["Cuts"]:
         for e in formDict["Cuts"]:
@@ -45,7 +45,9 @@ def getInputFile(nameMethod,nameFormat, extra_path=""):
     fileName = getNameFormatted(nameFormat)
     # Default as ClosureTest_Fe_B0_2D
     file = "%s_%s"%(nameMethod,fileName)
-    if nameMethod=="Acceptance": file = "Acceptance_%s"%(fileName)
+    if nameMethod=="Acceptance":
+        fileName = getNameFormatted(nameFormat, True)
+        file = "Acceptance_%s"%(fileName)
     elif nameMethod=="Correction": file = "Corrected_%s"%(fileName)
     elif nameMethod=="Hist2D":
         file = "KinVars_%s_"%(getNameFormattedDict(nameFormat)["Target"])
@@ -193,3 +195,7 @@ bin_dict = {'Q': {'Name': "Q^{2}",      'Bins': [1.00, 1.30, 1.80, 4.10]},
             'N': {'Name': "#nu",        'Bins': [2.20, 3.20, 3.70, 4.20]},
             'Z': {'Name': "Z_{h}",      'Bins': [0.00, 0.15, 0.25, 0.40, 0.70, 0.90, 1.00]}, # REMEMBER TO UPDATE THIS SO WE CAN CHENGE BETWEEN DIFFERENT BINNINGS
             'P': {'Name': "P_{t}^{2}",  'Bins': [0.00, 0.03, 0.06, 0.10, 0.18, 1.00]}}
+
+kin_vars_list = [   ["Q2", "Nu", "Zh", "Pt2", "PhiPQ"],
+                    ["Q^{2}", "#nu", "Z_{h}", "P_{t}^{2}", "#phi_{PQ}"],
+                    ["(GeV^{2})", "(GeV)", "", "(GeV^{2})", "(deg)"]]
