@@ -86,7 +86,9 @@ for h in list_of_hists:
             myStyle.DrawTargetInfo(nameFormatted, "Data")
             myStyle.DrawBinInfo(tmp_txt)
 
-            canvas.SaveAs(outputPath+"Fit_"+nameFormatted+"_"+tmp_txt+".gif")
+            #### UPDATE ADDING CHI-SQUARE AND GOODNESS OF FIT!
+
+            canvas.SaveAs(outputPath+"FitBothTails_"+nameFormatted+"_"+tmp_txt+".gif")
             canvas.Clear()
 
 # inputTHnSparse_list = [histCorr_Reconstructed, histCorr_RecGoodGen_mc, histCorr_RecGoodGen_rec, histRaw]
