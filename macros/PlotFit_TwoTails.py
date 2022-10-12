@@ -24,13 +24,13 @@ parser = optparse.OptionParser("usage: %prog [options]\n")
 # parser.add_option('-y','--ylength', dest='ylength', default = 200.0, help="Y axis upper limit")
 parser.add_option('-D', dest='Dataset', default = "", help="Dataset in format <targ>_<binType>_<Ndims>")
 parser.add_option('-p', dest='rootpath', default = "", help="Add path to files, if needed")
-parser.add_option('-a', dest='saveAll', action='store_true', default = False, help="Save All plots")
+# parser.add_option('-a', dest='saveAll', action='store_true', default = False, help="Save All plots")
 parser.add_option('-J', dest='JLabCluster', action='store_true', default = False, help="Use folder from JLab_cluster")
 
 # IDEA: input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
 
-saveAll = options.saveAll
+# saveAll = options.saveAll
 rootpath = options.rootpath
 dataset = options.Dataset
 if options.JLabCluster: rootpath = "JLab_cluster"
@@ -51,6 +51,8 @@ list_of_hists = inputfile.GetListOfKeys()
 canvas = TCanvas("cv","cv",1000,800)
 gStyle.SetOptStat(0)
 
+outputfile = TFile("%sFitBothTails_%s.root"%(outputPath,nameFormatted),"RECREATE")
+
 for h in list_of_hists:
     if (h.ReadObj().Class_Name() == "TH1D"):
         if "Corr" in h.GetName():
@@ -69,18 +71,33 @@ for h in list_of_hists:
             ylim = hist.GetMaximum()*1.4
             hist.SetMaximum(ylim)
 
+            ### Get limit of the fit just before the central peak
+            ## Left (Negative)
+            hist.GetXaxis().SetRangeUser(-45.0, 0.0)
+            limit_bin_L = hist.GetMinimumBin()
+            fit_min_limit_L = hist.GetBinCenter(limit_bin_L)
+            hist.GetXaxis().UnZoom()
+
+            ## Right (Positive)
+            hist.GetXaxis().SetRangeUser(0.0, 45.0)
+            limit_bin_R = hist.GetMinimumBin()
+            fit_min_limit_R = hist.GetBinCenter(limit_bin_R)
+            hist.GetXaxis().UnZoom()
+
             hist.GetXaxis().SetTitle("#phi_{PQ} (deg)")
             hist.GetYaxis().SetTitle("Counts")
 
             hist.Draw("hist axis")
 
-            fit_funct_right = TF1("crossSectionR","[0] + [1]*cos(TMath::Pi()*x/180.0) + [2]*cos(2*TMath::Pi()*x/180.0)",  40.0, 180.0)
-            fit_funct_left  = TF1("crossSectionL","[0] + [1]*cos(TMath::Pi()*x/180.0) + [2]*cos(2*TMath::Pi()*x/180.0)", -180.0,-40.0)
+            fit_funct_left  = TF1("crossSectionL","[0] + [1]*cos(TMath::Pi()*x/180.0) + [2]*cos(2*TMath::Pi()*x/180.0)", -180.0,fit_min_limit_L)
+            fit_funct_right = TF1("crossSectionR","[0] + [1]*cos(TMath::Pi()*x/180.0) + [2]*cos(2*TMath::Pi()*x/180.0)",  fit_min_limit_R, 180.0)
 
-            hist.Fit("crossSectionR", "", "", 40.0, 180.0) # right_edge = 
-            hist.Fit("crossSectionL", "+ sames", "", -180.0,-40.0) # left_edge =
+            hist.Fit("crossSectionL", "Q", "",        -180.0,fit_min_limit_L)
+            hist.Fit("crossSectionR", "Q+ sames", "", fit_min_limit_R, 180.0)
 
             hist.Draw("FUNC same")
+
+            hist.Write()
 
             myStyle.DrawPreliminaryInfo("Correction fit")
             myStyle.DrawTargetInfo(nameFormatted, "Data")
@@ -90,6 +107,8 @@ for h in list_of_hists:
 
             canvas.SaveAs(outputPath+"FitBothTails_"+nameFormatted+"_"+tmp_txt+".gif")
             canvas.Clear()
+
+outputfile.Close()
 
 # inputTHnSparse_list = [histCorr_Reconstructed, histCorr_RecGoodGen_mc, histCorr_RecGoodGen_rec, histRaw]
 # prefixType = ["Correction", "Corr GoodGen_mc", "Corr GoodGen_rec", "Raw data"]

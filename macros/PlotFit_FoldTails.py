@@ -42,6 +42,8 @@ list_of_hists = inputfile.GetListOfKeys()
 canvas = TCanvas("cv","cv",1000,800)
 gStyle.SetOptStat(0)
 
+outputfile = TFile("%sFitFold_%s.root"%(outputPath,nameFormatted),"RECREATE")
+
 for h in list_of_hists:
     if (h.ReadObj().Class_Name() == "TH1D"):
         if "Corr" in h.GetName():
@@ -77,12 +79,12 @@ for h in list_of_hists:
                 hist_tmp.SetBinError(this_bin, error)
 
             ### Get limit of the fit just before the central peak
-            hist_tmp.GetXaxis().SetRangeUser(0.0, 50.0)
+            hist_tmp.GetXaxis().SetRangeUser(0.0, 45.0)
             limit_bin = hist_tmp.GetMinimumBin()
-            fit_min_limit = hist_tmp.GetBinCenter(limit_bin)
+            fit_min_limit = hist_tmp.GetBinLowEdge(limit_bin)
             hist_tmp.GetXaxis().UnZoom()
 
-            print("Fit limit: %.2f (Bin %i)"%(fit_min_limit, limit_bin))
+            #print("Fit limit: %.2f (Bin %i)"%(fit_min_limit, limit_bin))
 
             hist_tmp.SetMinimum(0.0001)
             ylim = hist_tmp.GetMaximum()*1.4
@@ -96,9 +98,11 @@ for h in list_of_hists:
             # fit_min_limit=40.0
             fit_funct = TF1("crossSection","[0] + [1]*cos(TMath::Pi()*x/180.0) + [2]*cos(2*TMath::Pi()*x/180.0)",  fit_min_limit, 180.0)
 
-            hist_tmp.Fit("crossSection", "", "", fit_min_limit, 180.0)
+            hist_tmp.Fit("crossSection", "Q", "", fit_min_limit, 180.0)
 
             hist_tmp.Draw("FUNC same")
+
+            hist_tmp.Write()
 
             myStyle.DrawPreliminaryInfo("Correction fit")
             myStyle.DrawTargetInfo(nameFormatted, "Data")
@@ -106,3 +110,5 @@ for h in list_of_hists:
 
             canvas.SaveAs(outputPath+"FitFold_"+nameFormatted+"_"+tmp_txt+".gif")
             canvas.Clear()
+
+outputfile.Close()
