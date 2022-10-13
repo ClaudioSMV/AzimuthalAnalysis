@@ -103,101 +103,17 @@ for h in list_of_hists:
             myStyle.DrawTargetInfo(nameFormatted, "Data")
             myStyle.DrawBinInfo(tmp_txt)
 
-            #### UPDATE ADDING CHI-SQUARE AND GOODNESS OF FIT!
+            str_FitL = TLatex(-15, 0.8*hist.GetBinContent(limit_bin_L), "#chi^2 / ndf = %.2f / %i"%(fit_funct_left.GetChisquare(), fit_funct_left.GetNDF()))
+            str_FitL.SetTextAlign(33)
+            str_FitL.SetTextSize(myStyle.GetSize()-6)
+            str_FitL.Draw()
+
+            str_FitR = TLatex(15, 0.8*hist.GetBinContent(limit_bin_R), "#chi^2 / ndf = %.2f / %i"%(fit_funct_right.GetChisquare(), fit_funct_right.GetNDF()))
+            str_FitR.SetTextAlign(13)
+            str_FitR.SetTextSize(myStyle.GetSize()-6)
+            str_FitR.Draw()
 
             canvas.SaveAs(outputPath+"FitBothTails_"+nameFormatted+"_"+tmp_txt+".gif")
             canvas.Clear()
 
 outputfile.Close()
-
-# inputTHnSparse_list = [histCorr_Reconstructed, histCorr_RecGoodGen_mc, histCorr_RecGoodGen_rec, histRaw]
-# prefixType = ["Correction", "Corr GoodGen_mc", "Corr GoodGen_rec", "Raw data"]
-
-
-# bins_list = [] # [3, 3, 5]
-
-# for i in range(0,infoDict["NDims"]):
-#     nbins = histCorr_Reconstructed.GetAxis(i).GetNbins()
-#     bins_list.append(nbins)
-
-# totalsize = np.prod(bins_list)
-# names_list = []
-# Proj1DTHnSparse_list = [[],[],[],[]]
-# symbol_list = ["Q","N","Z"]
-# for i in range(totalsize):
-#     total_tmp = totalsize
-#     i_tmp = i
-#     txt_tmp = ""
-#     for j,nbin in enumerate(bins_list):
-#         total_tmp /= nbin
-#         index = i_tmp/(total_tmp)
-#         i_tmp -= index*total_tmp
-#         txt_tmp += (symbol_list[j]+str(index))
-
-#         for t in inputTHnSparse_list:
-#             t.GetAxis(j).SetRange(index+1, index+1)
-
-#         # histCorr_Reconstructed.GetAxis(j).SetRange(index+1, index+1)
-
-#     for n,newRangeInput in enumerate(inputTHnSparse_list):
-#         proj_tmp = newRangeInput.Projection(4)
-#         proj_tmp.SetName(newRangeInput.GetName()+"_"+txt_tmp)
-
-#         Proj1DTHnSparse_list[n].append(proj_tmp)
-
-#     # histCorr_Reconstructed_Proj = histCorr_Reconstructed.Projection(4)
-#     # histCorr_Reconstructed_Proj.SetName(histCorr_Reconstructed.GetName()+"_"+txt_tmp)
-
-#     # list_Corr_Reconstructed.append(histCorr_Reconstructed_Proj)
-#     names_list.append(txt_tmp)
-
-
-# canvas = TCanvas("cv","cv",1000,800)
-# canvas.SetGrid(0,1)
-# # gPad.SetTicks(1,1)
-# TH1.SetDefaultSumw2()
-# gStyle.SetOptStat(0)
-
-
-# # Plot 2D histograms
-# nameFormatted = myStyle.getNameFormatted(dataset)
-# outputfile = TFile(outputPath+nameFormatted+".root","RECREATE")
-# for i,info in enumerate(names_list):
-#     for p,proj in enumerate(Proj1DTHnSparse_list):
-#         if (("Good" in prefixType[p]) and (not saveAll)): continue
-#         this_proj = proj[i]
-#         htemp = TH1F("htemp","",1,-180.,180.)
-#         htemp.SetStats(0)
-#         htemp.SetMinimum(0.0001)
-#         # ylim = 30000
-#         ylim = this_proj.GetMaximum()*1.2
-#         htemp.SetMaximum(ylim)
-#         # htemp.SetLineColor(kBlack)
-#         htemp.GetXaxis().SetTitle("#phi_{PQ} (deg)")
-#         htemp.GetYaxis().SetTitle("Counts")
-#         htemp.Draw("AXIS")
-
-#         this_proj.SetLineColor(kBlack)
-#         # list_Corr_Reconstructed[i].SetTitle(info.title)
-#         # list_Corr_Reconstructed[i].GetXaxis().SetTitle(info.xlabel)
-#         # list_Corr_Reconstructed[i].GetXaxis().SetRangeUser(-0.32, 0.32)
-#         # list_Corr_Reconstructed[i].GetYaxis().SetTitle(info.ylabel)
-
-#         # gPad.RedrawAxis("g")
-
-#         # htemp.Draw("AXIS same")
-#         # list_Corr_Reconstructed[i].Draw("AXIS same")
-#         this_proj.Draw("hist e same")
-
-#         # legend.Draw();
-#         myStyle.DrawPreliminaryInfo(prefixType[p])
-#         myStyle.DrawTargetInfo(nameFormatted, "Data")
-#         myStyle.DrawBinInfo(info)
-
-#         canvas.SaveAs(outputPath+nameFormatted+"-"+this_proj.GetName()+".gif")
-#         # canvas.SaveAs(outputPath+"CT_"+info+".pdf")
-#         this_proj.Write()
-#         htemp.Delete()
-
-# outputfile.Close()
-

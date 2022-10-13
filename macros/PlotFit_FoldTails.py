@@ -7,7 +7,7 @@ import math
 import numpy as np
 
 gROOT.SetBatch( True )
-gStyle.SetOptFit(1011)
+gStyle.SetOptFit(1)
 
 ## Defining Style
 myStyle.ForceStyle()
