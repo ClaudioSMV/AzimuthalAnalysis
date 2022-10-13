@@ -22,7 +22,7 @@ gStyle.SetStatY(2*myStyle.GetMargin() + 0.205)
 parser = optparse.OptionParser("usage: %prog [options]\n")
 # parser.add_option('-x','--xlength', dest='xlength', default = 4.0, help="X axis range [-x, x]")
 # parser.add_option('-y','--ylength', dest='ylength', default = 200.0, help="Y axis upper limit")
-parser.add_option('-D', dest='Dataset', default = "", help="Dataset in format <binType>_<Ndims>")
+parser.add_option('-D', dest='Dataset', default = "", help="Dataset in format <target>_<binType>_<Ndims>")
 parser.add_option('-p', dest='rootpath', default = "", help="Add path to files, if needed")
 parser.add_option('-J', dest='JLabCluster', action='store_true', default = False, help="Use folder from JLab_cluster")
 parser.add_option('-F', dest='fold', action='store_true', default = False, help="Use fold tails (default does not)")
@@ -34,56 +34,55 @@ options, args = parser.parse_args()
 rootpath = options.rootpath
 dataset = options.Dataset
 dataset_elemts = dataset.split("_")
-if (len(dataset_elemts)==3):
-    dataset = "%s_%s"%(dataset_elemts[1],dataset_elemts[2])
+dataset_D = "D_%s_%s"%(dataset_elemts[1],dataset_elemts[2])
 if options.JLabCluster: rootpath = "JLab_cluster"
 fold = options.fold
 
 ### Get D (liquid target) info and parameters
 inputPath_D = myStyle.getOutputDir("Fit","D",rootpath)
-nameFormatted_D = myStyle.getNameFormatted("_%s"%dataset)
-inputfile_D = TFile("%sFitFold_D%s.root"%(inputPath_D,nameFormatted_D),"READ") if fold else TFile("%sFitBothTails_D%s.root"%(inputPath_D,nameFormatted_D),"READ")
+nameFormatted_D = myStyle.getNameFormatted(dataset_D)
+inputfile_D = TFile("%sFitFold_%s.root"%(inputPath_D,nameFormatted_D),"READ") if fold else TFile("%sFitBothTails_%s.root"%(inputPath_D,nameFormatted_D),"READ")
 
-list_solid_targets = ["C", "Fe", "Pb"]
+# list_solid_targets = ["C", "Fe", "Pb"]
 list_func_names = ["crossSection"] if fold else ["crossSectionL", "crossSectionR"]
 
-for t in list_solid_targets:
-    infoDict = myStyle.getNameFormattedDict("%s_%s"%(t, dataset))
+# for t in list_solid_targets:
+infoDict = myStyle.getNameFormattedDict(dataset)
 
-    nameFormatted = myStyle.getNameFormatted("%s_%s"%(t, dataset))
-    inputPath = myStyle.getOutputDir("Fit",infoDict["Target"],rootpath)
+nameFormatted = myStyle.getNameFormatted(dataset)
+inputPath = myStyle.getOutputDir("Fit",infoDict["Target"],rootpath)
 
-    inputfile_solid = TFile("%sFitFold_%s.root"%(inputPath,nameFormatted),"READ") if fold else TFile("%sFitBothTails_%s.root"%(inputPath,nameFormatted),"READ")
+inputfile_solid = TFile("%sFitFold_%s.root"%(inputPath,nameFormatted),"READ") if fold else TFile("%sFitBothTails_%s.root"%(inputPath,nameFormatted),"READ")
 
-    list_of_hists = inputfile_solid.GetListOfKeys()
+list_of_hists = inputfile_solid.GetListOfKeys()
 
-    print("")
-    print("Target %s"%t)
+print("")
+print("Target %s"%infoDict["Target"])
 
-    for h in list_of_hists:
-        if (h.ReadObj().Class_Name() == "TH1D"):
-            hist_solid = h.ReadObj()
-            hist_D = inputfile_D.Get(h.GetName())
+for h in list_of_hists:
+    if (h.ReadObj().Class_Name() == "TH1D"):
+        hist_solid = h.ReadObj()
+        hist_D = inputfile_D.Get(h.GetName())
 
-            for f in list_func_names:
-                fit_solid = hist_solid.GetFunction(f)
-                par0_X = fit_solid.GetParameter(0)
-                par1_X = fit_solid.GetParameter(1)
-                par2_X = fit_solid.GetParameter(2)
+        for f in list_func_names:
+            fit_solid = hist_solid.GetFunction(f)
+            par0_X = fit_solid.GetParameter(0)
+            par1_X = fit_solid.GetParameter(1)
+            par2_X = fit_solid.GetParameter(2)
 
-                fit_D = hist_D.GetFunction(f)
-                par0_D = fit_D.GetParameter(0)
-                par1_D = fit_D.GetParameter(1)
-                par2_D = fit_D.GetParameter(2)
+            fit_D = hist_D.GetFunction(f)
+            par0_D = fit_D.GetParameter(0)
+            par1_D = fit_D.GetParameter(1)
+            par2_D = fit_D.GetParameter(2)
 
-                print("%s Fit: %s"%(h.GetName(), f))
-                print("Solid: (%6.2f, %5.2f, %5.2f)"%(par0_X, par1_X, par2_X))
-                print("Liquid: (%6.2f, %5.2f, %5.2f)"%(par0_D, par1_D, par2_D))
-                print("Ratio: (%5.2f, %5.2f, %5.2f)"%(par0_X/par0_D, par1_X/par1_D, par2_X/par2_D))
-                print("")
+            print("%s Fit: %s"%(h.GetName(), f))
+            print("Solid: (%6.2f, %5.2f, %5.2f)"%(par0_X, par1_X, par2_X))
+            print("Liquid: (%6.2f, %5.2f, %5.2f)"%(par0_D, par1_D, par2_D))
+            print("Ratio: (%5.2f, %5.2f, %5.2f)"%(par0_X/par0_D, par1_X/par1_D, par2_X/par2_D))
+            print("")
 
-    inputfile_solid.Close()
-    print("")
+inputfile_solid.Close()
+print("")
 
 inputfile_D.Close()
 
