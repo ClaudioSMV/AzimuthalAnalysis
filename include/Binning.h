@@ -38,7 +38,7 @@ namespace DIS
     namespace Correction
     {
       // This map uses _binNdims as input, and says if the final bins need to be redefined (irregular = 1) or remain regular (i.e. same length each = 0)
-      std::map<int,std::vector<int>> NIrregBins = {{2,{1,1,0,0,0}}, {3,{1,1,1,0,0}}};
+      std::map<int,std::vector<int>> NIrregBins = {{1,{1,1,1,1,0}}, {2,{1,1,0,0,0}}, {3,{1,1,1,0,0}}};
     }
 }
 
