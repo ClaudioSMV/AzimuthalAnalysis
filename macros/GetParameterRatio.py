@@ -1,4 +1,4 @@
-from ROOT import TFile,TTree,TCanvas,TH1D,TH1F,TH2D,TH2F,TLatex,TMath,TColor,TLegend,TEfficiency,TGraphAsymmErrors,gROOT,gPad,TF1,gStyle,kBlack,kWhite,TH1
+from ROOT import TFile,TTree,TCanvas,TH1I,TH1D,TH1F,TH2D,TH2F,TLatex,TMath,TColor,TLegend,TEfficiency,TGraphAsymmErrors,gROOT,gPad,TF1,gStyle,kBlack,kWhite,TH1
 import ROOT
 import os
 import optparse
@@ -56,15 +56,43 @@ inputfile_solid = TFile("%sFitFold_%s.root"%(inputPath,nameFormatted),"READ") if
 
 list_of_hists = inputfile_solid.GetListOfKeys()
 
+ratio_th1_b_list = []
+ratio_th1_c_list = []
+ratio_th1_b_pos_solid_list = []
+ratio_th1_c_pos_solid_list = []
+ratio_th1_b_neg_solid_list = []
+ratio_th1_c_neg_solid_list = []
+for e,elem in enumerate(list_func_names):
+    ratio_th1_b = TH1D("f_b%i"%e,";Bin;Ratio (b_{%s}/a_{%s}) / (b_{D}/a_{D})"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
+    ratio_th1_b_list.append(ratio_th1_b)
+
+    ratio_th1_c = TH1D("f_c%i"%e,";Bin;Ratio (c_{%s}/a_{%s}) / (c_{D}/a_{D})"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
+    ratio_th1_c_list.append(ratio_th1_c)
+
+    ratio_th1_b_pos_solid = TH1D("f_b%i_SolidPos"%e,";Bin;b_{%s}/a_{%s}"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
+    ratio_th1_b_pos_solid_list.append(ratio_th1_b_pos_solid)
+
+    ratio_th1_c_pos_solid = TH1D("f_c%i_SolidPos"%e,";Bin;c_{%s}/a_{%s}"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
+    ratio_th1_c_pos_solid_list.append(ratio_th1_c_pos_solid)
+
+    ratio_th1_b_neg_solid = TH1D("f_b%i_SolidNeg"%e,";Bin;b_{%s}/a_{%s}"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
+    ratio_th1_b_neg_solid_list.append(ratio_th1_b_neg_solid)
+
+    ratio_th1_c_neg_solid = TH1D("f_c%i_SolidNeg"%e,";Bin;c_{%s}/a_{%s}"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
+    ratio_th1_c_neg_solid_list.append(ratio_th1_c_neg_solid)
+
 print("")
 print("Target %s"%infoDict["Target"])
 
-for h in list_of_hists:
+for i_h,h in enumerate(list_of_hists):
     if (h.ReadObj().Class_Name() == "TH1D"):
         hist_solid = h.ReadObj()
-        hist_D = inputfile_D.Get(h.GetName())
+        hist_name = h.GetName()
+        hist_D = inputfile_D.Get(hist_name)
 
-        for f in list_func_names:
+        bin_name = hist_name.split("_")[2]
+
+        for i_f,f in enumerate(list_func_names):
             fit_solid = hist_solid.GetFunction(f)
             par0_X = fit_solid.GetParameter(0)
             par1_X = fit_solid.GetParameter(1)
@@ -75,98 +103,165 @@ for h in list_of_hists:
             par1_D = fit_D.GetParameter(1)
             par2_D = fit_D.GetParameter(2)
 
-            print("%s Fit: %s"%(h.GetName(), f))
+            print("%s Fit: %s"%(hist_name, f))
             print("Solid: (%6.2f, %5.2f, %5.2f)"%(par0_X, par1_X, par2_X))
+            print("       (%6.2f, %5.2f, %5.2f)"%(par0_X/par0_X, par1_X/par0_X, par2_X/par0_X))
             print("Liquid: (%6.2f, %5.2f, %5.2f)"%(par0_D, par1_D, par2_D))
+            print("        (%6.2f, %5.2f, %5.2f)"%(par0_D/par0_D, par1_D/par0_D, par2_D/par0_D))
             print("Ratio: (%5.2f, %5.2f, %5.2f)"%(par0_X/par0_D, par1_X/par1_D, par2_X/par2_D))
+            print("       (%5.2f, %5.2f, %5.2f)"%( (par0_X/par0_X)/(par0_D/par0_D) , (par1_X/par0_X)/(par1_D/par0_D) , (par2_X/par0_X)/(par2_D/par0_D)))
             print("")
 
-inputfile_solid.Close()
+            ratio_th1_b_list[i_f].Fill(bin_name, (par1_X/par0_X)/(par1_D/par0_D))
+            ratio_th1_c_list[i_f].Fill(bin_name, (par2_X/par0_X)/(par2_D/par0_D))
+
+            ratio_th1_b_pos_solid_list[i_f].Fill(bin_name, 0.0)
+            ratio_th1_b_neg_solid_list[i_f].Fill(bin_name, 0.0)
+            ratio_th1_c_pos_solid_list[i_f].Fill(bin_name, 0.0)
+            ratio_th1_c_neg_solid_list[i_f].Fill(bin_name, 0.0)
+
+            if (par1_X/par0_X)>0: ratio_th1_b_pos_solid_list[i_f].SetBinContent(i_h+1, (par1_X/par0_X))
+            else: ratio_th1_b_neg_solid_list[i_f].SetBinContent(i_h+1, abs(par1_X/par0_X))
+            if (par2_X/par0_X)>0: ratio_th1_c_pos_solid_list[i_f].SetBinContent(i_h+1, (par2_X/par0_X))
+            else: ratio_th1_c_neg_solid_list[i_f].SetBinContent(i_h+1, abs(par2_X/par0_X))
+
 print("")
 
+canvas = TCanvas("cv","cv",1000,800)
+gStyle.SetOptStat(0)
+
+### Ratio b/a and c/a per target
+outputPath = myStyle.getOutputDir("ParameterRatio",infoDict["Target"],rootpath)
+
+canvas.SetLogy(1)
+for e,elem in enumerate(list_func_names):
+    sufix_name = "Fold"
+    if ("L" in elem): sufix_name = "L"
+    elif ("R" in elem): sufix_name = "R"
+
+    ## Ratio b/a
+    legend_b = TLegend(1-myStyle.GetMargin()-0.35,1-myStyle.GetMargin()-0.12, 1-myStyle.GetMargin()-0.05,1-myStyle.GetMargin()-0.02)
+    legend_b.SetBorderSize(0)
+    # legend_b.SetFillColor(ROOT.kWhite)
+    legend_b.SetTextFont(myStyle.GetFont())
+    legend_b.SetTextSize(myStyle.GetSize()-8)
+    legend_b.SetFillStyle(0)
+    ## Positive ratios
+    hist_b_pos = ratio_th1_b_pos_solid_list[e]
+    hist_b_pos.SetMinimum(0.001)
+    hist_b_pos.SetMaximum(1.0)
+
+    hist_b_pos.SetLineWidth(2)
+    hist_b_pos.SetLineColor(ROOT.kBlue)
+    legend_b.AddEntry(hist_b_pos,"Positive ratio")
+
+    hist_b_pos.Draw("hist")
+
+    hist_b_neg = ratio_th1_b_neg_solid_list[e]
+
+    hist_b_neg.SetLineWidth(2)
+    hist_b_neg.SetLineColor(ROOT.kRed)
+    legend_b.AddEntry(hist_b_neg,"Negative ratio")
+
+    hist_b_neg.Draw("hist same")
+
+    legend_b.Draw()
+    myStyle.DrawPreliminaryInfo("Parameters ratio %s"%sufix_name)
+    myStyle.DrawTargetInfo(nameFormatted, "Data")
+
+    canvas.SaveAs("%sRatio%s_b.gif"%(outputPath,sufix_name))
+    canvas.Clear()
+
+    ## Ratio c/a
+    # legend_c = TLegend()
+    legend_c = TLegend(1-myStyle.GetMargin()-0.35,1-myStyle.GetMargin()-0.12, 1-myStyle.GetMargin()-0.05,1-myStyle.GetMargin()-0.02)
+    legend_c.SetBorderSize(0)
+    # legend_c.SetFillColor(ROOT.kWhite)
+    legend_c.SetTextFont(myStyle.GetFont())
+    legend_c.SetTextSize(myStyle.GetSize()-8)
+    legend_c.SetFillStyle(0)
+    ## Positive ratios
+    hist_c_pos = ratio_th1_c_pos_solid_list[e]
+    hist_c_pos.SetMinimum(0.001)
+    hist_c_pos.SetMaximum(1.0)
+
+    hist_c_pos.SetLineWidth(2)
+    hist_c_pos.SetLineColor(ROOT.kBlue)
+    legend_c.AddEntry(hist_c_pos,"Positive ratio")
+
+    hist_c_pos.Draw("hist")
+
+    hist_c_neg = ratio_th1_c_neg_solid_list[e]
+
+    hist_c_neg.SetLineWidth(2)
+    hist_c_neg.SetLineColor(ROOT.kRed)
+    legend_c.AddEntry(hist_c_neg,"Negative ratio")
+
+    hist_c_neg.Draw("hist same")
+
+    legend_c.Draw()
+    myStyle.DrawPreliminaryInfo("Parameters ratio %s"%sufix_name)
+    myStyle.DrawTargetInfo(nameFormatted, "Data")
+
+    canvas.SaveAs("%sRatio%s_c.gif"%(outputPath,sufix_name))
+    canvas.Clear()
+
+    # ## Negative ratios
+    # hist_b = ratio_th1_b_neg_solid_list[e]
+    # hist_b.SetMinimum(0.001)
+    # hist_b.SetMaximum(1.0)
+
+    # hist_b.Draw("hist")
+
+    # myStyle.DrawPreliminaryInfo("Parameters ratio(-) %s"%sufix_name)
+    # myStyle.DrawTargetInfo(nameFormatted, "Data")
+
+    # canvas.SaveAs("%sRatio%s_bNeg.gif"%(outputPath,sufix_name))
+    # canvas.Clear()
+
+    # hist_c = ratio_th1_c_neg_solid_list[e]
+    # hist_c.SetMinimum(0.001)
+    # hist_c.SetMaximum(1.0)
+
+    # hist_c.Draw("hist")
+
+    # myStyle.DrawPreliminaryInfo("Parameters ratio(-) %s"%sufix_name)
+    # myStyle.DrawTargetInfo(nameFormatted, "Data")
+
+    # canvas.SaveAs("%sRatio%s_cNeg.gif"%(outputPath,sufix_name))
+    # canvas.Clear()
+
+### Ratio of the ratios b/a and c/a -> Solid target / D target
+if "D" not in dataset:
+    canvas.SetLogy(0)
+    for e,elem in enumerate(list_func_names):
+        sufix_name = "Fold"
+        if ("L" in elem): sufix_name = "L"
+        elif ("R" in elem): sufix_name = "R"
+
+        hist_b = ratio_th1_b_list[e]
+        hist_b.SetMinimum(-1.0)
+        hist_b.SetMaximum(1.0)
+
+        hist_b.Draw("hist")
+
+        myStyle.DrawPreliminaryInfo("Parameters ratio %s"%sufix_name)
+        myStyle.DrawTargetInfo(nameFormatted, "Data")
+
+        canvas.SaveAs("%sRatioOverD%s_b.gif"%(outputPath,sufix_name))
+        canvas.Clear()
+
+        hist_c = ratio_th1_c_list[e]
+        hist_c.SetMinimum(-1.0)
+        hist_c.SetMaximum(1.0)
+
+        hist_c.Draw("hist")
+
+        myStyle.DrawPreliminaryInfo("Parameters ratio %s"%sufix_name)
+        myStyle.DrawTargetInfo(nameFormatted, "Data")
+
+        canvas.SaveAs("%sRatioOverD_%s_c.gif"%(outputPath,sufix_name))
+        canvas.Clear()
+
+inputfile_solid.Close()
 inputfile_D.Close()
-
-
-
-# infoDict = myStyle.getNameFormattedDict(dataset)
-
-# # inputPath = myStyle.getInputFile("Correction",dataset,rootpath) # Corrected_Fe_B0_2D.root
-# # inputfile = TFile(inputPath,"READ")
-
-# nameFormatted = myStyle.getNameFormatted(dataset)
-# inputPath = myStyle.getOutputDir("Fit",infoDict["Target"],rootpath)
-
-# inputfile_solid = TFile("%sFitFold_%s.root"%(inputPath,nameFormatted),"READ") if fold else TFile("%sFitBothTails_%s.root"%(inputPath,nameFormatted),"READ")
-
-
-
-
-# inputPath = myStyle.getOutputDir("Correction",infoDict["Target"],rootpath)
-# nameFormatted = myStyle.getNameFormatted(dataset)
-# inputfile = TFile(inputPath+nameFormatted+".root","READ")
-
-# outputPath = myStyle.getOutputDir("Fit",infoDict["Target"],rootpath)
-
-# list_of_hists = inputfile.GetListOfKeys()
-
-# canvas = TCanvas("cv","cv",1000,800)
-# gStyle.SetOptStat(0)
-
-# outputfile = TFile("%sFitBothTails_%s.root"%(outputPath,nameFormatted),"RECREATE")
-
-# for h in list_of_hists:
-#     if (h.ReadObj().Class_Name() == "TH1D"):
-#         if "Corr" in h.GetName():
-#             # if "PQ" in h.GetName(): continue
-#             # if not isData and "reco" in h.GetName(): continue
-
-#             # Name format is: Corr_Reconstructed_Q0N0
-#             tmp_txt = h.GetName().split("_")[2] # Q0N0
-
-#             var1 = tmp_txt[0] # Q
-#             var2 = tmp_txt[2] # N
-#             # type_hist = correct_prefix[tmp_txt[2]]
-
-#             hist = h.ReadObj()
-#             hist.SetMinimum(0.0001)
-#             ylim = hist.GetMaximum()*1.4
-#             hist.SetMaximum(ylim)
-
-#             ### Get limit of the fit just before the central peak
-#             ## Left (Negative)
-#             hist.GetXaxis().SetRangeUser(-45.0, 0.0)
-#             limit_bin_L = hist.GetMinimumBin()
-#             fit_min_limit_L = hist.GetBinCenter(limit_bin_L)
-#             hist.GetXaxis().UnZoom()
-
-#             ## Right (Positive)
-#             hist.GetXaxis().SetRangeUser(0.0, 45.0)
-#             limit_bin_R = hist.GetMinimumBin()
-#             fit_min_limit_R = hist.GetBinCenter(limit_bin_R)
-#             hist.GetXaxis().UnZoom()
-
-#             hist.GetXaxis().SetTitle("#phi_{PQ} (deg)")
-#             hist.GetYaxis().SetTitle("Counts")
-
-#             hist.Draw("hist axis")
-
-#             fit_funct_left  = TF1("crossSectionL","[0] + [1]*cos(TMath::Pi()*x/180.0) + [2]*cos(2*TMath::Pi()*x/180.0)", -180.0,fit_min_limit_L)
-#             fit_funct_right = TF1("crossSectionR","[0] + [1]*cos(TMath::Pi()*x/180.0) + [2]*cos(2*TMath::Pi()*x/180.0)",  fit_min_limit_R, 180.0)
-
-#             hist.Fit("crossSectionL", "Q", "",        -180.0,fit_min_limit_L)
-#             hist.Fit("crossSectionR", "Q+ sames", "", fit_min_limit_R, 180.0)
-
-#             hist.Draw("FUNC same")
-
-#             hist.Write()
-
-#             myStyle.DrawPreliminaryInfo("Correction fit")
-#             myStyle.DrawTargetInfo(nameFormatted, "Data")
-#             myStyle.DrawBinInfo(tmp_txt)
-
-#             #### UPDATE ADDING CHI-SQUARE AND GOODNESS OF FIT!
-
-#             canvas.SaveAs(outputPath+"FitBothTails_"+nameFormatted+"_"+tmp_txt+".gif")
-#             canvas.Clear()
-
-# outputfile.Close()
