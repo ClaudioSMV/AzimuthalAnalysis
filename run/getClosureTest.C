@@ -3,7 +3,7 @@
 R__LOAD_LIBRARY(../include/Acceptance_C.so)
 #include "../include/Utility.h"
 
-void getClosureTest(std::string target = "Fe", int binName = 0, int binNdim = 2, std::string nfold = "*")
+void getClosureTest(std::string target = "Fe", int binName = 0, int binNdim = 1, std::string nfold = "*")
 {
     TChain ch("ntuple_sim");
     if (FileExists("../../clas-HSim"))

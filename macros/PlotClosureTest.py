@@ -48,7 +48,10 @@ prefixType = ["Correction", "Corr GoodGen_mc", "Corr GoodGen_rec", "True", "True
 
 bins_list = [] # [3, 3, 5]
 
-for i in range(0,infoDict["NDims"]):
+outDim = infoDict["NDims"]
+if (infoDict["NDims"] == 1): outDim = 2
+
+for i in range(0,outDim):
     nbins = histCorr_Reconstructed.GetAxis(i).GetNbins()
     bins_list.append(nbins)
 
