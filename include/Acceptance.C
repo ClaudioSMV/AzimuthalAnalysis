@@ -639,17 +639,62 @@ void Acceptance::ClosureTest()
 
             if (good_pion)
             {
-                int bin_Reconstructed  = histAcc_Reconstructed->GetBin(&binKinVars[0]);
-                int bin_RecGoodGen_mc  = histAcc_RecGoodGen_mc->GetBin(&binKinVars[0]);
-                int bin_RecGoodGen_rec = histAcc_RecGoodGen_rec->GetBin(&binKinVars[0]);
+                // Reconstructed
+                int binAcc_Reconstructed  = histAcc_Reconstructed->GetBin(&binKinVars[0]);
+                double valueAcc_Reconstructed  = histAcc_Reconstructed->GetBinContent(binAcc_Reconstructed);
+                int binCorr_Reconstructed  = histCorr_Reconstructed->GetBin(&binKinVars[0]);
 
-                double value_Reconstructed  = histAcc_Reconstructed->GetBinContent(bin_Reconstructed);
-                double value_RecGoodGen_mc  = histAcc_RecGoodGen_mc->GetBinContent(bin_RecGoodGen_mc);
-                double value_RecGoodGen_rec = histAcc_RecGoodGen_rec->GetBinContent(bin_RecGoodGen_rec);
+                if (valueAcc_Reconstructed  != 0)
+                {
+                    double this_content = histCorr_Reconstructed->GetBinContent(binCorr_Reconstructed) + 1./valueAcc_Reconstructed;
 
-                if (value_Reconstructed  != 0) histCorr_Reconstructed->Fill(&binKinVars[0], 1./value_Reconstructed);
-                if (value_RecGoodGen_mc  != 0) histCorr_RecGoodGen_mc->Fill(&binKinVars[0], 1./value_RecGoodGen_mc);
-                if (value_RecGoodGen_rec != 0) histCorr_RecGoodGen_rec->Fill(&binKinVars[0], 1./value_RecGoodGen_rec);
+                    // Get error propagation. Per event it gets: (1 + err_acc**2/val_acc**2)^(1/2) / val_acc. CHECK THIS IS CORRECT!
+                    double acc_error  = histAcc_Reconstructed->GetBinError(binAcc_Reconstructed);
+                    acc_error = TMath::Sqrt(1.0 + acc_error*acc_error/(valueAcc_Reconstructed*valueAcc_Reconstructed))/valueAcc_Reconstructed;
+                    double old_error = histCorr_Reconstructed->GetBinError(binCorr_Reconstructed);
+                    double this_error = TMath::Sqrt(old_error*old_error + acc_error*acc_error);
+
+                    histCorr_Reconstructed->SetBinContent(binCorr_Reconstructed, this_content);
+                    histCorr_Reconstructed->SetBinError(binCorr_Reconstructed, this_error);
+                }
+
+                // RecGoodGen_mc
+                int binAcc_RecGoodGen_mc  = histAcc_RecGoodGen_mc->GetBin(&binKinVars[0]);
+                double valueAcc_RecGoodGen_mc  = histAcc_RecGoodGen_mc->GetBinContent(binAcc_RecGoodGen_mc);
+                int binCorr_RecGoodGen_mc  = histCorr_RecGoodGen_mc->GetBin(&binKinVars[0]);
+
+                if (valueAcc_RecGoodGen_mc  != 0)
+                {
+                    double this_content = histCorr_RecGoodGen_mc->GetBinContent(binCorr_RecGoodGen_mc) + 1./valueAcc_RecGoodGen_mc;
+
+                    // Get error propagation. Per event it gets: (1 + err_acc**2/val_acc**2)^(1/2) / val_acc. CHECK THIS IS CORRECT!
+                    double acc_error  = histAcc_RecGoodGen_mc->GetBinError(binAcc_RecGoodGen_mc);
+                    acc_error = TMath::Sqrt(1.0 + acc_error*acc_error/(valueAcc_RecGoodGen_mc*valueAcc_RecGoodGen_mc))/valueAcc_RecGoodGen_mc;
+                    double old_error = histCorr_RecGoodGen_mc->GetBinError(binCorr_RecGoodGen_mc);
+                    double this_error = TMath::Sqrt(old_error*old_error + acc_error*acc_error);
+
+                    histCorr_RecGoodGen_mc->SetBinContent(binCorr_RecGoodGen_mc, this_content);
+                    histCorr_RecGoodGen_mc->SetBinError(binCorr_RecGoodGen_mc, this_error);
+                }
+
+                // RecGoodGen_rec
+                int binAcc_RecGoodGen_rec = histAcc_RecGoodGen_rec->GetBin(&binKinVars[0]);
+                double valueAcc_RecGoodGen_rec = histAcc_RecGoodGen_rec->GetBinContent(binAcc_RecGoodGen_rec);
+                int binCorr_RecGoodGen_rec = histCorr_RecGoodGen_rec->GetBin(&binKinVars[0]);
+
+                if (valueAcc_RecGoodGen_rec  != 0)
+                {
+                    double this_content = histCorr_RecGoodGen_rec->GetBinContent(binCorr_RecGoodGen_rec) + 1./valueAcc_RecGoodGen_rec;
+
+                    // Get error propagation. Per event it gets: (1 + err_acc**2/val_acc**2)^(1/2) / val_acc. CHECK THIS IS CORRECT!
+                    double acc_error  = histAcc_RecGoodGen_rec->GetBinError(binAcc_RecGoodGen_rec);
+                    acc_error = TMath::Sqrt(1.0 + acc_error*acc_error/(valueAcc_RecGoodGen_rec*valueAcc_RecGoodGen_rec))/valueAcc_RecGoodGen_rec;
+                    double old_error = histCorr_RecGoodGen_rec->GetBinError(binCorr_RecGoodGen_rec);
+                    double this_error = TMath::Sqrt(old_error*old_error + acc_error*acc_error);
+
+                    histCorr_RecGoodGen_rec->SetBinContent(binCorr_RecGoodGen_rec, this_content);
+                    histCorr_RecGoodGen_rec->SetBinError(binCorr_RecGoodGen_rec, this_error);
+                }
             }
 
             if (good_pion_mc && good_pion)
