@@ -12,9 +12,6 @@ gStyle.SetOptFit(1011)
 ## Defining Style
 myStyle.ForceStyle()
 
-# gStyle.SetStatX(2*myStyle.GetMargin() + 0.005 + gStyle.GetStatW())
-# gStyle.SetStatY(1 - myStyle.GetMargin() - 0.005)
-
 gStyle.SetStatX(1 - myStyle.GetMargin() - 0.005)
 gStyle.SetStatY(2*myStyle.GetMargin() + 0.205)
 
@@ -26,6 +23,7 @@ parser.add_option('-D', dest='Dataset', default = "", help="Dataset in format <t
 parser.add_option('-p', dest='rootpath', default = "", help="Add path to files, if needed")
 parser.add_option('-J', dest='JLabCluster', action='store_true', default = False, help="Use folder from JLab_cluster")
 parser.add_option('-F', dest='fold', action='store_true', default = False, help="Use fold tails (default does not)")
+parser.add_option('-v', dest='verbose', action='store_true', default = False, help="Print values")
 
 # IDEA: input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
@@ -37,6 +35,7 @@ dataset_elemts = dataset.split("_")
 dataset_D = "D_%s_%s"%(dataset_elemts[1],dataset_elemts[2])
 if options.JLabCluster: rootpath = "JLab_cluster"
 fold = options.fold
+verbose = options.verbose
 
 ### Get D (liquid target) info and parameters
 inputPath_D = myStyle.getOutputDir("Fit","D",rootpath)
@@ -46,7 +45,6 @@ inputfile_D = TFile("%sFitFold_%s.root"%(inputPath_D,nameFormatted_D),"READ") if
 # list_solid_targets = ["C", "Fe", "Pb"]
 list_func_names = ["crossSection"] if fold else ["crossSectionL", "crossSectionR"]
 
-# for t in list_solid_targets:
 infoDict = myStyle.getNameFormattedDict(dataset)
 
 nameFormatted = myStyle.getNameFormatted(dataset)
@@ -103,14 +101,15 @@ for i_h,h in enumerate(list_of_hists):
             par1_D = fit_D.GetParameter(1)
             par2_D = fit_D.GetParameter(2)
 
-            print("%s Fit: %s"%(hist_name, f))
-            print("Solid: (%6.2f, %5.2f, %5.2f)"%(par0_X, par1_X, par2_X))
-            print("       (%6.2f, %5.2f, %5.2f)"%(par0_X/par0_X, par1_X/par0_X, par2_X/par0_X))
-            print("Liquid: (%6.2f, %5.2f, %5.2f)"%(par0_D, par1_D, par2_D))
-            print("        (%6.2f, %5.2f, %5.2f)"%(par0_D/par0_D, par1_D/par0_D, par2_D/par0_D))
-            print("Ratio: (%5.2f, %5.2f, %5.2f)"%(par0_X/par0_D, par1_X/par1_D, par2_X/par2_D))
-            print("       (%5.2f, %5.2f, %5.2f)"%( (par0_X/par0_X)/(par0_D/par0_D) , (par1_X/par0_X)/(par1_D/par0_D) , (par2_X/par0_X)/(par2_D/par0_D)))
-            print("")
+            if verbose:
+                print("%s Fit: %s"%(hist_name, f))
+                print("Solid: (%6.2f, %5.2f, %5.2f)"%(par0_X, par1_X, par2_X))
+                print("       (%6.2f, %5.2f, %5.2f)"%(par0_X/par0_X, par1_X/par0_X, par2_X/par0_X))
+                print("Liquid: (%6.2f, %5.2f, %5.2f)"%(par0_D, par1_D, par2_D))
+                print("        (%6.2f, %5.2f, %5.2f)"%(par0_D/par0_D, par1_D/par0_D, par2_D/par0_D))
+                print("Ratio: (%5.2f, %5.2f, %5.2f)"%(par0_X/par0_D, par1_X/par1_D, par2_X/par2_D))
+                print("       (%5.2f, %5.2f, %5.2f)"%( (par0_X/par0_X)/(par0_D/par0_D) , (par1_X/par0_X)/(par1_D/par0_D) , (par2_X/par0_X)/(par2_D/par0_D)))
+                print("")
 
             ratio_th1_b_list[i_f].Fill(bin_name, (par1_X/par0_X)/(par1_D/par0_D))
             ratio_th1_c_list[i_f].Fill(bin_name, (par2_X/par0_X)/(par2_D/par0_D))
@@ -206,31 +205,6 @@ for e,elem in enumerate(list_func_names):
     canvas.SaveAs("%sRatio%s_c.gif"%(outputPath,sufix_name))
     canvas.Clear()
 
-    # ## Negative ratios
-    # hist_b = ratio_th1_b_neg_solid_list[e]
-    # hist_b.SetMinimum(0.001)
-    # hist_b.SetMaximum(1.0)
-
-    # hist_b.Draw("hist")
-
-    # myStyle.DrawPreliminaryInfo("Parameters ratio(-) %s"%sufix_name)
-    # myStyle.DrawTargetInfo(nameFormatted, "Data")
-
-    # canvas.SaveAs("%sRatio%s_bNeg.gif"%(outputPath,sufix_name))
-    # canvas.Clear()
-
-    # hist_c = ratio_th1_c_neg_solid_list[e]
-    # hist_c.SetMinimum(0.001)
-    # hist_c.SetMaximum(1.0)
-
-    # hist_c.Draw("hist")
-
-    # myStyle.DrawPreliminaryInfo("Parameters ratio(-) %s"%sufix_name)
-    # myStyle.DrawTargetInfo(nameFormatted, "Data")
-
-    # canvas.SaveAs("%sRatio%s_cNeg.gif"%(outputPath,sufix_name))
-    # canvas.Clear()
-
 ### Ratio of the ratios b/a and c/a -> Solid target / D target
 if "D" not in dataset:
     canvas.SetLogy(0)
@@ -262,6 +236,8 @@ if "D" not in dataset:
 
         canvas.SaveAs("%sRatioOverD_%s_c.gif"%(outputPath,sufix_name))
         canvas.Clear()
+
+print("Made it to the end!")
 
 inputfile_solid.Close()
 inputfile_D.Close()
