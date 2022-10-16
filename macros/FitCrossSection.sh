@@ -26,5 +26,8 @@ BINNDIM=${INPUTARRAY[2]}
 python PlotCorrection.py -D ${TARNAME}_${BINNAME}_${BINNDIM} -J
 python PlotFit_TwoTails.py -D ${TARNAME}_${BINNAME}_${BINNDIM} -J
 python PlotFit_FoldTails.py -D ${TARNAME}_${BINNAME}_${BINNDIM} -J
+python GetParameters.py -D ${TARNAME}_${BINNAME}_${BINNDIM} -J
+python GetParameters.py -D ${TARNAME}_${BINNAME}_${BINNDIM} -J -F
+python GetParameters.py -D ${TARNAME}_${BINNAME}_${BINNDIM} -J -F -Z
 python GetParameterRatio.py -D ${TARNAME}_${BINNAME}_${BINNDIM} -J
 python GetParameterRatio.py -D ${TARNAME}_${BINNAME}_${BINNDIM} -J -F

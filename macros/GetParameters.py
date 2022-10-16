@@ -134,7 +134,7 @@ for e,elem in enumerate(list_func_names):
     min_C = -4.0e4 if "Fold" in sufix_name else -2.0e4
     max_C = 10.0e3 if "Fold" in sufix_name else  5.0e3
 
-    if zoom:
+    if zoom and (infoDict["Target"]!="D"):
         # min_A = 0.0
         max_A = 4.0e5 if "Fold" in sufix_name else  2.0e5
         min_B =-3.0e4 if "Fold" in sufix_name else -1.5e4
