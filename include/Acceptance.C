@@ -363,6 +363,10 @@ void Acceptance::Loop()
         fileSummary.close();
     }
 
+    PrintFilledBins(histAcc_Reconstructed);
+    PrintFilledBins(histAcc_RecGoodGen_mc);
+    PrintFilledBins(histAcc_RecGoodGen_rec);
+
     histTrue->Write();
     histReco_rec->Write();
     histReco_mc->Write();
