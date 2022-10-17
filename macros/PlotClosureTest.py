@@ -50,6 +50,7 @@ bins_list = [] # [3, 3, 5]
 
 outDim = infoDict["NDims"]
 if (infoDict["NDims"] == 1): outDim = 2
+if (infoDict["BinningType"] == 2): outDim = 3
 
 for i in range(0,outDim):
     nbins = histCorr_Reconstructed.GetAxis(i).GetNbins()
@@ -161,7 +162,7 @@ for i,info in enumerate(names_list):
     # legend.Draw();
     myStyle.DrawPreliminaryInfo("ClosureTest")
     myStyle.DrawTargetInfo(nameFormatted, "Simulation")
-    myStyle.DrawBinInfo(info)
+    myStyle.DrawBinInfo(info, infoDict["BinningType"])
 
     gPad.RedrawAxis("g")
 

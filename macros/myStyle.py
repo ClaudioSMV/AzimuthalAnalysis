@@ -148,22 +148,24 @@ def DrawTargetInfo(target="X", fileType="SimOrData"):
     if len(nameCode)==1: text.DrawLatexNDC(1-marg-0.005,1-marg+0.01,"#bf{"+str(target) + " target, "+str(fileType)+"}")
     else:                text.DrawLatexNDC(1-marg-0.005,1-marg+0.01,"#bf{"+str(target) + ", "+str(fileType)+"}")
 
-def DrawBinInfo(bin_name="X0X0"):
+def DrawBinInfo(bin_name="X0X0", bin_type=0):
     text = ROOT.TLatex()
     text.SetTextSize(tsize-4)
     text.SetTextAlign(33)
-    title = GetBinInfo(bin_name)
+    title = GetBinInfo(bin_name, bin_type)
     # text.DrawLatexNDC(1-marg-0.005,1-marg-0.01,"#bf{"+title+"}")
     text.DrawLatexNDC(1-marg-0.005,1-marg-0.01,title)
 
-def GetBinInfo(bin_name="X0X0"):
+def GetBinInfo(bin_name="X0X0", bin_type=0):
     tmp_txt = ""
+
+    this_dict = all_dicts[bin_type]
     for i,c in enumerate(bin_name):
         if i%2 == 0:
             num_index = int(bin_name[i+1])
-            vmin = bin_dict[c]['Bins'][num_index]
-            vmax = bin_dict[c]['Bins'][num_index+1]
-            tmp_txt+="%.2f < %s < %.2f"%(vmin, bin_dict[c]['Name'], vmax)
+            vmin = this_dict[c]['Bins'][num_index]
+            vmax = this_dict[c]['Bins'][num_index+1]
+            tmp_txt+="%.2f < %s < %.2f"%(vmin, this_dict[c]['Name'], vmax)
             if i<(len(bin_name)-2): tmp_txt+="; "
     return tmp_txt
 
@@ -193,8 +195,20 @@ def GetColors(color_blind = False):
 
 bin_dict = {'Q': {'Name': "Q^{2}",      'Bins': [1.00, 1.30, 1.80, 4.10]},
             'N': {'Name': "#nu",        'Bins': [2.20, 3.20, 3.70, 4.20]},
-            'Z': {'Name': "Z_{h}",      'Bins': [0.00, 0.15, 0.25, 0.40, 0.70, 0.90, 1.00]}, # REMEMBER TO UPDATE THIS SO WE CAN CHENGE BETWEEN DIFFERENT BINNINGS
+            'Z': {'Name': "Z_{h}",      'Bins': [0.00, 0.15, 0.25, 0.40, 0.70, 1.00]},
             'P': {'Name': "P_{t}^{2}",  'Bins': [0.00, 0.03, 0.06, 0.10, 0.18, 1.00]}}
+
+bin_dict_SplitZ = {'Q': {'Name': "Q^{2}",      'Bins': [1.00, 1.30, 1.80, 4.10]},
+                   'N': {'Name': "#nu",        'Bins': [2.20, 3.20, 3.70, 4.20]},
+                   'Z': {'Name': "Z_{h}",      'Bins': [0.00, 0.15, 0.25, 0.40, 0.70, 0.90, 1.00]},
+                   'P': {'Name': "P_{t}^{2}",  'Bins': [0.00, 0.03, 0.06, 0.10, 0.18, 1.00]}}
+
+bin_dict_ThinZh = {'Q': {'Name': "Q^{2}",      'Bins': [1.00, 1.30, 1.80, 4.10]},
+                   'N': {'Name': "#nu",        'Bins': [2.20, 3.20, 3.70, 4.20]},
+                   'Z': {'Name': "Z_{h}",      'Bins': [0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.00]},
+                   'P': {'Name': "P_{t}^{2}",  'Bins': [0.00, 0.03, 0.06, 0.10, 0.18, 1.00]}}
+
+all_dicts = [bin_dict, bin_dict_SplitZ, bin_dict_ThinZh]
 
 kin_vars_list = [   ["Q2", "Nu", "Zh", "Pt2", "PhiPQ"],
                     ["Q^{2}", "#nu", "Z_{h}", "P_{t}^{2}", "#phi_{PQ}"],
