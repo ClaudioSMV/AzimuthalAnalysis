@@ -3,7 +3,11 @@
 ##############################################################
 #  ./send_job_Correction.sh <target> <binName> <binNdim>     #
 #    <target> = (D, C, Fe, Pb)                               #
-#    <binName>   = (0: Usual, SMoran; 1: No-integrate Zh)    #
+#    <binName> = (0: Usual, SMoran; 1: No-integrate Zh;      #
+#                 2: Thin Zh;)                               #
+#    <binNdim> = (1: All bins regular as in Binned Acc;      #
+#                 2: Regular bins in Zh, Pt2, and PhiPQ;     #
+#                 3: Regular bins in Pt2, and PhiPQ;)        #
 #                                                            #
 # EG: ./send_job_Correction.sh C 0 2                         #
 #     ./send_job_Correction.sh Fe 1 3                        #

@@ -3,7 +3,8 @@
 ##############################################################
 # ./send_job_Acceptance.sh <target> <binName> <binNdim>      #
 #    <target> = (D, C, Fe, Pb)                               #
-#    <binName>   = (0: Usual, SMoran; 1: No-integrate Zh)    #
+#    <binName> = (0: Usual, SMoran; 1: No-integrate Zh;      #
+#                 2: Thin Zh;)                               #
 #                                                            #
 # EG: ./send_job_Acceptance.sh C 0 2                         #
 #     ./send_job_Acceptance.sh Fe 1 3                        #
