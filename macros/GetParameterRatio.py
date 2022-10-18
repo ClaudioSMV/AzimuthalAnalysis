@@ -66,22 +66,22 @@ ratio_th1_c_pos_solid_list = []
 ratio_th1_b_neg_solid_list = []
 ratio_th1_c_neg_solid_list = []
 for e,elem in enumerate(list_func_names):
-    ratio_th1_b = TH1D("f_b%i"%e,";Bin;Ratio (b_{%s}/a_{%s}) / (b_{D}/a_{D})"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
+    ratio_th1_b = TH1D("f_XD_b%i"%e,";Bin;Ratio (b_{%s}/a_{%s}) / (b_{D}/a_{D})"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
     ratio_th1_b_list.append(ratio_th1_b)
 
-    ratio_th1_c = TH1D("f_c%i"%e,";Bin;Ratio (c_{%s}/a_{%s}) / (c_{D}/a_{D})"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
+    ratio_th1_c = TH1D("f_XD_c%i"%e,";Bin;Ratio (c_{%s}/a_{%s}) / (c_{D}/a_{D})"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
     ratio_th1_c_list.append(ratio_th1_c)
 
-    ratio_th1_b_pos_solid = TH1D("f_b%i_SolidPos"%e,";Bin;b_{%s}/a_{%s}"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
+    ratio_th1_b_pos_solid = TH1D("f_X_b%i_Pos"%e,";Bin;b_{%s}/a_{%s}"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
     ratio_th1_b_pos_solid_list.append(ratio_th1_b_pos_solid)
 
-    ratio_th1_c_pos_solid = TH1D("f_c%i_SolidPos"%e,";Bin;c_{%s}/a_{%s}"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
+    ratio_th1_c_pos_solid = TH1D("f_X_c%i_Pos"%e,";Bin;c_{%s}/a_{%s}"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
     ratio_th1_c_pos_solid_list.append(ratio_th1_c_pos_solid)
 
-    ratio_th1_b_neg_solid = TH1D("f_b%i_SolidNeg"%e,";Bin;b_{%s}/a_{%s}"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
+    ratio_th1_b_neg_solid = TH1D("f_X_b%i_Neg"%e,";Bin;b_{%s}/a_{%s}"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
     ratio_th1_b_neg_solid_list.append(ratio_th1_b_neg_solid)
 
-    ratio_th1_c_neg_solid = TH1D("f_c%i_SolidNeg"%e,";Bin;c_{%s}/a_{%s}"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
+    ratio_th1_c_neg_solid = TH1D("f_X_c%i_Neg"%e,";Bin;c_{%s}/a_{%s}"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
     ratio_th1_c_neg_solid_list.append(ratio_th1_c_neg_solid)
 
 print("")
@@ -166,6 +166,7 @@ canvas.SetGrid(0,1)
 
 ### Ratio b/a and c/a per target
 outputPath = myStyle.getOutputDir("ParameterRatio",infoDict["Target"],rootpath)
+outputFile = TFile("%s%s_ParameterRatio_%s.root"%(outputPath,nameFormatted,name_ext),"RECREATE")
 
 ymin = 0.001
 ymax = 1.2
@@ -194,6 +195,7 @@ for e,elem in enumerate(list_func_names):
     hist_b_pos.SetLineColor(ROOT.kBlue)
     legend_b.AddEntry(hist_b_pos,"Positive ratio")
 
+    hist_b_pos.Write()
     hist_b_pos.Draw("hist e")
 
     hist_b_neg = ratio_th1_b_neg_solid_list[e]
@@ -202,6 +204,7 @@ for e,elem in enumerate(list_func_names):
     hist_b_neg.SetLineColor(ROOT.kRed)
     legend_b.AddEntry(hist_b_neg,"Negative ratio")
 
+    hist_b_neg.Write()
     hist_b_neg.Draw("hist e same")
 
     legend_b.Draw()
@@ -227,6 +230,7 @@ for e,elem in enumerate(list_func_names):
     hist_c_pos.SetLineColor(ROOT.kBlue)
     legend_c.AddEntry(hist_c_pos,"Positive ratio")
 
+    hist_c_pos.Write()
     hist_c_pos.Draw("hist e")
 
     hist_c_neg = ratio_th1_c_neg_solid_list[e]
@@ -235,6 +239,7 @@ for e,elem in enumerate(list_func_names):
     hist_c_neg.SetLineColor(ROOT.kRed)
     legend_c.AddEntry(hist_c_neg,"Negative ratio")
 
+    hist_c_neg.Write()
     hist_c_neg.Draw("hist e same")
 
     legend_c.Draw()
@@ -259,6 +264,7 @@ if "D" not in dataset:
         hist_b.SetMinimum(ymin)
         hist_b.SetMaximum(2*ymax)
 
+        hist_b.Write()
         hist_b.Draw("hist e")
 
         myStyle.DrawPreliminaryInfo("Parameters ratio %s"%name_ext)
@@ -271,6 +277,7 @@ if "D" not in dataset:
         hist_c.SetMinimum(ymin)
         hist_c.SetMaximum(2*ymax)
 
+        hist_c.Write()
         hist_c.Draw("hist e")
 
         myStyle.DrawPreliminaryInfo("Parameters ratio %s"%name_ext)
@@ -281,5 +288,7 @@ if "D" not in dataset:
 
 print("Made it to the end!")
 
+outputFile.Write()
+outputFile.Close()
 inputfile_solid.Close()
 inputfile_D.Close()
