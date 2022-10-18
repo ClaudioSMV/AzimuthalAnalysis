@@ -209,7 +209,8 @@ for p,par in enumerate(par_list): # 3
 
 outputPath = myStyle.getOutputDir("Summary","",rootpath)
 
-par_y_lmts = [[-1.0e4,4.0e5], [-3.0e4,6.0e3], [-1.0e4,5.0e3]] if "F" in fit else [[-0.5e4,2.0e5], [-1.5e4,3.0e3], [-0.5e4,2.5e3]]
+# par_y_lmts = [[-1.0e4,4.0e5], [-3.0e4,6.0e3], [-1.0e4,5.0e3]] if "F" in fit else [[-0.5e4,2.0e5], [-1.5e4,3.0e3], [-0.5e4,2.5e3]]
+par_y_lmts = [[-1.0e4,3.99e5], [-2.99e4,6.0e3], [-1.1e4,5.0e3]] if "F" in fit else [[-0.5e4,2.0e5], [-1.5e4,3.0e3], [-0.5e4,2.5e3]]
 
 for p,par in enumerate(par_list):
     this_canvas = list_canvas[p]
@@ -256,20 +257,18 @@ for p,par in enumerate(par_list):
 
                 if (iQ!=0 and iN!=2): this_hist.GetYaxis().SetNoExponent(ROOT.kTRUE)
 
-                # text = ROOT.TLatex()
-                # text.SetTextSize(tsize-10)
-                # text.SetTextAlign(33)
-                # # title = myStyle.GetBinInfo("Q%iN%i"%(iQ,iN), this_binning_type)
-                # title = myStyle.GetBinInfo("Q%i"%(iQ), this_binning_type)
-                # text.DrawLatexNDC(1-marg-0.005,1-marg-0.01,"#bf{"+title+"}")
-                # if (xR==0 and yT==0): text.DrawLatexNDC(1-marg-0.005,1-marg-0.01,title)
-
-                # myStyle.DrawBinInfo("Q%iN%i"%(iQ,iN),this_binning_type,XtoPad(0.9),YtoPad(0.9))
-
                 this_hist.SetMinimum(par_y_lmts[p][0])
                 this_hist.SetMaximum(par_y_lmts[p][1])
                 this_hist.SetLabelSize(tsize-18,"xyz")
                 this_hist.SetTitleSize(tsize-14,"xyz")
+                this_hist.SetTitleOffset(2.5,"xy")
+
+                if (par=="A"):
+                    this_hist.GetYaxis().SetMaxDigits(4)
+                else:
+                    this_hist.GetYaxis().SetMaxDigits(3)
+                ROOT.TGaxis.SetExponentOffset(-0.1,0.01,"xy")
+
                 this_hist.SetLineColor(myStyle.color_target[targ])
                 this_hist.SetMarkerStyle(4)
                 this_hist.SetMarkerColor(myStyle.color_target[targ])
