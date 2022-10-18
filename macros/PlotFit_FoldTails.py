@@ -106,7 +106,7 @@ for h in list_of_hists:
 
             myStyle.DrawPreliminaryInfo("Correction fit")
             myStyle.DrawTargetInfo(nameFormatted, "Data")
-            myStyle.DrawBinInfo(tmp_txt)
+            myStyle.DrawBinInfo(tmp_txt, infoDict["BinningType"])
 
             canvas.SaveAs(outputPath+"FitFold_"+nameFormatted+"_"+tmp_txt+".gif")
             canvas.Clear()

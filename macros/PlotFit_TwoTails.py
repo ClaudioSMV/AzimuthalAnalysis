@@ -101,7 +101,7 @@ for h in list_of_hists:
 
             myStyle.DrawPreliminaryInfo("Correction fit")
             myStyle.DrawTargetInfo(nameFormatted, "Data")
-            myStyle.DrawBinInfo(tmp_txt)
+            myStyle.DrawBinInfo(tmp_txt, infoDict["BinningType"])
 
             str_FitL = TLatex(-15, 0.8*hist.GetBinContent(limit_bin_L), "#chi^2 / ndf = %.2f / %i"%(fit_funct_left.GetChisquare(), fit_funct_left.GetNDF()))
             str_FitL.SetTextAlign(33)

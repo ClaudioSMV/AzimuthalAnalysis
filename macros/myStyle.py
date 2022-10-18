@@ -148,13 +148,14 @@ def DrawTargetInfo(target="X", fileType="SimOrData"):
     if len(nameCode)==1: text.DrawLatexNDC(1-marg-0.005,1-marg+0.01,"#bf{"+str(target) + " target, "+str(fileType)+"}")
     else:                text.DrawLatexNDC(1-marg-0.005,1-marg+0.01,"#bf{"+str(target) + ", "+str(fileType)+"}")
 
-def DrawBinInfo(bin_name="X0X0", bin_type=0):
+def DrawBinInfo(bin_name="X0X0", bin_type=0, xR=0, yT=0):
     text = ROOT.TLatex()
     text.SetTextSize(tsize-4)
     text.SetTextAlign(33)
     title = GetBinInfo(bin_name, bin_type)
     # text.DrawLatexNDC(1-marg-0.005,1-marg-0.01,"#bf{"+title+"}")
-    text.DrawLatexNDC(1-marg-0.005,1-marg-0.01,title)
+    if (xR==0 and yT==0): text.DrawLatexNDC(1-marg-0.005,1-marg-0.01,title)
+    else: text.DrawLatexNDC(xR,yT,title)
 
 def GetBinInfo(bin_name="X0X0", bin_type=0):
     tmp_txt = ""
@@ -192,6 +193,8 @@ def GetColors(color_blind = False):
             colors_list[i] = ROOT.TColor.GetColor(color_RGB[i][0],color_RGB[i][1],color_RGB[i][2])
 
     return colors_list
+
+color_target = {'C': GetColors(True)[0], 'Fe': GetColors(True)[2], 'Pb': GetColors(True)[3], 'D': GetColors(True)[4]}
 
 bin_dict = {'Q': {'Name': "Q^{2}",      'Bins': [1.00, 1.30, 1.80, 4.10]},
             'N': {'Name': "#nu",        'Bins': [2.20, 3.20, 3.70, 4.20]},

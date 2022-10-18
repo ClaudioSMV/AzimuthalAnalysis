@@ -42,6 +42,7 @@ zoom_ext = "" if not zoom else "z"
 
 # list_solid_targets = ["C", "Fe", "Pb"]
 list_func_names = ["crossSection"] if fold else ["crossSectionL", "crossSectionR"]
+name_ext = "Fold" if len(list_func_names)==1 else "LR"
 
 infoDict = myStyle.getNameFormattedDict(dataset)
 
@@ -112,13 +113,13 @@ canvas.SetGrid(0,1)
 
 ### Save parameters
 outputPath = myStyle.getOutputDir("Parameters",infoDict["Target"],rootpath)
-outputFile = TFile("%sParameters_%s.root"%(outputPath,dataset),"RECREATE")
+outputFile = TFile("%s%s_Parameters_%s.root"%(outputPath,nameFormatted,name_ext),"RECREATE")
 
 # canvas.SetLogy(1)
 for e,elem in enumerate(list_func_names):
-    sufix_name = "Fold"
-    if ("L" in elem): sufix_name = "L"
-    elif ("R" in elem): sufix_name = "R"
+    # sufix_name = "Fold"
+    if ("L" in elem): name_ext = "L"
+    elif ("R" in elem): name_ext = "R"
 
     # legend = TLegend(1-myStyle.GetMargin()-0.35,1-myStyle.GetMargin()-0.12, 1-myStyle.GetMargin()-0.05,1-myStyle.GetMargin()-0.02)
     # legend.SetBorderSize(0)
@@ -128,19 +129,19 @@ for e,elem in enumerate(list_func_names):
     # legend.SetFillStyle(0)
     
     min_A = 0.0
-    max_A = 14.0e5 if "Fold" in sufix_name else  7.0e5
-    min_B =-12.0e4 if "Fold" in sufix_name else -6.0e4
-    max_B =  0.2   if "Fold" in sufix_name else  0.1
-    min_C = -4.0e4 if "Fold" in sufix_name else -2.0e4
-    max_C = 10.0e3 if "Fold" in sufix_name else  5.0e3
+    max_A = 14.0e5 if "Fold" in name_ext else  7.0e5
+    min_B =-12.0e4 if "Fold" in name_ext else -6.0e4
+    max_B =  0.2   if "Fold" in name_ext else  0.1
+    min_C = -4.0e4 if "Fold" in name_ext else -2.0e4
+    max_C = 10.0e3 if "Fold" in name_ext else  5.0e3
 
     if zoom and (infoDict["Target"]!="D"):
         # min_A = 0.0
-        max_A = 4.0e5 if "Fold" in sufix_name else  2.0e5
-        min_B =-3.0e4 if "Fold" in sufix_name else -1.5e4
-        max_B = 0.2   if "Fold" in sufix_name else  0.1
-        min_C =-5.0e3 if "Fold" in sufix_name else -2.5e3
-        max_C = 2.0e3 if "Fold" in sufix_name else  2.0e3
+        max_A = 4.0e5 if "Fold" in name_ext else  2.0e5
+        min_B =-3.0e4 if "Fold" in name_ext else -1.5e4
+        max_B = 0.2   if "Fold" in name_ext else  0.1
+        min_C =-5.0e3 if "Fold" in name_ext else -2.5e3
+        max_C = 4.0e3 if "Fold" in name_ext else  2.0e3
 
     ## Save A
     hist_A = parameter_A_list[e]
@@ -150,10 +151,10 @@ for e,elem in enumerate(list_func_names):
     hist_A.SetLineWidth(2)
     # hist_A.SetLineColor(ROOT.kBlue)
     # legend.AddEntry(hist_A,"Positive ratio")
-
+    hist_A.Write()
     hist_A.Draw("hist e")
 
-    myStyle.DrawPreliminaryInfo("Parameter A %s"%sufix_name)
+    myStyle.DrawPreliminaryInfo("Parameter A %s"%name_ext)
     myStyle.DrawTargetInfo(nameFormatted, "Data")
 
     # hist_b_neg = ratio_th1_b_neg_solid_list[e]
@@ -166,7 +167,7 @@ for e,elem in enumerate(list_func_names):
 
     # legend.Draw()
 
-    canvas.SaveAs("%sParameterA_%s%s.gif"%(outputPath,zoom_ext,sufix_name))
+    canvas.SaveAs("%s%s-ParameterA_%s%s.gif"%(outputPath,nameFormatted,zoom_ext,name_ext))
     canvas.Clear()
     # legend.Clear()
 
@@ -177,12 +178,13 @@ for e,elem in enumerate(list_func_names):
 
     hist_B.SetLineWidth(2)
     # hist_B.SetLineColor(ROOT.kBlue)
+    hist_B.Write()
     hist_B.Draw("hist e")
 
-    myStyle.DrawPreliminaryInfo("Parameter B %s"%sufix_name)
+    myStyle.DrawPreliminaryInfo("Parameter B %s"%name_ext)
     myStyle.DrawTargetInfo(nameFormatted, "Data")
 
-    canvas.SaveAs("%sParameterB_%s%s.gif"%(outputPath,zoom_ext,sufix_name))
+    canvas.SaveAs("%s%s-ParameterB_%s%s.gif"%(outputPath,nameFormatted,zoom_ext,name_ext))
     canvas.Clear()
 
     ## Save C
@@ -192,12 +194,13 @@ for e,elem in enumerate(list_func_names):
 
     hist_C.SetLineWidth(2)
     # hist_C.SetLineColor(ROOT.kBlue)
+    hist_C.Write()
     hist_C.Draw("hist e")
 
-    myStyle.DrawPreliminaryInfo("Parameter C %s"%sufix_name)
+    myStyle.DrawPreliminaryInfo("Parameter C %s"%name_ext)
     myStyle.DrawTargetInfo(nameFormatted, "Data")
 
-    canvas.SaveAs("%sParameterC_%s%s.gif"%(outputPath,zoom_ext,sufix_name))
+    canvas.SaveAs("%s%s-ParameterC_%s%s.gif"%(outputPath,nameFormatted,zoom_ext,name_ext))
     canvas.Clear()
 
 print("Made it to the end!")
