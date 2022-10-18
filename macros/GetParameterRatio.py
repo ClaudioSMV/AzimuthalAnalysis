@@ -66,22 +66,22 @@ ratio_th1_c_pos_solid_list = []
 ratio_th1_b_neg_solid_list = []
 ratio_th1_c_neg_solid_list = []
 for e,elem in enumerate(list_func_names):
-    ratio_th1_b = TH1D("f_XD_b%i"%e,";Bin;Ratio (b_{%s}/a_{%s}) / (b_{D}/a_{D})"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
+    ratio_th1_b = TH1D("f_XD_B%i"%e,";Bin;Ratio (b_{%s}/a_{%s}) / (b_{D}/a_{D})"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
     ratio_th1_b_list.append(ratio_th1_b)
 
-    ratio_th1_c = TH1D("f_XD_c%i"%e,";Bin;Ratio (c_{%s}/a_{%s}) / (c_{D}/a_{D})"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
+    ratio_th1_c = TH1D("f_XD_C%i"%e,";Bin;Ratio (c_{%s}/a_{%s}) / (c_{D}/a_{D})"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
     ratio_th1_c_list.append(ratio_th1_c)
 
-    ratio_th1_b_pos_solid = TH1D("f_X_b%i_Pos"%e,";Bin;b_{%s}/a_{%s}"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
+    ratio_th1_b_pos_solid = TH1D("f_X_B%i_Pos"%e,";Bin;b_{%s}/a_{%s}"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
     ratio_th1_b_pos_solid_list.append(ratio_th1_b_pos_solid)
 
-    ratio_th1_c_pos_solid = TH1D("f_X_c%i_Pos"%e,";Bin;c_{%s}/a_{%s}"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
+    ratio_th1_c_pos_solid = TH1D("f_X_C%i_Pos"%e,";Bin;c_{%s}/a_{%s}"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
     ratio_th1_c_pos_solid_list.append(ratio_th1_c_pos_solid)
 
-    ratio_th1_b_neg_solid = TH1D("f_X_b%i_Neg"%e,";Bin;b_{%s}/a_{%s}"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
+    ratio_th1_b_neg_solid = TH1D("f_X_B%i_Neg"%e,";Bin;b_{%s}/a_{%s}"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
     ratio_th1_b_neg_solid_list.append(ratio_th1_b_neg_solid)
 
-    ratio_th1_c_neg_solid = TH1D("f_X_c%i_Neg"%e,";Bin;c_{%s}/a_{%s}"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
+    ratio_th1_c_neg_solid = TH1D("f_X_C%i_Neg"%e,";Bin;c_{%s}/a_{%s}"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
     ratio_th1_c_neg_solid_list.append(ratio_th1_c_neg_solid)
 
 print("")
