@@ -241,6 +241,7 @@ for p,par in enumerate(["B", "C"]):
         for iQ in range(nBinsQ):
             for iN in range(nBinsN): # iQ,iN = 0,0
                 this_pad = gROOT.FindObject("pad%s_%i_%i"%(par,iQ,nBinsN-iN-1)) # -> 0,2
+                this_pad.SetGrid(0,1)
 
                 ## This selection labels xy such as:
                 ##  ------------     ------------
@@ -288,7 +289,7 @@ for p,par in enumerate(["B", "C"]):
 
                 if (iQ==2 and iN==0):
                     legend.AddEntry(this_hist,targ)
-                    if (2*legend.GetNRows()==len(list_targets)):
+                    if (legend.GetListOfPrimitives().GetEntries()==len(list_targets)):
                         legend.Draw()
 
     this_canvas.cd(0)
