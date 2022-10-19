@@ -295,6 +295,7 @@ for p,par in enumerate(["B", "C"]):
     this_canvas.cd(0)
     gPad.RedrawAxis("g")
     this_canvas.SaveAs("%sParRatio_%s_%s.gif"%(outputPath,par,fit))
+    this_canvas.SaveAs("%sParRatio_%s_%s.pdf"%(outputPath,par,fit))
 
 for t,targ in enumerate(list_targets):
     list_infiles[t].Close()

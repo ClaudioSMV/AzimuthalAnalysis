@@ -298,6 +298,7 @@ for p,par in enumerate(par_list):
                         legend.Draw()
 
     this_canvas.SaveAs("%sPar_%s_%s.gif"%(outputPath,par,fit))
+    this_canvas.SaveAs("%sPar_%s_%s.pdf"%(outputPath,par,fit))
 
 for t,targ in enumerate(list_targets):
     list_infiles[t].Close()
