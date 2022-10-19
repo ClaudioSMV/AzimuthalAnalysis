@@ -3,7 +3,7 @@
 R__LOAD_LIBRARY(../include/Acceptance_C.so)
 #include "../include/Utility.h"
 
-void getCorrection(std::string target = "Fe", int binName = 0, int binNdim = 2)
+void getCorrection(std::string target = "Fe", int binName = 0, int binNdim = 1)
 {
     TChain ch("ntuple_data");
     if (FileExists("../../clas-data"))

@@ -363,6 +363,10 @@ void Acceptance::Loop()
         fileSummary.close();
     }
 
+    PrintFilledBins(histAcc_Reconstructed);
+    PrintFilledBins(histAcc_RecGoodGen_mc);
+    PrintFilledBins(histAcc_RecGoodGen_rec);
+
     histTrue->Write();
     histReco_rec->Write();
     histReco_mc->Write();
@@ -452,17 +456,75 @@ void Acceptance::Correction()
 
             if (good_pion)
             {
-                int bin_Reconstructed  = histAcc_Reconstructed->GetBin(&binKinVars[0]);
-                int bin_RecGoodGen_mc  = histAcc_RecGoodGen_mc->GetBin(&binKinVars[0]);
-                int bin_RecGoodGen_rec = histAcc_RecGoodGen_rec->GetBin(&binKinVars[0]);
+                // Reconstructed
+                int binAcc_Reconstructed  = histAcc_Reconstructed->GetBin(&binKinVars[0]);
+                double valueAcc_Reconstructed  = histAcc_Reconstructed->GetBinContent(binAcc_Reconstructed);
+                int binCorr_Reconstructed  = histCorr_Reconstructed->GetBin(&binKinVars[0]);
 
-                double value_Reconstructed  = histAcc_Reconstructed->GetBinContent(bin_Reconstructed);
-                double value_RecGoodGen_mc  = histAcc_RecGoodGen_mc->GetBinContent(bin_RecGoodGen_mc);
-                double value_RecGoodGen_rec = histAcc_RecGoodGen_rec->GetBinContent(bin_RecGoodGen_rec);
+                if (valueAcc_Reconstructed  != 0)
+                {
+                    double this_content = histCorr_Reconstructed->GetBinContent(binCorr_Reconstructed) + 1./valueAcc_Reconstructed;
 
-                if (value_Reconstructed  != 0) histCorr_Reconstructed->Fill(&binKinVars[0], 1./value_Reconstructed);
-                if (value_RecGoodGen_mc  != 0) histCorr_RecGoodGen_mc->Fill(&binKinVars[0], 1./value_RecGoodGen_mc);
-                if (value_RecGoodGen_rec != 0) histCorr_RecGoodGen_rec->Fill(&binKinVars[0], 1./value_RecGoodGen_rec);
+                    // Get error propagation. Per event it gets: (1 + err_acc**2/val_acc**2)^(1/2) / val_acc. CHECK THIS IS CORRECT!
+                    double acc_error  = histAcc_Reconstructed->GetBinError(binAcc_Reconstructed);
+                    acc_error = TMath::Sqrt(1.0 + acc_error*acc_error/(valueAcc_Reconstructed*valueAcc_Reconstructed))/valueAcc_Reconstructed;
+                    double old_error = histCorr_Reconstructed->GetBinError(binCorr_Reconstructed);
+                    double this_error = TMath::Sqrt(old_error*old_error + acc_error*acc_error);
+
+                    histCorr_Reconstructed->SetBinContent(binCorr_Reconstructed, this_content);
+                    histCorr_Reconstructed->SetBinError(binCorr_Reconstructed, this_error);
+                }
+
+                // RecGoodGen_mc
+                int binAcc_RecGoodGen_mc  = histAcc_RecGoodGen_mc->GetBin(&binKinVars[0]);
+                double valueAcc_RecGoodGen_mc  = histAcc_RecGoodGen_mc->GetBinContent(binAcc_RecGoodGen_mc);
+                int binCorr_RecGoodGen_mc  = histCorr_RecGoodGen_mc->GetBin(&binKinVars[0]);
+
+                if (valueAcc_RecGoodGen_mc  != 0)
+                {
+                    double this_content = histCorr_RecGoodGen_mc->GetBinContent(binCorr_RecGoodGen_mc) + 1./valueAcc_RecGoodGen_mc;
+
+                    // Get error propagation. Per event it gets: (1 + err_acc**2/val_acc**2)^(1/2) / val_acc. CHECK THIS IS CORRECT!
+                    double acc_error  = histAcc_RecGoodGen_mc->GetBinError(binAcc_RecGoodGen_mc);
+                    acc_error = TMath::Sqrt(1.0 + acc_error*acc_error/(valueAcc_RecGoodGen_mc*valueAcc_RecGoodGen_mc))/valueAcc_RecGoodGen_mc;
+                    double old_error = histCorr_RecGoodGen_mc->GetBinError(binCorr_RecGoodGen_mc);
+                    double this_error = TMath::Sqrt(old_error*old_error + acc_error*acc_error);
+
+                    histCorr_RecGoodGen_mc->SetBinContent(binCorr_RecGoodGen_mc, this_content);
+                    histCorr_RecGoodGen_mc->SetBinError(binCorr_RecGoodGen_mc, this_error);
+                }
+
+                // RecGoodGen_rec
+                int binAcc_RecGoodGen_rec = histAcc_RecGoodGen_rec->GetBin(&binKinVars[0]);
+                double valueAcc_RecGoodGen_rec = histAcc_RecGoodGen_rec->GetBinContent(binAcc_RecGoodGen_rec);
+                int binCorr_RecGoodGen_rec = histCorr_RecGoodGen_rec->GetBin(&binKinVars[0]);
+
+                if (valueAcc_RecGoodGen_rec  != 0)
+                {
+                    double this_content = histCorr_RecGoodGen_rec->GetBinContent(binCorr_RecGoodGen_rec) + 1./valueAcc_RecGoodGen_rec;
+
+                    // Get error propagation. Per event it gets: (1 + err_acc**2/val_acc**2)^(1/2) / val_acc. CHECK THIS IS CORRECT!
+                    double acc_error  = histAcc_RecGoodGen_rec->GetBinError(binAcc_RecGoodGen_rec);
+                    acc_error = TMath::Sqrt(1.0 + acc_error*acc_error/(valueAcc_RecGoodGen_rec*valueAcc_RecGoodGen_rec))/valueAcc_RecGoodGen_rec;
+                    double old_error = histCorr_RecGoodGen_rec->GetBinError(binCorr_RecGoodGen_rec);
+                    double this_error = TMath::Sqrt(old_error*old_error + acc_error*acc_error);
+
+                    histCorr_RecGoodGen_rec->SetBinContent(binCorr_RecGoodGen_rec, this_content);
+                    histCorr_RecGoodGen_rec->SetBinError(binCorr_RecGoodGen_rec, this_error);
+                }
+
+                // double errorAcc_Reconstructed  = histAcc_Reconstructed->GetBinError(binAcc_Reconstructed);
+                // double errorAcc_RecGoodGen_mc  = histAcc_RecGoodGen_mc->GetBinError(binAcc_RecGoodGen_mc);
+                // double errorAcc_RecGoodGen_rec = histAcc_RecGoodGen_rec->GetBinError(binAcc_RecGoodGen_rec);
+
+                // errorAcc_Reconstructed  = TMath::Sqrt(1.0 + errorAcc_Reconstructed*errorAcc_Reconstructed);
+                // errorAcc_RecGoodGen_mc  = TMath::Sqrt(1.0 + errorAcc_RecGoodGen_mc*errorAcc_RecGoodGen_mc);
+                // errorAcc_RecGoodGen_rec = TMath::Sqrt(1.0 + errorAcc_RecGoodGen_rec*errorAcc_RecGoodGen_rec);
+
+                // // Remember error is added in quadrature
+                // if (valueAcc_Reconstructed  != 0) histCorr_Reconstructed->Fill(&binKinVars[0], 1./valueAcc_Reconstructed);
+                // if (valueAcc_RecGoodGen_mc  != 0) histCorr_RecGoodGen_mc->Fill(&binKinVars[0], 1./valueAcc_RecGoodGen_mc);
+                // if (valueAcc_RecGoodGen_rec != 0) histCorr_RecGoodGen_rec->Fill(&binKinVars[0], 1./valueAcc_RecGoodGen_rec);
 
                 histRaw->Fill(&binKinVars[0]);
             }
@@ -581,17 +643,62 @@ void Acceptance::ClosureTest()
 
             if (good_pion)
             {
-                int bin_Reconstructed  = histAcc_Reconstructed->GetBin(&binKinVars[0]);
-                int bin_RecGoodGen_mc  = histAcc_RecGoodGen_mc->GetBin(&binKinVars[0]);
-                int bin_RecGoodGen_rec = histAcc_RecGoodGen_rec->GetBin(&binKinVars[0]);
+                // Reconstructed
+                int binAcc_Reconstructed  = histAcc_Reconstructed->GetBin(&binKinVars[0]);
+                double valueAcc_Reconstructed  = histAcc_Reconstructed->GetBinContent(binAcc_Reconstructed);
+                int binCorr_Reconstructed  = histCorr_Reconstructed->GetBin(&binKinVars[0]);
 
-                double value_Reconstructed  = histAcc_Reconstructed->GetBinContent(bin_Reconstructed);
-                double value_RecGoodGen_mc  = histAcc_RecGoodGen_mc->GetBinContent(bin_RecGoodGen_mc);
-                double value_RecGoodGen_rec = histAcc_RecGoodGen_rec->GetBinContent(bin_RecGoodGen_rec);
+                if (valueAcc_Reconstructed  != 0)
+                {
+                    double this_content = histCorr_Reconstructed->GetBinContent(binCorr_Reconstructed) + 1./valueAcc_Reconstructed;
 
-                if (value_Reconstructed  != 0) histCorr_Reconstructed->Fill(&binKinVars[0], 1./value_Reconstructed);
-                if (value_RecGoodGen_mc  != 0) histCorr_RecGoodGen_mc->Fill(&binKinVars[0], 1./value_RecGoodGen_mc);
-                if (value_RecGoodGen_rec != 0) histCorr_RecGoodGen_rec->Fill(&binKinVars[0], 1./value_RecGoodGen_rec);
+                    // Get error propagation. Per event it gets: (1 + err_acc**2/val_acc**2)^(1/2) / val_acc. CHECK THIS IS CORRECT!
+                    double acc_error  = histAcc_Reconstructed->GetBinError(binAcc_Reconstructed);
+                    acc_error = TMath::Sqrt(1.0 + acc_error*acc_error/(valueAcc_Reconstructed*valueAcc_Reconstructed))/valueAcc_Reconstructed;
+                    double old_error = histCorr_Reconstructed->GetBinError(binCorr_Reconstructed);
+                    double this_error = TMath::Sqrt(old_error*old_error + acc_error*acc_error);
+
+                    histCorr_Reconstructed->SetBinContent(binCorr_Reconstructed, this_content);
+                    histCorr_Reconstructed->SetBinError(binCorr_Reconstructed, this_error);
+                }
+
+                // RecGoodGen_mc
+                int binAcc_RecGoodGen_mc  = histAcc_RecGoodGen_mc->GetBin(&binKinVars[0]);
+                double valueAcc_RecGoodGen_mc  = histAcc_RecGoodGen_mc->GetBinContent(binAcc_RecGoodGen_mc);
+                int binCorr_RecGoodGen_mc  = histCorr_RecGoodGen_mc->GetBin(&binKinVars[0]);
+
+                if (valueAcc_RecGoodGen_mc  != 0)
+                {
+                    double this_content = histCorr_RecGoodGen_mc->GetBinContent(binCorr_RecGoodGen_mc) + 1./valueAcc_RecGoodGen_mc;
+
+                    // Get error propagation. Per event it gets: (1 + err_acc**2/val_acc**2)^(1/2) / val_acc. CHECK THIS IS CORRECT!
+                    double acc_error  = histAcc_RecGoodGen_mc->GetBinError(binAcc_RecGoodGen_mc);
+                    acc_error = TMath::Sqrt(1.0 + acc_error*acc_error/(valueAcc_RecGoodGen_mc*valueAcc_RecGoodGen_mc))/valueAcc_RecGoodGen_mc;
+                    double old_error = histCorr_RecGoodGen_mc->GetBinError(binCorr_RecGoodGen_mc);
+                    double this_error = TMath::Sqrt(old_error*old_error + acc_error*acc_error);
+
+                    histCorr_RecGoodGen_mc->SetBinContent(binCorr_RecGoodGen_mc, this_content);
+                    histCorr_RecGoodGen_mc->SetBinError(binCorr_RecGoodGen_mc, this_error);
+                }
+
+                // RecGoodGen_rec
+                int binAcc_RecGoodGen_rec = histAcc_RecGoodGen_rec->GetBin(&binKinVars[0]);
+                double valueAcc_RecGoodGen_rec = histAcc_RecGoodGen_rec->GetBinContent(binAcc_RecGoodGen_rec);
+                int binCorr_RecGoodGen_rec = histCorr_RecGoodGen_rec->GetBin(&binKinVars[0]);
+
+                if (valueAcc_RecGoodGen_rec  != 0)
+                {
+                    double this_content = histCorr_RecGoodGen_rec->GetBinContent(binCorr_RecGoodGen_rec) + 1./valueAcc_RecGoodGen_rec;
+
+                    // Get error propagation. Per event it gets: (1 + err_acc**2/val_acc**2)^(1/2) / val_acc. CHECK THIS IS CORRECT!
+                    double acc_error  = histAcc_RecGoodGen_rec->GetBinError(binAcc_RecGoodGen_rec);
+                    acc_error = TMath::Sqrt(1.0 + acc_error*acc_error/(valueAcc_RecGoodGen_rec*valueAcc_RecGoodGen_rec))/valueAcc_RecGoodGen_rec;
+                    double old_error = histCorr_RecGoodGen_rec->GetBinError(binCorr_RecGoodGen_rec);
+                    double this_error = TMath::Sqrt(old_error*old_error + acc_error*acc_error);
+
+                    histCorr_RecGoodGen_rec->SetBinContent(binCorr_RecGoodGen_rec, this_content);
+                    histCorr_RecGoodGen_rec->SetBinError(binCorr_RecGoodGen_rec, this_error);
+                }
             }
 
             if (good_pion_mc && good_pion)
@@ -638,6 +745,7 @@ void Acceptance::Hist2D_KinVars()
     TH2D* hist2D_Zh_Pt_reco = new TH2D("hist2D_Zh_Pt_reco", "Two dimensional Map;Z_{h};P_{t}^{2} [GeV^{2}]",          50, DISLimits[0][2], DISLimits[1][2],  50, DISLimits[0][3], DISLimits[1][3]);
     TH2D* hist2D_Zh_PQ_reco = new TH2D("hist2D_Zh_PQ_reco", "Two dimensional Map;Z_{h};#phi_{PQ} [deg]",              50, DISLimits[0][2], DISLimits[1][2], 180, DISLimits[0][4], DISLimits[1][4]);
     TH2D* hist2D_Pt_PQ_reco = new TH2D("hist2D_Pt_PQ_reco", "Two dimensional Map;P_{t}^{2} [GeV^{2}];#phi_{PQ} [deg]",50, DISLimits[0][3], DISLimits[1][3], 180, DISLimits[0][4], DISLimits[1][4]);
+    TH2D* hist2D_Q2_Nu_goodPi_reco = new TH2D("hist2D_Q2_Nu_goodPi_reco", "Two dimensional Map;Q^{2} [GeV^{2}];#nu [GeV]", 50, DISLimits[0][0], DISLimits[1][0],  50, DISLimits[0][1], DISLimits[1][1]);
 
     // Reconstructed match
     TH2D* hist2D_Q2_Nu_mtch = new TH2D("hist2D_Q2_Nu_mtch", "Two dimensional Map (Reco match);Q^{2} [GeV^{2}];#nu [GeV]",          50, DISLimits[0][0], DISLimits[1][0],  50, DISLimits[0][1], DISLimits[1][1]);
@@ -650,6 +758,7 @@ void Acceptance::Hist2D_KinVars()
     TH2D* hist2D_Zh_Pt_mtch = new TH2D("hist2D_Zh_Pt_mtch", "Two dimensional Map (Reco match);Z_{h};P_{t}^{2} [GeV^{2}]",          50, DISLimits[0][2], DISLimits[1][2],  50, DISLimits[0][3], DISLimits[1][3]);
     TH2D* hist2D_Zh_PQ_mtch = new TH2D("hist2D_Zh_PQ_mtch", "Two dimensional Map (Reco match);Z_{h};#phi_{PQ} [deg]",              50, DISLimits[0][2], DISLimits[1][2], 180, DISLimits[0][4], DISLimits[1][4]);
     TH2D* hist2D_Pt_PQ_mtch = new TH2D("hist2D_Pt_PQ_mtch", "Two dimensional Map (Reco match);P_{t}^{2} [GeV^{2}];#phi_{PQ} [deg]",50, DISLimits[0][3], DISLimits[1][3], 180, DISLimits[0][4], DISLimits[1][4]);
+    TH2D* hist2D_Q2_Nu_goodPi_mtch = new TH2D("hist2D_Q2_Nu_goodPi_mtch", "Two dimensional Map (Reco match);Q^{2} [GeV^{2}];#nu [GeV]", 50, DISLimits[0][0], DISLimits[1][0],  50, DISLimits[0][1], DISLimits[1][1]);
 
     // Generated (MC)
     TH2D* hist2D_Q2_Nu_gene = new TH2D("hist2D_Q2_Nu_gene", "Two dimensional Map (Generated);Q^{2} [GeV^{2}];#nu [GeV]",          50, DISLimits[0][0], DISLimits[1][0],  50, DISLimits[0][1], DISLimits[1][1]);
@@ -662,6 +771,7 @@ void Acceptance::Hist2D_KinVars()
     TH2D* hist2D_Zh_Pt_gene = new TH2D("hist2D_Zh_Pt_gene", "Two dimensional Map (Generated);Z_{h};P_{t}^{2} [GeV^{2}]",          50, DISLimits[0][2], DISLimits[1][2],  50, DISLimits[0][3], DISLimits[1][3]);
     TH2D* hist2D_Zh_PQ_gene = new TH2D("hist2D_Zh_PQ_gene", "Two dimensional Map (Generated);Z_{h};#phi_{PQ} [deg]",              50, DISLimits[0][2], DISLimits[1][2], 180, DISLimits[0][4], DISLimits[1][4]);
     TH2D* hist2D_Pt_PQ_gene = new TH2D("hist2D_Pt_PQ_gene", "Two dimensional Map (Generated);P_{t}^{2} [GeV^{2}];#phi_{PQ} [deg]",50, DISLimits[0][3], DISLimits[1][3], 180, DISLimits[0][4], DISLimits[1][4]);
+    TH2D* hist2D_Q2_Nu_goodPi_gene = new TH2D("hist2D_Q2_Nu_goodPi_gene", "Two dimensional Map (Generated);Q^{2} [GeV^{2}];#nu [GeV]", 50, DISLimits[0][0], DISLimits[1][0],  50, DISLimits[0][1], DISLimits[1][1]);
 
     // Bin migration
     TH2D* histMigrationMatrixQ2 = new TH2D("histMigrationMatrixQ2", "Migration Q^{2};True Q^{2} [GeV^{2}]; Reco Q^{2} [GeV^{2}]"           , 50,DISLimits[0][0],DISLimits[1][0], 50,DISLimits[0][0],DISLimits[1][0]);
@@ -669,7 +779,8 @@ void Acceptance::Hist2D_KinVars()
     TH2D* histMigrationMatrixZh = new TH2D("histMigrationMatrixZh", "Migration Z_{h};True Z_{h}; Reco Z_{h}"                               , 50,DISLimits[0][2],DISLimits[1][2], 50,DISLimits[0][2],DISLimits[1][2]);
     TH2D* histMigrationMatrixPt = new TH2D("histMigrationMatrixPt", "Migration P_{T}^{2};True P_{T}^{2} [GeV^{2}];Reco P_{T}^{2} [GeV^{2}]", 50,DISLimits[0][3],DISLimits[1][3], 50,DISLimits[0][3],DISLimits[1][3]);
     TH2D* histMigrationMatrixPQ = new TH2D("histMigrationMatrixPQ", "Migration #phi_{PQ};True #phi_{PQ} [deg];Reco #phi_{PQ} [deg]"        ,180,DISLimits[0][4],DISLimits[1][4],180,DISLimits[0][4],DISLimits[1][4]);
-
+    TH2D* histMigrationMatrixQ2_goodPi = new TH2D("histMigrationMatrixQ2_goodPi", "Migration Q^{2};True Q^{2} [GeV^{2}]; Reco Q^{2} [GeV^{2}]", 50,DISLimits[0][0],DISLimits[1][0], 50,DISLimits[0][0],DISLimits[1][0]);
+    TH2D* histMigrationMatrixNu_goodPi = new TH2D("histMigrationMatrixNu_goodPi", "Migration #nu;True Nu [GeV]; Reco Nu [GeV]"                , 50,DISLimits[0][1],DISLimits[1][1], 50,DISLimits[0][1],DISLimits[1][1]);
     if (fChain == 0)
         return;
     Long64_t nentries = fChain->GetEntries();
@@ -678,6 +789,7 @@ void Acceptance::Hist2D_KinVars()
     int n_pions = 0, n_pions_match = 0;
     bool good_electron_mc = false, good_electron = false;
     bool good_pion_mc = false, good_pion = false;
+    bool at_least_one_mcPion = false, at_least_one_Pion = false, at_least_one_Pion_mtch = false;
 
     for (unsigned int jentry = 0; jentry < entries_to_process; jentry++)
     {
@@ -692,6 +804,7 @@ void Acceptance::Hist2D_KinVars()
         nbytes += nb;
         // if (Cut(ientry) < 0) continue;
         good_electron_mc = false, good_electron = false;
+        at_least_one_mcPion = false, at_least_one_Pion = false, at_least_one_Pion_mtch = false;
 
         if (GoodElectron(ientry, DISLimits))
         {
@@ -731,6 +844,8 @@ void Acceptance::Hist2D_KinVars()
                 hist2D_Zh_Pt_reco->Fill(Zh->at(i), Pt2->at(i));
                 hist2D_Zh_PQ_reco->Fill(Zh->at(i), PhiPQ->at(i));
                 hist2D_Pt_PQ_reco->Fill(Pt2->at(i), PhiPQ->at(i));
+
+                at_least_one_Pion = true;
             }
 
             if (!_isData && good_electron_mc && GoodPiPlus_MC(ientry, i, DISLimits))
@@ -745,6 +860,8 @@ void Acceptance::Hist2D_KinVars()
                 hist2D_Zh_Pt_gene->Fill(mc_Zh->at(i), mc_Pt2->at(i));
                 hist2D_Zh_PQ_gene->Fill(mc_Zh->at(i), mc_PhiPQ->at(i));
                 hist2D_Pt_PQ_gene->Fill(mc_Pt2->at(i), mc_PhiPQ->at(i));
+
+                at_least_one_mcPion = true;
             }
 
             if (good_pion && good_pion_mc)
@@ -763,8 +880,22 @@ void Acceptance::Hist2D_KinVars()
                 histMigrationMatrixZh->Fill(mc_Zh->at(i), Zh->at(i));
                 histMigrationMatrixPt->Fill(mc_Pt2->at(i), Pt2->at(i));
                 histMigrationMatrixPQ->Fill(mc_PhiPQ->at(i), PhiPQ->at(i));
+
+                at_least_one_Pion_mtch = true;
             }
         }   // loop over tracks
+
+        if (at_least_one_Pion) hist2D_Q2_Nu_goodPi_reco->Fill(Q2,Nu);
+
+        if (at_least_one_mcPion) hist2D_Q2_Nu_goodPi_gene->Fill(mc_Q2,mc_Nu);
+
+        if (at_least_one_Pion_mtch)
+        {
+            hist2D_Q2_Nu_goodPi_mtch->Fill(Q2,Nu);
+
+            histMigrationMatrixQ2_goodPi->Fill(mc_Q2,Q2);
+            histMigrationMatrixNu_goodPi->Fill(mc_Nu,Nu);
+        }
     }       // loop over entries
 
     std::cout << "There are " << n_pions << " final state Pions." << std::endl;
@@ -782,6 +913,7 @@ void Acceptance::Hist2D_KinVars()
         hist2D_Zh_Pt_gene->Delete();
         hist2D_Zh_PQ_gene->Delete();
         hist2D_Pt_PQ_gene->Delete();
+        hist2D_Q2_Nu_goodPi_gene->Delete();
 
         hist2D_Q2_Nu_mtch->Delete();
         hist2D_Q2_Zh_mtch->Delete();
@@ -793,12 +925,15 @@ void Acceptance::Hist2D_KinVars()
         hist2D_Zh_Pt_mtch->Delete();
         hist2D_Zh_PQ_mtch->Delete();
         hist2D_Pt_PQ_mtch->Delete();
+        hist2D_Q2_Nu_goodPi_mtch->Delete();
 
         histMigrationMatrixQ2->Delete();
         histMigrationMatrixNu->Delete();
         histMigrationMatrixZh->Delete();
         histMigrationMatrixPt->Delete();
         histMigrationMatrixPQ->Delete();
+        histMigrationMatrixQ2_goodPi->Delete();
+        histMigrationMatrixNu_goodPi->Delete();
     }
 
     std::cout << "Made it to the end. Saving..." << std::endl;

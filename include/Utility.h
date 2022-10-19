@@ -105,4 +105,21 @@ THnSparse* CreateFinalHist(TString name, int nbins[], std::vector<int> *reBinBoo
     return hist_tmp;
 }
 
+void PrintFilledBins(THnSparse *hSparse)
+{
+    double fracFilled = hSparse->GetSparseFractionBins();
+
+    long nBins_noEdges = 1;
+    long nBins_withEdges = 1;
+
+    for (int i=0; i<5; i++)
+    {
+        nBins_noEdges *= hSparse->GetAxis(i)->GetNbins();
+        nBins_withEdges *= hSparse->GetAxis(i)->GetNbins() + 2;
+    }
+
+    std::cout << Form("THnSparse name: %s", hSparse->GetName()) << std::endl;
+    std::cout << Form("\tFilled bins: %i (%.4f %%)", (int)(fracFilled*nBins_withEdges), 100*fracFilled*nBins_withEdges/nBins_noEdges) << std::endl;
+}
+
 #endif // #ifdef Utility_h
