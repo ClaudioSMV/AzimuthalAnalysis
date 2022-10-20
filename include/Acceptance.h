@@ -16,6 +16,7 @@ private:
     std::string _nameFormatted = "";
     int _targTypeCut = 1;
     std::string _nameTarget;
+    std::string _nameSolidTarget = "";
     bool _isData = false;
     bool _isClosureTest = false;
     int _binIndex = -1;
@@ -180,7 +181,7 @@ public:
 
     Acceptance(TTree *tree = 0, bool isData = false);
     virtual ~Acceptance();
-    virtual void setTargName(std::string name);
+    virtual void setTargName(std::string name, std::string solid_name);
     virtual void setNameFormat();
     std::string getNameAccFormat();
     virtual Int_t Cut(Long64_t entry);
@@ -254,16 +255,21 @@ Long64_t Acceptance::LoadTree(Long64_t entry)
     return centry;
 }
 
-void Acceptance::setTargName(std::string name)
+void Acceptance::setTargName(std::string name, std::string solid_name = "")
 {
     _nameTarget = name;
     if (name!="D") setTargTypeCut(2);
+    else if (name=="D" && solid_name!="") _nameSolidTarget = solid_name;
 }
 
 void Acceptance::setNameFormat()
 {
-    // <target>_B<_binIndex>_<_binNdims>D_<extra cuts, ex. Xf>
+    // <target>_B<_binIndex>_<_binNdims>D_<extra cuts, ex. Xf> -> If D: DC, DFe, DPb
     _nameFormatted = _nameTarget;
+    if (_nameTarget=="D" && _nameSolidTarget!="")
+    {
+        if (_nameSolidTarget!="All") _nameFormatted+=_nameSolidTarget;
+    }
     if (_binIndex>-1)
     {
         _nameFormatted+="_B"+std::to_string(_binIndex);
