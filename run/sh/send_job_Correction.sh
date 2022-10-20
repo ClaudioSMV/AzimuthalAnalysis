@@ -54,7 +54,7 @@ echo "#SBATCH --mail-type=BEGIN,END,FAIL"                                       
 echo ""                                                                                 >> ${jobfile}
 echo "source ${HOME}/.bashrc"                                                           >> ${jobfile}
 echo "cd ${REPODIR}/run"                                                                >> ${jobfile}
-if [[ TARNAME == "D" ]]; then
+if [[ ${TARNAME} == "D" ]]; then
     echo "root -l -b 'getCorrection.C(\"${TARNAME}\",${BINNAME},${BINNDIM}, \"C\")'"    >> ${jobfile}
     echo "root -l -b 'getCorrection.C(\"${TARNAME}\",${BINNAME},${BINNDIM}, \"Fe\")'"   >> ${jobfile}
     echo "root -l -b 'getCorrection.C(\"${TARNAME}\",${BINNAME},${BINNDIM}, \"Pb\")'"   >> ${jobfile}
