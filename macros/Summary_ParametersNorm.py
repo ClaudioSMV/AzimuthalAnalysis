@@ -112,13 +112,13 @@ def YtoPad(y):
 
 # Construct the argument parser
 parser = optparse.OptionParser("usage: %prog [options]\n")
-# parser.add_option('-x','--xlength', dest='xlength', default = 4.0, help="X axis range [-x, x]")
-# parser.add_option('-y','--ylength', dest='ylength', default = 200.0, help="Y axis upper limit")
 parser.add_option('-D', dest='Dataset', default = "", help="Dataset in format <binType>_<Ndims>")
 parser.add_option('-p', dest='rootpath', default = "", help="Add path to files, if needed")
 parser.add_option('-J', dest='JLabCluster', action='store_true', default = False, help="Use folder from JLab_cluster")
 parser.add_option('-f', dest='fit',  default = "Fold", help="Use Fold (F), Left (L) or Right (R) fit")
-parser.add_option('-s', dest='symmetric', action='store_true', default = False, help="Use symmetric y-limits (default False)")
+parser.add_option('-y', dest='y_symmetric', action='store_true', default = False, help="Use symmetric y-limits (default False)")
+parser.add_option('-s', dest='solidTargets', action='store_true', default = False, help="Draw only solid targets (default adds D)")
+parser.add_option('-a', dest='allDSplit', action='store_true', default = False, help="Draw only deuterium for different solid targets")
 
 # IDEA: input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
@@ -126,11 +126,14 @@ options, args = parser.parse_args()
 # saveAll = options.saveAll
 rootpath = options.rootpath
 dataset = options.Dataset
+fit = options.fit
+use_sym = options.y_symmetric
+onlySolid = options.solidTargets
+allD = options.allDSplit
+
 dataset_elemts = dataset.split("_")
 if options.JLabCluster: rootpath = "JLab_cluster"
-fit = options.fit
 if fit=="Fold": fit="F"
-use_sym = options.symmetric
 
 try:
     if (int(dataset_elemts[0])):
@@ -159,6 +162,8 @@ list_canvas = [canvas_B, canvas_C]
 
 # par_list = ["B", "C"]
 list_targets = ["C", "Fe", "Pb", "D"]
+if onlySolid: list_targets.remove("D")
+if allD: list_targets = ["DC", "DFe", "DPb"]
 fold_or_LR = "Fold" if "F" in fit else "LR"
 fit_num = 0 if (fit != "R") else 1
 
@@ -170,10 +175,9 @@ for targ in list_targets:
     # infoDict = myStyle.getNameFormattedDict(this_dataset)
     nameFormatted = myStyle.getNameFormatted(this_dataset)
 
-    inputPath = myStyle.getOutputDir("ParameterRatio",targ,rootpath)
-    inputfile = TFile("%s%s_ParameterRatio_%s.root"%(inputPath,nameFormatted,fold_or_LR),"READ")
+    inputPath = myStyle.getOutputDir("Parameters",targ,rootpath)
+    inputfile = TFile("%s%s_ParametersNorm_%s.root"%(inputPath,nameFormatted,fold_or_LR),"READ")
     list_infiles.append(inputfile)
-
 
 list_hists = []
 
@@ -182,8 +186,8 @@ for p,par in enumerate(["B", "C"]): # 3
     list_this_par = []
     for t,targ in enumerate(list_targets): # 4
         list_this_tar = []
-        hist_par_Pos = list_infiles[t].Get("f_X_%s%i_Pos"%(par,fit_num))
-        hist_par_Neg = list_infiles[t].Get("f_X_%s%i_Neg"%(par,fit_num))
+        hist_par_Pos = list_infiles[t].Get("f_Norm_%s%i_Pos"%(par,fit_num))
+        hist_par_Neg = list_infiles[t].Get("f_Norm_%s%i_Neg"%(par,fit_num))
 
         for iQ in range(nBinsQ): #nQ
             list_this_Q = []
@@ -216,8 +220,11 @@ par_y_lmts = [[-1.199,1.199], [-0.599,0.599]] if use_sym else [[-1.199,0.299], [
 for p,par in enumerate(["B", "C"]):
     this_canvas = list_canvas[p]
     this_canvas.cd(0)
-    myStyle.DrawPreliminaryInfo("Summary %s/A ratio %s"%(par,fit))
-    myStyle.DrawTargetInfo("All_targets", "Data")
+    myStyle.DrawSummaryInfo("Norm %s/A %s"%(par,fit))
+    targs_drawn = "All_targets"
+    if onlySolid: targs_drawn = "Solid_targets"
+    if allD: targs_drawn = "Deuterium"
+    myStyle.DrawTargetInfo(targs_drawn, "Data")
 
     l_x1, l_x2 = 0.3, 0.7
     l_y1, l_y2 = 0.5, 0.7
@@ -292,10 +299,11 @@ for p,par in enumerate(["B", "C"]):
                     if (legend.GetListOfPrimitives().GetEntries()==len(list_targets)):
                         legend.Draw()
 
-    this_canvas.cd(0)
-    gPad.RedrawAxis("g")
-    this_canvas.SaveAs("%sParRatio_%s_%s.gif"%(outputPath,par,fit))
-    this_canvas.SaveAs("%sParRatio_%s_%s.pdf"%(outputPath,par,fit))
+    this_title = "%sParNorm_%s_%s"%(outputPath,par,fit)
+    if onlySolid: this_title = "%sParNorm_%s_%s_Solid"%(outputPath,par,fit)
+    if allD: this_title = "%sParNorm_%s_%s_OnlyD"%(outputPath,par,fit)
+    this_canvas.SaveAs("%s.gif"%this_title)
+    this_canvas.SaveAs("%s.pdf"%this_title)
 
 for t,targ in enumerate(list_targets):
     list_infiles[t].Close()

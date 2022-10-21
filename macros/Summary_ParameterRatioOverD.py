@@ -119,6 +119,7 @@ parser.add_option('-p', dest='rootpath', default = "", help="Add path to files, 
 parser.add_option('-J', dest='JLabCluster', action='store_true', default = False, help="Use folder from JLab_cluster")
 parser.add_option('-f', dest='fit',  default = "Fold", help="Use Fold (F), Left (L) or Right (R) fit")
 parser.add_option('-s', dest='symmetric', action='store_true', default = False, help="Use symmetric y-limits (default False)")
+parser.add_option('-m', dest='mixD', action='store_true', default = False, help="Mix deuterium data from all solid targets")
 
 # IDEA: input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
@@ -126,11 +127,13 @@ options, args = parser.parse_args()
 # saveAll = options.saveAll
 rootpath = options.rootpath
 dataset = options.Dataset
+fit = options.fit
+use_sym = options.symmetric
+mixD = options.mixD
+
 dataset_elemts = dataset.split("_")
 if options.JLabCluster: rootpath = "JLab_cluster"
-fit = options.fit
 if fit=="Fold": fit="F"
-use_sym = options.symmetric
 
 try:
     if (int(dataset_elemts[0])):
@@ -170,8 +173,11 @@ for targ in list_targets:
     # infoDict = myStyle.getNameFormattedDict(this_dataset)
     nameFormatted = myStyle.getNameFormatted(this_dataset)
 
+    solid_mix = "" if mixD else targ
+
+
     inputPath = myStyle.getOutputDir("ParameterRatio",targ,rootpath)
-    inputfile = TFile("%s%s_ParameterRatio_%s.root"%(inputPath,nameFormatted,fold_or_LR),"READ")
+    inputfile = TFile("%s%s_ParameterRatio_D%s_%s.root"%(inputPath,nameFormatted,solid_mix,fold_or_LR),"READ")
     list_infiles.append(inputfile)
 
 
@@ -182,7 +188,7 @@ for p,par in enumerate(["B", "C"]): # 3
     list_this_par = []
     for t,targ in enumerate(list_targets): # 4
         list_this_tar = []
-        hist_par = list_infiles[t].Get("f_XD_%s%i"%(par,fit_num))
+        hist_par = list_infiles[t].Get("f_ratio_%s%i"%(par,fit_num))
 
         for iQ in range(nBinsQ): #nQ
             list_this_Q = []
@@ -216,8 +222,10 @@ par_y_lmts = [[-1.199,1.199], [-0.599,0.599]] if use_sym else [[0.0,2.0], [-1.0,
 for p,par in enumerate(["B", "C"]):
     this_canvas = list_canvas[p]
     this_canvas.cd(0)
-    myStyle.DrawPreliminaryInfo("Summary %s Solid/D ratio %s"%(par,fit))
-    myStyle.DrawTargetInfo("All_targets", "Data")
+
+    solid_mix = "_All" if mixD else "_Solid"
+    myStyle.DrawSummaryInfo("%s ratio Solid/D%s %s"%(par,solid_mix,fit))
+    myStyle.DrawTargetInfo("Solid_targets", "Data")
 
     l_x1, l_x2 = 0.3, 0.7
     l_y1, l_y2 = 0.6, 0.8
@@ -293,9 +301,9 @@ for p,par in enumerate(["B", "C"]):
                         legend.Draw()
 
     this_canvas.cd(0)
-    gPad.RedrawAxis("g")
-    this_canvas.SaveAs("%sParRatioOverD_%s_%s.gif"%(outputPath,par,fit))
-    this_canvas.SaveAs("%sParRatioOverD_%s_%s.pdf"%(outputPath,par,fit))
+    solid_mix = "All" if mixD else "Solid"
+    this_canvas.SaveAs("%sParRatioOverD%s_%s_%s.gif"%(outputPath,solid_mix,par,fit))
+    this_canvas.SaveAs("%sParRatioOverD%s_%s_%s.pdf"%(outputPath,solid_mix,par,fit))
 
 for t,targ in enumerate(list_targets):
     list_infiles[t].Close()

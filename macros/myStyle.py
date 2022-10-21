@@ -140,6 +140,11 @@ def DrawPreliminaryInfo(text = ""):
     # prelimilar.SetTextSize(tsize-4)
     # prelimilar.DrawLatexNDC(2*marg+0.005,1-marg+0.01,"#bf{Preliminary}")
 
+def DrawSummaryInfo(text = ""):
+    upLeft_text = ROOT.TLatex()
+    upLeft_text.SetTextSize(tsize-4)
+    upLeft_text.DrawLatexNDC(2*marg+0.005,1-marg+0.01,"#bf{%s} Summary"%(text))
+
 def DrawTargetInfo(target="X", fileType="SimOrData"):
     text = ROOT.TLatex()
     text.SetTextSize(tsize-4)
@@ -194,7 +199,8 @@ def GetColors(color_blind = False):
 
     return colors_list
 
-color_target = {'C': GetColors(True)[0], 'Fe': GetColors(True)[2], 'Pb': GetColors(True)[3], 'D': GetColors(True)[4]}
+color_target = {'C': GetColors(True)[0], 'Fe': GetColors(True)[2], 'Pb': GetColors(True)[3], 'D': GetColors(True)[4],
+                'DC': GetColors(True)[1], 'DFe': GetColors(True)[5], 'DPb': GetColors(True)[6]}
 
 bin_dict = {'Q': {'Name': "Q^{2}",      'Bins': [1.00, 1.30, 1.80, 4.10]},
             'N': {'Name': "#nu",        'Bins': [2.20, 3.20, 3.70, 4.20]},

@@ -118,6 +118,8 @@ parser.add_option('-D', dest='Dataset', default = "", help="Dataset in format <b
 parser.add_option('-p', dest='rootpath', default = "", help="Add path to files, if needed")
 parser.add_option('-J', dest='JLabCluster', action='store_true', default = False, help="Use folder from JLab_cluster")
 parser.add_option('-f', dest='fit',  default = "Fold", help="Use Fold (F), Left (L) or Right (R) fit")
+parser.add_option('-s', dest='solidTargets', action='store_true', default = False, help="Draw only solid targets (default adds D)")
+parser.add_option('-a', dest='allDSplit', action='store_true', default = False, help="Draw only deuterium for different solid targets")
 
 # IDEA: input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
@@ -125,9 +127,12 @@ options, args = parser.parse_args()
 # saveAll = options.saveAll
 rootpath = options.rootpath
 dataset = options.Dataset
+fit = options.fit
+onlySolid = options.solidTargets
+allD = options.allDSplit
+
 dataset_elemts = dataset.split("_")
 if options.JLabCluster: rootpath = "JLab_cluster"
-fit = options.fit
 if fit=="Fold": fit="F"
 
 try:
@@ -158,6 +163,8 @@ list_canvas = [canvas_A, canvas_B, canvas_C]
 
 par_list = ["A", "B", "C"]
 list_targets = ["C", "Fe", "Pb", "D"]
+if onlySolid: list_targets.remove("D")
+if allD: list_targets = ["DC", "DFe", "DPb"]
 fold_or_LR = "Fold" if "F" in fit else "LR"
 fit_num = 0 if (fit != "R") else 1
 
@@ -215,7 +222,7 @@ par_y_lmts = [[-1.0e4,3.99e5], [-2.99e4,6.0e3], [-1.1e4,5.0e3]] if "F" in fit el
 for p,par in enumerate(par_list):
     this_canvas = list_canvas[p]
     this_canvas.cd(0)
-    myStyle.DrawPreliminaryInfo("Summary %s values %s"%(par,fit))
+    myStyle.DrawSummaryInfo("%s values %s"%(par,fit))
     myStyle.DrawTargetInfo("All_targets", "Data")
 
     l_x1, l_x2 = 0.3, 0.7
