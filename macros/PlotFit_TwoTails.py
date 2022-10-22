@@ -95,6 +95,14 @@ for h in list_of_hists:
             hist.Fit("crossSectionL", "Q", "",        -180.0,fit_min_limit_L)
             hist.Fit("crossSectionR", "Q+ sames", "", fit_min_limit_R, 180.0)
 
+            cov_matrix_L = hist.Fit("crossSectionL", "MSQ", "", -180.0,fit_min_limit_L) # M: Uses IMPROVED TMinuit; S: Saves covariance matrix
+            cov_matrix_R = hist.Fit("crossSectionR", "MSQ+", "", fit_min_limit_R, 180.0) # M: Uses IMPROVED TMinuit; S: Saves covariance matrix
+
+            # cov_matrix_L.GetCorrelationMatrix().Write("%s_corrM0"%(tmp_txt))
+            # cov_matrix_L.GetCovarianceMatrix().Write("%s_covM0"%(tmp_txt))
+            cov_matrix_R.GetCorrelationMatrix().Write("%s_corrM"%(tmp_txt))
+            cov_matrix_R.GetCovarianceMatrix().Write("%s_covM"%(tmp_txt))
+
             hist.Draw("FUNC same")
 
             hist.Write()

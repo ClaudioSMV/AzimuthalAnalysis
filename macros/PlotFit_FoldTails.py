@@ -98,7 +98,11 @@ for h in list_of_hists:
             # fit_min_limit=40.0
             fit_funct = TF1("crossSection","[0] + [1]*cos(TMath::Pi()*x/180.0) + [2]*cos(2*TMath::Pi()*x/180.0)",  fit_min_limit, 180.0)
 
-            hist_tmp.Fit("crossSection", "Q", "", fit_min_limit, 180.0)
+            cov_matrix = hist_tmp.Fit("crossSection", "MSQ", "", fit_min_limit, 180.0) # M: Uses IMPROVED TMinuit; S: Saves covariance matrix
+            # hist_tmp.Fit("crossSection", "WL MS", "", fit_min_limit, 180.0) # WL: Uses Weighted log likelihood method
+
+            cov_matrix.GetCorrelationMatrix().Write("%s_corrM"%(tmp_txt))
+            cov_matrix.GetCovarianceMatrix().Write("%s_covM"%(tmp_txt))
 
             hist_tmp.Draw("FUNC same")
 

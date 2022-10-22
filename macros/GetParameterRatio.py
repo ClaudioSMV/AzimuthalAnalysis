@@ -15,9 +15,14 @@ myStyle.ForceStyle()
 gStyle.SetStatX(1 - myStyle.GetMargin() - 0.005)
 gStyle.SetStatY(2*myStyle.GetMargin() + 0.205)
 
-def PropErrorDivision(v1, e1, v2, e2):
-    this_error = TMath.Abs(v1/v2)*TMath.Sqrt((e1/v1)*(e1/v1) + (e2/v2)*(e2/v2)) # Assuming they both are uncorrelated
+def PropErrorDivision(v1, e1, v2, e2, cov=0):
+    this_error = TMath.Abs(v1/v2)*TMath.Sqrt((e1/v1)*(e1/v1) + (e2/v2)*(e2/v2) - 2*cov/(v1*v2))
     return this_error
+
+def GetMatrixElem(matrix, row, col):
+    this_matrix = matrix.GetMatrixArray()
+    index = col + 3*row
+    return this_matrix[index]
 
 # Construct the argument parser
 parser = optparse.OptionParser("usage: %prog [options]\n")
@@ -65,7 +70,9 @@ inputPath = myStyle.getOutputDir("Fit",infoDict["Target"],rootpath)
 
 inputfile_solid = TFile("%sFitFold_%s.root"%(inputPath,nameFormatted),"READ") if fold else TFile("%sFitBothTails_%s.root"%(inputPath,nameFormatted),"READ")
 
-list_of_hists = inputfile_solid.GetListOfKeys()
+list_of_hists = inputfile_solid.GetListOfKeys().Clone()
+for elem in list_of_hists:
+    if (elem.ReadObj().Class_Name() != "TH1D"): list_of_hists.Remove(elem)
 
 ratio_th1_b_list = []
 ratio_th1_c_list = []
@@ -79,13 +86,18 @@ for e,elem in enumerate(list_func_names):
 print("")
 print("Target %s"%infoDict["Target"])
 
-for i_h,h in enumerate(list_of_hists):
+index_h = 0
+for i_h,h in enumerate(inputfile_solid.GetListOfKeys()):
     if (h.ReadObj().Class_Name() == "TH1D"):
         hist_solid = h.ReadObj()
         hist_name = h.GetName()
-        hist_D = inputfile_D.Get(hist_name)
+        hist_D = inputfile_D.Get(hist_name) # Corr_Reconstructed_Q0N0Z0_fold
 
-        bin_name = hist_name.split("_")[2]
+        bin_name = hist_name.split("_")[2] # Q0N0Z0
+
+        # Get covariance matrix
+        cov_matrix_X = inputfile_solid.Get("%s_covM"%(bin_name))
+        cov_matrix_D = inputfile_D.Get("%s_covM"%(bin_name))
 
         for i_f,f in enumerate(list_func_names):
             fit_solid = hist_solid.GetFunction(f)
@@ -119,17 +131,26 @@ for i_h,h in enumerate(list_of_hists):
             ratio_th1_b_list[i_f].Fill(bin_name, 0.0)
             ratio_th1_c_list[i_f].Fill(bin_name, 0.0)
 
-            err10_X = PropErrorDivision(par1_X, err1_X, par0_X, err0_X)
-            err10_D = PropErrorDivision(par1_D, err1_D, par0_D, err0_D)
-            err1_XD = PropErrorDivision((par1_X/par0_X), err10_X, (par1_D/par0_D), err10_D)
-            ratio_th1_b_list[i_f].SetBinContent(i_h+1, (par1_X/par0_X)/(par1_D/par0_D))
-            ratio_th1_b_list[i_f].SetBinError(i_h+1, err1_XD)
+            # Get error propagated and fill B/A
+            cov10_X = GetMatrixElem(cov_matrix_X, 0, 1) # Get Cov AB
+            cov10_D = GetMatrixElem(cov_matrix_D, 0, 1) # Get Cov AB
 
-            err20_X = PropErrorDivision(par2_X, err2_X, par0_X, err0_X)
-            err20_D = PropErrorDivision(par2_D, err2_D, par0_D, err0_D)
+            err10_X = PropErrorDivision(par1_X, err1_X, par0_X, err0_X, cov10_X)
+            err10_D = PropErrorDivision(par1_D, err1_D, par0_D, err0_D, cov10_D)
+            err1_XD = PropErrorDivision((par1_X/par0_X), err10_X, (par1_D/par0_D), err10_D)
+            ratio_th1_b_list[i_f].SetBinContent(index_h+1, (par1_X/par0_X)/(par1_D/par0_D))
+            ratio_th1_b_list[i_f].SetBinError(index_h+1, err1_XD)
+
+            # Get error propagated and fill C/A
+            cov20_X = GetMatrixElem(cov_matrix_X, 0, 2) # Get Cov AC
+            cov20_D = GetMatrixElem(cov_matrix_D, 0, 2) # Get Cov AC
+
+            err20_X = PropErrorDivision(par2_X, err2_X, par0_X, err0_X, cov20_X)
+            err20_D = PropErrorDivision(par2_D, err2_D, par0_D, err0_D, cov20_D)
             err2_XD = PropErrorDivision((par2_X/par0_X), err20_X, (par2_D/par0_D), err20_D)
-            ratio_th1_c_list[i_f].SetBinContent(i_h+1, (par2_X/par0_X)/(par2_D/par0_D))
-            ratio_th1_c_list[i_f].SetBinError(i_h+1, err2_XD)
+            ratio_th1_c_list[i_f].SetBinContent(index_h+1, (par2_X/par0_X)/(par2_D/par0_D))
+            ratio_th1_c_list[i_f].SetBinError(index_h+1, err2_XD)
+        index_h+=1
 
 print("")
 

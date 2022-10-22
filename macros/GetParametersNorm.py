@@ -15,9 +15,14 @@ myStyle.ForceStyle()
 # gStyle.SetStatX(1 - myStyle.GetMargin() - 0.005)
 # gStyle.SetStatY(2*myStyle.GetMargin() + 0.205)
 
-def PropErrorDivision(v1, e1, v2, e2):
-    this_error = TMath.Abs(v1/v2)*TMath.Sqrt((e1/v1)*(e1/v1) + (e2/v2)*(e2/v2)) # Assuming they both are uncorrelated
+def PropErrorDivision(v1, e1, v2, e2, cov=0):
+    this_error = TMath.Abs(v1/v2)*TMath.Sqrt((e1/v1)*(e1/v1) + (e2/v2)*(e2/v2) - 2*cov/(v1*v2))
     return this_error
+
+def GetMatrixElem(matrix, row, col):
+    this_matrix = matrix.GetMatrixArray()
+    index = col + 3*row
+    return this_matrix[index]
 
 # Construct the argument parser
 parser = optparse.OptionParser("usage: %prog [options]\n")
@@ -51,7 +56,9 @@ inputPath = myStyle.getOutputDir("Fit",infoDict["Target"],rootpath)
 
 inputfile = TFile("%sFitFold_%s.root"%(inputPath,nameFormatted),"READ") if fold else TFile("%sFitBothTails_%s.root"%(inputPath,nameFormatted),"READ")
 
-list_of_hists = inputfile.GetListOfKeys()
+list_of_hists = inputfile.GetListOfKeys().Clone()
+for elem in list_of_hists:
+    if (elem.ReadObj().Class_Name() != "TH1D"): list_of_hists.Remove(elem)
 
 th1_b_norm_pos_list = []
 th1_b_norm_neg_list = []
@@ -73,12 +80,16 @@ for e,elem in enumerate(list_func_names):
 print("")
 print("Target %s"%infoDict["Target"])
 
-for i_h,h in enumerate(list_of_hists):
+index_h = 0
+for i_h,h in enumerate(inputfile.GetListOfKeys()): #list_of_hists):
     if (h.ReadObj().Class_Name() == "TH1D"):
         hist_targ = h.ReadObj()
-        hist_name = h.GetName()
+        hist_name = h.GetName() # Corr_Reconstructed_Q0N0Z0_fold
 
-        bin_name = hist_name.split("_")[2]
+        bin_name = hist_name.split("_")[2] # Q0N0Z0
+
+        # Get covariance matrix
+        cov_matrix = inputfile.Get("%s_covM"%(bin_name))
 
         for i_f,f in enumerate(list_func_names):
             fit_targ = hist_targ.GetFunction(f)
@@ -103,22 +114,25 @@ for i_h,h in enumerate(list_of_hists):
             th1_c_norm_neg_list[i_f].Fill(bin_name, 0.0)
 
             # Get error propagated and fill B/A
-            err10 = PropErrorDivision(par1, err1, par0, err0)
+            cov10 = GetMatrixElem(cov_matrix, 0, 1) # Get Cov AB
+            err10 = PropErrorDivision(par1, err1, par0, err0, cov10)
             if (par1/par0)>0:
-                th1_b_norm_pos_list[i_f].SetBinContent(i_h+1, (par1/par0))
-                th1_b_norm_pos_list[i_f].SetBinError(i_h+1, err10)
+                th1_b_norm_pos_list[i_f].SetBinContent(index_h+1, (par1/par0))
+                th1_b_norm_pos_list[i_f].SetBinError(index_h+1, err10)
             else:
-                th1_b_norm_neg_list[i_f].SetBinContent(i_h+1, abs(par1/par0))
-                th1_b_norm_neg_list[i_f].SetBinError(i_h+1, err10)
+                th1_b_norm_neg_list[i_f].SetBinContent(index_h+1, abs(par1/par0))
+                th1_b_norm_neg_list[i_f].SetBinError(index_h+1, err10)
 
             # Get error propagated and fill C/A
-            err20 = PropErrorDivision(par2, err2, par0, err0)
+            cov20 = GetMatrixElem(cov_matrix, 0, 2) # Get Cov AC
+            err20 = PropErrorDivision(par2, err2, par0, err0, cov20)
             if (par2/par0)>0:
-                th1_c_norm_pos_list[i_f].SetBinContent(i_h+1, (par2/par0))
-                th1_c_norm_pos_list[i_f].SetBinError(i_h+1, err20)
+                th1_c_norm_pos_list[i_f].SetBinContent(index_h+1, (par2/par0))
+                th1_c_norm_pos_list[i_f].SetBinError(index_h+1, err20)
             else:
-                th1_c_norm_neg_list[i_f].SetBinContent(i_h+1, abs(par2/par0))
-                th1_c_norm_neg_list[i_f].SetBinError(i_h+1, err20)
+                th1_c_norm_neg_list[i_f].SetBinContent(index_h+1, abs(par2/par0))
+                th1_c_norm_neg_list[i_f].SetBinError(index_h+1, err20)
+        index_h+=1
 
 
 print("")
