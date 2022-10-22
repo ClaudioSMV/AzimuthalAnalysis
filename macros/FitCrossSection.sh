@@ -29,7 +29,7 @@ fi
 
 for t in "${TAR_LIST[@]}"; do
     python PlotCorrection.py -D ${t}_${BINNAME}_${BINNDIM} -J
-    python PlotFit_TwoTails.py -D ${t}_${BINNAME}_${BINNDIM} -J
+    # python PlotFit_TwoTails.py -D ${t}_${BINNAME}_${BINNDIM} -J
     python PlotFit_FoldTails.py -D ${t}_${BINNAME}_${BINNDIM} -J
     # python GetParameters.py -D ${t}_${BINNAME}_${BINNDIM} -J
     # python GetParameters.py -D ${t}_${BINNAME}_${BINNDIM} -J -Z
