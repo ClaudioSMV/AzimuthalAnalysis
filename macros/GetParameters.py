@@ -51,7 +51,9 @@ inputPath = myStyle.getOutputDir("Fit",infoDict["Target"],rootpath)
 
 inputfile = TFile("%sFitFold_%s.root"%(inputPath,nameFormatted),"READ") if fold else TFile("%sFitBothTails_%s.root"%(inputPath,nameFormatted),"READ")
 
-list_of_hists = inputfile.GetListOfKeys()
+list_of_hists = inputfile.GetListOfKeys().Clone()
+for elem in list_of_hists:
+    if (elem.ReadObj().Class_Name() != "TH1D"): list_of_hists.Remove(elem)
 
 parameter_A_list = []
 parameter_B_list = []
@@ -70,7 +72,8 @@ for e,elem in enumerate(list_func_names):
 print("")
 print("Target %s"%infoDict["Target"])
 
-for i_h,h in enumerate(list_of_hists):
+index_h = 0
+for i_h,h in enumerate(inputfile.GetListOfKeys()):
     if (h.ReadObj().Class_Name() == "TH1D"):
         hist_target = h.ReadObj()
         hist_name = h.GetName() # Corr_Reconstructed_Q0N0
@@ -97,13 +100,14 @@ for i_h,h in enumerate(list_of_hists):
             parameter_B_list[i_f].Fill(bin_name, 0.0)
             parameter_C_list[i_f].Fill(bin_name, 0.0)
 
-            parameter_A_list[i_f].SetBinContent(i_h+1, par0)
-            parameter_B_list[i_f].SetBinContent(i_h+1, par1)
-            parameter_C_list[i_f].SetBinContent(i_h+1, par2)
+            parameter_A_list[i_f].SetBinContent(index_h+1, par0)
+            parameter_B_list[i_f].SetBinContent(index_h+1, par1)
+            parameter_C_list[i_f].SetBinContent(index_h+1, par2)
 
-            parameter_A_list[i_f].SetBinError(i_h+1, err0)
-            parameter_B_list[i_f].SetBinError(i_h+1, err1)
-            parameter_C_list[i_f].SetBinError(i_h+1, err2)
+            parameter_A_list[i_f].SetBinError(index_h+1, err0)
+            parameter_B_list[i_f].SetBinError(index_h+1, err1)
+            parameter_C_list[i_f].SetBinError(index_h+1, err2)
+        index_h+=1
 
 print("")
 
