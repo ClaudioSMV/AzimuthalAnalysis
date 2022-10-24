@@ -51,11 +51,7 @@ for h in list_of_hists:
             # if not isData and "reco" in h.GetName(): continue
 
             # Name format is: Corr_Reconstructed_Q0N0
-            tmp_txt = h.GetName().split("_")[2] # Q0N0
-
-            var1 = tmp_txt[0] # Q
-            var2 = tmp_txt[2] # N
-            # type_hist = correct_prefix[tmp_txt[2]]
+            tmp_txt = h.GetName().split("_")[2] # Q0N0Z0
 
             hist = h.ReadObj()
             Nbins = hist.GetXaxis().GetNbins()
