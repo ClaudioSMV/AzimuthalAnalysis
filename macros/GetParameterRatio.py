@@ -53,8 +53,11 @@ if ("D" in infoDict["Target"]):
     exit()
 
 solid_mix = "" if mixD else infoDict["Target"]
+hadronic_bin_name = ""
+if "Z" in infoDict["Cuts"]: hadronic_bin_name = "_Z"
+if "P" in infoDict["Cuts"]: hadronic_bin_name = "_P"
 # dataset_elemts = dataset.split("_")
-dataset_D = "D%s_%s_%s"%(solid_mix,infoDict["BinningType"],infoDict["NDims"])
+dataset_D = "D%s_%s_%s%s"%(solid_mix,infoDict["BinningType"],infoDict["NDims"],hadronic_bin_name)
 if options.JLabCluster: rootpath = "JLab_cluster"
 
 ### Get D (liquid target) info and parameters

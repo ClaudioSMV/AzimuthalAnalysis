@@ -21,13 +21,22 @@ parser.add_option('-p', dest='rootpath', default = "", help="Add path to files, 
 parser.add_option('-a', dest='saveAll', action='store_true', default = False, help="Save All plots")
 parser.add_option('-J', dest='JLabCluster', action='store_true', default = False, help="Use folder from JLab_cluster")
 
+parser.add_option('-Z', dest='useZh',  action='store_true', default = False, help="Use bin in Zh, integrate Pt2")
+parser.add_option('-P', dest='usePt2', action='store_true', default = False, help="Use bin in Pt2, integrate Zh")
+
 # IDEA: input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
 
-saveAll = options.saveAll
-rootpath = options.rootpath
 dataset = options.Dataset
+rootpath = options.rootpath
+saveAll = options.saveAll
 if options.JLabCluster: rootpath = "JLab_cluster"
+useZh = options.useZh
+usePt2 = options.usePt2
+if (not useZh) and (not usePt2): print("Using default binning!")
+if (useZh) and (usePt2):
+    print("Two binning selected. Please, choose only one of the options!")
+    exit()
 
 infoDict = myStyle.getNameFormattedDict(dataset)
 
@@ -45,34 +54,62 @@ inputTHnSparse_list = [histCorr_Reconstructed, histCorr_RecGoodGen_mc, histCorr_
 prefixType = ["Correction", "Corr GoodGen_mc", "Corr GoodGen_rec", "Raw data"]
 
 
-bins_list = [] # [3, 3, 5]
+bins_list = [] # [3, 3, 10, 1]
+default_conf = [1,1,0,0] # 2D bins -> Q2 and Nu, integrate Zh and Pt2
+this_conf = [1,1,0,0]
+hadronic_bin_name = ""
 
-outDim = infoDict["NDims"]
-if (infoDict["NDims"] == 1): outDim = 2
-if (infoDict["BinningType"] == 2): outDim = 3
+# Set default shown binning by BinningType
+if (infoDict["BinningType"] == 0): # 0: Small binning
+    default_conf[2] = 0
+    default_conf[3] = 0
+elif (infoDict["BinningType"] == 1): # 1: SplitZh
+    default_conf[2] = 1
+    default_conf[3] = 0
+elif (infoDict["BinningType"] == 2): # 2: ThinZh bin, so it is intended to shown results as function of Zh
+    default_conf[2] = 1
+    default_conf[3] = 0
 
-for i in range(0,outDim):
-    nbins = histCorr_Reconstructed.GetAxis(i).GetNbins()
-    bins_list.append(nbins)
+# Change binning using input (or use default)
+if (useZh):
+    this_conf[2] = 1
+    this_conf[3] = 0
+    hadronic_bin_name = "_Z"
+elif (usePt2):
+    this_conf[2] = 0
+    this_conf[3] = 1
+    hadronic_bin_name = "_P"
+else:
+    this_conf = default_conf
+
+# for i in range(0,outDim):
+for i,i_bool in enumerate(this_conf):
+    if i_bool:
+        nbins = histCorr_Reconstructed.GetAxis(i).GetNbins()
+        bins_list.append(nbins)
+    else:
+        bins_list.append(1)
 
 totalsize = np.prod(bins_list)
 names_list = []
 Proj1DTHnSparse_list = [[],[],[],[]]
-symbol_list = ["Q","N","Z"]
+symbol_list = ["Q","N","Z","P"]
 for i in range(totalsize):
     total_tmp = totalsize
     i_tmp = i
     txt_tmp = ""
-    for j,nbin in enumerate(bins_list):
-        total_tmp /= nbin
-        index = i_tmp/(total_tmp)
-        i_tmp -= index*total_tmp
-        txt_tmp += (symbol_list[j]+str(index))
+    # for j,nbin in enumerate(bins_list):
+    for j,j_bool in enumerate(this_conf):
+        if j_bool:
+            total_tmp /= bins_list[j]
+            index = i_tmp/(total_tmp)
+            i_tmp -= index*total_tmp
+            txt_tmp += (symbol_list[j]+str(index))
 
-        for t in inputTHnSparse_list:
-            t.GetAxis(j).SetRange(index+1, index+1)
+            for t in inputTHnSparse_list:
+                t.GetAxis(j).SetRange(index+1, index+1)
 
-        # histCorr_Reconstructed.GetAxis(j).SetRange(index+1, index+1)
+            # histCorr_Reconstructed.GetAxis(j).SetRange(index+1, index+1)
 
     for n,newRangeInput in enumerate(inputTHnSparse_list):
         proj_tmp = newRangeInput.Projection(4)
@@ -96,7 +133,7 @@ gStyle.SetOptStat(0)
 
 # Plot 2D histograms
 nameFormatted = myStyle.getNameFormatted(dataset)
-outputfile = TFile(outputPath+nameFormatted+".root","RECREATE")
+outputfile = TFile(outputPath+nameFormatted+hadronic_bin_name+".root","RECREATE")
 for i,info in enumerate(names_list):
     for p,proj in enumerate(Proj1DTHnSparse_list):
         if (("Good" in prefixType[p]) and (not saveAll)): continue
@@ -130,7 +167,7 @@ for i,info in enumerate(names_list):
         myStyle.DrawTargetInfo(nameFormatted, "Data")
         myStyle.DrawBinInfo(info, infoDict["BinningType"])
 
-        canvas.SaveAs(outputPath+nameFormatted+"-"+this_proj.GetName()+".gif")
+        canvas.SaveAs(outputPath+nameFormatted+hadronic_bin_name+"-"+this_proj.GetName()+".gif")
         # canvas.SaveAs(outputPath+"CT_"+info+".pdf")
         this_proj.Write()
         htemp.Delete()

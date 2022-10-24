@@ -120,6 +120,9 @@ parser.add_option('-y', dest='y_symmetric', action='store_true', default = False
 parser.add_option('-s', dest='solidTargets', action='store_true', default = False, help="Draw only solid targets (default adds D)")
 parser.add_option('-a', dest='allDSplit', action='store_true', default = False, help="Draw only deuterium for different solid targets")
 
+parser.add_option('-Z', dest='useZh',  action='store_true', default = False, help="Use bin in Zh, integrate Pt2")
+parser.add_option('-P', dest='usePt2', action='store_true', default = False, help="Use bin in Pt2, integrate Zh")
+
 # IDEA: input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
 
@@ -130,6 +133,12 @@ fit = options.fit
 use_sym = options.y_symmetric
 onlySolid = options.solidTargets
 allD = options.allDSplit
+useZh = options.useZh
+usePt2 = options.usePt2
+if (not useZh) and (not usePt2): print("Using default binning!")
+if (useZh) and (usePt2):
+    print("Two binning selected. Please, choose only one of the options!")
+    exit()
 
 dataset_elemts = dataset.split("_")
 if options.JLabCluster: rootpath = "JLab_cluster"
@@ -148,6 +157,7 @@ this_bin_dict = myStyle.all_dicts[this_binning_type]
 nBinsQ = len(this_bin_dict['Q']['Bins'])-1
 nBinsN = len(this_bin_dict['N']['Bins'])-1
 nBinsZ = len(this_bin_dict['Z']['Bins'])-1
+nBinsP = len(this_bin_dict['P']['Bins'])-1
 
 gStyle.SetOptStat(0)
 canvas_B = TCanvas("cvB","cvB",1000,800)
@@ -167,13 +177,17 @@ if allD: list_targets = ["DC", "DFe", "DPb"]
 fold_or_LR = "Fold" if "F" in fit else "LR"
 fit_num = 0 if (fit != "R") else 1
 
+if (useZh): hadronic_bin_name = "_Z"
+elif (usePt2): hadronic_bin_name = "_P"
+else: hadronic_bin_name = ""
+
 list_infiles = []
 
 # Open files
 for targ in list_targets:
     this_dataset = "%s_%s"%(targ, dataset)
     # infoDict = myStyle.getNameFormattedDict(this_dataset)
-    nameFormatted = myStyle.getNameFormatted(this_dataset)
+    nameFormatted = "%s%s"%(myStyle.getNameFormatted(this_dataset),hadronic_bin_name) # Fe_B2_1D or Fe_B2_1D_Z
 
     inputPath = myStyle.getOutputDir("Parameters",targ,rootpath)
     inputfile = TFile("%s%s_ParametersNorm_%s.root"%(inputPath,nameFormatted,fold_or_LR),"READ")
@@ -193,17 +207,29 @@ for p,par in enumerate(["B", "C"]): # 3
             list_this_Q = []
             for iN in range(nBinsN): #nN
                 bin_label = "Q%iN%i"%(iQ,iN)
-                hist_tmp = TH1D("%s_%s_Q%iN%i"%(par,targ,iQ,iN),";Z_{h};%s/A"%(par),nBinsZ,array('d',this_bin_dict['Z']['Bins']))
-                # hist_tmp_N = TH1D("%s_%s_Neg_Q%iN%i"%(par,targ,iQ,iN),";Z_{h};%s/A"%(par),nBinsZ,array('d',this_bin_dict['Z']['Bins']))
+                if useZh:
+                    hist_tmp = TH1D("%s_%s_Q%iN%i"%(par,targ,iQ,iN),";Z_{h};%s/A"%(par),nBinsZ,array('d',this_bin_dict['Z']['Bins']))
+                    # hist_tmp_N = TH1D("%s_%s_Neg_Q%iN%i"%(par,targ,iQ,iN),";Z_{h};%s/A"%(par),nBinsZ,array('d',this_bin_dict['Z']['Bins']))
 
-                for iZ in range(1,nBinsZ+1):
-                    this_label = "%sZ%i"%(bin_label,iZ-1)
-                    this_bin = hist_par_Pos.GetXaxis().FindBin(this_label)
-                    bin_value = hist_par_Pos.GetBinContent(this_bin) if hist_par_Pos.GetBinContent(this_bin)>0.0 else -hist_par_Neg.GetBinContent(this_bin)
-                    bin_error = hist_par_Pos.GetBinError(this_bin) if hist_par_Pos.GetBinContent(this_bin)>0.0 else hist_par_Neg.GetBinError(this_bin)
+                    for iZ in range(1,nBinsZ+1):
+                        this_label = "%sZ%i"%(bin_label,iZ-1)
+                        this_bin = hist_par_Pos.GetXaxis().FindBin(this_label)
+                        bin_value = hist_par_Pos.GetBinContent(this_bin) if hist_par_Pos.GetBinContent(this_bin)>0.0 else -hist_par_Neg.GetBinContent(this_bin)
+                        bin_error = hist_par_Pos.GetBinError(this_bin) if hist_par_Pos.GetBinContent(this_bin)>0.0 else hist_par_Neg.GetBinError(this_bin)
 
-                    hist_tmp.SetBinContent(iZ, bin_value)
-                    hist_tmp.SetBinError(iZ, bin_error)
+                        hist_tmp.SetBinContent(iZ, bin_value)
+                        hist_tmp.SetBinError(iZ, bin_error)
+                elif usePt2:
+                    hist_tmp = TH1D("%s_%s_Q%iN%i"%(par,targ,iQ,iN),";P_{t}^{2} (GeV^2);%s/A"%(par),nBinsP,array('d',this_bin_dict['P']['Bins']))
+
+                    for iP in range(1,nBinsP+1):
+                        this_label = "%sP%i"%(bin_label,iP-1)
+                        this_bin = hist_par_Pos.GetXaxis().FindBin(this_label)
+                        bin_value = hist_par_Pos.GetBinContent(this_bin) if hist_par_Pos.GetBinContent(this_bin)>0.0 else -hist_par_Neg.GetBinContent(this_bin)
+                        bin_error = hist_par_Pos.GetBinError(this_bin) if hist_par_Pos.GetBinContent(this_bin)>0.0 else hist_par_Neg.GetBinError(this_bin)
+
+                        hist_tmp.SetBinContent(iP, bin_value)
+                        hist_tmp.SetBinError(iP, bin_error)
 
                 list_this_Q.append(hist_tmp)
             list_this_tar.append(list_this_Q)
@@ -241,7 +267,8 @@ for p,par in enumerate(["B", "C"]):
     for t,targ in enumerate(list_targets):
         this_dataset = "%s_%s"%(targ, dataset)
         infoDict = myStyle.getNameFormattedDict(this_dataset)
-        nameFormatted = myStyle.getNameFormatted(this_dataset)
+        # nameFormatted = myStyle.getNameFormatted(this_dataset)
+        nameFormatted = "%s%s"%(myStyle.getNameFormatted(this_dataset),hadronic_bin_name) # Fe_B2_1D or Fe_B2_1D_Z
 
         this_canvas.cd(0)
 
@@ -299,9 +326,9 @@ for p,par in enumerate(["B", "C"]):
                     if (legend.GetListOfPrimitives().GetEntries()==len(list_targets)):
                         legend.Draw()
 
-    this_title = "%sParNorm_%s_%s"%(outputPath,par,fit)
-    if onlySolid: this_title = "%sParNorm_%s_%s_Solid"%(outputPath,par,fit)
-    if allD: this_title = "%sParNorm_%s_%s_OnlyD"%(outputPath,par,fit)
+    this_title = "%sParNorm_%s_%s%s"%(outputPath,par,fit,hadronic_bin_name)
+    if onlySolid: this_title = "%sParNorm_%s_%s_Solid%s"%(outputPath,par,fit,hadronic_bin_name)
+    if allD: this_title = "%sParNorm_%s_%s_OnlyD%s"%(outputPath,par,fit,hadronic_bin_name)
     this_canvas.SaveAs("%s.gif"%this_title)
     this_canvas.SaveAs("%s.pdf"%this_title)
 
