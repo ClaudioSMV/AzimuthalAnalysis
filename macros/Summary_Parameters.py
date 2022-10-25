@@ -243,12 +243,20 @@ outputPath = myStyle.getOutputDir("Summary","",rootpath)
 
 # par_y_lmts = [[-1.0e4,4.0e5], [-3.0e4,6.0e3], [-1.0e4,5.0e3]] if "F" in fit else [[-0.5e4,2.0e5], [-1.5e4,3.0e3], [-0.5e4,2.5e3]]
 par_y_lmts = [[-1.0e4,3.99e5], [-2.99e4,6.0e3], [-1.1e4,5.0e3]] if "F" in fit else [[-0.5e4,2.0e5], [-1.5e4,3.0e3], [-0.5e4,2.5e3]]
+Q2_bin_info_Ypos = -0.15
+
+if usePt2:
+    par_y_lmts = [[-1.0e4,1.49e5], [-1.49e4,6.0e3], [-3.0e3,3.0e3]] if "F" in fit else [[-0.5e4,0.75e5], [-0.75e4,3.0e3], [-1.5e3,1.5e3]]
+    Q2_bin_info_Ypos = -0.22
 
 for p,par in enumerate(par_list):
     this_canvas = list_canvas[p]
     this_canvas.cd(0)
     myStyle.DrawSummaryInfo("%s values %s"%(par,fit))
-    myStyle.DrawTargetInfo("All_targets", "Data")
+    targs_drawn = "All_targets"
+    if onlySolid: targs_drawn = "Solid_targets"
+    if allD: targs_drawn = "Deuterium"
+    myStyle.DrawTargetInfo(targs_drawn, "Data")
 
     l_x1, l_x2 = 0.3, 0.7
     l_y1, l_y2 = 0.1, 0.3
@@ -313,7 +321,7 @@ for p,par in enumerate(par_list):
                     text.SetTextAlign(23)
                     # title = myStyle.GetBinInfo("Q%iN%i"%(iQ,iN), this_binning_type)
                     title = myStyle.GetBinInfo("Q%i"%(iQ), this_binning_type)
-                    text.DrawLatexNDC(XtoPad(0.5),YtoPad(-0.15),title)
+                    text.DrawLatexNDC(XtoPad(0.5),YtoPad(Q2_bin_info_Ypos),title)
 
                 if (iQ==2):
                     text = ROOT.TLatex()
@@ -329,8 +337,11 @@ for p,par in enumerate(par_list):
                     if (legend.GetListOfPrimitives().GetEntries()==len(list_targets)):
                         legend.Draw()
 
-    this_canvas.SaveAs("%sPar_%s_%s%s.gif"%(outputPath,par,fit,hadronic_bin_name))
-    this_canvas.SaveAs("%sPar_%s_%s%s.pdf"%(outputPath,par,fit,hadronic_bin_name))
+    this_title = "%sPar_%s_%s%s"%(outputPath,par,fit,hadronic_bin_name)
+    if onlySolid: this_title = "%sPar_%s_%s_Solid%s"%(outputPath,par,fit,hadronic_bin_name)
+    if allD: this_title = "%sPar_%s_%s_OnlyD%s"%(outputPath,par,fit,hadronic_bin_name)
+    this_canvas.SaveAs("%s.gif"%this_title)
+    this_canvas.SaveAs("%s.pdf"%this_title)
 
 for t,targ in enumerate(list_targets):
     list_infiles[t].Close()

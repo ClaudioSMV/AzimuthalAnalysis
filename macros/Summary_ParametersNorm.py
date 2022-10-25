@@ -242,6 +242,11 @@ outputPath = myStyle.getOutputDir("Summary","",rootpath)
 
 # par_y_lmts = [[-1.2,1.2], [-0.6,0.6]] if use_sym else [[-1.2,0.3], [-0.5,0.2]]
 par_y_lmts = [[-1.199,1.199], [-0.599,0.599]] if use_sym else [[-1.199,0.299], [-0.499,0.199]]
+Q2_bin_info_Ypos = -0.15
+
+if usePt2:
+    par_y_lmts = [[-0.399,0.399], [-0.149,0.149]] if use_sym else [[-0.399,0.199], [-0.149,0.149]]
+    Q2_bin_info_Ypos = -0.22
 
 for p,par in enumerate(["B", "C"]):
     this_canvas = list_canvas[p]
@@ -254,7 +259,7 @@ for p,par in enumerate(["B", "C"]):
 
     l_x1, l_x2 = 0.3, 0.7
     l_y1, l_y2 = 0.5, 0.7
-    if not use_sym:
+    if not use_sym and not usePt2:
         l_y1 = 0.1
         l_y2 = 0.3
     legend = TLegend(l_x1, l_y1, l_x2, l_y2)
@@ -310,7 +315,7 @@ for p,par in enumerate(["B", "C"]):
                     text.SetTextAlign(23)
                     # title = myStyle.GetBinInfo("Q%iN%i"%(iQ,iN), this_binning_type)
                     title = myStyle.GetBinInfo("Q%i"%(iQ), this_binning_type)
-                    text.DrawLatexNDC(XtoPad(0.5),YtoPad(-0.15),title)
+                    text.DrawLatexNDC(XtoPad(0.5),YtoPad(Q2_bin_info_Ypos),title)
 
                 if (iQ==2):
                     text = ROOT.TLatex()
