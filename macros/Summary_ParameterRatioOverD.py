@@ -118,7 +118,6 @@ parser.add_option('-D', dest='Dataset', default = "", help="Dataset in format <b
 parser.add_option('-p', dest='rootpath', default = "", help="Add path to files, if needed")
 parser.add_option('-J', dest='JLabCluster', action='store_true', default = False, help="Use folder from JLab_cluster")
 parser.add_option('-f', dest='fit',  default = "Fold", help="Use Fold (F), Left (L) or Right (R) fit")
-parser.add_option('-s', dest='symmetric', action='store_true', default = False, help="Use symmetric y-limits (default False)")
 parser.add_option('-m', dest='mixD', action='store_true', default = False, help="Mix deuterium data from all solid targets")
 
 parser.add_option('-Z', dest='useZh',  action='store_true', default = False, help="Use bin in Zh, integrate Pt2")
@@ -131,7 +130,6 @@ options, args = parser.parse_args()
 rootpath = options.rootpath
 dataset = options.Dataset
 fit = options.fit
-use_sym = options.symmetric
 mixD = options.mixD
 useZh = options.useZh
 usePt2 = options.usePt2
@@ -220,7 +218,7 @@ for p,par in enumerate(["B", "C"]): # 3
                         hist_tmp.SetBinContent(iZ, bin_value)
                         hist_tmp.SetBinError(iZ, bin_error)
                 elif usePt2:
-                    hist_tmp = TH1D("%s_%s_Q%iN%i"%(par,targ,iQ,iN),";P_{t}^{2} (GeV^2);(%s/A)_{Solid}/(%s/A)_{D}"%(par,par),nBinsP,array('d',this_bin_dict['P']['Bins']))
+                    hist_tmp = TH1D("%s_%s_Q%iN%i"%(par,targ,iQ,iN),";P_{t}^{2} (GeV^{2});(%s/A)_{Solid}/(%s/A)_{D}"%(par,par),nBinsP,array('d',this_bin_dict['P']['Bins']))
                     # hist_tmp_N = TH1D("%s_%s_Neg_Q%iN%i"%(par,targ,iQ,iN),";Z_{h};%s/A"%(par),nBinsZ,array('d',this_bin_dict['Z']['Bins']))
 
                     for iP in range(1,nBinsP+1):
@@ -241,9 +239,14 @@ for p,par in enumerate(["B", "C"]): # 3
 
 outputPath = myStyle.getOutputDir("Summary","",rootpath)
 
-par_y_lmts = [[-1.199,1.199], [-0.599,0.599]] if use_sym else [[0.0,2.0], [-1.0,3.0]]
 # [[-10.0,10.0], [-10.0,10.0]]  : See bad bins
 # [[-4.0,4.0], [-4.0,4.0]]      : Zoom. Still getting bad bins, specially for C
+par_y_lmts = [[0.0,2.0], [-1.0,3.0]]
+Q2_bin_info_Ypos = -0.15
+
+if usePt2:
+    par_y_lmts = [[0.0,2.0], [-2.0,4.0]]
+    Q2_bin_info_Ypos = -0.22
 
 for p,par in enumerate(["B", "C"]):
     this_canvas = list_canvas[p]
@@ -310,7 +313,7 @@ for p,par in enumerate(["B", "C"]):
                     text.SetTextAlign(23)
                     # title = myStyle.GetBinInfo("Q%iN%i"%(iQ,iN), this_binning_type)
                     title = myStyle.GetBinInfo("Q%i"%(iQ), this_binning_type)
-                    text.DrawLatexNDC(XtoPad(0.5),YtoPad(-0.15),title)
+                    text.DrawLatexNDC(XtoPad(0.5),YtoPad(Q2_bin_info_Ypos),title)
 
                 if (iQ==2):
                     text = ROOT.TLatex()

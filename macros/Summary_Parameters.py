@@ -220,7 +220,7 @@ for p,par in enumerate(par_list): # 3
                         hist_tmp.SetBinContent(iZ, bin_value)
                         hist_tmp.SetBinError(iZ, bin_error)
                 elif usePt2:
-                    hist_tmp = TH1D("%s_%s_Q%iN%i"%(par,targ,iQ,iN),";P_{t}^{2} (GeV^2);Parameter %s"%(par),nBinsP,array('d',this_bin_dict['P']['Bins']))
+                    hist_tmp = TH1D("%s_%s_Q%iN%i"%(par,targ,iQ,iN),";P_{t}^{2} (GeV^{2});Parameter %s"%(par),nBinsP,array('d',this_bin_dict['P']['Bins']))
 
                     for iP in range(1,nBinsP+1):
                         this_label = "%sP%i"%(bin_label,iP-1)
