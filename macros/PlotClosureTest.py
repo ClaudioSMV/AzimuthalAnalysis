@@ -20,6 +20,7 @@ parser.add_option('-D', dest='Dataset', default = "", help="Dataset in format <t
 parser.add_option('-p', dest='rootpath', default = "", help="Add path to files, if needed")
 parser.add_option('-a', dest='saveAll', action='store_true', default = False, help="Save All plots")
 parser.add_option('-J', dest='JLabCluster', action='store_true', default = False, help="Use folder from JLab_cluster")
+parser.add_option('-e', dest='errorFull', action='store_true', default = False, help="Use FullError")
 
 # IDEA: input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
@@ -28,10 +29,12 @@ saveAll = options.saveAll
 rootpath = options.rootpath
 dataset = options.Dataset
 if options.JLabCluster: rootpath = "JLab_cluster"
+ext_error = "_FullErr" if options.errorFull else ""
 
 infoDict = myStyle.getNameFormattedDict(dataset)
 
 inputPath = myStyle.getInputFile("ClosureTest",dataset,rootpath) # ClosureTest_%s_B%i_%iD.root
+inputPath = myStyle.addBeforeRootExt(inputPath,ext_error)
 inputfile = TFile(inputPath,"READ")
 
 outputPath = myStyle.getOutputDir("ClosureTest",infoDict["Target"],rootpath)
@@ -97,7 +100,7 @@ gStyle.SetOptStat(0)
 
 # Plot 2D histograms
 nameFormatted = myStyle.getNameFormatted(dataset)
-outputfile = TFile(outputPath+nameFormatted+".root","RECREATE")
+outputfile = TFile(outputPath+nameFormatted+ext_error+".root","RECREATE")
 for i,info in enumerate(names_list):
 
     if saveAll:
@@ -166,7 +169,7 @@ for i,info in enumerate(names_list):
 
     gPad.RedrawAxis("g")
 
-    canvas.SaveAs(outputPath+nameFormatted+"-ClosureTest_"+info+".gif")
+    canvas.SaveAs(outputPath+nameFormatted+"-ClosureTest_"+info+ext_error+".gif")
     # canvas.SaveAs(outputPath+"CT_"+info+".pdf")
     hCT.Write()
     htemp.Delete()

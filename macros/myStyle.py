@@ -36,6 +36,9 @@ def getNameFormatted(nameFormat, isAcc = False):
 
     return fileName #output: <target>_B<binningType number>_<non-integrated dimensions>D_<extra cuts>
 
+def addBeforeRootExt(path, before_dot):
+    new_path = path.split(".root")[0]
+    return new_path + before_dot + ".root"
 
 ### Paths and directories' functions
 def getInputFile(nameMethod,nameFormat, extra_path=""):
