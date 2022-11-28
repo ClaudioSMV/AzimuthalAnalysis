@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##############################################################
-# ./send_job_ClosureTest.sh <target> <binName> <binNdim>     #
+# ./send_job_ClosureTest.sh <target> <binName> <binNdim> <ERR>     #
 #    <target> = (D, C, Fe, Pb)                               #
 #    <binName> = (0: Usual, SMoran; 1: No-integrate Zh;      #
 #                 2: Thin Zh;)                               #
@@ -22,6 +22,7 @@ INPUTARRAY=("$@")
 TARNAME=${INPUTARRAY[0]}
 BINNAME=${INPUTARRAY[1]}
 BINNDIM=${INPUTARRAY[2]}
+FULLERR=${INPUTARRAY[3]}
 
 #####
 # Main
@@ -54,7 +55,7 @@ echo "#SBATCH --mail-type=BEGIN,END,FAIL"                                 >> ${j
 echo ""                                                                   >> ${jobfile}
 echo "source ${HOME}/.bashrc"                                             >> ${jobfile}
 echo "cd ${REPODIR}/run"                                                  >> ${jobfile}
-echo "root -l -b 'getClosureTest.C(\"${TARNAME}\",${BINNAME},${BINNDIM})'" >> ${jobfile}
+echo "root -l -b 'getClosureTest.C(\"${TARNAME}\",${BINNAME},${BINNDIM},\"*\",${FULLERR})'" >> ${jobfile}
 
 echo "Submitting job: ${jobfile}"
 sbatch ${jobfile} # submit job!
