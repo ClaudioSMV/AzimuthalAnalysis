@@ -3,7 +3,7 @@
 R__LOAD_LIBRARY(../include/Acceptance_C.so)
 #include "../include/Utility.h"
 
-void getCorrection(std::string target = "Fe", int binName = 0, int binNdim = 1, std::string solid_target = "")
+void getCorrection(std::string target = "Fe", int binName = 0, int binNdim = 1, std::string solid_target = "", bool useFullError = false)
 {
     TChain ch("ntuple_data");
     if (FileExists("../../clas-data"))
@@ -74,5 +74,6 @@ void getCorrection(std::string target = "Fe", int binName = 0, int binNdim = 1, 
     acc.setBinningType(binName);
     acc.setBinNdims(binNdim);
     // acc.useCut_Xf();
+    if (useFullError) { acc.setFullError(); }
     acc.Correction();
 }

@@ -17,6 +17,7 @@ private:
     int _targTypeCut = 1;
     std::string _nameTarget;
     std::string _nameSolidTarget = "";
+    bool _useFullError = false;
     bool _isData = false;
     bool _isClosureTest = false;
     int _binIndex = -1;
@@ -26,6 +27,7 @@ private:
 public: // Internal values
     void setTargTypeCut(size_t targTypeCut) { _targTypeCut = targTypeCut; }
     std::string getNameTarget() { return _nameTarget; }
+    void setFullError() { _useFullError = true; }
     void setDataType() { _isData = true; }
     void setClosureTest() { _isClosureTest = true; }
     void setBinningType(int binning_number) { _binIndex = binning_number; }

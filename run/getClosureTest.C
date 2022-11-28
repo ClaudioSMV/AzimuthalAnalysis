@@ -3,7 +3,7 @@
 R__LOAD_LIBRARY(../include/Acceptance_C.so)
 #include "../include/Utility.h"
 
-void getClosureTest(std::string target = "Fe", int binName = 0, int binNdim = 1, std::string nfold = "*")
+void getClosureTest(std::string target = "Fe", int binName = 0, int binNdim = 1, std::string nfold = "*", bool useFullError = false)
 {
     TChain ch("ntuple_sim");
     if (FileExists("../../clas-HSim"))
@@ -30,5 +30,6 @@ void getClosureTest(std::string target = "Fe", int binName = 0, int binNdim = 1,
     acc.setBinningType(binName);
     acc.setBinNdims(binNdim);
     // acc.useCut_Xf();
+    if (useFullError) { acc.setFullError(); }
     acc.ClosureTest();
 }
