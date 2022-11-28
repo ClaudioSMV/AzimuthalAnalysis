@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##############################################################
-#  ./send_job_Correction.sh <target> <binName> <binNdim>     #
+#  ./send_job_Correction.sh <target> <binName> <binNdim> <ERR>    #
 #    <target> = (D, C, Fe, Pb)                               #
 #    <binName> = (0: Usual, SMoran; 1: No-integrate Zh;      #
 #                 2: Thin Zh;)                               #
@@ -22,6 +22,7 @@ INPUTARRAY=("$@")
 TARNAME=${INPUTARRAY[0]}
 BINNAME=${INPUTARRAY[1]}
 BINNDIM=${INPUTARRAY[2]}
+FULLERR=${INPUTARRAY[3]}
 
 #####
 # Main
@@ -55,11 +56,11 @@ echo ""                                                                         
 echo "source ${HOME}/.bashrc"                                                           >> ${jobfile}
 echo "cd ${REPODIR}/run"                                                                >> ${jobfile}
 if [[ ${TARNAME} == "D" ]]; then
-    echo "root -l -b 'getCorrection.C(\"${TARNAME}\",${BINNAME},${BINNDIM}, \"C\")'"    >> ${jobfile}
-    echo "root -l -b 'getCorrection.C(\"${TARNAME}\",${BINNAME},${BINNDIM}, \"Fe\")'"   >> ${jobfile}
-    echo "root -l -b 'getCorrection.C(\"${TARNAME}\",${BINNAME},${BINNDIM}, \"Pb\")'"   >> ${jobfile}
+    echo "root -l -b 'getCorrection.C(\"${TARNAME}\",${BINNAME},${BINNDIM}, \"C\" ,${FULLERR})'"   >> ${jobfile}
+    echo "root -l -b 'getCorrection.C(\"${TARNAME}\",${BINNAME},${BINNDIM}, \"Fe\",${FULLERR})'"   >> ${jobfile}
+    echo "root -l -b 'getCorrection.C(\"${TARNAME}\",${BINNAME},${BINNDIM}, \"Pb\",${FULLERR})'"   >> ${jobfile}
 else
-    echo "root -l -b 'getCorrection.C(\"${TARNAME}\",${BINNAME},${BINNDIM})'"           >> ${jobfile}
+    echo "root -l -b 'getCorrection.C(\"${TARNAME}\",${BINNAME},${BINNDIM}, \"\"  ,${FULLERR})'"   >> ${jobfile}
 fi
 
 echo "Submitting job: ${jobfile}"
