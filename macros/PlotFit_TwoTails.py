@@ -26,6 +26,7 @@ parser.add_option('-D', dest='Dataset', default = "", help="Dataset in format <t
 parser.add_option('-p', dest='rootpath', default = "", help="Add path to files, if needed")
 # parser.add_option('-a', dest='saveAll', action='store_true', default = False, help="Save All plots")
 parser.add_option('-J', dest='JLabCluster', action='store_true', default = False, help="Use folder from JLab_cluster")
+parser.add_option('-e', dest='errorFull', action='store_true', default = False, help="Use FullError")
 
 # IDEA: input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
@@ -34,6 +35,7 @@ options, args = parser.parse_args()
 rootpath = options.rootpath
 dataset = options.Dataset
 if options.JLabCluster: rootpath = "JLab_cluster"
+ext_error = "_FullErr" if options.errorFull else ""
 
 infoDict = myStyle.getNameFormattedDict(dataset)
 
@@ -42,7 +44,7 @@ infoDict = myStyle.getNameFormattedDict(dataset)
 
 inputPath = myStyle.getOutputDir("Correction",infoDict["Target"],rootpath)
 nameFormatted = myStyle.getNameFormatted(dataset)
-inputfile = TFile(inputPath+nameFormatted+".root","READ")
+inputfile = TFile(inputPath+nameFormatted+ext_error+".root","READ")
 
 outputPath = myStyle.getOutputDir("Fit",infoDict["Target"],rootpath)
 

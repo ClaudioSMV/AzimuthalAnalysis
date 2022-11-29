@@ -20,6 +20,7 @@ parser.add_option('-D', dest='Dataset', default = "", help="Dataset in format <t
 parser.add_option('-p', dest='rootpath', default = "", help="Add path to files, if needed")
 parser.add_option('-a', dest='saveAll', action='store_true', default = False, help="Save All plots")
 parser.add_option('-J', dest='JLabCluster', action='store_true', default = False, help="Use folder from JLab_cluster")
+parser.add_option('-e', dest='errorFull', action='store_true', default = False, help="Use FullError")
 
 parser.add_option('-Z', dest='useZh',  action='store_true', default = False, help="Use bin in Zh, integrate Pt2")
 parser.add_option('-P', dest='usePt2', action='store_true', default = False, help="Use bin in Pt2, integrate Zh")
@@ -31,6 +32,8 @@ dataset = options.Dataset
 rootpath = options.rootpath
 saveAll = options.saveAll
 if options.JLabCluster: rootpath = "JLab_cluster"
+ext_error = "_FullErr" if options.errorFull else ""
+
 useZh = options.useZh
 usePt2 = options.usePt2
 if (not useZh) and (not usePt2): print("Using default binning!")
@@ -41,6 +44,7 @@ if (useZh) and (usePt2):
 infoDict = myStyle.getNameFormattedDict(dataset)
 
 inputPath = myStyle.getInputFile("Correction",dataset,rootpath) # Corrected_Fe_B0_2D.root
+inputPath = myStyle.addBeforeRootExt(inputPath,ext_error)
 inputfile = TFile(inputPath,"READ")
 
 outputPath = myStyle.getOutputDir("Correction",infoDict["Target"],rootpath)
@@ -133,7 +137,7 @@ gStyle.SetOptStat(0)
 
 # Plot 2D histograms
 nameFormatted = myStyle.getNameFormatted(dataset)
-outputfile = TFile(outputPath+nameFormatted+hadronic_bin_name+".root","RECREATE")
+outputfile = TFile(outputPath+nameFormatted+hadronic_bin_name+ext_error+".root","RECREATE")
 for i,info in enumerate(names_list):
     for p,proj in enumerate(Proj1DTHnSparse_list):
         if (("Good" in prefixType[p]) and (not saveAll)): continue
@@ -167,8 +171,7 @@ for i,info in enumerate(names_list):
         myStyle.DrawTargetInfo(nameFormatted, "Data")
         myStyle.DrawBinInfo(info, infoDict["BinningType"])
 
-        canvas.SaveAs(outputPath+nameFormatted+hadronic_bin_name+"-"+this_proj.GetName()+".gif")
-        # canvas.SaveAs(outputPath+"CT_"+info+".pdf")
+        canvas.SaveAs(outputPath+nameFormatted+hadronic_bin_name+"-"+this_proj.GetName()+ext_error+".gif")
         this_proj.Write()
         htemp.Delete()
 

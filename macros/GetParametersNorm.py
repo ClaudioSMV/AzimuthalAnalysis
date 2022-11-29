@@ -33,6 +33,7 @@ parser.add_option('-p', dest='rootpath', default = "", help="Add path to files, 
 parser.add_option('-J', dest='JLabCluster', action='store_true', default = False, help="Use folder from JLab_cluster")
 parser.add_option('-F', dest='fold', action='store_true', default = False, help="Use fold tails (default does not)")
 parser.add_option('-v', dest='verbose', action='store_true', default = False, help="Print values")
+parser.add_option('-e', dest='errorFull', action='store_true', default = False, help="Use FullError")
 
 # IDEA: input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
@@ -47,6 +48,7 @@ infoDict = myStyle.getNameFormattedDict(dataset) # ["Target", "BinningType", "ND
 nameFormatted = myStyle.getNameFormatted(dataset)
 
 if options.JLabCluster: rootpath = "JLab_cluster"
+ext_error = "_FullErr" if options.errorFull else ""
 
 # list_solid_targets = ["C", "Fe", "Pb"]
 list_func_names = ["crossSection"] if fold else ["crossSectionL", "crossSectionR"]
@@ -54,7 +56,7 @@ name_ext = "Fold" if len(list_func_names)==1 else "LR"
 
 inputPath = myStyle.getOutputDir("Fit",infoDict["Target"],rootpath)
 
-inputfile = TFile("%sFitFold_%s.root"%(inputPath,nameFormatted),"READ") if fold else TFile("%sFitBothTails_%s.root"%(inputPath,nameFormatted),"READ")
+inputfile = TFile("%sFitFold_%s%s.root"%(inputPath,nameFormatted,ext_error),"READ") if fold else TFile("%sFitBothTails_%s%s.root"%(inputPath,nameFormatted,ext_error),"READ")
 
 list_of_hists = inputfile.GetListOfKeys().Clone()
 for elem in list_of_hists:
@@ -143,7 +145,7 @@ canvas.SetGrid(0,1)
 
 ### Ratio b/a and c/a per target
 outputPath = myStyle.getOutputDir("Parameters",infoDict["Target"],rootpath)
-outputFile = TFile("%s%s_ParametersNorm_%s.root"%(outputPath,nameFormatted,name_ext),"RECREATE")
+outputFile = TFile("%s%s_ParametersNorm_%s%s.root"%(outputPath,nameFormatted,name_ext,ext_error),"RECREATE")
 
 ymin = 0.001
 ymax = 1.2
@@ -187,7 +189,7 @@ for e,elem in enumerate(list_func_names):
     legend_b.Draw()
     myStyle.DrawPreliminaryInfo("Parameters normalized %s"%(name_ext))
     myStyle.DrawTargetInfo(nameFormatted, "Data")
-    canvas.SaveAs("%s%s-ParNorm%s_b.gif"%(outputPath,nameFormatted,name_ext))
+    canvas.SaveAs("%s%s-ParNorm%s_b%s.gif"%(outputPath,nameFormatted,name_ext,ext_error))
     canvas.Clear()
 
     ## Ratio c/a
@@ -223,7 +225,7 @@ for e,elem in enumerate(list_func_names):
     myStyle.DrawPreliminaryInfo("Parameters normalized %s"%(name_ext))
     myStyle.DrawTargetInfo(nameFormatted, "Data")
 
-    canvas.SaveAs("%s%s-ParNorm%s_c.gif"%(outputPath,nameFormatted,name_ext))
+    canvas.SaveAs("%s%s-ParNorm%s_c%s.gif"%(outputPath,nameFormatted,name_ext,ext_error))
     canvas.Clear()
 
 outputFile.Write()

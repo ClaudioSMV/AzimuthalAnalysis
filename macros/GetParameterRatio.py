@@ -34,6 +34,7 @@ parser.add_option('-J', dest='JLabCluster', action='store_true', default = False
 parser.add_option('-F', dest='fold', action='store_true', default = False, help="Use fold tails (default does not)")
 parser.add_option('-v', dest='verbose', action='store_true', default = False, help="Print values")
 parser.add_option('-m', dest='mixD', action='store_true', default = False, help="Mix deuterium data from all solid targets")
+parser.add_option('-e', dest='errorFull', action='store_true', default = False, help="Use FullError")
 
 # IDEA: input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
@@ -59,11 +60,12 @@ if "P" in infoDict["Cuts"]: hadronic_bin_name = "_P"
 # dataset_elemts = dataset.split("_")
 dataset_D = "D%s_%s_%s%s"%(solid_mix,infoDict["BinningType"],infoDict["NDims"],hadronic_bin_name)
 if options.JLabCluster: rootpath = "JLab_cluster"
+ext_error = "_FullErr" if options.errorFull else ""
 
 ### Get D (liquid target) info and parameters
 inputPath_D = myStyle.getOutputDir("Fit","D%s"%(solid_mix),rootpath)
 nameFormatted_D = myStyle.getNameFormatted(dataset_D)
-inputfile_D = TFile("%sFitFold_%s.root"%(inputPath_D,nameFormatted_D),"READ") if fold else TFile("%sFitBothTails_%s.root"%(inputPath_D,nameFormatted_D),"READ")
+inputfile_D = TFile("%sFitFold_%s%s.root"%(inputPath_D,nameFormatted_D,ext_error),"READ") if fold else TFile("%sFitBothTails_%s%s.root"%(inputPath_D,nameFormatted_D,ext_error),"READ")
 
 # list_solid_targets = ["C", "Fe", "Pb"]
 list_func_names = ["crossSection"] if fold else ["crossSectionL", "crossSectionR"]
@@ -71,7 +73,7 @@ name_ext = "Fold" if len(list_func_names)==1 else "LR"
 
 inputPath = myStyle.getOutputDir("Fit",infoDict["Target"],rootpath)
 
-inputfile_solid = TFile("%sFitFold_%s.root"%(inputPath,nameFormatted),"READ") if fold else TFile("%sFitBothTails_%s.root"%(inputPath,nameFormatted),"READ")
+inputfile_solid = TFile("%sFitFold_%s%s.root"%(inputPath,nameFormatted,ext_error),"READ") if fold else TFile("%sFitBothTails_%s%s.root"%(inputPath,nameFormatted,ext_error),"READ")
 
 list_of_hists = inputfile_solid.GetListOfKeys().Clone()
 for elem in list_of_hists:
@@ -163,7 +165,7 @@ canvas.SetGrid(0,1)
 
 ### Ratio of the ratios b/a and c/a -> Solid target / D target
 outputPath = myStyle.getOutputDir("ParameterRatio",infoDict["Target"],rootpath)
-outputFile = TFile("%s%s_ParameterRatio_D%s_%s.root"%(outputPath,nameFormatted,solid_mix,name_ext),"RECREATE")
+outputFile = TFile("%s%s_ParameterRatio_D%s_%s%s.root"%(outputPath,nameFormatted,solid_mix,name_ext,ext_error),"RECREATE")
 # canvas.SetLogy(0)
 
 ymin = 0.001
@@ -182,7 +184,7 @@ for e,elem in enumerate(list_func_names):
     myStyle.DrawPreliminaryInfo("Parameters ratio D%s %s"%(solid_mix,name_ext))
     myStyle.DrawTargetInfo(nameFormatted, "Data")
 
-    canvas.SaveAs("%s%s-RatioOverD%s_%s_b.gif"%(outputPath,nameFormatted,solid_mix,name_ext))
+    canvas.SaveAs("%s%s-RatioOverD%s_%s_b%s.gif"%(outputPath,nameFormatted,solid_mix,name_ext,ext_error))
     canvas.Clear()
 
     hist_c = ratio_th1_c_list[e]
@@ -195,7 +197,7 @@ for e,elem in enumerate(list_func_names):
     myStyle.DrawPreliminaryInfo("Parameters ratio D%s %s"%(solid_mix,name_ext))
     myStyle.DrawTargetInfo(nameFormatted, "Data")
 
-    canvas.SaveAs("%s%s-RatioOverD%s_%s_c.gif"%(outputPath,nameFormatted,solid_mix,name_ext))
+    canvas.SaveAs("%s%s-RatioOverD%s_%s_c%s.gif"%(outputPath,nameFormatted,solid_mix,name_ext,ext_error))
     canvas.Clear()
 
 outputFile.Write()
