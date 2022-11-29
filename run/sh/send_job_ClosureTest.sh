@@ -1,17 +1,19 @@
 #!/bin/bash
 
-##############################################################
-# ./send_job_ClosureTest.sh <target> <binName> <binNdim> <ERR>     #
-#    <target> = (D, C, Fe, Pb)                               #
-#    <binName> = (0: Usual, SMoran; 1: No-integrate Zh;      #
-#                 2: Thin Zh;)                               #
-#    <binNdim> = (1: All bins regular as in Binned Acc;      #
-#                 2: Regular bins in Zh, Pt2, and PhiPQ;     #
-#                 3: Regular bins in Pt2, and PhiPQ;)        #
-#                                                            #
-# EG: ./send_job_ClosureTest.sh C 0 2                        #
-#     ./send_job_ClosureTest.sh Fe 1 3                       #
-##############################################################
+###################################################################
+#  ./send_job_ClosureTest.sh <target> <binName> <binNdim> <ERR>   #
+#     <target> = (D, C, Fe, Pb)                                   #
+#     <binName> = (0: Usual, SMoran; 1: No-integrate Zh;          #
+#                  2: Thin Zh;)                                   #
+#     <binNdim> = (1: All bins regular as in Binned Acc;          #
+#                  2: Regular bins in Zh, Pt2, and PhiPQ;         #
+#                  3: Regular bins in Pt2, and PhiPQ;)            #
+#     <ERR> = (true: Use FullError; false (DEFAULT); )            #
+#                                                                 #
+#                                                                 #
+# EG: ./send_job_ClosureTest.sh C 0 2 false                       #
+#     ./send_job_ClosureTest.sh Fe 1 3 true                       #
+###################################################################
 
 #####
 # Input
