@@ -120,6 +120,7 @@ parser.add_option('-J', dest='JLabCluster', action='store_true', default = False
 parser.add_option('-f', dest='fit',  default = "Fold", help="Use Fold (F), Left (L) or Right (R) fit")
 parser.add_option('-s', dest='solidTargets', action='store_true', default = False, help="Draw only solid targets (default adds D)")
 parser.add_option('-a', dest='allDSplit', action='store_true', default = False, help="Draw only deuterium for different solid targets")
+parser.add_option('-e', dest='errorFull', action='store_true', default = False, help="Use FullError")
 
 parser.add_option('-Z', dest='useZh',  action='store_true', default = False, help="Use bin in Zh, integrate Pt2")
 parser.add_option('-P', dest='usePt2', action='store_true', default = False, help="Use bin in Pt2, integrate Zh")
@@ -142,6 +143,7 @@ if (useZh) and (usePt2):
 
 dataset_elemts = dataset.split("_")
 if options.JLabCluster: rootpath = "JLab_cluster"
+ext_error = "_FullErr" if options.errorFull else ""
 if fit=="Fold": fit="F"
 
 try:
@@ -191,7 +193,7 @@ for targ in list_targets:
     nameFormatted = "%s%s"%(myStyle.getNameFormatted(this_dataset),hadronic_bin_name) # Fe_B2_1D or Fe_B2_1D_Z
 
     inputPath = myStyle.getOutputDir("Parameters",targ,rootpath)
-    inputfile = TFile("%s%s_Parameters_%s.root"%(inputPath,nameFormatted,fold_or_LR),"READ")
+    inputfile = TFile("%s%s_Parameters_%s%s.root"%(inputPath,nameFormatted,fold_or_LR,ext_error),"READ")
     list_infiles.append(inputfile)
 
 
@@ -340,8 +342,8 @@ for p,par in enumerate(par_list):
     this_title = "%sPar_%s_%s%s"%(outputPath,par,fit,hadronic_bin_name)
     if onlySolid: this_title = "%sPar_%s_%s_Solid%s"%(outputPath,par,fit,hadronic_bin_name)
     if allD: this_title = "%sPar_%s_%s_OnlyD%s"%(outputPath,par,fit,hadronic_bin_name)
-    this_canvas.SaveAs("%s.gif"%this_title)
-    this_canvas.SaveAs("%s.pdf"%this_title)
+    this_canvas.SaveAs("%s%s.gif"%(this_title,ext_error))
+    this_canvas.SaveAs("%s%s.pdf"%(this_title,ext_error))
 
 for t,targ in enumerate(list_targets):
     list_infiles[t].Close()

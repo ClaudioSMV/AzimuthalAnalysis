@@ -119,6 +119,7 @@ parser.add_option('-p', dest='rootpath', default = "", help="Add path to files, 
 parser.add_option('-J', dest='JLabCluster', action='store_true', default = False, help="Use folder from JLab_cluster")
 parser.add_option('-f', dest='fit',  default = "Fold", help="Use Fold (F), Left (L) or Right (R) fit")
 parser.add_option('-m', dest='mixD', action='store_true', default = False, help="Mix deuterium data from all solid targets")
+parser.add_option('-e', dest='errorFull', action='store_true', default = False, help="Use FullError")
 
 parser.add_option('-Z', dest='useZh',  action='store_true', default = False, help="Use bin in Zh, integrate Pt2")
 parser.add_option('-P', dest='usePt2', action='store_true', default = False, help="Use bin in Pt2, integrate Zh")
@@ -140,6 +141,7 @@ if (useZh) and (usePt2):
 
 dataset_elemts = dataset.split("_")
 if options.JLabCluster: rootpath = "JLab_cluster"
+ext_error = "_FullErr" if options.errorFull else ""
 if fit=="Fold": fit="F"
 
 try:
@@ -188,7 +190,7 @@ for targ in list_targets:
     solid_mix = "" if mixD else targ
 
     inputPath = myStyle.getOutputDir("ParameterRatio",targ,rootpath)
-    inputfile = TFile("%s%s_ParameterRatio_D%s_%s.root"%(inputPath,nameFormatted,solid_mix,fold_or_LR),"READ")
+    inputfile = TFile("%s%s_ParameterRatio_D%s_%s%s.root"%(inputPath,nameFormatted,solid_mix,fold_or_LR,ext_error),"READ")
     list_infiles.append(inputfile)
 
 
@@ -331,8 +333,8 @@ for p,par in enumerate(["B", "C"]):
 
     this_canvas.cd(0)
     solid_mix = "All" if mixD else "Solid"
-    this_canvas.SaveAs("%sParRatioOverD%s_%s_%s%s.gif"%(outputPath,solid_mix,par,fit,hadronic_bin_name))
-    this_canvas.SaveAs("%sParRatioOverD%s_%s_%s%s.pdf"%(outputPath,solid_mix,par,fit,hadronic_bin_name))
+    this_canvas.SaveAs("%sParRatioOverD%s_%s_%s%s%s.gif"%(outputPath,solid_mix,par,fit,hadronic_bin_name,ext_error))
+    this_canvas.SaveAs("%sParRatioOverD%s_%s_%s%s%s.pdf"%(outputPath,solid_mix,par,fit,hadronic_bin_name,ext_error))
 
 for t,targ in enumerate(list_targets):
     list_infiles[t].Close()
