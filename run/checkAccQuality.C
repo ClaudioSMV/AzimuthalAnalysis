@@ -20,9 +20,13 @@ void checkAccQuality(std::string target = "Fe", int binName = 0)
     THnSparse *histAcc_RecGoodGen_mc  = (THnSparse*)facc->Get("histAcc_RecGoodGen_mc");
     THnSparse *histAcc_RecGoodGen_rec = (THnSparse*)facc->Get("histAcc_RecGoodGen_rec");
 
-    TH1D *hPQ_Reconstructed = new TH1D("hPQ_Reconstructed", "hPQ_Reconstructed", this_binning[4].size(), -180., 180.);
-    TH1D *hPQ_RecGoodGen_mc = new TH1D("hPQ_RecGoodGen_mc", "hPQ_RecGoodGen_mc", this_binning[4].size(), -180., 180.);
-    TH1D *hPQ_RecGoodGen_rec = new TH1D("hPQ_RecGoodGen_rec", "hPQ_RecGoodGen_rec", this_binning[4].size(), -180., 180.);
+    TH1D *hPQEmpty_Reconstructed = new TH1D("hPQEmpty_Reconstructed", "hPQEmpty_Reconstructed", this_binning[4].size(), -180., 180.);
+    TH1D *hPQEmpty_RecGoodGen_mc = new TH1D("hPQEmpty_RecGoodGen_mc", "hPQEmpty_RecGoodGen_mc", this_binning[4].size(), -180., 180.);
+    TH1D *hPQEmpty_RecGoodGen_rec = new TH1D("hPQEmpty_RecGoodGen_rec", "hPQEmpty_RecGoodGen_rec", this_binning[4].size(), -180., 180.);
+
+    TH1D *hAccVal_Reconstructed = new TH1D("hAccVal_Reconstructed", "hAccVal_Reconstructed", 110, 0.0, 1.1);
+    TH1D *hAccVal_RecGoodGen_mc = new TH1D("hAccVal_RecGoodGen_mc", "hAccVal_RecGoodGen_mc", 110, 0.0, 1.1);
+    TH1D *hAccVal_RecGoodGen_rec = new TH1D("hAccVal_RecGoodGen_rec", "hAccVal_RecGoodGen_rec", 110, 0.0, 1.1);
 
     for (int Qi=0; Qi<this_binning[0].size()-1; Qi++)
     {
@@ -43,22 +47,25 @@ void checkAccQuality(std::string target = "Fe", int binName = 0)
                         double val_RecGoodGen_mc = histAcc_RecGoodGen_mc->GetBinContent(bin_RecGoodGen_mc);
                         double val_RecGoodGen_rec = histAcc_RecGoodGen_rec->GetBinContent(bin_RecGoodGen_rec);
 
+                        hAccVal_Reconstructed->Fill(val_Reconstructed);
                         if (val_Reconstructed==0)
                         {
                             std::cout << Form("R1: Bin %i is empty! >> (%.2f, %.2f, %.2f, %.2f, %.2f)",bin_Reconstructed,kinVars[0],kinVars[1],kinVars[2],kinVars[3],kinVars[4]) << std::endl;
-                            hPQ_Reconstructed->Fill(kinVars[4]);
+                            hPQEmpty_Reconstructed->Fill(kinVars[4]);
                         }
 
+                        hAccVal_RecGoodGen_mc->Fill(val_RecGoodGen_mc);
                         if (val_RecGoodGen_mc==0)
                         {
                             std::cout << Form("R2: Bin %i is empty! >> (%.2f, %.2f, %.2f, %.2f, %.2f)",bin_RecGoodGen_mc,kinVars[0],kinVars[1],kinVars[2],kinVars[3],kinVars[4]) << std::endl;
-                            hPQ_RecGoodGen_mc->Fill(kinVars[4]);
+                            hPQEmpty_RecGoodGen_mc->Fill(kinVars[4]);
                         }
 
+                        hAccVal_RecGoodGen_rec->Fill(val_RecGoodGen_rec);
                         if (val_RecGoodGen_rec==0)
                         {
                             std::cout << Form("R3: Bin %i is empty! >> (%.2f, %.2f, %.2f, %.2f, %.2f)",bin_RecGoodGen_rec,kinVars[0],kinVars[1],kinVars[2],kinVars[3],kinVars[4]) << std::endl;
-                            hPQ_RecGoodGen_rec->Fill(kinVars[4]);
+                            hPQEmpty_RecGoodGen_rec->Fill(kinVars[4]);
                         }
                     }
                 }
