@@ -39,13 +39,13 @@ inputfile = TFile(inputPath,"READ")
 
 outputPath = myStyle.getOutputDir("ClosureTest",infoDict["Target"],rootpath)
 
-histCorr_Reconstructed  = inputfile.Get("Corr_Reconstructed")
-histCorr_RecGoodGen_mc  = inputfile.Get("Corr_RecGoodGen_mc")
-histCorr_RecGoodGen_rec = inputfile.Get("Corr_RecGoodGen_rec")
-histTrue                = inputfile.Get("True")
-histTrue_PionRec        = inputfile.Get("True_PionReco")
+histCorr_Reconstru = inputfile.Get("Corr_Reconstru")
+histCorr_ReMtch_mc = inputfile.Get("Corr_ReMtch_mc")
+histCorr_ReMtch_re = inputfile.Get("Corr_ReMtch_re")
+histTrue           = inputfile.Get("True")
+histTrue_PionRec   = inputfile.Get("True_PionReco")
 
-inputTHnSparse_list = [histCorr_Reconstructed, histCorr_RecGoodGen_mc, histCorr_RecGoodGen_rec, histTrue, histTrue_PionRec]
+inputTHnSparse_list = [histCorr_Reconstru, histCorr_ReMtch_mc, histCorr_ReMtch_re, histTrue, histTrue_PionRec]
 prefixType = ["Correction", "Corr GoodGen_mc", "Corr GoodGen_rec", "True", "True GoodPionRec"]
 
 
@@ -56,7 +56,7 @@ if (infoDict["NDims"] == 1): outDim = 2
 if (infoDict["BinningType"] == 2): outDim = 3
 
 for i in range(0,outDim):
-    nbins = histCorr_Reconstructed.GetAxis(i).GetNbins()
+    nbins = histCorr_Reconstru.GetAxis(i).GetNbins()
     bins_list.append(nbins)
 
 totalsize = np.prod(bins_list)
@@ -76,7 +76,7 @@ for i in range(totalsize):
         for t in inputTHnSparse_list:
             t.GetAxis(j).SetRange(index+1, index+1)
 
-        # histCorr_Reconstructed.GetAxis(j).SetRange(index+1, index+1)
+        # histCorr_Reconstru.GetAxis(j).SetRange(index+1, index+1)
 
     for n,newRangeInput in enumerate(inputTHnSparse_list):
         proj_tmp = newRangeInput.Projection(4)
@@ -84,10 +84,10 @@ for i in range(totalsize):
 
         Proj1DTHnSparse_list[n].append(proj_tmp)
 
-    # histCorr_Reconstructed_Proj = histCorr_Reconstructed.Projection(4)
-    # histCorr_Reconstructed_Proj.SetName(histCorr_Reconstructed.GetName()+"_"+txt_tmp)
+    # histCorr_Reconstru_Proj = histCorr_Reconstru.Projection(4)
+    # histCorr_Reconstru_Proj.SetName(histCorr_Reconstru.GetName()+"_"+txt_tmp)
 
-    # list_Corr_Reconstructed.append(histCorr_Reconstructed_Proj)
+    # list_Corr_Reconstru.append(histCorr_Reconstru_Proj)
     names_list.append(txt_tmp)
 
 
@@ -118,15 +118,15 @@ for i,info in enumerate(names_list):
             htemp.Draw("AXIS")
 
             this_proj.SetLineColor(kBlack)
-            # list_Corr_Reconstructed[i].SetTitle(info.title)
-            # list_Corr_Reconstructed[i].GetXaxis().SetTitle(info.xlabel)
-            # list_Corr_Reconstructed[i].GetXaxis().SetRangeUser(-0.32, 0.32)
-            # list_Corr_Reconstructed[i].GetYaxis().SetTitle(info.ylabel)
+            # list_Corr_Reconstru[i].SetTitle(info.title)
+            # list_Corr_Reconstru[i].GetXaxis().SetTitle(info.xlabel)
+            # list_Corr_Reconstru[i].GetXaxis().SetRangeUser(-0.32, 0.32)
+            # list_Corr_Reconstru[i].GetYaxis().SetTitle(info.ylabel)
 
             # gPad.RedrawAxis("g")
 
             # htemp.Draw("AXIS same")
-            # list_Corr_Reconstructed[i].Draw("AXIS same")
+            # list_Corr_Reconstru[i].Draw("AXIS same")
             this_proj.Draw("hist e same")
 
             # legend.Draw();
@@ -159,7 +159,7 @@ for i,info in enumerate(names_list):
     # gPad.RedrawAxis("g")
 
     # htemp.Draw("AXIS same")
-    # list_Corr_Reconstructed[i].Draw("AXIS same")
+    # list_Corr_Reconstru[i].Draw("AXIS same")
     hCT.Draw("hist e same")
 
     # legend.Draw();

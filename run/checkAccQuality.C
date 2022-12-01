@@ -16,17 +16,17 @@ void checkAccQuality(std::string target = "Fe", int binName = 0)
     TFile *fout = TFile::Open(Form("Quality_%s_B%i.root", target.c_str(), binName), "RECREATE");
 
     // Get Acceptance THnSparse
-    THnSparse *histAcc_Reconstructed  = (THnSparse*)facc->Get("histAcc_Reconstructed");
-    THnSparse *histAcc_RecGoodGen_mc  = (THnSparse*)facc->Get("histAcc_RecGoodGen_mc");
-    THnSparse *histAcc_RecGoodGen_rec = (THnSparse*)facc->Get("histAcc_RecGoodGen_rec");
+    THnSparse *histAcc_Reconstru = (THnSparse*)facc->Get("histAcc_Reconstru");
+    THnSparse *histAcc_ReMtch_mc = (THnSparse*)facc->Get("histAcc_ReMtch_mc");
+    THnSparse *histAcc_ReMtch_re = (THnSparse*)facc->Get("histAcc_ReMtch_re");
 
-    TH1D *hPQEmpty_Reconstructed = new TH1D("hPQEmpty_Reconstructed", "hPQEmpty_Reconstructed", this_binning[4].size(), -180., 180.);
-    TH1D *hPQEmpty_RecGoodGen_mc = new TH1D("hPQEmpty_RecGoodGen_mc", "hPQEmpty_RecGoodGen_mc", this_binning[4].size(), -180., 180.);
-    TH1D *hPQEmpty_RecGoodGen_rec = new TH1D("hPQEmpty_RecGoodGen_rec", "hPQEmpty_RecGoodGen_rec", this_binning[4].size(), -180., 180.);
+    TH1D *hPQEmpty_Reconstru = new TH1D("hPQEmpty_Reconstru", "hPQEmpty_Reconstru", this_binning[4].size(), -180., 180.);
+    TH1D *hPQEmpty_ReMtch_mc = new TH1D("hPQEmpty_ReMtch_mc", "hPQEmpty_ReMtch_mc", this_binning[4].size(), -180., 180.);
+    TH1D *hPQEmpty_ReMtch_re = new TH1D("hPQEmpty_ReMtch_re", "hPQEmpty_ReMtch_re", this_binning[4].size(), -180., 180.);
 
-    TH1D *hAccVal_Reconstructed = new TH1D("hAccVal_Reconstructed", "hAccVal_Reconstructed", 110, 0.0, 1.1);
-    TH1D *hAccVal_RecGoodGen_mc = new TH1D("hAccVal_RecGoodGen_mc", "hAccVal_RecGoodGen_mc", 110, 0.0, 1.1);
-    TH1D *hAccVal_RecGoodGen_rec = new TH1D("hAccVal_RecGoodGen_rec", "hAccVal_RecGoodGen_rec", 110, 0.0, 1.1);
+    TH1D *hAccVal_Reconstru = new TH1D("hAccVal_Reconstru", "hAccVal_Reconstru", 110, 0.0, 1.1);
+    TH1D *hAccVal_ReMtch_mc = new TH1D("hAccVal_ReMtch_mc", "hAccVal_ReMtch_mc", 110, 0.0, 1.1);
+    TH1D *hAccVal_ReMtch_re = new TH1D("hAccVal_ReMtch_re", "hAccVal_ReMtch_re", 110, 0.0, 1.1);
 
     for (int Qi=0; Qi<this_binning[0].size()-1; Qi++)
     {
@@ -39,33 +39,33 @@ void checkAccQuality(std::string target = "Fe", int binName = 0)
                     for (int Ph=0; Ph<this_binning[4].size()-1; Ph++)
                     {
                         std::vector<double> kinVars = {this_binning[0][Qi], this_binning[1][Ni], this_binning[2][Zi], this_binning[3][Pi], this_binning[4][Ph]};
-                        int bin_Reconstructed = histAcc_Reconstructed->GetBin(&kinVars[0]);
-                        int bin_RecGoodGen_mc = histAcc_RecGoodGen_mc->GetBin(&kinVars[0]);
-                        int bin_RecGoodGen_rec = histAcc_RecGoodGen_rec->GetBin(&kinVars[0]);
+                        int bin_Reconstru = histAcc_Reconstru->GetBin(&kinVars[0]);
+                        int bin_ReMtch_mc = histAcc_ReMtch_mc->GetBin(&kinVars[0]);
+                        int bin_ReMtch_re = histAcc_ReMtch_re->GetBin(&kinVars[0]);
 
-                        double val_Reconstructed = histAcc_Reconstructed->GetBinContent(bin_Reconstructed);
-                        double val_RecGoodGen_mc = histAcc_RecGoodGen_mc->GetBinContent(bin_RecGoodGen_mc);
-                        double val_RecGoodGen_rec = histAcc_RecGoodGen_rec->GetBinContent(bin_RecGoodGen_rec);
+                        double val_Reconstru = histAcc_Reconstru->GetBinContent(bin_Reconstru);
+                        double val_ReMtch_mc = histAcc_ReMtch_mc->GetBinContent(bin_ReMtch_mc);
+                        double val_ReMtch_re = histAcc_ReMtch_re->GetBinContent(bin_ReMtch_re);
 
-                        hAccVal_Reconstructed->Fill(val_Reconstructed);
-                        if (val_Reconstructed==0)
+                        hAccVal_Reconstru->Fill(val_Reconstru);
+                        if (val_Reconstru==0)
                         {
-                            std::cout << Form("R1: Bin %i is empty! >> (%.2f, %.2f, %.2f, %.2f, %.2f)",bin_Reconstructed,kinVars[0],kinVars[1],kinVars[2],kinVars[3],kinVars[4]) << std::endl;
-                            hPQEmpty_Reconstructed->Fill(kinVars[4]);
+                            std::cout << Form("R1: Bin %i is empty! >> (%.2f, %.2f, %.2f, %.2f, %.2f)",bin_Reconstru,kinVars[0],kinVars[1],kinVars[2],kinVars[3],kinVars[4]) << std::endl;
+                            hPQEmpty_Reconstru->Fill(kinVars[4]);
                         }
 
-                        hAccVal_RecGoodGen_mc->Fill(val_RecGoodGen_mc);
-                        if (val_RecGoodGen_mc==0)
+                        hAccVal_ReMtch_mc->Fill(val_ReMtch_mc);
+                        if (val_ReMtch_mc==0)
                         {
-                            std::cout << Form("R2: Bin %i is empty! >> (%.2f, %.2f, %.2f, %.2f, %.2f)",bin_RecGoodGen_mc,kinVars[0],kinVars[1],kinVars[2],kinVars[3],kinVars[4]) << std::endl;
-                            hPQEmpty_RecGoodGen_mc->Fill(kinVars[4]);
+                            std::cout << Form("R2: Bin %i is empty! >> (%.2f, %.2f, %.2f, %.2f, %.2f)",bin_ReMtch_mc,kinVars[0],kinVars[1],kinVars[2],kinVars[3],kinVars[4]) << std::endl;
+                            hPQEmpty_ReMtch_mc->Fill(kinVars[4]);
                         }
 
-                        hAccVal_RecGoodGen_rec->Fill(val_RecGoodGen_rec);
-                        if (val_RecGoodGen_rec==0)
+                        hAccVal_ReMtch_re->Fill(val_ReMtch_re);
+                        if (val_ReMtch_re==0)
                         {
-                            std::cout << Form("R3: Bin %i is empty! >> (%.2f, %.2f, %.2f, %.2f, %.2f)",bin_RecGoodGen_rec,kinVars[0],kinVars[1],kinVars[2],kinVars[3],kinVars[4]) << std::endl;
-                            hPQEmpty_RecGoodGen_rec->Fill(kinVars[4]);
+                            std::cout << Form("R3: Bin %i is empty! >> (%.2f, %.2f, %.2f, %.2f, %.2f)",bin_ReMtch_re,kinVars[0],kinVars[1],kinVars[2],kinVars[3],kinVars[4]) << std::endl;
+                            hPQEmpty_ReMtch_re->Fill(kinVars[4]);
                         }
                     }
                 }

@@ -86,7 +86,7 @@ index_h = 0
 for i_h,h in enumerate(inputfile.GetListOfKeys()): #list_of_hists):
     if (h.ReadObj().Class_Name() == "TH1D"):
         hist_targ = h.ReadObj()
-        hist_name = h.GetName() # Corr_Reconstructed_Q0N0Z0_fold
+        hist_name = h.GetName() # Corr_Reconstru_Q0N0Z0_fold
 
         bin_name = hist_name.split("_")[2] # Q0N0Z0
 

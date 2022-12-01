@@ -52,7 +52,7 @@ for h in list_of_hists:
             # if "PQ" in h.GetName(): continue
             # if not isData and "reco" in h.GetName(): continue
 
-            # Name format is: Corr_Reconstructed_Q0N0
+            # Name format is: Corr_Reconstru_Q0N0
             tmp_txt = h.GetName().split("_")[2] # Q0N0Z0
 
             hist = h.ReadObj()

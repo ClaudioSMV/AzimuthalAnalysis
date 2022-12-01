@@ -324,12 +324,12 @@ void Acceptance::Loop()
     }       // loop over entries
 
     // Acceptance
-    THnSparse *histAcc_Reconstructed = (THnSparse*)histReco_rec->Clone("histAcc_Reconstructed");
-    histAcc_Reconstructed->Divide(histReco_rec,histTrue,1,1,"B");
-    THnSparse *histAcc_RecGoodGen_mc = (THnSparse*)histReco_mc->Clone( "histAcc_RecGoodGen_mc");
-    histAcc_RecGoodGen_mc->Divide(histReco_mc,histTrue,1,1,"B");
-    THnSparse *histAcc_RecGoodGen_rec = (THnSparse*)histTrue_rec->Clone("histAcc_RecGoodGen_rec");
-    histAcc_RecGoodGen_rec->Divide(histTrue_rec,histTrue,1,1,"B");
+    THnSparse *histAcc_Reconstru = (THnSparse*)histReco_rec->Clone("histAcc_Reconstru");
+    histAcc_Reconstru->Divide(histReco_rec,histTrue,1,1,"B");
+    THnSparse *histAcc_ReMtch_mc = (THnSparse*)histReco_mc->Clone( "histAcc_ReMtch_mc");
+    histAcc_ReMtch_mc->Divide(histReco_mc,histTrue,1,1,"B");
+    THnSparse *histAcc_ReMtch_re = (THnSparse*)histTrue_rec->Clone("histAcc_ReMtch_re");
+    histAcc_ReMtch_re->Divide(histTrue_rec,histTrue,1,1,"B");
 
     // Summary tables
     std::cout << std::endl;
@@ -363,18 +363,18 @@ void Acceptance::Loop()
         fileSummary.close();
     }
 
-    PrintFilledBins(histAcc_Reconstructed);
-    PrintFilledBins(histAcc_RecGoodGen_mc);
-    PrintFilledBins(histAcc_RecGoodGen_rec);
+    PrintFilledBins(histAcc_Reconstru);
+    PrintFilledBins(histAcc_ReMtch_mc);
+    PrintFilledBins(histAcc_ReMtch_re);
 
     histTrue->Write();
     histReco_rec->Write();
     histReco_mc->Write();
     histTrue_rec->Write();
 
-    histAcc_Reconstructed->Write();
-    histAcc_RecGoodGen_mc->Write();
-    histAcc_RecGoodGen_rec->Write();
+    histAcc_Reconstru->Write();
+    histAcc_ReMtch_mc->Write();
+    histAcc_ReMtch_re->Write();
 
     std::cout << "Made it to the end. Saving..." << std::endl;
 
@@ -403,15 +403,15 @@ void Acceptance::Correction()
     TFile *fout = TFile::Open(Form("../output/Correction/Corrected_%s%s.root", _nameFormatted.c_str(), ext_error.c_str()), "RECREATE");
 
     // Get Acceptance THnSparse
-    THnSparse *histAcc_Reconstructed  = (THnSparse*)facc->Get("histAcc_Reconstructed");
-    THnSparse *histAcc_RecGoodGen_mc  = (THnSparse*)facc->Get("histAcc_RecGoodGen_mc");
-    THnSparse *histAcc_RecGoodGen_rec = (THnSparse*)facc->Get("histAcc_RecGoodGen_rec");
+    THnSparse *histAcc_Reconstru = (THnSparse*)facc->Get("histAcc_Reconstru");
+    THnSparse *histAcc_ReMtch_mc = (THnSparse*)facc->Get("histAcc_ReMtch_mc");
+    THnSparse *histAcc_ReMtch_re = (THnSparse*)facc->Get("histAcc_ReMtch_re");
 
     // Create Final THnSparse
-    THnSparse *histCorr_Reconstructed  = CreateFinalHist("Corr_Reconstructed",  nbins, &(Correction::NIrregBins[_binNdims]), ThisBins, DISLimits);
-    THnSparse *histCorr_RecGoodGen_mc  = CreateFinalHist("Corr_RecGoodGen_mc",  nbins, &(Correction::NIrregBins[_binNdims]), ThisBins, DISLimits);
-    THnSparse *histCorr_RecGoodGen_rec = CreateFinalHist("Corr_RecGoodGen_rec", nbins, &(Correction::NIrregBins[_binNdims]), ThisBins, DISLimits);
-    THnSparse *histRaw                 = CreateFinalHist("Raw_data",            nbins, &(Correction::NIrregBins[_binNdims]), ThisBins, DISLimits);
+    THnSparse *histCorr_Reconstru = CreateFinalHist("Corr_Reconstru", nbins, &(Correction::NIrregBins[_binNdims]), ThisBins, DISLimits);
+    THnSparse *histCorr_ReMtch_mc = CreateFinalHist("Corr_ReMtch_mc", nbins, &(Correction::NIrregBins[_binNdims]), ThisBins, DISLimits);
+    THnSparse *histCorr_ReMtch_re = CreateFinalHist("Corr_ReMtch_re", nbins, &(Correction::NIrregBins[_binNdims]), ThisBins, DISLimits);
+    THnSparse *histRaw            = CreateFinalHist("Raw_data",       nbins, &(Correction::NIrregBins[_binNdims]), ThisBins, DISLimits);
 
     Long64_t nentries = fChain->GetEntries();
     // unsigned int entries_to_process = nentries/2;
@@ -458,90 +458,90 @@ void Acceptance::Correction()
 
             if (good_pion)
             {
-                // Reconstructed
-                int binAcc_Reconstructed  = histAcc_Reconstructed->GetBin(&binKinVars[0]);
-                double valueAcc_Reconstructed  = histAcc_Reconstructed->GetBinContent(binAcc_Reconstructed);
-                int binCorr_Reconstructed  = histCorr_Reconstructed->GetBin(&binKinVars[0]);
+                // Reconstru
+                int binAcc_Reconstru = histAcc_Reconstru->GetBin(&binKinVars[0]);
+                double valueAcc_Reconstru = histAcc_Reconstru->GetBinContent(binAcc_Reconstru);
+                int binCorr_Reconstru = histCorr_Reconstru->GetBin(&binKinVars[0]);
 
-                if (valueAcc_Reconstructed  != 0)
+                if (valueAcc_Reconstru != 0)
                 {
-                    double this_content = histCorr_Reconstructed->GetBinContent(binCorr_Reconstructed) + 1./valueAcc_Reconstructed;
-                    histCorr_Reconstructed->SetBinContent(binCorr_Reconstructed, this_content);
+                    double this_content = histCorr_Reconstru->GetBinContent(binCorr_Reconstru) + 1./valueAcc_Reconstru;
+                    histCorr_Reconstru->SetBinContent(binCorr_Reconstru, this_content);
 
                     // Get error propagation
                     if (_useFullError)
                     {
-                        double acc_error  = histAcc_Reconstructed->GetBinError(binAcc_Reconstructed);
-                        double this_error = TMath::Sqrt(this_content / valueAcc_Reconstructed * (1 + this_content*acc_error*acc_error/valueAcc_Reconstructed));
+                        double acc_error  = histAcc_Reconstru->GetBinError(binAcc_Reconstru);
+                        double this_error = TMath::Sqrt(this_content / valueAcc_Reconstru * (1 + this_content*acc_error*acc_error/valueAcc_Reconstru));
 
-                        histCorr_Reconstructed->SetBinError(binCorr_Reconstructed, this_error);
+                        histCorr_Reconstru->SetBinError(binCorr_Reconstru, this_error);
                     }
                     else
                     {
-                        double acc_error  = histAcc_Reconstructed->GetBinError(binAcc_Reconstructed);
-                        acc_error = TMath::Sqrt(1.0 + acc_error*acc_error/(valueAcc_Reconstructed*valueAcc_Reconstructed))/valueAcc_Reconstructed;
-                        double old_error = histCorr_Reconstructed->GetBinError(binCorr_Reconstructed);
+                        double acc_error  = histAcc_Reconstru->GetBinError(binAcc_Reconstru);
+                        acc_error = TMath::Sqrt(1.0 + acc_error*acc_error/(valueAcc_Reconstru*valueAcc_Reconstru))/valueAcc_Reconstru;
+                        double old_error = histCorr_Reconstru->GetBinError(binCorr_Reconstru);
                         double this_error = TMath::Sqrt(old_error*old_error + acc_error*acc_error);
 
-                        histCorr_Reconstructed->SetBinError(binCorr_Reconstructed, this_error);
+                        histCorr_Reconstru->SetBinError(binCorr_Reconstru, this_error);
                     }
                 }
 
-                // RecGoodGen_mc
-                int binAcc_RecGoodGen_mc  = histAcc_RecGoodGen_mc->GetBin(&binKinVars[0]);
-                double valueAcc_RecGoodGen_mc  = histAcc_RecGoodGen_mc->GetBinContent(binAcc_RecGoodGen_mc);
-                int binCorr_RecGoodGen_mc  = histCorr_RecGoodGen_mc->GetBin(&binKinVars[0]);
+                // ReMtch_mc
+                int binAcc_ReMtch_mc = histAcc_ReMtch_mc->GetBin(&binKinVars[0]);
+                double valueAcc_ReMtch_mc = histAcc_ReMtch_mc->GetBinContent(binAcc_ReMtch_mc);
+                int binCorr_ReMtch_mc = histCorr_ReMtch_mc->GetBin(&binKinVars[0]);
 
-                if (valueAcc_RecGoodGen_mc  != 0)
+                if (valueAcc_ReMtch_mc != 0)
                 {
-                    double this_content = histCorr_RecGoodGen_mc->GetBinContent(binCorr_RecGoodGen_mc) + 1./valueAcc_RecGoodGen_mc;
-                    histCorr_RecGoodGen_mc->SetBinContent(binCorr_RecGoodGen_mc, this_content);
+                    double this_content = histCorr_ReMtch_mc->GetBinContent(binCorr_ReMtch_mc) + 1./valueAcc_ReMtch_mc;
+                    histCorr_ReMtch_mc->SetBinContent(binCorr_ReMtch_mc, this_content);
 
                     // Get error propagation
                     if (_useFullError)
                     {
-                        double acc_error  = histAcc_RecGoodGen_mc->GetBinError(binAcc_RecGoodGen_mc);
-                        double this_error = TMath::Sqrt(this_content / valueAcc_RecGoodGen_mc * (1 + this_content*acc_error*acc_error/valueAcc_RecGoodGen_mc));
+                        double acc_error  = histAcc_ReMtch_mc->GetBinError(binAcc_ReMtch_mc);
+                        double this_error = TMath::Sqrt(this_content / valueAcc_ReMtch_mc * (1 + this_content*acc_error*acc_error/valueAcc_ReMtch_mc));
 
-                        histCorr_Reconstructed->SetBinError(binCorr_RecGoodGen_mc, this_error);
+                        histCorr_ReMtch_mc->SetBinError(binCorr_ReMtch_mc, this_error);
                     }
                     else
                     {
-                        double acc_error  = histAcc_RecGoodGen_mc->GetBinError(binAcc_RecGoodGen_mc);
-                        acc_error = TMath::Sqrt(1.0 + acc_error*acc_error/(valueAcc_RecGoodGen_mc*valueAcc_RecGoodGen_mc))/valueAcc_RecGoodGen_mc;
-                        double old_error = histCorr_RecGoodGen_mc->GetBinError(binCorr_RecGoodGen_mc);
+                        double acc_error  = histAcc_ReMtch_mc->GetBinError(binAcc_ReMtch_mc);
+                        acc_error = TMath::Sqrt(1.0 + acc_error*acc_error/(valueAcc_ReMtch_mc*valueAcc_ReMtch_mc))/valueAcc_ReMtch_mc;
+                        double old_error = histCorr_ReMtch_mc->GetBinError(binCorr_ReMtch_mc);
                         double this_error = TMath::Sqrt(old_error*old_error + acc_error*acc_error);
 
-                        histCorr_RecGoodGen_mc->SetBinError(binCorr_RecGoodGen_mc, this_error);
+                        histCorr_ReMtch_mc->SetBinError(binCorr_ReMtch_mc, this_error);
                     }
                 }
 
-                // RecGoodGen_rec
-                int binAcc_RecGoodGen_rec = histAcc_RecGoodGen_rec->GetBin(&binKinVars[0]);
-                double valueAcc_RecGoodGen_rec = histAcc_RecGoodGen_rec->GetBinContent(binAcc_RecGoodGen_rec);
-                int binCorr_RecGoodGen_rec = histCorr_RecGoodGen_rec->GetBin(&binKinVars[0]);
+                // ReMtch_re
+                int binAcc_ReMtch_re = histAcc_ReMtch_re->GetBin(&binKinVars[0]);
+                double valueAcc_ReMtch_re = histAcc_ReMtch_re->GetBinContent(binAcc_ReMtch_re);
+                int binCorr_ReMtch_re = histCorr_ReMtch_re->GetBin(&binKinVars[0]);
 
-                if (valueAcc_RecGoodGen_rec  != 0)
+                if (valueAcc_ReMtch_re != 0)
                 {
-                    double this_content = histCorr_RecGoodGen_rec->GetBinContent(binCorr_RecGoodGen_rec) + 1./valueAcc_RecGoodGen_rec;
-                    histCorr_RecGoodGen_rec->SetBinContent(binCorr_RecGoodGen_rec, this_content);
+                    double this_content = histCorr_ReMtch_re->GetBinContent(binCorr_ReMtch_re) + 1./valueAcc_ReMtch_re;
+                    histCorr_ReMtch_re->SetBinContent(binCorr_ReMtch_re, this_content);
 
                     // Get error propagation
                     if (_useFullError)
                     {
-                        double acc_error  = histAcc_RecGoodGen_rec->GetBinError(binAcc_RecGoodGen_rec);
-                        double this_error = TMath::Sqrt(this_content / valueAcc_RecGoodGen_rec * (1 + this_content*acc_error*acc_error/valueAcc_RecGoodGen_rec));
+                        double acc_error  = histAcc_ReMtch_re->GetBinError(binAcc_ReMtch_re);
+                        double this_error = TMath::Sqrt(this_content / valueAcc_ReMtch_re * (1 + this_content*acc_error*acc_error/valueAcc_ReMtch_re));
 
-                        histCorr_Reconstructed->SetBinError(binCorr_RecGoodGen_rec, this_error);
+                        histCorr_ReMtch_re->SetBinError(binCorr_ReMtch_re, this_error);
                     }
                     else
                     {
-                        double acc_error  = histAcc_RecGoodGen_rec->GetBinError(binAcc_RecGoodGen_rec);
-                        acc_error = TMath::Sqrt(1.0 + acc_error*acc_error/(valueAcc_RecGoodGen_rec*valueAcc_RecGoodGen_rec))/valueAcc_RecGoodGen_rec;
-                        double old_error = histCorr_RecGoodGen_rec->GetBinError(binCorr_RecGoodGen_rec);
+                        double acc_error  = histAcc_ReMtch_re->GetBinError(binAcc_ReMtch_re);
+                        acc_error = TMath::Sqrt(1.0 + acc_error*acc_error/(valueAcc_ReMtch_re*valueAcc_ReMtch_re))/valueAcc_ReMtch_re;
+                        double old_error = histCorr_ReMtch_re->GetBinError(binCorr_ReMtch_re);
                         double this_error = TMath::Sqrt(old_error*old_error + acc_error*acc_error);
 
-                        histCorr_RecGoodGen_rec->SetBinError(binCorr_RecGoodGen_rec, this_error);
+                        histCorr_ReMtch_re->SetBinError(binCorr_ReMtch_re, this_error);
                     }
                 }
 
@@ -550,9 +550,9 @@ void Acceptance::Correction()
         }   // loop over tracks
     }       // loop over entries
 
-    histCorr_Reconstructed->Write();
-    histCorr_RecGoodGen_mc->Write();
-    histCorr_RecGoodGen_rec->Write();
+    histCorr_Reconstru->Write();
+    histCorr_ReMtch_mc->Write();
+    histCorr_ReMtch_re->Write();
     histRaw->Write();
 
     std::cout << "Made it to the end. Saving..." << std::endl;
@@ -591,16 +591,16 @@ void Acceptance::ClosureTest()
     TFile *fout = TFile::Open(Form("../output/ClosureTest/ClosureTest_%s%s.root", _nameFormatted.c_str(), ext_error.c_str()), "RECREATE");
 
     // Get Acceptance THnSparse
-    THnSparse *histAcc_Reconstructed  = (THnSparse*)facc->Get("histAcc_Reconstructed");
-    THnSparse *histAcc_RecGoodGen_mc  = (THnSparse*)facc->Get("histAcc_RecGoodGen_mc");
-    THnSparse *histAcc_RecGoodGen_rec = (THnSparse*)facc->Get("histAcc_RecGoodGen_rec");
+    THnSparse *histAcc_Reconstru = (THnSparse*)facc->Get("histAcc_Reconstru");
+    THnSparse *histAcc_ReMtch_mc = (THnSparse*)facc->Get("histAcc_ReMtch_mc");
+    THnSparse *histAcc_ReMtch_re = (THnSparse*)facc->Get("histAcc_ReMtch_re");
 
     // Create Final THnSparse
-    THnSparse *histCorr_Reconstructed  = CreateFinalHist("Corr_Reconstructed",  nbins, &(Correction::NIrregBins[_binNdims]), ThisBins, DISLimits);
-    THnSparse *histCorr_RecGoodGen_mc  = CreateFinalHist("Corr_RecGoodGen_mc",  nbins, &(Correction::NIrregBins[_binNdims]), ThisBins, DISLimits);
-    THnSparse *histCorr_RecGoodGen_rec = CreateFinalHist("Corr_RecGoodGen_rec", nbins, &(Correction::NIrregBins[_binNdims]), ThisBins, DISLimits);
-    THnSparse *histTrue                = CreateFinalHist("True",                nbins, &(Correction::NIrregBins[_binNdims]), ThisBins, DISLimits);
-    THnSparse *histTrue_PionReco       = CreateFinalHist("True_PionReco",       nbins, &(Correction::NIrregBins[_binNdims]), ThisBins, DISLimits);
+    THnSparse *histCorr_Reconstru = CreateFinalHist("Corr_Reconstru", nbins, &(Correction::NIrregBins[_binNdims]), ThisBins, DISLimits);
+    THnSparse *histCorr_ReMtch_mc = CreateFinalHist("Corr_ReMtch_mc", nbins, &(Correction::NIrregBins[_binNdims]), ThisBins, DISLimits);
+    THnSparse *histCorr_ReMtch_re = CreateFinalHist("Corr_ReMtch_re", nbins, &(Correction::NIrregBins[_binNdims]), ThisBins, DISLimits);
+    THnSparse *histTrue           = CreateFinalHist("True",           nbins, &(Correction::NIrregBins[_binNdims]), ThisBins, DISLimits);
+    THnSparse *histTrue_PionReco  = CreateFinalHist("True_PionReco",  nbins, &(Correction::NIrregBins[_binNdims]), ThisBins, DISLimits);
 
     Long64_t nentries = fChain->GetEntries();
     unsigned int entries_to_process = nentries/2;
@@ -665,89 +665,89 @@ void Acceptance::ClosureTest()
             if (good_pion)
             {
                 // Reconstructed
-                int binAcc_Reconstructed  = histAcc_Reconstructed->GetBin(&binKinVars[0]);
-                double valueAcc_Reconstructed  = histAcc_Reconstructed->GetBinContent(binAcc_Reconstructed);
-                int binCorr_Reconstructed  = histCorr_Reconstructed->GetBin(&binKinVars[0]);
+                int binAcc_Reconstru = histAcc_Reconstru->GetBin(&binKinVars[0]);
+                double valueAcc_Reconstru = histAcc_Reconstru->GetBinContent(binAcc_Reconstru);
+                int binCorr_Reconstru = histCorr_Reconstru->GetBin(&binKinVars[0]);
 
-                if (valueAcc_Reconstructed  != 0)
+                if (valueAcc_Reconstru != 0)
                 {
-                    double this_content = histCorr_Reconstructed->GetBinContent(binCorr_Reconstructed) + 1./valueAcc_Reconstructed;
-                    histCorr_Reconstructed->SetBinContent(binCorr_Reconstructed, this_content);
+                    double this_content = histCorr_Reconstru->GetBinContent(binCorr_Reconstru) + 1./valueAcc_Reconstru;
+                    histCorr_Reconstru->SetBinContent(binCorr_Reconstru, this_content);
 
                     // Get error propagation
                     if (_useFullError)
                     {
-                        double acc_error  = histAcc_Reconstructed->GetBinError(binAcc_Reconstructed);
-                        double this_error = TMath::Sqrt(this_content / valueAcc_Reconstructed * (1 + this_content*acc_error*acc_error/valueAcc_Reconstructed));
+                        double acc_error  = histAcc_Reconstru->GetBinError(binAcc_Reconstru);
+                        double this_error = TMath::Sqrt(this_content / valueAcc_Reconstru * (1 + this_content*acc_error*acc_error/valueAcc_Reconstru));
 
-                        histCorr_Reconstructed->SetBinError(binCorr_Reconstructed, this_error);
+                        histCorr_Reconstru->SetBinError(binCorr_Reconstru, this_error);
                     }
                     else
                     {
-                        double acc_error  = histAcc_Reconstructed->GetBinError(binAcc_Reconstructed);
-                        acc_error = TMath::Sqrt(1.0 + acc_error*acc_error/(valueAcc_Reconstructed*valueAcc_Reconstructed))/valueAcc_Reconstructed;
-                        double old_error = histCorr_Reconstructed->GetBinError(binCorr_Reconstructed);
+                        double acc_error  = histAcc_Reconstru->GetBinError(binAcc_Reconstru);
+                        acc_error = TMath::Sqrt(1.0 + acc_error*acc_error/(valueAcc_Reconstru*valueAcc_Reconstru))/valueAcc_Reconstru;
+                        double old_error = histCorr_Reconstru->GetBinError(binCorr_Reconstru);
                         double this_error = TMath::Sqrt(old_error*old_error + acc_error*acc_error);
 
-                        histCorr_Reconstructed->SetBinError(binCorr_Reconstructed, this_error);
+                        histCorr_Reconstru->SetBinError(binCorr_Reconstru, this_error);
                     }
                 }
 
-                // RecGoodGen_mc
-                int binAcc_RecGoodGen_mc  = histAcc_RecGoodGen_mc->GetBin(&binKinVars[0]);
-                double valueAcc_RecGoodGen_mc  = histAcc_RecGoodGen_mc->GetBinContent(binAcc_RecGoodGen_mc);
-                int binCorr_RecGoodGen_mc  = histCorr_RecGoodGen_mc->GetBin(&binKinVars[0]);
+                // ReMtch_mc
+                int binAcc_ReMtch_mc = histAcc_ReMtch_mc->GetBin(&binKinVars[0]);
+                double valueAcc_ReMtch_mc = histAcc_ReMtch_mc->GetBinContent(binAcc_ReMtch_mc);
+                int binCorr_ReMtch_mc = histCorr_ReMtch_mc->GetBin(&binKinVars[0]);
 
-                if (valueAcc_RecGoodGen_mc  != 0)
+                if (valueAcc_ReMtch_mc != 0)
                 {
-                    double this_content = histCorr_RecGoodGen_mc->GetBinContent(binCorr_RecGoodGen_mc) + 1./valueAcc_RecGoodGen_mc;
-                    histCorr_RecGoodGen_mc->SetBinContent(binCorr_RecGoodGen_mc, this_content);
+                    double this_content = histCorr_ReMtch_mc->GetBinContent(binCorr_ReMtch_mc) + 1./valueAcc_ReMtch_mc;
+                    histCorr_ReMtch_mc->SetBinContent(binCorr_ReMtch_mc, this_content);
 
                     // Get error propagation
                     if (_useFullError)
                     {
-                        double acc_error  = histAcc_RecGoodGen_mc->GetBinError(binAcc_RecGoodGen_mc);
-                        double this_error = TMath::Sqrt(this_content / valueAcc_RecGoodGen_mc * (1 + this_content*acc_error*acc_error/valueAcc_RecGoodGen_mc));
+                        double acc_error  = histAcc_ReMtch_mc->GetBinError(binAcc_ReMtch_mc);
+                        double this_error = TMath::Sqrt(this_content / valueAcc_ReMtch_mc * (1 + this_content*acc_error*acc_error/valueAcc_ReMtch_mc));
 
-                        histCorr_Reconstructed->SetBinError(binCorr_RecGoodGen_mc, this_error);
+                        histCorr_ReMtch_mc->SetBinError(binCorr_ReMtch_mc, this_error);
                     }
                     else
                     {
-                        double acc_error  = histAcc_RecGoodGen_mc->GetBinError(binAcc_RecGoodGen_mc);
-                        acc_error = TMath::Sqrt(1.0 + acc_error*acc_error/(valueAcc_RecGoodGen_mc*valueAcc_RecGoodGen_mc))/valueAcc_RecGoodGen_mc;
-                        double old_error = histCorr_RecGoodGen_mc->GetBinError(binCorr_RecGoodGen_mc);
+                        double acc_error  = histAcc_ReMtch_mc->GetBinError(binAcc_ReMtch_mc);
+                        acc_error = TMath::Sqrt(1.0 + acc_error*acc_error/(valueAcc_ReMtch_mc*valueAcc_ReMtch_mc))/valueAcc_ReMtch_mc;
+                        double old_error = histCorr_ReMtch_mc->GetBinError(binCorr_ReMtch_mc);
                         double this_error = TMath::Sqrt(old_error*old_error + acc_error*acc_error);
 
-                        histCorr_RecGoodGen_mc->SetBinError(binCorr_RecGoodGen_mc, this_error);
+                        histCorr_ReMtch_mc->SetBinError(binCorr_ReMtch_mc, this_error);
                     }
                 }
 
-                // RecGoodGen_rec
-                int binAcc_RecGoodGen_rec = histAcc_RecGoodGen_rec->GetBin(&binKinVars[0]);
-                double valueAcc_RecGoodGen_rec = histAcc_RecGoodGen_rec->GetBinContent(binAcc_RecGoodGen_rec);
-                int binCorr_RecGoodGen_rec = histCorr_RecGoodGen_rec->GetBin(&binKinVars[0]);
+                // ReMtch_re
+                int binAcc_ReMtch_re = histAcc_ReMtch_re->GetBin(&binKinVars[0]);
+                double valueAcc_ReMtch_re = histAcc_ReMtch_re->GetBinContent(binAcc_ReMtch_re);
+                int binCorr_ReMtch_re = histCorr_ReMtch_re->GetBin(&binKinVars[0]);
 
-                if (valueAcc_RecGoodGen_rec  != 0)
+                if (valueAcc_ReMtch_re != 0)
                 {
-                    double this_content = histCorr_RecGoodGen_rec->GetBinContent(binCorr_RecGoodGen_rec) + 1./valueAcc_RecGoodGen_rec;
-                    histCorr_RecGoodGen_rec->SetBinContent(binCorr_RecGoodGen_rec, this_content);
+                    double this_content = histCorr_ReMtch_re->GetBinContent(binCorr_ReMtch_re) + 1./valueAcc_ReMtch_re;
+                    histCorr_ReMtch_re->SetBinContent(binCorr_ReMtch_re, this_content);
 
                     // Get error propagation
                     if (_useFullError)
                     {
-                        double acc_error  = histAcc_RecGoodGen_rec->GetBinError(binAcc_RecGoodGen_rec);
-                        double this_error = TMath::Sqrt(this_content / valueAcc_RecGoodGen_rec * (1 + this_content*acc_error*acc_error/valueAcc_RecGoodGen_rec));
+                        double acc_error  = histAcc_ReMtch_re->GetBinError(binAcc_ReMtch_re);
+                        double this_error = TMath::Sqrt(this_content / valueAcc_ReMtch_re * (1 + this_content*acc_error*acc_error/valueAcc_ReMtch_re));
 
-                        histCorr_Reconstructed->SetBinError(binCorr_RecGoodGen_rec, this_error);
+                        histCorr_ReMtch_re->SetBinError(binCorr_ReMtch_re, this_error);
                     }
                     else
                     {
-                        double acc_error  = histAcc_RecGoodGen_rec->GetBinError(binAcc_RecGoodGen_rec);
-                        acc_error = TMath::Sqrt(1.0 + acc_error*acc_error/(valueAcc_RecGoodGen_rec*valueAcc_RecGoodGen_rec))/valueAcc_RecGoodGen_rec;
-                        double old_error = histCorr_RecGoodGen_rec->GetBinError(binCorr_RecGoodGen_rec);
+                        double acc_error  = histAcc_ReMtch_re->GetBinError(binAcc_ReMtch_re);
+                        acc_error = TMath::Sqrt(1.0 + acc_error*acc_error/(valueAcc_ReMtch_re*valueAcc_ReMtch_re))/valueAcc_ReMtch_re;
+                        double old_error = histCorr_ReMtch_re->GetBinError(binCorr_ReMtch_re);
                         double this_error = TMath::Sqrt(old_error*old_error + acc_error*acc_error);
 
-                        histCorr_RecGoodGen_rec->SetBinError(binCorr_RecGoodGen_rec, this_error);
+                        histCorr_ReMtch_re->SetBinError(binCorr_ReMtch_re, this_error);
                     }
                 }
             }
@@ -762,9 +762,9 @@ void Acceptance::ClosureTest()
 
     std::cout << "There are " << count << " entries!" << std::endl;
 
-    histCorr_Reconstructed->Write();
-    histCorr_RecGoodGen_mc->Write();
-    histCorr_RecGoodGen_rec->Write();
+    histCorr_Reconstru->Write();
+    histCorr_ReMtch_mc->Write();
+    histCorr_ReMtch_re->Write();
     histTrue->Write();
     histTrue_PionReco->Write();
 
