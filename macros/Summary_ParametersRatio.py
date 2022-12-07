@@ -184,6 +184,7 @@ except:
     dataset = "%s_%s"%(dataset_elemts[1],dataset_elemts[2])
     print("")
 this_binning_type = int(dataset[0])
+dataset_title = myStyle.getNameFormatted("_"+dataset)
 this_bin_dict = myStyle.all_dicts[this_binning_type]
 
 nBinsQ = len(this_bin_dict['Q']['Bins'])-1
@@ -344,8 +345,8 @@ for p,par in enumerate(["B", "C"]):
                         legend.Draw()
 
     this_canvas.cd(0)
-    this_title_gif = myStyle.getSummaryPath("Par%s_Ratio"%par, "gif", plots_cuts, isJLab)
-    this_title_pdf = myStyle.getSummaryPath("Par%s_Ratio"%par, "pdf", plots_cuts, isJLab)
+    this_title_gif = myStyle.getSummaryPath("Par%s_Ratio%s"%(par,dataset_title), "gif", plots_cuts, isJLab)
+    this_title_pdf = myStyle.getSummaryPath("Par%s_Ratio%s"%(par,dataset_title), "pdf", plots_cuts, isJLab)
     this_canvas.SaveAs(this_title_gif)
     this_canvas.SaveAs(this_title_pdf)
 

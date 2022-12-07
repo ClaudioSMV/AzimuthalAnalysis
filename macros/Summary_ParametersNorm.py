@@ -182,6 +182,7 @@ except:
     print("")
 
 this_binning_type = int(dataset[0])
+dataset_title = myStyle.getNameFormatted("_"+dataset)
 this_bin_dict = myStyle.all_dicts[this_binning_type]
 
 nBinsQ = len(this_bin_dict['Q']['Bins'])-1
@@ -356,11 +357,11 @@ for p,par in enumerate(["B", "C"]):
                     if (legend.GetListOfPrimitives().GetEntries()==len(list_targets)):
                         legend.Draw()
 
-    this_title_gif = myStyle.getSummaryPath("Par%s_Norm"%par, "gif", plots_cuts, isJLab)
-    this_title_gif = myStyle.addBeforeRootExt(this_title_gif, "_%s"%whatsPlot, "gif")
+    this_title_gif = myStyle.getSummaryPath("Par%s_Norm%s"%(par,dataset_title), "gif", plots_cuts, isJLab)
+    this_title_gif = myStyle.addBeforeRootExt(this_title_gif, "_%s"%(whatsPlot), "gif")
 
-    this_title_pdf = myStyle.getSummaryPath("Par%s_Norm"%par, "pdf", plots_cuts, isJLab)
-    this_title_pdf = myStyle.addBeforeRootExt(this_title_pdf, "_%s"%whatsPlot, "pdf")
+    this_title_pdf = myStyle.getSummaryPath("Par%s_Norm%s"%(par,dataset_title), "pdf", plots_cuts, isJLab)
+    this_title_pdf = myStyle.addBeforeRootExt(this_title_pdf, "_%s"%(whatsPlot), "pdf")
 
     this_canvas.SaveAs(this_title_gif)
     this_canvas.SaveAs(this_title_pdf)
