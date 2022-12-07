@@ -3,8 +3,14 @@ import ROOT
 import os
 import optparse
 import myStyle
-import math
-import numpy as np
+
+###############################################
+###############################################
+###############   DEPRECATED!   ###############
+###############################################
+#####      Check PlotFit.py instead!      #####
+###############################################
+###############################################
 
 gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
@@ -12,35 +18,26 @@ gStyle.SetOptFit(1011)
 ## Defining Style
 myStyle.ForceStyle()
 
-# gStyle.SetStatX(2*myStyle.GetMargin() + 0.005 + gStyle.GetStatW())
-# gStyle.SetStatY(1 - myStyle.GetMargin() - 0.005)
-
 gStyle.SetStatX(1 - myStyle.GetMargin() - 0.005)
 gStyle.SetStatY(2*myStyle.GetMargin() + 0.205)
 
 # Construct the argument parser
 parser = optparse.OptionParser("usage: %prog [options]\n")
-# parser.add_option('-x','--xlength', dest='xlength', default = 4.0, help="X axis range [-x, x]")
-# parser.add_option('-y','--ylength', dest='ylength', default = 200.0, help="Y axis upper limit")
 parser.add_option('-D', dest='Dataset', default = "", help="Dataset in format <targ>_<binType>_<Ndims>")
 parser.add_option('-p', dest='rootpath', default = "", help="Add path to files, if needed")
-# parser.add_option('-a', dest='saveAll', action='store_true', default = False, help="Save All plots")
 parser.add_option('-J', dest='JLabCluster', action='store_true', default = False, help="Use folder from JLab_cluster")
+
 parser.add_option('-e', dest='errorFull', action='store_true', default = False, help="Use FullError")
 
-# IDEA: input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
+# input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
 
-# saveAll = options.saveAll
 rootpath = options.rootpath
 dataset = options.Dataset
 if options.JLabCluster: rootpath = "JLab_cluster"
 ext_error = "_FullErr" if options.errorFull else ""
 
-infoDict = myStyle.getNameFormattedDict(dataset)
-
-# inputPath = myStyle.getInputFile("Correction",dataset,rootpath) # Corrected_Fe_B0_2D.root
-# inputfile = TFile(inputPath,"READ")
+infoDict = myStyle.getDictNameFormat(dataset)
 
 inputPath = myStyle.getOutputDir("Correction",infoDict["Target"],rootpath)
 nameFormatted = myStyle.getNameFormatted(dataset)

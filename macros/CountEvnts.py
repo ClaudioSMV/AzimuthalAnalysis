@@ -3,8 +3,14 @@ import ROOT
 import os
 import optparse
 import myStyle
-import math
-import numpy as np
+
+###############################################
+###############################################
+###############   DEPRECATED!   ###############
+###############################################
+#####   Check checkAccQuality.C instead   #####
+###############################################
+###############################################
 
 gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
@@ -29,7 +35,7 @@ rootpath = options.rootpath
 dataset = options.Dataset
 if options.JLabCluster: rootpath = "JLab_cluster"
 
-infoDict = myStyle.getNameFormattedDict(dataset)
+infoDict = myStyle.getDictNameFormat(dataset)
 
 inputPath = myStyle.getInputFile("Acceptance",dataset,rootpath) # Acceptance/Acceptance_Fe_B0.root
 inputfile = TFile(inputPath,"READ")
