@@ -2,7 +2,7 @@
 
 ###################################################################
 #   ./send_job_Correction.sh <target> <binName> <binNdim> <ERR>   #
-#     <target> = (D, C, Fe, Pb)                                   #
+#     <target> = (D, C, Fe, Pb) *D runs over solid D info         #
 #     <binName> = (0: Usual, SMoran; 1: No-integrate Zh;          #
 #                  2: Thin Zh;)                                   #
 #     <binNdim> = (1: All bins regular as in Binned Acc;          #
