@@ -73,13 +73,15 @@ void Acceptance::Loop()
     TFile *fout;
     if (!_isClosureTest)
     {
-        CreateDir("../output/Acceptance");
-        fout = TFile::Open(Form("../output/Acceptance/Acceptance_%s.root", getNameAccFormat().c_str()), "RECREATE");
+        std::string acc_folder = "../output/Acceptance" + getAccFoldNameExt();
+        CreateDir(acc_folder);
+        fout = TFile::Open(Form("%s/Acceptance_%s.root", acc_folder.c_str(), getAccFileName().c_str()), "RECREATE");
     }
     else
     {
-        CreateDir("../output/ClosureTest");
-        fout = TFile::Open(Form("../output/ClosureTest/AccCT_%s.root", getNameAccFormat().c_str()), "RECREATE");
+        std::string ct_folder = "../output/ClosureTest" + getFoldNameExt();
+        CreateDir(ct_folder);
+        fout = TFile::Open(Form("%s/AccCT_%s.root", ct_folder.c_str(), getAccFileName().c_str()), "RECREATE");
     }
 
     std::cout << "\n\nBeginning Acceptance calculations for " << _nameTarget << " target\n" << std::endl;
@@ -348,7 +350,8 @@ void Acceptance::Loop()
     if (!_isClosureTest)
     {
         ofstream fileSummary;
-        fileSummary.open(Form("../output/Acceptance/Summary_%s.txt", _nameFormatted.c_str()));
+        std::string acc_folder = "../output/Acceptance" + getAccFoldNameExt();
+        fileSummary.open(Form("%s/Summary_%s.txt", acc_folder.c_str(), _nameFormatted.c_str()));
         fileSummary << Form(">> Summary table %s Target:\n\n",getNameTarget().c_str());
         SaveSummaryTable(general_El_count,     "General Electron Summary", fileSummary, entries_to_process);
         SaveSummaryTable(mc_El_Reject_count,   "Rejected MC Electron", fileSummary, entries_to_process);
@@ -395,12 +398,12 @@ void Acceptance::Correction()
     // Begin Correction
     std::cout << "\n\nBeginning Correction "<< getNameTarget() <<" target:\n" << std::endl;
 
-    CreateDir("../output/Correction");
-    string ext_error = "";
-    if (_useFullError) { ext_error = "_FullErr"; }
+    std::string acc_folder = "../output/Acceptance" + getAccFoldNameExt();
+    std::string cor_folder = "../output/Correction" + getFoldNameExt();
+    CreateDir(cor_folder);
 
-    TFile *facc = TFile::Open(Form("../output/Acceptance/Acceptance_%s.root", getNameAccFormat().c_str()), "READ");
-    TFile *fout = TFile::Open(Form("../output/Correction/Corrected_%s%s.root", _nameFormatted.c_str(), ext_error.c_str()), "RECREATE");
+    TFile *facc = TFile::Open(Form("%s/Acceptance_%s.root", acc_folder.c_str(), getAccFileName().c_str()), "READ");
+    TFile *fout = TFile::Open(Form("%s/Corrected_%s.root", cor_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
 
     // Get Acceptance THnSparse
     THnSparse *histAcc_Reconstru = (THnSparse*)facc->Get("histAcc_Reconstru");
@@ -566,7 +569,9 @@ void Acceptance::ClosureTest()
 {
     // Run over half of the sim and save in "../output/ClosureTest/AccCT_%s_B%i_%iD.root"
     setClosureTest();
-    if (!FileExists(Form("../output/ClosureTest/AccCT_%s.root", getNameAccFormat().c_str())))
+
+    std::string ct_folder = "../output/ClosureTest" + getFoldNameExt();
+    if (!FileExists(Form("%s/AccCT_%s.root", ct_folder.c_str(), getAccFileName().c_str())))
     {
         std::cout << "Acceptance for ClosureTest doesn't exist. Creating file." << std::endl;
         Loop();
@@ -584,11 +589,9 @@ void Acceptance::ClosureTest()
 
     // Begin Closure Test
     std::cout << "\n\nBeginning Closure Test for " << _nameTarget << " target\n" << std::endl;
-    string ext_error = "";
-    if (_useFullError) { ext_error = "_FullErr"; }
 
-    TFile *facc = TFile::Open(Form("../output/ClosureTest/AccCT_%s.root", getNameAccFormat().c_str()), "READ");
-    TFile *fout = TFile::Open(Form("../output/ClosureTest/ClosureTest_%s%s.root", _nameFormatted.c_str(), ext_error.c_str()), "RECREATE");
+    TFile *facc = TFile::Open(Form("%s/AccCT_%s.root", ct_folder.c_str(), getAccFileName().c_str()), "READ");
+    TFile *fout = TFile::Open(Form("%s/ClosureTest_%s.root", ct_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
 
     // Get Acceptance THnSparse
     THnSparse *histAcc_Reconstru = (THnSparse*)facc->Get("histAcc_Reconstru");
@@ -780,9 +783,10 @@ void Acceptance::Hist2D_KinVars()
     ActivateBranches();
 
     TFile *fout;
-    CreateDir("../output/Hist2D");
-    if (_isData) fout = TFile::Open(Form("../output/Hist2D/KinVars_%s_data.root", _nameFormatted.c_str()), "RECREATE");
-    else         fout = TFile::Open(Form("../output/Hist2D/KinVars_%s_hsim.root", _nameFormatted.c_str()), "RECREATE");
+    std::string h2d_folder = "../output/Hist2D" + getFoldNameExt();
+    CreateDir(h2d_folder);
+    if (_isData) fout = TFile::Open(Form("%s/KinVars_%s_data.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
+    else         fout = TFile::Open(Form("%s/KinVars_%s_hsim.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
 
     //// Define Histograms
     // Reconstructed or data
@@ -1010,9 +1014,10 @@ void Acceptance::Hist2D_XfVsYh()
     double kMassPiPlus = 0.139570;
 
     TFile *fout;
-    CreateDir("../output/Hist2D");
-    if (_isData) fout = TFile::Open(Form("../output/Hist2D/XfVsYh_%s_data.root", _nameFormatted.c_str()), "RECREATE");
-    else         fout = TFile::Open(Form("../output/Hist2D/XfVsYh_%s_hsim.root", _nameFormatted.c_str()), "RECREATE");
+    std::string h2d_folder = "../output/Hist2D" + getFoldNameExt();
+    CreateDir(h2d_folder);
+    if (_isData) fout = TFile::Open(Form("%s/XfVsYh_%s_data.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
+    else         fout = TFile::Open(Form("%s/XfVsYh_%s_hsim.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
 
     //// Define Histograms
     // Simple TH1
@@ -1168,9 +1173,10 @@ void Acceptance::Hist2D_ThetaPQ()
     double kMassPiPlus = 0.139570;
 
     TFile *fout;
-    CreateDir("../output/Hist2D");
-    if (_isData) fout = TFile::Open(Form("../output/Hist2D/ThetaPQ_%s_data.root", _nameFormatted.c_str()), "RECREATE");
-    else         fout = TFile::Open(Form("../output/Hist2D/ThetaPQ_%s_hsim.root", _nameFormatted.c_str()), "RECREATE");
+    std::string h2d_folder = "../output/Hist2D" + getFoldNameExt();
+    CreateDir(h2d_folder);
+    if (_isData) fout = TFile::Open(Form("%s/ThetaPQ_%s_data.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
+    else         fout = TFile::Open(Form("%s/ThetaPQ_%s_hsim.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
 
     //// Define Histograms
     // Simple TH1
@@ -1346,9 +1352,10 @@ void Acceptance::Hist2D_LabAngles()
     // double kMassPiPlus = 0.139570;
 
     TFile *fout;
-    CreateDir("../output/Hist2D");
-    if (_isData) fout = TFile::Open(Form("../output/Hist2D/LabAngles_%s_data.root", _nameFormatted.c_str()), "RECREATE");
-    else         fout = TFile::Open(Form("../output/Hist2D/LabAngles_%s_hsim.root", _nameFormatted.c_str()), "RECREATE");
+    std::string h2d_folder = "../output/Hist2D" + getFoldNameExt();
+    CreateDir(h2d_folder);
+    if (_isData) fout = TFile::Open(Form("%s/LabAngles_%s_data.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
+    else         fout = TFile::Open(Form("%s/LabAngles_%s_hsim.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
 
     //// Define Histograms
     // Simple TH1

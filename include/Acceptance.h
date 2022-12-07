@@ -184,8 +184,10 @@ public:
     Acceptance(TTree *tree = 0, bool isData = false);
     virtual ~Acceptance();
     virtual void setTargName(std::string name, std::string solid_name);
+    std::string getFoldNameExt();
     virtual void setNameFormat();
-    std::string getNameAccFormat();
+    std::string getAccFoldNameExt();
+    std::string getAccFileName();
     virtual Int_t Cut(Long64_t entry);
     virtual Bool_t GoodElectron_MC(Long64_t entry, vector<vector<double>> DISLimits);
     virtual Bool_t GoodPiPlus_MC(Long64_t entry, int ivec, vector<vector<double>> DISLimits);
@@ -257,6 +259,8 @@ Long64_t Acceptance::LoadTree(Long64_t entry)
     return centry;
 }
 
+// Set Names
+
 void Acceptance::setTargName(std::string name, std::string solid_name = "")
 {
     _nameTarget = name;
@@ -264,9 +268,22 @@ void Acceptance::setTargName(std::string name, std::string solid_name = "")
     else if (name=="D" && solid_name!="") _nameSolidTarget = solid_name;
 }
 
+// Folder and file names
+
+std::string Acceptance::getFoldNameExt() //getNameAccFormat() // Cuts + other selections
+{
+    // _<extra cuts, ex. Xf>
+    std::string this_name = getAccFoldNameExt();
+    if (_useFullError)
+    {
+        this_name+="_FErr";
+    }
+    return this_name;
+}
+
 void Acceptance::setNameFormat()
 {
-    // <target>_B<_binIndex>_<_binNdims>D_<extra cuts, ex. Xf> -> If D: DC, DFe, DPb
+    // <target>_<_binIndex>B<_binNdims> -> If D: DC, DFe, DPb
     _nameFormatted = _nameTarget;
     if (_nameTarget=="D" && _nameSolidTarget!="")
     {
@@ -274,33 +291,38 @@ void Acceptance::setNameFormat()
     }
     if (_binIndex>-1)
     {
-        _nameFormatted+="_B"+std::to_string(_binIndex);
+        _nameFormatted+="_"+std::to_string(_binIndex)+"B";
     }
     if (_binNdims)
     {
-        _nameFormatted+="_"+std::to_string(_binNdims)+"D";
-    }
-    if (_cutXf)
-    {
-        _nameFormatted+="_Xf";
+        _nameFormatted+=std::to_string(_binNdims);
     }
     std::cout << "Name formatted extension: " << _nameFormatted << std::endl;
 }
 
-std::string Acceptance::getNameAccFormat()
+std::string Acceptance::getAccFoldNameExt() //getNameAccFormat() // Only cuts
 {
-    // <target>_B<_binIndex>_<extra cuts, ex. Xf>
-    std::string this_name = _nameTarget;
-    if (_binIndex>-1)
-    {
-        this_name+="_B"+std::to_string(_binIndex);
-    }
+    // _<extra cuts, ex. Xf>
+    std::string this_name = "";
     if (_cutXf)
     {
         this_name+="_Xf";
     }
     return this_name;
 }
+
+std::string Acceptance::getAccFileName()
+{
+    // <target>_<_binIndex>B
+    std::string this_name = _nameTarget;
+    if (_binIndex>-1)
+    {
+        this_name+="_"+std::to_string(_binIndex)+"B";
+    }
+    return this_name;
+}
+
+// Init
 
 void Acceptance::Init(TTree *tree)
 {
