@@ -1,18 +1,20 @@
 #!/bin/bash
 
 ############################################################################
-#  ./FitCrossSection.sh <target> <binName> <binNdim> <x-axis> <ErrorType>  #
-#     <target>  = (D, C, Fe, Pb, DS) (DS; Split D in solid targ)           #
-#     <binName> = (0: Usual, SMoran; 1: No-integrate Zh;                   #
+#         ./FitCrossSection.sh <target> <binName> <binNdim> <cuts>         #
+#  <target>  = (D, C, Fe, Pb, DS) (DS: Run over D related to solid targs)  #
+#  <binName> = (0: Usual, SMoran; 1: No-integrate Zh;                      #
 #                  2: Thin Zh;)                                            #
-#     <binNdim> = (1: All bins regular as in Binned Acc;                   #
-#                  2: Regular bins in Zh, Pt2, and PhiPQ;                  #
-#                  3: Regular bins in Pt2, and PhiPQ;)                     #
-#     <x-axis>  = (P, Z) (Empty is default)                                #
-#     <ErrorType> = (FULL: Use FullError; empty (DEFAULT); )               #
+#  <binNdim> = (1: All bins regular as in Binned Acc;                      #
+#               2: Regular bins in Zh, Pt2, and PhiPQ;                     #
+#               3: Regular bins in Pt2, and PhiPQ;)                        #
+#  <cuts>    = Format "AA_BB_CC" (Empty is default)                        #
+#  "Xf": Use Xf from data; "FE": Use FullError; "Zx": x-axis is Zh;        #
+#  "Px": x-axis is Pt2; "Fd": Fit uses Fold; "LR": Fit uses both tails;    #
+#  "MD": Mix D info is ratios;                                             #
 #                                                                          #
-# EG: ./FitCrossSection.sh C 0 2 Z EVT                                     #
-#     ./FitCrossSection.sh Fe 1 3 P FULL                                   #
+#  EG: ./FitCrossSection.sh C  0 2 Zx_FE_Fd                                #
+#      ./FitCrossSection.sh Fe 1 3 Zx_LR                                   #
 ############################################################################
 
 #####
@@ -24,39 +26,83 @@ INPUTARRAY=("$@")
 TARNAME=${INPUTARRAY[0]}
 BINNAME=${INPUTARRAY[1]}
 BINNDIM=${INPUTARRAY[2]}
-AXISOPT=${INPUTARRAY[3]}
-ERRORTP=${INPUTARRAY[4]}
+CUTINFO=${INPUTARRAY[3]}
 
 #####
 # Main
-###
+#####
 TAR_LIST=(${TARNAME})
 if [[ ${TARNAME} == "DS" ]]; then
     TAR_LIST=('DC' 'DFe' 'DPb')
 fi
 
-AXSNAME=""
-if [[ -n ${AXISOPT} ]]; then
-    AXSNAME=_${AXISOPT}
-    AXISOPT=-${AXISOPT}
+#####
+# Cuts
+#####
+PREV_CUT=""
+CORR_CUT=""
+FITS_CUT=""
+PAR_NCUT=""
+PAR_RCUT=""
+
+### Before Corrected
+if [[ $CUTINFO == *"Xf"* ]]; then
+    PREV_CUT="${PREV_CUT}_Xf"
+    CORR_CUT="${CORR_CUT}_Xf"
+    FITS_CUT="${FITS_CUT}_Xf"
+    PAR_NCUT="${PAR_NCUT}_Xf"
+    PAR_RCUT="${PAR_RCUT}_Xf"
+fi
+if [[ $CUTINFO == *"FE"* ]]; then
+    PREV_CUT="${PREV_CUT}_FE"
+    CORR_CUT="${CORR_CUT}_FE"
+    FITS_CUT="${FITS_CUT}_FE"
+    PAR_NCUT="${PAR_NCUT}_FE"
+    PAR_RCUT="${PAR_RCUT}_FE"
 fi
 
-if [[ ${ERRORTP} == "FULL" ]]; then
-    ERRORTP="-e"
+### From Corrected
+if [[ $CUTINFO == *"Zx"* ]]; then
+    CORR_CUT="${CORR_CUT}_Zx"
+    FITS_CUT="${FITS_CUT}_Zx"
+    PAR_NCUT="${PAR_NCUT}_Zx"
+    PAR_RCUT="${PAR_RCUT}_Zx"
+elif [[ $CUTINFO == *"Px"* ]]; then
+    CORR_CUT="${CORR_CUT}_Px"
+    FITS_CUT="${FITS_CUT}_Px"
+    PAR_NCUT="${PAR_NCUT}_Px"
+    PAR_RCUT="${PAR_RCUT}_Px"
 else
-    ERRORTP=""
+    echo "Remember to select a dependence as x-axis (Zh or Pt2)"
 fi
+
+### From Fit
+if [[ $CUTINFO == *"Fd"* ]]; then
+    FITS_CUT="${FITS_CUT}_Fd"
+    PAR_NCUT="${PAR_NCUT}_Fd"
+    PAR_RCUT="${PAR_RCUT}_Fd"
+elif [[ $CUTINFO == *"LR"* ]]; then
+    FITS_CUT="${FITS_CUT}_LR"
+    PAR_NCUT="${PAR_NCUT}_LR"
+    PAR_RCUT="${PAR_RCUT}_LR"
+else
+    echo "Remember to choose Fold or Both wings method for the fit!"
+fi
+
+### From ParameterRatio
+if [[ $CUTINFO == *"MD"* ]]; then
+    PAR_RCUT="${PAR_RCUT}_MD"
+fi
+
+# echo $PREV_CUT
+# echo $CORR_CUT
+# echo $FITS_CUT
+# echo $PAR_NCUT
+# echo $PAR_RCUT
 
 for t in "${TAR_LIST[@]}"; do
-    python PlotCorrection.py    -D ${t}_${BINNAME}_${BINNDIM}           -J ${AXISOPT} ${ERRORTP}
-    # python PlotFit_TwoTails.py  -D ${t}_${BINNAME}_${BINNDIM}           -J
-    python PlotFit_FoldTails.py -D ${t}_${BINNAME}_${BINNDIM}${AXSNAME} -J ${ERRORTP}
-    # python GetParameters.py     -D ${t}_${BINNAME}_${BINNDIM}           -J
-    # python GetParameters.py     -D ${t}_${BINNAME}_${BINNDIM}           -J -Z
-    ### python GetParameters.py   -D ${t}_${BINNAME}_${BINNDIM}${AXSNAME} -J -F ${ERRORTP}
-    python GetParametersNorm.py -D ${t}_${BINNAME}_${BINNDIM}${AXSNAME} -J -F ${ERRORTP}
-    # python GetParameters.py     -D ${t}_${BINNAME}_${BINNDIM}           -J -F -Z
-    # python GetParameterRatio.py -D ${t}_${BINNAME}_${BINNDIM}           -J
-    python GetParameterRatio.py -D ${t}_${BINNAME}_${BINNDIM}${AXSNAME} -J -F ${ERRORTP}
-    # python GetParameterRatio.py -D ${t}_${BINNAME}_${BINNDIM}           -J -F -m
+    python PlotCorrection.py        -D ${t}_${BINNAME}_${BINNDIM} -i $PREV_CUT -o $CORR_CUT #-J
+    python PlotFit.py               -D ${t}_${BINNAME}_${BINNDIM} -i $CORR_CUT -o $FITS_CUT #-J
+    python GetParametersNorm.py     -D ${t}_${BINNAME}_${BINNDIM} -i $FITS_CUT -o $PAR_NCUT #-J
+    python GetParametersRatio.py    -D ${t}_${BINNAME}_${BINNDIM} -i $FITS_CUT -o $PAR_RCUT #-J
 done

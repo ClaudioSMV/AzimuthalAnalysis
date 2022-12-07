@@ -3,8 +3,6 @@ import ROOT
 import os
 import optparse
 import myStyle
-import math
-import numpy as np
 
 gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
@@ -20,24 +18,36 @@ parser.add_option('-D', dest='Dataset', default = "", help="Dataset in format <t
 parser.add_option('-p', dest='rootpath', default = "", help="Add path to files, if needed")
 parser.add_option('-a', dest='saveAll', action='store_true', default = False, help="Save All plots")
 parser.add_option('-J', dest='JLabCluster', action='store_true', default = False, help="Use folder from JLab_cluster")
+parser.add_option('-i', dest='inputCuts', default = "", help="Add input cuts Xf_Yb_...")
+parser.add_option('-o', dest='outputCuts', default = "", help="Add output cuts FE_...")
+
 parser.add_option('-e', dest='errorFull', action='store_true', default = False, help="Use FullError")
 
-# IDEA: input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
+# input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
 
 saveAll = options.saveAll
 rootpath = options.rootpath
 dataset = options.Dataset
-if options.JLabCluster: rootpath = "JLab_cluster"
-ext_error = "_FullErr" if options.errorFull else ""
+isJLab = options.JLabCluster
 
-infoDict = myStyle.getNameFormattedDict(dataset)
+infoDict  = myStyle.getDictNameFormat(dataset)
+nameFormatted = myStyle.getNameFormatted(dataset)
 
-inputPath = myStyle.getInputFile("ClosureTest",dataset,rootpath) # ClosureTest_%s_B%i_%iD.root
-inputPath = myStyle.addBeforeRootExt(inputPath,ext_error)
+## Cuts
+input_cuts = options.inputCuts
+plots_cuts = options.inputCuts + "_" + options.outputCuts
+if options.errorFull:
+    input_cuts+="_FE"
+    plots_cuts+="_FE"
+
+## Input
+inputPath = myStyle.getOutputFileWithPath("ClosureTest", dataset, input_cuts, isJLab, False) # "../output/"
 inputfile = TFile(inputPath,"READ")
 
-outputPath = myStyle.getOutputDir("ClosureTest",infoDict["Target"],rootpath)
+## Output
+outputPath = myStyle.getPlotsFolder("ClosureTest", plots_cuts, infoDict["Target"], isJLab)
+outputROOT = myStyle.getPlotsFile("ClosureTest", dataset, "root")
 
 histCorr_Reconstru = inputfile.Get("Corr_Reconstru")
 histCorr_ReMtch_mc = inputfile.Get("Corr_ReMtch_mc")
@@ -46,7 +56,7 @@ histTrue           = inputfile.Get("True")
 histTrue_PionRec   = inputfile.Get("True_PionReco")
 
 inputTHnSparse_list = [histCorr_Reconstru, histCorr_ReMtch_mc, histCorr_ReMtch_re, histTrue, histTrue_PionRec]
-prefixType = ["Correction", "Corr GoodGen_mc", "Corr GoodGen_rec", "True", "True GoodPionRec"]
+prefixType = ["Correction", "Correct Match_mc", "Correct Match_rec", "True", "True GoodPionRec"]
 
 
 bins_list = [] # [3, 3, 5]
@@ -55,11 +65,12 @@ outDim = infoDict["NDims"]
 if (infoDict["NDims"] == 1): outDim = 2
 if (infoDict["BinningType"] == 2): outDim = 3
 
+totalsize = 1
 for i in range(0,outDim):
     nbins = histCorr_Reconstru.GetAxis(i).GetNbins()
+    totalsize*=nbins
     bins_list.append(nbins)
 
-totalsize = np.prod(bins_list)
 names_list = []
 Proj1DTHnSparse_list = [[],[],[],[],[]]
 symbol_list = ["Q","N","Z"]
@@ -99,8 +110,7 @@ gStyle.SetOptStat(0)
 
 
 # Plot 2D histograms
-nameFormatted = myStyle.getNameFormatted(dataset)
-outputfile = TFile(outputPath+nameFormatted+ext_error+".root","RECREATE")
+outputfile = TFile(outputPath+outputROOT,"RECREATE")
 for i,info in enumerate(names_list):
 
     if saveAll:
@@ -133,8 +143,10 @@ for i,info in enumerate(names_list):
             myStyle.DrawPreliminaryInfo(prefixType[p])
             myStyle.DrawTargetInfo(nameFormatted, "Simulation")
 
-            canvas.SaveAs(outputPath+nameFormatted+"-"+this_proj.GetName()+".gif")
-            # canvas.SaveAs(outputPath+"CT_"+info+".pdf")
+            histName = "_".join(this_proj.GetName().split("_")[0:-1]) # Corr_A_B_Q1N2 -> Corr_A_B
+            outputName = myStyle.getPlotsFile(histName, dataset, "gif", info)
+            canvas.SaveAs(outputPath+outputName)
+            # canvas.SaveAs(outputPath+nameFormatted+"-"+this_proj.GetName()+".gif")
             this_proj.Write()
             htemp.Delete()
 
@@ -169,8 +181,9 @@ for i,info in enumerate(names_list):
 
     gPad.RedrawAxis("g")
 
-    canvas.SaveAs(outputPath+nameFormatted+"-ClosureTest_"+info+ext_error+".gif")
-    # canvas.SaveAs(outputPath+"CT_"+info+".pdf")
+    outputName = myStyle.getPlotsFile("ClosureTest", dataset, "gif", info)
+    canvas.SaveAs(outputPath+outputName)
+    # canvas.SaveAs(outputPath+nameFormatted+"-ClosureTest_"+info+ext_error+".gif")
     hCT.Write()
     htemp.Delete()
 

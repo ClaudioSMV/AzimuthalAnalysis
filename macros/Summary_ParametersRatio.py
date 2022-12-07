@@ -3,8 +3,6 @@ import ROOT
 import os
 import optparse
 import myStyle
-import math
-import numpy as np
 from array import array
 import ctypes ## Needed to get pointer values
 
@@ -112,45 +110,79 @@ def YtoPad(y):
 
 # Construct the argument parser
 parser = optparse.OptionParser("usage: %prog [options]\n")
-# parser.add_option('-x','--xlength', dest='xlength', default = 4.0, help="X axis range [-x, x]")
-# parser.add_option('-y','--ylength', dest='ylength', default = 200.0, help="Y axis upper limit")
 parser.add_option('-D', dest='Dataset', default = "", help="Dataset in format <binType>_<Ndims>")
 parser.add_option('-p', dest='rootpath', default = "", help="Add path to files, if needed")
 parser.add_option('-J', dest='JLabCluster', action='store_true', default = False, help="Use folder from JLab_cluster")
-parser.add_option('-f', dest='fit',  default = "Fold", help="Use Fold (F), Left (L) or Right (R) fit")
-parser.add_option('-m', dest='mixD', action='store_true', default = False, help="Mix deuterium data from all solid targets")
+parser.add_option('-i', dest='inputCuts', default = "", help="Add input cuts Xf_Yb_Z/P...")
+parser.add_option('-o', dest='outputCuts', default = "", help="Add output cuts FE_...")
+
+parser.add_option('-f', dest='fit',  default = "R", help="Use Fold (F), Left (L) or Right (R) fit")
 parser.add_option('-e', dest='errorFull', action='store_true', default = False, help="Use FullError")
 
+parser.add_option('-m', dest='mixD', action='store_true', default = False, help="Mix deuterium data from all solid targets")
 parser.add_option('-Z', dest='useZh',  action='store_true', default = False, help="Use bin in Zh, integrate Pt2")
 parser.add_option('-P', dest='usePt2', action='store_true', default = False, help="Use bin in Pt2, integrate Zh")
 
-# IDEA: input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
+# input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
 
-# saveAll = options.saveAll
 rootpath = options.rootpath
 dataset = options.Dataset
+isJLab = options.JLabCluster
 fit = options.fit
+
+if "Fold" in myStyle.getCutStrFromStr(options.inputCuts):
+    fit = "F"
+elif "Left" in myStyle.getCutStrFromStr(options.inputCuts):
+    fit = "L"
+elif "Right" in myStyle.getCutStrFromStr(options.inputCuts):
+    fit = "R"
+
+fit_type = "Fd" if "F" in fit else "LR"
+fit_num = 0 if (fit != "L") else 1
 mixD = options.mixD
+if "MixD" in myStyle.getCutStrFromStr(options.outputCuts):
+    mixD = True
+
+## Cuts
+input_cuts = options.inputCuts
+plots_cuts = options.inputCuts + "_" + options.outputCuts
+if options.errorFull:
+    input_cuts+="_FE"
+    plots_cuts+="_FE"
+if mixD:
+    input_cuts+="_MD"
+    plots_cuts+="_MD"
+
+input_cuts+="_"+fit_type # Add Fold or LR extension
+plots_cuts+="_"+fit_type
+
 useZh = options.useZh
 usePt2 = options.usePt2
-if (not useZh) and (not usePt2): print("Using default binning!")
+if "_Z_" in myStyle.getCutStrFromStr(options.outputCuts):
+    useZh = True
+if "_P_" in myStyle.getCutStrFromStr(options.outputCuts):
+    usePt2 = True
+
 if (useZh) and (usePt2):
     print("Two binning selected. Please, choose only one of the options!")
     exit()
+elif useZh:
+    input_cuts+="_Zx"
+    plots_cuts+="_Zx"
+elif usePt2:
+    input_cuts+="_Px"
+    plots_cuts+="_Px"
+else:
+    print("Using default x binning!")
 
 dataset_elemts = dataset.split("_")
-if options.JLabCluster: rootpath = "JLab_cluster"
-ext_error = "_FullErr" if options.errorFull else ""
-if fit=="Fold": fit="F"
-
 try:
     if (int(dataset_elemts[0])):
         print("")
 except:
     dataset = "%s_%s"%(dataset_elemts[1],dataset_elemts[2])
     print("")
-
 this_binning_type = int(dataset[0])
 this_bin_dict = myStyle.all_dicts[this_binning_type]
 
@@ -170,34 +202,24 @@ canvas_C.SetGrid(0,1)
 
 list_canvas = [canvas_B, canvas_C]
 
-# par_list = ["B", "C"]
 list_targets = ["C", "Fe", "Pb"]
-fold_or_LR = "Fold" if "F" in fit else "LR"
-fit_num = 0 if (fit != "R") else 1
-
-if (useZh): hadronic_bin_name = "_Z"
-elif (usePt2): hadronic_bin_name = "_P"
-else: hadronic_bin_name = ""
 
 list_infiles = []
 
 # Open files
 for targ in list_targets:
     this_dataset = "%s_%s"%(targ, dataset)
-    # infoDict = myStyle.getNameFormattedDict(this_dataset)
-    nameFormatted = "%s%s"%(myStyle.getNameFormatted(this_dataset),hadronic_bin_name) # Fe_B2_1D or Fe_B2_1D_Z
+    inputPath = myStyle.getPlotsFolder("FitParametersRatio", input_cuts, targ, isJLab, False) # "../output/"
+    inputROOT = myStyle.getPlotsFile("ParametersRatio", this_dataset, "root", fit_type)
 
-    solid_mix = "" if mixD else targ
-
-    inputPath = myStyle.getOutputDir("ParameterRatio",targ,rootpath)
-    inputfile = TFile("%s%s_ParameterRatio_D%s_%s%s.root"%(inputPath,nameFormatted,solid_mix,fold_or_LR,ext_error),"READ")
+    inputfile = TFile(inputPath+inputROOT,"READ")
     list_infiles.append(inputfile)
 
 
 list_hists = []
 
 ## Create histograms
-for p,par in enumerate(["B", "C"]): # 3
+for p,par in enumerate(["B", "C"]): # 2
     list_this_par = []
     for t,targ in enumerate(list_targets): # 4
         list_this_tar = []
@@ -209,7 +231,6 @@ for p,par in enumerate(["B", "C"]): # 3
                 bin_label = "Q%iN%i"%(iQ,iN)
                 if useZh:
                     hist_tmp = TH1D("%s_%s_Q%iN%i"%(par,targ,iQ,iN),";Z_{h};(%s/A)_{Solid}/(%s/A)_{D}"%(par,par),nBinsZ,array('d',this_bin_dict['Z']['Bins']))
-                    # hist_tmp_N = TH1D("%s_%s_Neg_Q%iN%i"%(par,targ,iQ,iN),";Z_{h};%s/A"%(par),nBinsZ,array('d',this_bin_dict['Z']['Bins']))
 
                     for iZ in range(1,nBinsZ+1):
                         this_label = "%sZ%i"%(bin_label,iZ-1)
@@ -221,7 +242,6 @@ for p,par in enumerate(["B", "C"]): # 3
                         hist_tmp.SetBinError(iZ, bin_error)
                 elif usePt2:
                     hist_tmp = TH1D("%s_%s_Q%iN%i"%(par,targ,iQ,iN),";P_{t}^{2} (GeV^{2});(%s/A)_{Solid}/(%s/A)_{D}"%(par,par),nBinsP,array('d',this_bin_dict['P']['Bins']))
-                    # hist_tmp_N = TH1D("%s_%s_Neg_Q%iN%i"%(par,targ,iQ,iN),";Z_{h};%s/A"%(par),nBinsZ,array('d',this_bin_dict['Z']['Bins']))
 
                     for iP in range(1,nBinsP+1):
                         this_label = "%sP%i"%(bin_label,iP-1)
@@ -237,12 +257,8 @@ for p,par in enumerate(["B", "C"]): # 3
         list_this_par.append(list_this_tar)
         # inputfile.Close()
 
-    list_hists.append(list_this_par) #  npar*nTarg*nQ*nN = 3*4*nQ*nN hists
+    list_hists.append(list_this_par) #  npar*nTarg*nQ*nN = 2*4*nQ*nN hists
 
-outputPath = myStyle.getOutputDir("Summary","",rootpath)
-
-# [[-10.0,10.0], [-10.0,10.0]]  : See bad bins
-# [[-4.0,4.0], [-4.0,4.0]]      : Zoom. Still getting bad bins, specially for C
 par_y_lmts = [[0.0,2.0], [-1.0,3.0]]
 Q2_bin_info_Ypos = -0.15
 
@@ -271,18 +287,14 @@ for p,par in enumerate(["B", "C"]):
     legend.SetNColumns(2)
 
     for t,targ in enumerate(list_targets):
-        this_dataset = "%s_%s"%(targ, dataset)
-        infoDict = myStyle.getNameFormattedDict(this_dataset)
-        nameFormatted = "%s%s"%(myStyle.getNameFormatted(this_dataset),hadronic_bin_name) # Fe_B2_1D or Fe_B2_1D_Z
-
         this_canvas.cd(0)
-
         for iQ in range(nBinsQ):
-            for iN in range(nBinsN): # iQ,iN = 0,0
-                this_pad = gROOT.FindObject("pad%s_%i_%i"%(par,iQ,nBinsN-iN-1)) # -> 0,2
+            for iN in range(nBinsN): # iQ,iN = 0,0 (B)
+                this_pad = gROOT.FindObject("pad%s_%i_%i"%(par,iQ,nBinsN-iN-1)) # -> 0,2 (A)
                 this_pad.SetGrid(0,1)
 
                 ## This selection labels xy such as:
+                ##       (A)              (B)
                 ##  ------------     ------------
                 ##  - 02 12 22 -     - 00 10 20 -
                 ##  - 01 11 21 - --> - 01 11 21 -
@@ -332,9 +344,10 @@ for p,par in enumerate(["B", "C"]):
                         legend.Draw()
 
     this_canvas.cd(0)
-    solid_mix = "All" if mixD else "Solid"
-    this_canvas.SaveAs("%sParRatioOverD%s_%s_%s%s%s.gif"%(outputPath,solid_mix,par,fit,hadronic_bin_name,ext_error))
-    this_canvas.SaveAs("%sParRatioOverD%s_%s_%s%s%s.pdf"%(outputPath,solid_mix,par,fit,hadronic_bin_name,ext_error))
+    this_title_gif = myStyle.getSummaryPath("Par%s_Ratio"%par, "gif", plots_cuts, isJLab)
+    this_title_pdf = myStyle.getSummaryPath("Par%s_Ratio"%par, "pdf", plots_cuts, isJLab)
+    this_canvas.SaveAs(this_title_gif)
+    this_canvas.SaveAs(this_title_pdf)
 
 for t,targ in enumerate(list_targets):
     list_infiles[t].Close()

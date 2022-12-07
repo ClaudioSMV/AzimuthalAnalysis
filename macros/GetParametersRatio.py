@@ -3,8 +3,6 @@ import ROOT
 import os
 import optparse
 import myStyle
-import math
-import numpy as np
 
 gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
@@ -26,58 +24,100 @@ def GetMatrixElem(matrix, row, col):
 
 # Construct the argument parser
 parser = optparse.OptionParser("usage: %prog [options]\n")
-# parser.add_option('-x','--xlength', dest='xlength', default = 4.0, help="X axis range [-x, x]")
-# parser.add_option('-y','--ylength', dest='ylength', default = 200.0, help="Y axis upper limit")
 parser.add_option('-D', dest='Dataset', default = "", help="Dataset in format <target>_<binType>_<Ndims>")
 parser.add_option('-p', dest='rootpath', default = "", help="Add path to files, if needed")
 parser.add_option('-J', dest='JLabCluster', action='store_true', default = False, help="Use folder from JLab_cluster")
-parser.add_option('-F', dest='fold', action='store_true', default = False, help="Use fold tails (default does not)")
+parser.add_option('-i', dest='inputCuts', default = "", help="Add input cuts Xf_Yb_Z/P...")
+parser.add_option('-o', dest='outputCuts', default = "", help="Add output cuts FE_...")
 parser.add_option('-v', dest='verbose', action='store_true', default = False, help="Print values")
-parser.add_option('-m', dest='mixD', action='store_true', default = False, help="Mix deuterium data from all solid targets")
+
+parser.add_option('-F', dest='fold', action='store_true', default = False, help="Use fold tails (default does not)")
 parser.add_option('-e', dest='errorFull', action='store_true', default = False, help="Use FullError")
 
-# IDEA: input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
+parser.add_option('-m', dest='mixD', action='store_true', default = False, help="Mix deuterium data from all solid targets")
+parser.add_option('-Z', dest='useZh',  action='store_true', default = False, help="Use bin in Zh, integrate Pt2")
+parser.add_option('-P', dest='usePt2', action='store_true', default = False, help="Use bin in Pt2, integrate Zh")
+
+# input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
 
 # saveAll = options.saveAll
 rootpath = options.rootpath
 dataset = options.Dataset
-fold = options.fold
+isJLab = options.JLabCluster
 verbose = options.verbose
-mixD = options.mixD
 
-infoDict = myStyle.getNameFormattedDict(dataset) # ["Target", "BinningType", "NDims", "Cuts"]
+useFold = options.fold
+if "Fold" in myStyle.getCutStrFromStr(options.inputCuts):
+    useFold = True
+fit_type = "Fd" if useFold else "LR"
+mixD = options.mixD
+if "MixD" in myStyle.getCutStrFromStr(options.outputCuts):
+    mixD = True
+
+infoDict = myStyle.getDictNameFormat(dataset) # ["Target", "BinningType", "NDims"]
 nameFormatted = myStyle.getNameFormatted(dataset)
 
 if ("D" in infoDict["Target"]):
     print("Can't get ratio of D. Try with a solid target.")
     exit()
 
-solid_mix = "" if mixD else infoDict["Target"]
-hadronic_bin_name = ""
-if "Z" in infoDict["Cuts"]: hadronic_bin_name = "_Z"
-if "P" in infoDict["Cuts"]: hadronic_bin_name = "_P"
-# dataset_elemts = dataset.split("_")
-dataset_D = "D%s_%s_%s%s"%(solid_mix,infoDict["BinningType"],infoDict["NDims"],hadronic_bin_name)
-if options.JLabCluster: rootpath = "JLab_cluster"
-ext_error = "_FullErr" if options.errorFull else ""
+## Cuts
+input_cuts = options.inputCuts
+plots_cuts = options.inputCuts + "_" + options.outputCuts
+if options.errorFull:
+    input_cuts+="_FE"
+    plots_cuts+="_FE"
+if mixD:
+    plots_cuts+="_MD"
 
-### Get D (liquid target) info and parameters
-inputPath_D = myStyle.getOutputDir("Fit","D%s"%(solid_mix),rootpath)
-nameFormatted_D = myStyle.getNameFormatted(dataset_D)
-inputfile_D = TFile("%sFitFold_%s%s.root"%(inputPath_D,nameFormatted_D,ext_error),"READ") if fold else TFile("%sFitBothTails_%s%s.root"%(inputPath_D,nameFormatted_D,ext_error),"READ")
+input_cuts+="_"+fit_type # Add Fold or LR extension
+plots_cuts+="_"+fit_type
 
-# list_solid_targets = ["C", "Fe", "Pb"]
-list_func_names = ["crossSection"] if fold else ["crossSectionL", "crossSectionR"]
-name_ext = "Fold" if len(list_func_names)==1 else "LR"
+useZh = options.useZh
+usePt2 = options.usePt2
+if "_Z_" in myStyle.getCutStrFromStr(options.inputCuts):
+    useZh = True
+if "_P_" in myStyle.getCutStrFromStr(options.inputCuts):
+    usePt2 = True
 
-inputPath = myStyle.getOutputDir("Fit",infoDict["Target"],rootpath)
+if (useZh) and (usePt2):
+    print("Two binning selected. Please, choose only one of the options!")
+    exit()
+elif useZh:
+    input_cuts+="_Zx"
+    plots_cuts+="_Zx"
+elif usePt2:
+    input_cuts+="_Px"
+    plots_cuts+="_Px"
+else:
+    print("Using default x binning!")
 
-inputfile_solid = TFile("%sFitFold_%s%s.root"%(inputPath,nameFormatted,ext_error),"READ") if fold else TFile("%sFitBothTails_%s%s.root"%(inputPath,nameFormatted,ext_error),"READ")
+## Deuterium info
+solid_targ = infoDict["Target"] if not mixD else ""
+dataset_D = "D%s_%s_%s"%(solid_targ,infoDict["BinningType"],infoDict["NDims"])
+
+inputPath_D = myStyle.getPlotsFolder("Fit", input_cuts, "D"+solid_targ, isJLab, False) # "../output/"
+inputROOT_D = myStyle.getPlotsFile("Fit", dataset_D, "root", fit_type)
+inputfile_D = TFile(inputPath_D+inputROOT_D,"READ")
+
+## Input
+inputPath_solid = myStyle.getPlotsFolder("Fit", input_cuts, infoDict["Target"], isJLab, False) # "../output/"
+inputROOT_solid = myStyle.getPlotsFile("Fit", dataset, "root", fit_type)
+inputfile_solid = TFile(inputPath_solid+inputROOT_solid,"READ")
+
+## Output
+outputPath = myStyle.getPlotsFolder("FitParametersRatio", plots_cuts, infoDict["Target"], isJLab)
+outputROOT = myStyle.getPlotsFile("ParametersRatio", dataset, "root", fit_type)
+
+list_func_names = ["crossSectionR"]
+if not useFold:
+    list_func_names.append("crossSectionL")
 
 list_of_hists = inputfile_solid.GetListOfKeys().Clone()
 for elem in list_of_hists:
-    if (elem.ReadObj().Class_Name() != "TH1D"): list_of_hists.Remove(elem)
+    if (elem.ReadObj().Class_Name() != "TH1D"):
+        list_of_hists.Remove(elem)
 
 ratio_th1_b_list = []
 ratio_th1_c_list = []
@@ -93,18 +133,23 @@ print("Target %s"%infoDict["Target"])
 
 index_h = 0
 for i_h,h in enumerate(inputfile_solid.GetListOfKeys()):
-    if (h.ReadObj().Class_Name() == "TH1D"):
+    if ((h.ReadObj().Class_Name() == "TH1D") and ("Corr_Reconstru" in h.GetName())): ## ADD SUPPORT FOR ALL CORRECTIONS!
         hist_solid = h.ReadObj()
         hist_name = h.GetName()
         hist_D = inputfile_D.Get(hist_name) # Corr_Reconstru_Q0N0Z0_fold
 
+        tmp_name = "_".join(h.GetName().split("_")[1:-2]) # Reconstru
         bin_name = hist_name.split("_")[2] # Q0N0Z0
 
-        # Get covariance matrix
-        cov_matrix_X = inputfile_solid.Get("%s_covM"%(bin_name))
-        cov_matrix_D = inputfile_D.Get("%s_covM"%(bin_name))
-
         for i_f,f in enumerate(list_func_names):
+            # Get covariance matrix
+            name_cov = "%s_covM"%(bin_name)
+            if "L" in f:
+                name_cov+="L"
+
+            cov_matrix_X = inputfile_solid.Get(name_cov)
+            cov_matrix_D = inputfile_D.Get(name_cov)
+
             fit_solid = hist_solid.GetFunction(f)
             par0_X = fit_solid.GetParameter(0)
             par1_X = fit_solid.GetParameter(1)
@@ -164,15 +209,14 @@ gStyle.SetOptStat(0)
 canvas.SetGrid(0,1)
 
 ### Ratio of the ratios b/a and c/a -> Solid target / D target
-outputPath = myStyle.getOutputDir("ParameterRatio",infoDict["Target"],rootpath)
-outputFile = TFile("%s%s_ParameterRatio_D%s_%s%s.root"%(outputPath,nameFormatted,solid_mix,name_ext,ext_error),"RECREATE")
-# canvas.SetLogy(0)
+outputFile = TFile(outputPath+outputROOT,"RECREATE")
 
 ymin = 0.001
 ymax = 1.2
 for e,elem in enumerate(list_func_names):
     if ("L" in elem): name_ext = "L"
     elif ("R" in elem): name_ext = "R"
+    if ("F" in fit_type): name_ext = "F"
 
     hist_b = ratio_th1_b_list[e]
     hist_b.SetMinimum(ymin)
@@ -181,10 +225,11 @@ for e,elem in enumerate(list_func_names):
     hist_b.Write()
     hist_b.Draw("hist e")
 
-    myStyle.DrawPreliminaryInfo("Parameters ratio D%s %s"%(solid_mix,name_ext))
+    myStyle.DrawPreliminaryInfo("Ratio over D%s %s"%(solid_targ,fit_type))
     myStyle.DrawTargetInfo(nameFormatted, "Data")
 
-    canvas.SaveAs("%s%s-RatioOverD%s_%s_b%s.gif"%(outputPath,nameFormatted,solid_mix,name_ext,ext_error))
+    outputName = myStyle.getPlotsFile("RatioOverD%s_B"%solid_targ, dataset, "gif", name_ext)
+    canvas.SaveAs(outputPath+outputName)
     canvas.Clear()
 
     hist_c = ratio_th1_c_list[e]
@@ -194,10 +239,11 @@ for e,elem in enumerate(list_func_names):
     hist_c.Write()
     hist_c.Draw("hist e")
 
-    myStyle.DrawPreliminaryInfo("Parameters ratio D%s %s"%(solid_mix,name_ext))
+    myStyle.DrawPreliminaryInfo("Ratio over D%s %s"%(solid_targ,fit_type))
     myStyle.DrawTargetInfo(nameFormatted, "Data")
 
-    canvas.SaveAs("%s%s-RatioOverD%s_%s_c%s.gif"%(outputPath,nameFormatted,solid_mix,name_ext,ext_error))
+    outputName = myStyle.getPlotsFile("RatioOverD%s_C"%solid_targ, dataset, "gif", name_ext)
+    canvas.SaveAs(outputPath+outputName)
     canvas.Clear()
 
 outputFile.Write()

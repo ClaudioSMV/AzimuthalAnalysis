@@ -3,8 +3,6 @@ import ROOT
 import os
 import optparse
 import myStyle
-import math
-import numpy as np
 
 gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
@@ -20,39 +18,60 @@ parser.add_option('-D', dest='Dataset', default = "", help="Dataset in format <t
 parser.add_option('-p', dest='rootpath', default = "", help="Add path to files, if needed")
 parser.add_option('-a', dest='saveAll', action='store_true', default = False, help="Save All plots")
 parser.add_option('-J', dest='JLabCluster', action='store_true', default = False, help="Use folder from JLab_cluster")
-parser.add_option('-e', dest='errorFull', action='store_true', default = False, help="Use FullError")
+parser.add_option('-i', dest='inputCuts', default = "", help="Add input cuts Xf_Yb_...")
+parser.add_option('-o', dest='outputCuts', default = "", help="Add output cuts FE_Z_P_...")
 
+parser.add_option('-e', dest='errorFull', action='store_true', default = False, help="Use FullError")
 parser.add_option('-Z', dest='useZh',  action='store_true', default = False, help="Use bin in Zh, integrate Pt2")
 parser.add_option('-P', dest='usePt2', action='store_true', default = False, help="Use bin in Pt2, integrate Zh")
 
-# IDEA: input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
+# input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
 
 dataset = options.Dataset
 rootpath = options.rootpath
 saveAll = options.saveAll
-if options.JLabCluster: rootpath = "JLab_cluster"
-ext_error = "_FullErr" if options.errorFull else ""
+isJLab = options.JLabCluster
+
+infoDict = myStyle.getDictNameFormat(dataset)
+nameFormatted = myStyle.getNameFormatted(dataset)
+
+## Cuts
+input_cuts = options.inputCuts
+plots_cuts = options.inputCuts + "_" + options.outputCuts
+if options.errorFull:
+    input_cuts+="_FE"
+    plots_cuts+="_FE"
 
 useZh = options.useZh
 usePt2 = options.usePt2
-if (not useZh) and (not usePt2): print("Using default binning!")
+if "_Z_" in myStyle.getCutStrFromStr(options.outputCuts):
+    useZh = True
+if "_P_" in myStyle.getCutStrFromStr(options.outputCuts):
+    usePt2 = True
+
 if (useZh) and (usePt2):
     print("Two binning selected. Please, choose only one of the options!")
     exit()
+elif useZh:
+    plots_cuts+="_Zx"
+elif usePt2:
+    plots_cuts+="_Px"
+else:
+    print("Using default x binning!")
 
-infoDict = myStyle.getNameFormattedDict(dataset)
-
-inputPath = myStyle.getInputFile("Correction",dataset,rootpath) # Corrected_Fe_B0_2D.root
-inputPath = myStyle.addBeforeRootExt(inputPath,ext_error)
+## Input
+inputPath = myStyle.getOutputFileWithPath("Correction", dataset, input_cuts, isJLab, False) # "../output/"
 inputfile = TFile(inputPath,"READ")
 
-outputPath = myStyle.getOutputDir("Correction",infoDict["Target"],rootpath)
+## Output
+outputPath = myStyle.getPlotsFolder("Correction", plots_cuts, infoDict["Target"], isJLab)
+outputROOT = myStyle.getPlotsFile("Corrected", dataset, "root")
 
 histCorr_Reconstru = inputfile.Get("Corr_Reconstru")
 histCorr_ReMtch_mc = inputfile.Get("Corr_ReMtch_mc")
 histCorr_ReMtch_re = inputfile.Get("Corr_ReMtch_re")
-histRaw                 = inputfile.Get("Raw_data")
+histRaw            = inputfile.Get("Raw_data")
 
 inputTHnSparse_list = [histCorr_Reconstru, histCorr_ReMtch_mc, histCorr_ReMtch_re, histRaw]
 prefixType = ["Correction", "Corr GoodGen_mc", "Corr GoodGen_rec", "Raw data"]
@@ -63,6 +82,7 @@ default_conf = [1,1,0,0] # 2D bins -> Q2 and Nu, integrate Zh and Pt2
 this_conf = [1,1,0,0]
 hadronic_bin_name = ""
 
+### REVISIT THIS!
 # Set default shown binning by BinningType
 if (infoDict["BinningType"] == 0): # 0: Small binning
     default_conf[2] = 0
@@ -86,15 +106,15 @@ elif (usePt2):
 else:
     this_conf = default_conf
 
-# for i in range(0,outDim):
+totalsize = 1
 for i,i_bool in enumerate(this_conf):
     if i_bool:
         nbins = histCorr_Reconstru.GetAxis(i).GetNbins()
+        totalsize*=nbins
         bins_list.append(nbins)
     else:
         bins_list.append(1)
 
-totalsize = np.prod(bins_list)
 names_list = []
 Proj1DTHnSparse_list = [[],[],[],[]]
 symbol_list = ["Q","N","Z","P"]
@@ -136,8 +156,8 @@ gStyle.SetOptStat(0)
 
 
 # Plot 2D histograms
-nameFormatted = myStyle.getNameFormatted(dataset)
-outputfile = TFile(outputPath+nameFormatted+hadronic_bin_name+ext_error+".root","RECREATE")
+# outputfile = TFile(outputPath+nameFormatted+hadronic_bin_name+ext_error+".root","RECREATE")
+outputfile = TFile(outputPath+outputROOT,"RECREATE")
 for i,info in enumerate(names_list):
     for p,proj in enumerate(Proj1DTHnSparse_list):
         if (("Good" in prefixType[p]) and (not saveAll)): continue
@@ -171,7 +191,10 @@ for i,info in enumerate(names_list):
         myStyle.DrawTargetInfo(nameFormatted, "Data")
         myStyle.DrawBinInfo(info, infoDict["BinningType"])
 
-        canvas.SaveAs(outputPath+nameFormatted+hadronic_bin_name+"-"+this_proj.GetName()+ext_error+".gif")
+        histName = "_".join(this_proj.GetName().split("_")[0:-1]) # Corr_A_B_Q1N2 -> Corr_A_B
+        outputName = myStyle.getPlotsFile(histName, dataset, "gif", info)
+        canvas.SaveAs(outputPath+outputName)
+        # canvas.SaveAs(outputPath+nameFormatted+hadronic_bin_name+"-"+this_proj.GetName()+ext_error+".gif")
         this_proj.Write()
         htemp.Delete()
 

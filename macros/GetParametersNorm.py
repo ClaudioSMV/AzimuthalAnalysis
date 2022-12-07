@@ -1,10 +1,7 @@
 from ROOT import TFile,TTree,TCanvas,TH1I,TH1D,TH1F,TH2D,TH2F,TLatex,TMath,TColor,TLegend,TEfficiency,TGraphAsymmErrors,gROOT,gPad,TF1,gStyle,kBlack,kWhite,TH1
 import ROOT
-import os
 import optparse
 import myStyle
-import math
-import numpy as np
 
 gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
@@ -26,46 +23,66 @@ def GetMatrixElem(matrix, row, col):
 
 # Construct the argument parser
 parser = optparse.OptionParser("usage: %prog [options]\n")
-# parser.add_option('-x','--xlength', dest='xlength', default = 4.0, help="X axis range [-x, x]")
-# parser.add_option('-y','--ylength', dest='ylength', default = 200.0, help="Y axis upper limit")
 parser.add_option('-D', dest='Dataset', default = "", help="Dataset in format <target>_<binType>_<Ndims>")
 parser.add_option('-p', dest='rootpath', default = "", help="Add path to files, if needed")
 parser.add_option('-J', dest='JLabCluster', action='store_true', default = False, help="Use folder from JLab_cluster")
-parser.add_option('-F', dest='fold', action='store_true', default = False, help="Use fold tails (default does not)")
+parser.add_option('-i', dest='inputCuts', default = "", help="Add input cuts Xf_Yb_...")
+parser.add_option('-o', dest='outputCuts', default = "", help="Add output cuts FE_...")
 parser.add_option('-v', dest='verbose', action='store_true', default = False, help="Print values")
+
+parser.add_option('-F', dest='fold', action='store_true', default = False, help="Use fold tails (default does not)")
 parser.add_option('-e', dest='errorFull', action='store_true', default = False, help="Use FullError")
 
-# IDEA: input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
+# input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
 
-# saveAll = options.saveAll
 rootpath = options.rootpath
 dataset = options.Dataset
-fold = options.fold
+isJLab = options.JLabCluster
 verbose = options.verbose
 
-infoDict = myStyle.getNameFormattedDict(dataset) # ["Target", "BinningType", "NDims", "Cuts"]
+useFold = options.fold
+if "Fold" in myStyle.getCutStrFromStr(options.outputCuts):
+    useFold = True
+fit_type = "Fd" if useFold else "LR"
+
+infoDict = myStyle.getDictNameFormat(dataset)
 nameFormatted = myStyle.getNameFormatted(dataset)
 
-if options.JLabCluster: rootpath = "JLab_cluster"
-ext_error = "_FullErr" if options.errorFull else ""
+## Cuts
+input_cuts = options.inputCuts
+plots_cuts = options.inputCuts + "_" + options.outputCuts
+if options.errorFull:
+    input_cuts+="_FE"
+    plots_cuts+="_FE"
 
-# list_solid_targets = ["C", "Fe", "Pb"]
-list_func_names = ["crossSection"] if fold else ["crossSectionL", "crossSectionR"]
-name_ext = "Fold" if len(list_func_names)==1 else "LR"
+input_cuts+="_"+fit_type # Add Fold or LR extension
+plots_cuts+="_"+fit_type
 
-inputPath = myStyle.getOutputDir("Fit",infoDict["Target"],rootpath)
+## Input
+inputPath = myStyle.getPlotsFolder("Fit", input_cuts, infoDict["Target"], isJLab, False) # "../output/"
+inputROOT = myStyle.getPlotsFile("Fit", dataset, "root", fit_type)
+inputfile = TFile(inputPath+inputROOT,"READ")
 
-inputfile = TFile("%sFitFold_%s%s.root"%(inputPath,nameFormatted,ext_error),"READ") if fold else TFile("%sFitBothTails_%s%s.root"%(inputPath,nameFormatted,ext_error),"READ")
+## Output
+outputPath = myStyle.getPlotsFolder("FitParametersNorm", plots_cuts, infoDict["Target"], isJLab)
+outputROOT = myStyle.getPlotsFile("Parameters", dataset, "root", fit_type)
+
+
+list_func_names = ["crossSectionR"]
+if not useFold:
+    list_func_names.append("crossSectionL")
 
 list_of_hists = inputfile.GetListOfKeys().Clone()
 for elem in list_of_hists:
-    if (elem.ReadObj().Class_Name() != "TH1D"): list_of_hists.Remove(elem)
+    if (elem.ReadObj().Class_Name() != "TH1D"):
+        list_of_hists.Remove(elem)
 
 th1_b_norm_pos_list = []
 th1_b_norm_neg_list = []
 th1_c_norm_pos_list = []
 th1_c_norm_neg_list = []
+
 for e,elem in enumerate(list_func_names):
     th1_b_norm_pos = TH1D("f_Norm_B%i_Pos"%e,";Bin;b_{%s}/a_{%s}"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
     th1_b_norm_pos_list.append(th1_b_norm_pos)
@@ -84,16 +101,21 @@ print("Target %s"%infoDict["Target"])
 
 index_h = 0
 for i_h,h in enumerate(inputfile.GetListOfKeys()): #list_of_hists):
-    if (h.ReadObj().Class_Name() == "TH1D"):
+    # if (h.ReadObj().Class_Name() == "TH1D"):
+    if ((h.ReadObj().Class_Name() == "TH1D") and ("Corr_Reconstru" in h.GetName())): ## ADD SUPPORT FOR ALL CORRECTIONS!
         hist_targ = h.ReadObj()
-        hist_name = h.GetName() # Corr_Reconstru_Q0N0Z0_fold
+        hist_name = h.GetName() # Corr_Reconstru_Q0N0Z0_type (type: Fd or LR)
 
-        bin_name = hist_name.split("_")[2] # Q0N0Z0
-
-        # Get covariance matrix
-        cov_matrix = inputfile.Get("%s_covM"%(bin_name))
+        tmp_name = "_".join(h.GetName().split("_")[1:-2]) # Reconstru
+        bin_name = hist_name.split("_")[-2] # Q0N0Z0
 
         for i_f,f in enumerate(list_func_names):
+            # Get covariance matrix
+            name_cov = "%s_covM"%(bin_name)
+            if "L" in f:
+                name_cov+="L"
+            cov_matrix = inputfile.Get(name_cov)
+
             fit_targ = hist_targ.GetFunction(f)
             par0 = fit_targ.GetParameter(0)
             par1 = fit_targ.GetParameter(1)
@@ -144,19 +166,15 @@ gStyle.SetOptStat(0)
 canvas.SetGrid(0,1)
 
 ### Ratio b/a and c/a per target
-outputPath = myStyle.getOutputDir("Parameters",infoDict["Target"],rootpath)
-outputFile = TFile("%s%s_ParametersNorm_%s%s.root"%(outputPath,nameFormatted,name_ext,ext_error),"RECREATE")
+outputFile = TFile(outputPath+outputROOT,"RECREATE")
 
 ymin = 0.001
 ymax = 1.2
 # canvas.SetLogy(0)
 for e,elem in enumerate(list_func_names):
-    # sufix_name = "Fold"
-    # if ("L" in elem): sufix_name = "L"
-    # elif ("R" in elem): sufix_name = "R"
-
     if ("L" in elem): name_ext = "L"
     elif ("R" in elem): name_ext = "R"
+    if ("F" in fit_type): name_ext = "F"
 
     ## Ratio b/a
     legend_b = TLegend(1-myStyle.GetMargin()-0.35,1-myStyle.GetMargin()-0.12, 1-myStyle.GetMargin()-0.05,1-myStyle.GetMargin()-0.02)
@@ -187,9 +205,11 @@ for e,elem in enumerate(list_func_names):
     hist_b_neg.Draw("hist e same")
 
     legend_b.Draw()
-    myStyle.DrawPreliminaryInfo("Parameters normalized %s"%(name_ext))
+    myStyle.DrawPreliminaryInfo("Parameters normalized %s"%(fit_type))
     myStyle.DrawTargetInfo(nameFormatted, "Data")
-    canvas.SaveAs("%s%s-ParNorm%s_b%s.gif"%(outputPath,nameFormatted,name_ext,ext_error))
+
+    outputName = myStyle.getPlotsFile("ParameterNorm_B", dataset, "gif", name_ext)
+    canvas.SaveAs(outputPath+outputName)
     canvas.Clear()
 
     ## Ratio c/a
@@ -222,10 +242,11 @@ for e,elem in enumerate(list_func_names):
     hist_c_neg.Draw("hist e same")
 
     legend_c.Draw()
-    myStyle.DrawPreliminaryInfo("Parameters normalized %s"%(name_ext))
+    myStyle.DrawPreliminaryInfo("Parameters normalized %s"%(fit_type))
     myStyle.DrawTargetInfo(nameFormatted, "Data")
 
-    canvas.SaveAs("%s%s-ParNorm%s_c%s.gif"%(outputPath,nameFormatted,name_ext,ext_error))
+    outputName = myStyle.getPlotsFile("ParameterNorm_C", dataset, "gif", name_ext)
+    canvas.SaveAs(outputPath+outputName)
     canvas.Clear()
 
 outputFile.Write()

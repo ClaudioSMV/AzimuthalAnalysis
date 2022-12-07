@@ -12,82 +12,189 @@ tsize=38 #35
 # Corrected_%s_B%i_%iD.root   ; <Target>,<_binIndex>,<_binNdims (non-integrated dims)>
 # ClosureTest_%s_B%i_%iD.root ; <Target>,<_binIndex>,<_binNdims (non-integrated dims)>
 
-def getNameFormattedDict(nameFormat): #input: <target>_<binningType number>_<non-integrated dimensions>_<extra cuts>
+def getDictNameFormat(nameFormat):                  #input: <targ>_<nBin>_<nDim>   --->   <targ>_<nBin>B<nDim>
     targetDict = {}
-    targetList = nameFormat.split("_")
-    targetDict["Target"] = targetList[0]
-    targetDict["BinningType"] = int(targetList[1])
-    targetDict["NDims"] = int(targetList[2])
-    targetDict["Cuts"] = []
-    if len(targetList)>3:
-        numElem = len(targetList)
-        for i in range(len(targetDict)-1,numElem):
-            targetDict["Cuts"].append(targetList[i])
-    return targetDict
+    targetList = nameFormat.split("_")              # { <targ> , <nBin>, <nDim> }
+    targetDict["Target"] = targetList[0]            # <targ>
+    # binList = targetList[1].split("B")            # { <nBin> , <nDim> }
+    targetDict["BinningType"] = int(targetList[1])  # <nBin>
+    targetDict["NDims"] = int(targetList[2])        # <nDim>
+    # targetDict["Cuts"] = []
+    # if len(targetList)>3:
+    #     numElem = len(targetList)
+    #     for i in range(len(targetDict)-1,numElem):
+    #         targetDict["Cuts"].append(targetList[i])
+    return targetDict                               # <targ>_<nBin>B<nDim>
 
-def getNameFormatted(nameFormat, isAcc = False):
-    formDict = getNameFormattedDict(nameFormat)
-    fileName = "%s_B%i"%(formDict["Target"],formDict["BinningType"])
+def getNameFormatted(nameFormat, isAcc = False): #input: Fe_0_1 ; <targ>_<nBin>_<nDim>
+    formDict = getDictNameFormat(nameFormat)
+    fileName = "%s_%iB"%(formDict["Target"],formDict["BinningType"])
     if (not isAcc) and formDict["NDims"]:
-        fileName+="_%iD"%(formDict["NDims"])
-    if formDict["Cuts"]:
-        for e in formDict["Cuts"]:
-            fileName+="_"+e
+        fileName+="%i"%(formDict["NDims"])
+    # if formDict["Cuts"]:
+    #     for e in formDict["Cuts"]:
+    #         fileName+="_"+e
 
-    return fileName #output: <target>_B<binningType number>_<non-integrated dimensions>D_<extra cuts>
+    return fileName #output: Fe_0B1 ; <target>_<binningType number>B<non-integrated dimensions>
 
-def addBeforeRootExt(path, before_dot):
-    new_path = path.split(".root")[0]
-    return new_path + before_dot + ".root"
+def addBeforeRootExt(path, before_dot, other_extension = "root"):
+    new_path = path.split(".%s"%other_extension)[0]
+    return new_path + before_dot + "." + other_extension
+
+### Cuts
+dict_Cut2Code = {"XF": "Xf", "Xf": "Xf",
+                "FErr": "FE", "FullError": "FE", "FE": "FE",
+                "Z": "Zx", "Zx": "Zx",
+                "P": "Px", "Px": "Px",
+                "Fold": "Fd", "Fd": "Fd",
+                "LR": "LR",
+                # "Left": "Lf", "Lf": "Lf",
+                # "Right": "Rg", "Rg": "Rg",
+                "MixD": "MD", "MD": "MD",
+                }
+
+dict_CutCode2Name = {"Xf": "Xf", "FE": "FErr", "Zx": "Z", "Px": "P", "Fd": "Fold", "LR": "LR", "MD": "MixD", #"Lf": "Left", "Rg": "Right",
+                    }
+cutMasterKey = "Xf0FE0Zx0Px0Fd0LR0MD0" # Yh0
+
+def getCutStrFormat(list_cuts):
+    cut_str = ""
+    for c in list_cuts:
+        if (c[-1] == "0" or c == ""):
+            continue
+        this_cut = c
+        if (len(c) == 3):
+            this_cut = c[0:2]
+        cut_str+="_"+dict_CutCode2Name[this_cut]
+    return cut_str
+
+def getCutStrFromStr(cut_str = ""): # Aaaa_Bbb_ccc_Ddd
+    # Format: AA0BB1CC0EE1
+    #           AA: First two letters of the cut name
+    #           0 or 1: Do (1) or don't (0) apply cut
+    this_Key = cutMasterKey
+    this_list = this_Key.split("0")
+    this_list.remove("")
+
+    ref_list = list(this_list)
+
+    list_input = cut_str.split("_")
+    while ("" in list_input):
+        list_input.remove("") # = cut_str.split("_")[1:-1]
+
+    for elem in list_input:
+        if dict_Cut2Code[elem]:
+            this_index = ref_list.index(dict_Cut2Code[elem])
+            this_list[this_index] = dict_Cut2Code[elem]+"1"
+        else:
+            print("Cut not found! : "%(elem))
+
+    for elem in this_list:
+        if (elem[-1] != "1"):
+            this_index = ref_list.index(elem)
+            this_list[this_index] = elem+"0"
+    # print(this_list)
+    this_str = getCutStrFormat(this_list)
+    # print(this_str)
+    return this_str
+
 
 ### Paths and directories' functions
-def getInputFile(nameMethod,nameFormat, extra_path=""):
-    if extra_path: extra_path+="/"
-    indir = "../output/%s%s/" % (extra_path,nameMethod) # ex. Acceptance, Correction
+### /output/
+def getOutputFolder(nameMethod, extraCuts = "", JLab_cluster = True, isOutput = True):
+    this_folder = "../output/"
+    if JLab_cluster: this_folder+="JLab_cluster/"
 
-    fileName = getNameFormatted(nameFormat)
-    # Default as ClosureTest_Fe_B0_2D
-    file = "%s_%s"%(nameMethod,fileName)
+    these_cuts = getCutStrFromStr(extraCuts)
+    this_folder+=nameMethod+these_cuts+"/"
+    if isOutput:
+        CreateFolder(this_folder, "", False, False)
+    return this_folder
+
+def getOutputFile(nameMethod, nameFileExt):
     if nameMethod=="Acceptance":
-        fileName = getNameFormatted(nameFormat, True)
-        file = "Acceptance_%s"%(fileName)
-    elif nameMethod=="Correction": file = "Corrected_%s"%(fileName)
+        this_file = "Acceptance_"+getNameFormatted(nameFileExt, True)+".root"
+    elif nameMethod=="Correction":
+        this_file = "Corrected_"+getNameFormatted(nameFileExt, False)+".root"
     elif nameMethod=="Hist2D":
-        file = "KinVars_%s_"%(getNameFormattedDict(nameFormat)["Target"])
-        return indir+file # Still needs "data" or "hsim" + .root
-    return indir+file+".root"
+        this_file = "Hist2D_"+getDictNameFormat(nameFileExt)["Target"]+"_.root" # Remember to add "data" or "hsim" with addBeforeRootExt()
+    else:
+        this_file = nameMethod+"_"+getNameFormatted(nameFileExt, False)+".root"
 
-def getOutputDir(nameMethod, target="", extra_path=""):
-    if extra_path: extra_path+="/"
-    outdir = "../macros/plots/%s%s/" % (extra_path,nameMethod)
-    if target: outdir+=target+"/"
-    if not os.path.exists(outdir):
-        os.makedirs(outdir)
-    return outdir
+    return this_file
 
-def CreateFolder(outdir, title, overwrite = False):
+def getOutputFileWithPath(nameMethod, nameFileExt, extraCuts = "", JLab_cluster = True, isOutput = True):
+    this_path = getOutputFolder(nameMethod, extraCuts, JLab_cluster, isOutput) # "../<out>/"
+    this_file = getOutputFile(nameMethod, nameFileExt)
+
+    return this_path+this_file
+
+### /plots/
+def getPlotsFolder(nameMethod, extraCuts = "", extraPath = "", JLab_cluster = True, isOutput = True):
+    this_folder = "../macros/plots/"
+    if JLab_cluster: this_folder+="JLab_cluster/"
+
+    these_cuts = getCutStrFromStr(extraCuts)
+    this_folder+=nameMethod+these_cuts+"/"
+    if extraPath:
+        this_folder+=extraPath+"/" # <target>/
+    if isOutput:
+        CreateFolder(this_folder, "", False, False)
+    return this_folder
+
+def getPlotsFile(nameMethod, nameFileExt, fileExt = "root", plotBin = ""):
+    this_file = nameMethod+"_"+getNameFormatted(nameFileExt, False)
+    if (fileExt == "root"):
+        if plotBin:
+            this_file+="-"+plotBin+"."+fileExt  # Corr_Reconstructed_Fe_0B1-Fd.root
+        else:
+            this_file+="."+fileExt              # Corr_Reconstructed_Fe_0B1.root
+    else:
+        if plotBin:
+            this_file+="-"+plotBin+"."+fileExt  # Corr_Reconstructed_Fe_0B1-Q0N0.gif (.pdf)
+        else:
+            this_file+="."+fileExt  # Corr_Reconstructed_Fe_0B1.gif (.pdf)
+
+    return this_file
+
+### /plots/Summary
+def getSummaryPath(nameMethod, fileExt = "pdf", cuts = "", JLab_cluster = True):
+    this_folder = "../macros/plots/"
+    if JLab_cluster: this_folder+="JLab_cluster/"
+    this_folder+="Summary/"
+
+    if not os.path.exists(this_folder):
+        CreateFolder(this_folder, "", False, False)
+
+    this_file = nameMethod
+    if (cuts):
+        these_cuts = getCutStrFromStr(cuts)
+        this_file+=these_cuts
+
+    this_file+="."+fileExt
+    return this_folder+this_file
+
+###
+def CreateFolder(outdir, title, overwrite = False, enumerate = True):
     outdir2 = os.path.join(outdir,title)
 
     if overwrite:
-        os.mkdir(outdir2)
+        os.makedirs(outdir2)
+        print(outdir2,"created.")
     else:
         if not os.path.exists(outdir2):
-                os.mkdir(outdir2)
-        else:
+            os.makedirs(outdir2)
+            print(outdir2,"created.")
+        elif enumerate:
             i = 1
             while(os.path.exists(outdir2)):
                     outdir2 = outdir2[0:-2] + str(i) + outdir2[-1]
                     i+=1
             os.mkdir(outdir2)
-    print(outdir2,"created.")
+            print(outdir2,"created.")
+        else:
+            print(outdir2," already exists!")
     return outdir2
-
-def GetPlotsDir(outdir, macro_title):
-    outdir_tmp = os.path.join(outdir, macro_title)
-    if not (os.path.exists(outdir_tmp)):
-        outdir_tmp = CreateFolder(outdir, macro_title, True)
-
-    return outdir_tmp
 
 ### Style functions
 def ForceStyle():
@@ -169,11 +276,11 @@ def GetBinInfo(bin_name="X0X0", bin_type=0):
     tmp_txt = ""
 
     this_dict = all_dicts[bin_type]
-    for i,c in enumerate(bin_name):
-        if i%2 == 0:
-            num_index = int(bin_name[i+1])
-            vmin = this_dict[c]['Bins'][num_index]
-            vmax = this_dict[c]['Bins'][num_index+1]
+    for i,c in enumerate(bin_name): # "A0B1"
+        if i%2 == 0: # A , B
+            num_index = int(bin_name[i+1]) # 0 , 1
+            vmin = this_dict[c]['Bins'][num_index] # 0 , 1
+            vmax = this_dict[c]['Bins'][num_index+1] # 1 , 2
             tmp_txt+="%.2f < %s < %.2f"%(vmin, this_dict[c]['Name'], vmax)
             if i<(len(bin_name)-2): tmp_txt+="; "
     return tmp_txt
@@ -205,22 +312,32 @@ def GetColors(color_blind = False):
 color_target = {'C': GetColors(True)[0], 'Fe': GetColors(True)[2], 'Pb': GetColors(True)[3], 'D': GetColors(True)[4],
                 'DC': GetColors(True)[1], 'DFe': GetColors(True)[5], 'DPb': GetColors(True)[6]}
 
-bin_dict = {'Q': {'Name': "Q^{2}",      'Bins': [1.00, 1.30, 1.80, 4.10]},
-            'N': {'Name': "#nu",        'Bins': [2.20, 3.20, 3.70, 4.20]},
-            'Z': {'Name': "Z_{h}",      'Bins': [0.00, 0.15, 0.25, 0.40, 0.70, 1.00]},
-            'P': {'Name': "P_{t}^{2}",  'Bins': [0.00, 0.03, 0.06, 0.10, 0.18, 1.00]}}
+bin_dict        = { 'Q': {'Name': "Q^{2}",      'Bins': [1.00, 1.30, 1.80, 4.10]},
+                    'N': {'Name': "#nu",        'Bins': [2.20, 3.20, 3.70, 4.20]},
+                    'Z': {'Name': "Z_{h}",      'Bins': [0.00, 0.15, 0.25, 0.40, 0.70, 1.00]},
+                    'P': {'Name': "P_{t}^{2}",  'Bins': [0.00, 0.03, 0.06, 0.10, 0.18, 1.00]}}
 
-bin_dict_SplitZ = {'Q': {'Name': "Q^{2}",      'Bins': [1.00, 1.30, 1.80, 4.10]},
-                   'N': {'Name': "#nu",        'Bins': [2.20, 3.20, 3.70, 4.20]},
-                   'Z': {'Name': "Z_{h}",      'Bins': [0.00, 0.15, 0.25, 0.40, 0.70, 0.90, 1.00]},
-                   'P': {'Name': "P_{t}^{2}",  'Bins': [0.00, 0.03, 0.06, 0.10, 0.18, 1.00]}}
+bin_dict_SplitZ = { 'Q': {'Name': "Q^{2}",      'Bins': [1.00, 1.30, 1.80, 4.10]},
+                    'N': {'Name': "#nu",        'Bins': [2.20, 3.20, 3.70, 4.20]},
+                    'Z': {'Name': "Z_{h}",      'Bins': [0.00, 0.15, 0.25, 0.40, 0.70, 0.90, 1.00]},
+                    'P': {'Name': "P_{t}^{2}",  'Bins': [0.00, 0.03, 0.06, 0.10, 0.18, 1.00]}}
 
-bin_dict_ThinZh = {'Q': {'Name': "Q^{2}",      'Bins': [1.00, 1.30, 1.80, 4.10]},
-                   'N': {'Name': "#nu",        'Bins': [2.20, 3.20, 3.70, 4.20]},
-                   'Z': {'Name': "Z_{h}",      'Bins': [0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.00]},
-                   'P': {'Name': "P_{t}^{2}",  'Bins': [0.00, 0.03, 0.06, 0.10, 0.18, 1.00]}}
+bin_dict_ThinZh = { 'Q': {'Name': "Q^{2}",      'Bins': [1.00, 1.30, 1.80, 4.10]},
+                    'N': {'Name': "#nu",        'Bins': [2.20, 3.20, 3.70, 4.20]},
+                    'Z': {'Name': "Z_{h}",      'Bins': [0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.00]},
+                    'P': {'Name': "P_{t}^{2}",  'Bins': [0.00, 0.03, 0.06, 0.10, 0.18, 1.00]}}
 
-all_dicts = [bin_dict, bin_dict_SplitZ, bin_dict_ThinZh]
+bin_dict_ThinPt = { 'Q': {'Name': "Q^{2}",      'Bins': [1.00, 1.30, 1.80, 4.10]},
+                    'N': {'Name': "#nu",        'Bins': [2.20, 3.20, 3.70, 4.20]},
+                    'Z': {'Name': "Z_{h}",      'Bins': [0.00, 0.15, 0.25, 0.40, 0.70, 0.90, 1.00]},
+                    'P': {'Name': "P_{t}^{2}",  'Bins': [0.047, 0.073, 0.112, 0.173, 0.267, 0.411, 0.633, 1.0]}}
+
+bin_dict_ThinZP = { 'Q': {'Name': "Q^{2}",      'Bins': [1.00, 1.30, 1.80, 4.10]},
+                    'N': {'Name': "#nu",        'Bins': [2.20, 3.20, 3.70, 4.20]},
+                    'Z': {'Name': "Z_{h}",      'Bins': [0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.00]},
+                    'P': {'Name': "P_{t}^{2}",  'Bins': [0.047, 0.073, 0.112, 0.173, 0.267, 0.411, 0.633, 1.0]}}
+
+all_dicts = [bin_dict, bin_dict_SplitZ, bin_dict_ThinZh, bin_dict_ThinPt, bin_dict_ThinZP]
 
 kin_vars_list = [   ["Q2", "Nu", "Zh", "Pt2", "PhiPQ"],
                     ["Q^{2}", "#nu", "Z_{h}", "P_{t}^{2}", "#phi_{PQ}"],
