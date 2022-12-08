@@ -39,11 +39,11 @@ fi
 #####
 # Cuts
 #####
-PREV_CUT=""
-CORR_CUT=""
-FITS_CUT=""
-PAR_NCUT=""
-PAR_RCUT=""
+PREV_CUT="_"
+CORR_CUT="_"
+FITS_CUT="_"
+PAR_NCUT="_"
+PAR_RCUT="_"
 
 ### Before Corrected
 if [[ $CUTINFO == *"Xf"* ]]; then
@@ -101,8 +101,8 @@ fi
 # echo $PAR_RCUT
 
 for t in "${TAR_LIST[@]}"; do
-    python PlotCorrection.py        -D ${t}_${BINNAME}_${BINNDIM} -i $PREV_CUT -o $CORR_CUT #-J
-    python PlotFit.py               -D ${t}_${BINNAME}_${BINNDIM} -i $CORR_CUT -o $FITS_CUT #-J
-    python GetParametersNorm.py     -D ${t}_${BINNAME}_${BINNDIM} -i $FITS_CUT -o $PAR_NCUT #-J
-    python GetParametersRatio.py    -D ${t}_${BINNAME}_${BINNDIM} -i $FITS_CUT -o $PAR_RCUT #-J
+    python PlotCorrection.py        -D ${t}_${BINNAME}_${BINNDIM} -i $PREV_CUT -o $CORR_CUT -J
+    python PlotFit.py               -D ${t}_${BINNAME}_${BINNDIM} -i $CORR_CUT -o $FITS_CUT -J
+    python GetParametersNorm.py     -D ${t}_${BINNAME}_${BINNDIM} -i $FITS_CUT -o $PAR_NCUT -J
+    python GetParametersRatio.py    -D ${t}_${BINNAME}_${BINNDIM} -i $FITS_CUT -o $PAR_RCUT -J
 done
