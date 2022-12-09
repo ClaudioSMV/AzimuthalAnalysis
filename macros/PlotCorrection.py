@@ -45,9 +45,10 @@ if options.errorFull:
 
 useZh = options.useZh
 usePt2 = options.usePt2
-if "_Z_" in myStyle.getCutStrFromStr(options.outputCuts):
+# print(myStyle.getCutStrFromStr(options.outputCuts))
+if "Z" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.outputCuts)):
     useZh = True
-if "_P_" in myStyle.getCutStrFromStr(options.outputCuts):
+if "P" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.outputCuts)):
     usePt2 = True
 
 if (useZh) and (usePt2):
@@ -106,6 +107,8 @@ elif (usePt2):
 else:
     this_conf = default_conf
 
+# print(this_conf)
+
 totalsize = 1
 for i,i_bool in enumerate(this_conf):
     if i_bool:
@@ -156,7 +159,6 @@ gStyle.SetOptStat(0)
 
 
 # Plot 2D histograms
-# outputfile = TFile(outputPath+nameFormatted+hadronic_bin_name+ext_error+".root","RECREATE")
 outputfile = TFile(outputPath+outputROOT,"RECREATE")
 for i,info in enumerate(names_list):
     for p,proj in enumerate(Proj1DTHnSparse_list):
@@ -194,7 +196,6 @@ for i,info in enumerate(names_list):
         histName = "_".join(this_proj.GetName().split("_")[0:-1]) # Corr_A_B_Q1N2 -> Corr_A_B
         outputName = myStyle.getPlotsFile(histName, dataset, "gif", info)
         canvas.SaveAs(outputPath+outputName)
-        # canvas.SaveAs(outputPath+nameFormatted+hadronic_bin_name+"-"+this_proj.GetName()+ext_error+".gif")
         this_proj.Write()
         htemp.Delete()
 

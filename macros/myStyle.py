@@ -98,6 +98,11 @@ def getCutStrFromStr(cut_str = ""): # Aaaa_Bbb_ccc_Ddd
     # print(this_str)
     return this_str
 
+def getCutsAsList(this_cut_str): # Intro should be output of getCutStrFormat()
+    this_list = this_cut_str.split("_")
+    while ("" in this_list):
+        this_list.remove("")
+    return this_list
 
 ### Paths and directories' functions
 ### /output/

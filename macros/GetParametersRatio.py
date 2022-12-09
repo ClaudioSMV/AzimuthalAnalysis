@@ -76,9 +76,9 @@ plots_cuts+="_"+fit_type
 
 useZh = options.useZh
 usePt2 = options.usePt2
-if "_Z_" in myStyle.getCutStrFromStr(options.inputCuts):
+if "Z" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.inputCuts)):
     useZh = True
-if "_P_" in myStyle.getCutStrFromStr(options.inputCuts):
+if "P" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.inputCuts)):
     usePt2 = True
 
 if (useZh) and (usePt2):
