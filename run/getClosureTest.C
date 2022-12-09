@@ -3,7 +3,8 @@
 R__LOAD_LIBRARY(../include/Acceptance_C.so)
 #include "../include/Utility.h"
 
-void getClosureTest(std::string target = "Fe", int binName = 0, int binNdim = 1, std::string nfold = "*", bool useFullError = false)
+void getClosureTest(std::string target = "Fe", int binName = 0, int binNdim = 1, std::string cuts = "", std::string nfold = "*")
+// Cuts: "Xf": X Feynman; "FE": Full error
 {
     TChain ch("ntuple_sim");
     if (FileExists("../../clas-HSim"))
@@ -29,7 +30,7 @@ void getClosureTest(std::string target = "Fe", int binName = 0, int binNdim = 1,
     acc.setTargName(target);
     acc.setBinningType(binName);
     acc.setBinNdims(binNdim);
-    // acc.useCut_Xf();
-    if (useFullError) { acc.setFullError(); }
+    if ( strstr(cuts.c_str(), "Xf") ) { acc.useCut_Xf(); std::cout << "Using Xf cut" << std::endl; }
+    if ( strstr(cuts.c_str(), "FE") ) { acc.setFullError(); std::cout << "Using full error calculation" << std::endl; }
     acc.ClosureTest();
 }

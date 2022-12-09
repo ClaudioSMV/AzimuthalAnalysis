@@ -3,7 +3,8 @@
 R__LOAD_LIBRARY(../include/Acceptance_C.so)
 #include "../include/Utility.h"
 
-void getCorrection(std::string target = "Fe", int binName = 0, int binNdim = 1, std::string solid_target = "", bool useFullError = false)
+void getCorrection(std::string target = "Fe", int binName = 0, int binNdim = 1, std::string cuts = "", std::string solid_target = "")
+// Cuts: "Xf": X Feynman; "FE": Full error
 {
     TChain ch("ntuple_data");
     if (FileExists("../../clas-data"))
@@ -24,7 +25,7 @@ void getCorrection(std::string target = "Fe", int binName = 0, int binNdim = 1, 
         {
             ch.Add("../../clas-data/data_Pb1_light.root");
         }
-        else if (target=="D" && solid_target=="All")
+        else if (target=="D" && (solid_target=="All" || solid_target=="DS"))
         {
             ch.Add("../../clas-data/data_Fe1_light.root");
             ch.Add("../../clas-data/data_C1_light.root");
@@ -32,8 +33,8 @@ void getCorrection(std::string target = "Fe", int binName = 0, int binNdim = 1, 
         }
         else
         {
-            std::cout << "Deuterium target requires solid target information! (4th parameter)" << std::endl;
-            std::cout << "If you want to run over all solid targets for deuterium, use \"All\"" << std::endl;
+            std::cout << "Deuterium target requires solid target information! (5th parameter)" << std::endl;
+            std::cout << "If you want to run over all solid targets for deuterium use \"DS\"" << std::endl;
             return 0;
         }
     }
@@ -73,7 +74,7 @@ void getCorrection(std::string target = "Fe", int binName = 0, int binNdim = 1, 
     acc.setTargName(target, solid_target);
     acc.setBinningType(binName);
     acc.setBinNdims(binNdim);
-    // acc.useCut_Xf();
-    if (useFullError) { acc.setFullError(); }
+    if ( strstr(cuts.c_str(), "Xf") ) { acc.useCut_Xf(); std::cout << "Using Xf cut" << std::endl; }
+    if ( strstr(cuts.c_str(), "FE") ) { acc.setFullError(); std::cout << "Using full error calculation" << std::endl; }
     acc.Correction();
 }

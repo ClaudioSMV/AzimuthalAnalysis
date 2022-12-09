@@ -3,7 +3,8 @@
 R__LOAD_LIBRARY(../include/Acceptance_C.so)
 #include "../include/Utility.h"
 
-void getAcceptance(std::string target = "Fe", int binName = 0, int binNdim = 2, std::string nfold = "*")
+void getAcceptance(std::string target = "Fe", int binName = 0, std::string cuts = "", std::string nfold = "*")
+// Cuts: "Xf": X Feynman
 {
     TChain ch("ntuple_sim");
     if (FileExists("../../clas-HSim"))
@@ -28,6 +29,6 @@ void getAcceptance(std::string target = "Fe", int binName = 0, int binNdim = 2, 
     Acceptance acc(&ch);
     acc.setTargName(target);
     acc.setBinningType(binName);
-    // acc.useCut_Xf();
+    if ( strstr(cuts.c_str(), "Xf") ) { acc.useCut_Xf(); std::cout << "Using Xf cut" << std::endl; }
     acc.Loop();
 }
