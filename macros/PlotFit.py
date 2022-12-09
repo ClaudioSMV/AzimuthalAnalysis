@@ -53,25 +53,16 @@ plots_cuts+="_"+fit_type # Add Fold or LR extension
 inputPath = myStyle.getPlotsFolder("Correction", input_cuts, infoDict["Target"], isJLab, False) # "../output/"
 inputROOT = myStyle.getPlotsFile("Corrected", dataset, "root")
 inputfile = TFile(inputPath+inputROOT,"READ")
-# inputPath = myStyle.getOutputFileWithPath("Correction", dataset, input_cuts, isJLab) # "../output/"
-# inputfile = TFile(inputPath,"READ")
 
 ## Output
 outputPath = myStyle.getPlotsFolder("Fit", plots_cuts, infoDict["Target"], isJLab)
 outputROOT = myStyle.getPlotsFile("Fit", dataset, "root", fit_type)
-
-# inputPath = myStyle.getOutputDir("Correction",infoDict["Target"],rootpath)
-# nameFormatted = myStyle.getNameFormatted(dataset)
-# inputfile = TFile(inputPath+nameFormatted+ext_error+".root","READ")
-
-# outputPath = myStyle.getOutputDir("Fit",infoDict["Target"],rootpath)
 
 list_of_hists = inputfile.GetListOfKeys()
 
 canvas = TCanvas("cv","cv",1000,800)
 gStyle.SetOptStat(0)
 
-# outputfile = TFile("%sFitFold_%s%s.root"%(outputPath,nameFormatted,ext_error),"RECREATE")
 outputfile = TFile(outputPath+outputROOT,"RECREATE")
 # # FitBothTails_
 
@@ -171,7 +162,6 @@ for h in list_of_hists:
 
             outputName = myStyle.getPlotsFile("Fit_"+tmp_name, dataset, "gif",tmp_txt)
             canvas.SaveAs(outputPath+outputName)
-            # canvas.SaveAs(outputPath+"FitFold_"+nameFormatted+"_"+tmp_txt+ext_error+".gif")
             canvas.Clear()
 
 print("Fit parameters saved!")

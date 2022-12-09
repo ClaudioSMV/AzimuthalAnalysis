@@ -58,8 +58,9 @@ elif useZh:
     plots_cuts+="_Zx"
 elif usePt2:
     plots_cuts+="_Px"
-else:
-    print("Using default x binning!")
+elif infoDict["BinningType"] != 0:
+    print("Using Zx as default x binning!")
+    plots_cuts+="_Zx"
 
 ## Input
 inputPath = myStyle.getOutputFileWithPath("Correction", dataset, input_cuts, isJLab, False) # "../output/"
@@ -81,33 +82,29 @@ prefixType = ["Correction", "Corr GoodGen_mc", "Corr GoodGen_rec", "Raw data"]
 bins_list = [] # [3, 3, 10, 1]
 default_conf = [1,1,0,0] # 2D bins -> Q2 and Nu, integrate Zh and Pt2
 this_conf = [1,1,0,0]
-hadronic_bin_name = ""
 
 ### REVISIT THIS!
 # Set default shown binning by BinningType
 if (infoDict["BinningType"] == 0): # 0: Small binning
     default_conf[2] = 0
     default_conf[3] = 0
-elif (infoDict["BinningType"] == 1): # 1: SplitZh
+elif (infoDict["BinningType"] >= 1): # 1: SplitZh
     default_conf[2] = 1
     default_conf[3] = 0
-elif (infoDict["BinningType"] == 2): # 2: ThinZh bin, so it is intended to shown results as function of Zh
-    default_conf[2] = 1
-    default_conf[3] = 0
+# elif (infoDict["BinningType"] == 2): # 2: ThinZh bin, so it is intended to shown results as function of Zh
+#     default_conf[2] = 1
+#     default_conf[3] = 0
 
 # Change binning using input (or use default)
 if (useZh):
     this_conf[2] = 1
     this_conf[3] = 0
-    hadronic_bin_name = "_Z"
 elif (usePt2):
     this_conf[2] = 0
     this_conf[3] = 1
-    hadronic_bin_name = "_P"
 else:
-    this_conf = default_conf
+    this_conf = default_conf # Plot Z
 
-# print(this_conf)
 
 totalsize = 1
 for i,i_bool in enumerate(this_conf):

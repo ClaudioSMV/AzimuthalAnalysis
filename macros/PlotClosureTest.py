@@ -62,8 +62,8 @@ prefixType = ["Correction", "Correct Match_mc", "Correct Match_rec", "True", "Tr
 bins_list = [] # [3, 3, 5]
 
 outDim = infoDict["NDims"]
-if (infoDict["NDims"] == 1): outDim = 2
-if (infoDict["BinningType"] == 2): outDim = 3
+# if (infoDict["NDims"] == 1): outDim = 2
+if (infoDict["BinningType"] >= 2): outDim = 3 # UPDATE THIS TO ACCEPT P DEPENDENCE
 
 totalsize = 1
 for i in range(0,outDim):
