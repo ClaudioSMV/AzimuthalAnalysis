@@ -26,25 +26,25 @@ void getHist2D(std::string target = "Fe", bool isData = true, std::string vars =
     {
         if (isData && target=="D")
         {
-            ch.Add("../../data/out/GetSimpleTuple_data/Fe/prunedFe_*.root");
-            ch.Add("../../data/out/GetSimpleTuple_data/Pb/prunedPb_*.root");
-            ch.Add("../../data/out/GetSimpleTuple_data/C/prunedC_*.root");
+            ch.Add("/home/csanmart/work/data/out/GetSimpleTuple_data/Fe/prunedFe_*.root");
+            ch.Add("/home/csanmart/work/data/out/GetSimpleTuple_data/Pb/prunedPb_*.root");
+            ch.Add("/home/csanmart/work/data/out/GetSimpleTuple_data/C/prunedC_*.root");
         }
-        else if (isData) ch.Add(Form("../../data/out/GetSimpleTuple_data/%s/pruned%s_*.root",target.c_str(),target.c_str()));
+        else if (isData) ch.Add(Form("/home/csanmart/work/data/out/GetSimpleTuple_data/%s/pruned%s_*.root",target.c_str(),target.c_str()));
         else
         {
             ch.SetName("ntuple_sim");
             std::string suffix = "";
             if (target=="D") { suffix+="2_pb"; }
-            ch.Add(Form("../../sim/out/GetSimpleTuple_HSim/%s%s1/pruned%s_*.root",target.c_str(),suffix.c_str(),target.c_str()));
-            ch.Add(Form("../../sim/out/GetSimpleTuple_HSim/%s%s2/pruned%s_*.root",target.c_str(),suffix.c_str(),target.c_str()));
-            ch.Add(Form("../../sim/out/GetSimpleTuple_HSim/%s%s3/pruned%s_*.root",target.c_str(),suffix.c_str(),target.c_str()));
-            ch.Add(Form("../../sim/out/GetSimpleTuple_HSim/%s%s4_yshiftm03/pruned%s_*.root",target.c_str(),suffix.c_str(),target.c_str()));
-            ch.Add(Form("../../sim/out/GetSimpleTuple_HSim/%s%s5_yshiftm03/pruned%s_*.root",target.c_str(),suffix.c_str(),target.c_str()));
-            ch.Add(Form("../../sim/out/GetSimpleTuple_HSim/%s%s6_yshiftm03/pruned%s_*.root",target.c_str(),suffix.c_str(),target.c_str()));
-            ch.Add(Form("../../sim/out/GetSimpleTuple_HSim/%s%s7_yshiftm03/pruned%s_*.root",target.c_str(),suffix.c_str(),target.c_str()));
-            ch.Add(Form("../../sim/out/GetSimpleTuple_HSim/%s%s8_yshiftm03/pruned%s_*.root",target.c_str(),suffix.c_str(),target.c_str()));
-            ch.Add(Form("../../sim/out/GetSimpleTuple_HSim/%s%s9_yshiftm03/pruned%s_*.root",target.c_str(),suffix.c_str(),target.c_str()));
+            ch.Add(Form("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/%s%s1/pruned%s_*.root",target.c_str(),suffix.c_str(),target.c_str()));
+            ch.Add(Form("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/%s%s2/pruned%s_*.root",target.c_str(),suffix.c_str(),target.c_str()));
+            ch.Add(Form("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/%s%s3/pruned%s_*.root",target.c_str(),suffix.c_str(),target.c_str()));
+            ch.Add(Form("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/%s%s4_yshiftm03/pruned%s_*.root",target.c_str(),suffix.c_str(),target.c_str()));
+            ch.Add(Form("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/%s%s5_yshiftm03/pruned%s_*.root",target.c_str(),suffix.c_str(),target.c_str()));
+            ch.Add(Form("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/%s%s6_yshiftm03/pruned%s_*.root",target.c_str(),suffix.c_str(),target.c_str()));
+            ch.Add(Form("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/%s%s7_yshiftm03/pruned%s_*.root",target.c_str(),suffix.c_str(),target.c_str()));
+            ch.Add(Form("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/%s%s8_yshiftm03/pruned%s_*.root",target.c_str(),suffix.c_str(),target.c_str()));
+            ch.Add(Form("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/%s%s9_yshiftm03/pruned%s_*.root",target.c_str(),suffix.c_str(),target.c_str()));
         }
     }
     

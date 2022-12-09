@@ -41,25 +41,25 @@ void getCorrection(std::string target = "Fe", int binName = 0, int binNdim = 1, 
     {
         if (target!="D")
         {
-            ch.Add(Form("../../data/out/GetSimpleTuple_data/%s/pruned%s_*.root",target.c_str(),target.c_str()));
+            ch.Add(Form("/home/csanmart/work/data/out/GetSimpleTuple_data/%s/pruned%s_*.root",target.c_str(),target.c_str()));
         }
         else if (target=="D" && solid_target=="Fe")
         {
-            ch.Add("../../data/out/GetSimpleTuple_data/Fe/prunedFe_*.root");
+            ch.Add("/home/csanmart/work/data/out/GetSimpleTuple_data/Fe/prunedFe_*.root");
         }
         else if (target=="D" && solid_target=="C")
         {
-            ch.Add("../../data/out/GetSimpleTuple_data/C/prunedC_*.root");
+            ch.Add("/home/csanmart/work/data/out/GetSimpleTuple_data/C/prunedC_*.root");
         }
         else if (target=="D" && solid_target=="Pb")
         {
-            ch.Add("../../data/out/GetSimpleTuple_data/Pb/prunedPb_*.root");
+            ch.Add("/home/csanmart/work/data/out/GetSimpleTuple_data/Pb/prunedPb_*.root");
         }
         else if (target=="D" && solid_target=="All")
         {
-            ch.Add("../../data/out/GetSimpleTuple_data/Fe/prunedFe_*.root");
-            ch.Add("../../data/out/GetSimpleTuple_data/Pb/prunedPb_*.root");
-            ch.Add("../../data/out/GetSimpleTuple_data/C/prunedC_*.root");
+            ch.Add("/home/csanmart/work/data/out/GetSimpleTuple_data/Fe/prunedFe_*.root");
+            ch.Add("/home/csanmart/work/data/out/GetSimpleTuple_data/Pb/prunedPb_*.root");
+            ch.Add("/home/csanmart/work/data/out/GetSimpleTuple_data/C/prunedC_*.root");
         }
         else
         {
