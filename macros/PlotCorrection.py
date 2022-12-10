@@ -46,9 +46,9 @@ if options.errorFull:
 useZh = options.useZh
 usePt2 = options.usePt2
 # print(myStyle.getCutStrFromStr(options.outputCuts))
-if "Z" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.outputCuts)):
+if ("Z" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.outputCuts))) or ("Z" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.inputCuts))):
     useZh = True
-if "P" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.outputCuts)):
+if ("P" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.outputCuts))) or ("P" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.inputCuts))):
     usePt2 = True
 
 if (useZh) and (usePt2):

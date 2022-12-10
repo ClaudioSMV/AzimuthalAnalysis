@@ -159,9 +159,9 @@ plots_cuts+="_"+fit_type
 
 useZh = options.useZh
 usePt2 = options.usePt2
-if "Z" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.outputCuts)):
+if ("Z" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.outputCuts))) or ("Z" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.inputCuts))):
     useZh = True
-if "P" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.outputCuts)):
+if ("P" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.outputCuts))) or ("P" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.inputCuts))):
     usePt2 = True
 
 if (useZh) and (usePt2):
@@ -174,7 +174,9 @@ elif usePt2:
     input_cuts+="_Px"
     plots_cuts+="_Px"
 else:
-    print("Using default x binning!")
+    print("Using Zx as default x binning!")
+    input_cuts+="_Zx"
+    plots_cuts+="_Zx"
 
 dataset_elemts = dataset.split("_")
 try:
