@@ -328,9 +328,13 @@ for p,par in enumerate(["B", "C"]):
 
                 this_hist.SetMinimum(par_y_lmts[p][0])
                 this_hist.SetMaximum(par_y_lmts[p][1])
-                this_hist.SetLabelSize(tsize-18,"xy")
-                this_hist.SetTitleSize(tsize-14,"xy")
-                this_hist.SetTitleOffset(2.5,"xy")
+                # this_hist.SetLabelSize(tsize-18,"xy")
+                # this_hist.SetTitleSize(tsize-14,"xy")
+                # this_hist.SetTitleOffset(2.5,"xy")
+                this_hist.SetLabelSize(tsize-20,"xy")
+                this_hist.SetTitleSize(tsize-16,"xy")
+                this_hist.SetTitleOffset(1.0,"x")
+                this_hist.SetTitleOffset(1.8,"y")
 
                 this_hist.SetLineColor(myStyle.color_target[targ])
                 this_hist.SetMarkerStyle(4)

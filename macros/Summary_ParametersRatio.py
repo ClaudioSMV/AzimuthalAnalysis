@@ -289,6 +289,11 @@ for p,par in enumerate(["B", "C"]):
     legend.SetFillStyle(0)
     legend.SetNColumns(2)
 
+    ratio1L = ROOT.TLine(0.0,1.0, 1.0,1.0)
+    ratio1L.SetLineColor(ROOT.kRed)
+    ratio1L.SetLineWidth(1)
+    ratio1L.SetLineStyle(9)
+
     for t,targ in enumerate(list_targets):
         this_canvas.cd(0)
         for iQ in range(nBinsQ):
@@ -315,13 +320,20 @@ for p,par in enumerate(["B", "C"]):
 
                 this_hist.SetMinimum(par_y_lmts[p][0])
                 this_hist.SetMaximum(par_y_lmts[p][1])
-                this_hist.SetLabelSize(tsize-18,"xy")
-                this_hist.SetTitleSize(tsize-14,"xy")
-                this_hist.SetTitleOffset(2.5,"xy")
+                this_hist.SetLabelSize(tsize-20,"xy")
+                this_hist.SetTitleSize(tsize-16,"xy")
+                this_hist.SetTitleOffset(1.0,"x")
+                this_hist.SetTitleOffset(1.8,"y")
 
                 this_hist.SetLineColor(myStyle.color_target[targ])
                 this_hist.SetMarkerStyle(4)
                 this_hist.SetMarkerColor(myStyle.color_target[targ])
+                this_hist.Draw("same")
+
+                # Draw line at ratio = 1.0
+                ratio1L.DrawLine(this_hist.GetXaxis().GetXmin(),1.0, this_hist.GetXaxis().GetXmax(),1.0)
+
+                # Draw hist in last layer
                 this_hist.Draw("e same")
 
                 if (iN==2):
