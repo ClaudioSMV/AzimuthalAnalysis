@@ -8,7 +8,7 @@ void getAcceptance(std::string target = "Fe", int binName = 0, std::string cuts 
 {
     if ("1"<=cuts && cuts<="9")
     {
-        std::cout << "Acceptance does not need nDim, only cuts labels!" << std::endl;
+        std::cout << "Aborting: Acceptance does not need nDim, only cuts labels!" << std::endl;
         return 0;
     }
     TChain ch("ntuple_sim");
