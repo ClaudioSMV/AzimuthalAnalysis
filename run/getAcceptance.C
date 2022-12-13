@@ -6,6 +6,11 @@ R__LOAD_LIBRARY(../include/Acceptance_C.so)
 void getAcceptance(std::string target = "Fe", int binName = 0, std::string cuts = "", std::string nfold = "*")
 // Cuts: "Xf": X Feynman
 {
+    if ("1"<=cuts && cuts<="9")
+    {
+        std::cout << "Acceptance does not need nDim, only cuts labels!" << std::endl;
+        return 0;
+    }
     TChain ch("ntuple_sim");
     if (FileExists("../../clas-HSim"))
     {
