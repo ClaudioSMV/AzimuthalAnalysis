@@ -3,7 +3,7 @@
 R__LOAD_LIBRARY(../include/Acceptance_C.so)
 #include "../include/Utility.h"
 
-void getHist2D(std::string target = "Fe", bool isData = true, std::string vars = "KinVars")
+void getHist2D(std::string target = "Fe", bool isData = true, std::string vars = "")
 {
     TChain ch("ntuple_data");
 
@@ -47,27 +47,43 @@ void getHist2D(std::string target = "Fe", bool isData = true, std::string vars =
             ch.Add(Form("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/%s%s9_yshiftm03/pruned%s_*.root",target.c_str(),suffix.c_str(),target.c_str()));
         }
     }
-    
+
+    std::string this_type = "Simulation";
+    if (isData)
+    {
+        this_type = "Data";
+    }
+
     Acceptance acc(&ch, isData);
     acc.setTargName(target);
     if (vars.find("KinVars") != string::npos)
     {
-        std::cout << "\n >> Running Hist2D_KinVars for " << target << " target [file type: " << isData << "]\n" << std::endl;
+        std::cout << "\n >> Running Hist2D_KinVars for " << target << " target [file type: " << this_type << "]\n" << std::endl;
         acc.Hist2D_KinVars();
     }
-    else if (vars.find("Yh") != string::npos)
+    else if (vars.find("XfVsYh") != string::npos)
     {
-        std::cout << "\n >> Running Hist2D_XfVsYh for " << target << " target [file type: " << isData << "]\n" << std::endl;
+        std::cout << "\n >> Running Hist2D_XfVsYh for " << target << " target [file type: " << this_type << "]\n" << std::endl;
         acc.Hist2D_XfVsYh();
     }
     else if (vars.find("ThetaPQ") != string::npos)
     {
-        std::cout << "\n >> Running Hist2D_ThetaPQ for " << target << " target [file type: " << isData << "]\n" << std::endl;
+        std::cout << "\n >> Running Hist2D_ThetaPQ for " << target << " target [file type: " << this_type << "]\n" << std::endl;
         acc.Hist2D_ThetaPQ();
     }
     else if (vars.find("LabAngles") != string::npos)
     {
-        std::cout << "\n >> Running Hist2D_LabAngles for " << target << " target [file type: " << isData << "]\n" << std::endl;
+        std::cout << "\n >> Running Hist2D_LabAngles for " << target << " target [file type: " << this_type << "]\n" << std::endl;
         acc.Hist2D_LabAngles();
+    }
+    else if (vars.find("PQVsLab") != string::npos)
+    {
+        std::cout << "\n >> Running Hist2D_PQVsLab for " << target << " target [file type: " << this_type << "]\n" << std::endl;
+        acc.Hist2D_PQVsLab();
+    }
+    else
+    {
+        std::cout << "\n >> Enter a valid third parameter for macro name. " << std::endl;
+        std::cout << " >> Options: KinVars, XfVsYh, ThetaPQ, LabAngles, PQVsLab.\n" << std::endl;
     }
 }

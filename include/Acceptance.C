@@ -785,8 +785,9 @@ void Acceptance::Hist2D_KinVars()
     TFile *fout;
     std::string h2d_folder = "../output/Hist2D" + getFoldNameExt();
     CreateDir(h2d_folder);
-    if (_isData) fout = TFile::Open(Form("%s/KinVars_%s_data.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
-    else         fout = TFile::Open(Form("%s/KinVars_%s_hsim.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
+
+    if (_isData) fout = TFile::Open(Form("%s/KinematicVars_%s_data.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
+    else         fout = TFile::Open(Form("%s/KinematicVars_%s_hsim.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
 
     //// Define Histograms
     // Reconstructed or data
@@ -1345,12 +1346,6 @@ void Acceptance::Hist2D_LabAngles()
         fChain->SetBranchStatus("mc_ThetaLab", 1);
     }
 
-    // double PlCM=0, mc_PlCM=0;
-    // double EhCM=0, mc_EhCM=0;
-    // double Yh=0, mc_Yh=0;
-    // double kMassProton = 0.938272;
-    // double kMassPiPlus = 0.139570;
-
     TFile *fout;
     std::string h2d_folder = "../output/Hist2D" + getFoldNameExt();
     CreateDir(h2d_folder);
@@ -1553,6 +1548,215 @@ void Acceptance::Hist2D_LabAngles()
 
         histMigrationMatrixThLabEl_Pi->Delete();
         histMigrationMatrixPhiLabEl_Pi->Delete();
+    }
+
+    std::cout << "Made it to the end. Saving..." << std::endl;
+
+    fout->Write();
+    fout->Close();
+}
+
+void Acceptance::Hist2D_PQVsLab()
+{
+    ActivateBranches();
+    fChain->SetBranchStatus("PhiLabEl", 1);
+    fChain->SetBranchStatus("ThetaLabEl", 1);
+    fChain->SetBranchStatus("PhiLab", 1);
+    fChain->SetBranchStatus("ThetaLab", 1);
+    fChain->SetBranchStatus("ThetaPQ", 1);
+
+    if (!_isData)
+    {
+        fChain->SetBranchStatus("mc_PhiLabEl", 1);
+        fChain->SetBranchStatus("mc_ThetaLabEl", 1);
+        fChain->SetBranchStatus("mc_PhiLab", 1);
+        fChain->SetBranchStatus("mc_ThetaLab", 1);
+        fChain->SetBranchStatus("mc_ThetaPQ", 1);
+    }
+
+    TFile *fout;
+    std::string h2d_folder = "../output/Hist2D" + getFoldNameExt();
+    CreateDir(h2d_folder);
+    if (_isData) fout = TFile::Open(Form("%s/PQVsLab_%s_data.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
+    else         fout = TFile::Open(Form("%s/PQVsLab_%s_hsim.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
+
+    //// Define Histograms
+    // Simple TH1
+    TH1D* hist1D_ThetaPQ_reco = new TH1D("hist1D_ThetaPQ_reco", "Histogram 1D Reconstructed;#theta_{PQ};Counts", 360,0.0,180.0);
+    TH1D* hist1D_ThetaPQ_mtch = new TH1D("hist1D_ThetaPQ_mtch", "Histogram 1D Reconstructed match;#theta_{PQ};Counts", 360,0.0,180.0);
+    TH1D* hist1D_ThetaPQ_gene = new TH1D("hist1D_ThetaPQ_gene", "Histogram 1D Generated;#theta_{PQ};Counts", 360,0.0,180.0);
+
+    // Reconstructed or data
+    TH2D* hist2D_ThLabEl_PhiPQ_reco = new TH2D("hist2D_ThLabEl_PhiPQ_reco", "Two dimensional map Reco;#theta_{Lab} El;#phi_{PQ}" , 180,0.0,180.0, 360,-180.0,180.0);
+    TH2D* hist2D_PhiLabEl_PhiPQ_reco = new TH2D("hist2D_PhiLabEl_PhiPQ_reco", "Two dimensional map Reco;#phi_{Lab} El;#phi_{PQ}" , 360,-30.0,330.0, 360,-180.0,180.0);
+    TH2D* hist2D_ThLab_PhiPQ_reco = new TH2D("hist2D_ThLab_PhiPQ_reco", "Two dimensional map Reco;#theta_{Lab};#phi_{PQ}" , 180,0.0,180.0, 360,-180.0,180.0);
+    TH2D* hist2D_PhiLab_PhiPQ_reco = new TH2D("hist2D_PhiLab_PhiPQ_reco", "Two dimensional map Reco;#phi_{Lab};#phi_{PQ}" , 360,-30.0,330.0, 360,-180.0,180.0);
+
+    TH2D* hist2D_ThLabEl_ThPQ_reco = new TH2D("hist2D_ThLabEl_ThPQ_reco", "Two dimensional map Reco;#theta_{Lab} El;#theta_{PQ}" , 180,0.0,180.0, 180,0.0,180.0);
+    TH2D* hist2D_PhiLabEl_ThPQ_reco = new TH2D("hist2D_PhiLabEl_ThPQ_reco", "Two dimensional map Reco;#phi_{Lab} El;#theta_{PQ}" , 360,-30.0,330.0, 180,0.0,180.0);
+    TH2D* hist2D_ThLab_ThPQ_reco = new TH2D("hist2D_ThLab_ThPQ_reco", "Two dimensional map Reco;#theta_{Lab};#theta_{PQ}" , 180,0.0,180.0, 180,0.0,180.0);
+    TH2D* hist2D_PhiLab_ThPQ_reco = new TH2D("hist2D_PhiLab_ThPQ_reco", "Two dimensional map Reco;#phi_{Lab};#theta_{PQ}" , 360,-30.0,330.0, 180,0.0,180.0);
+
+    // Reconstructed match
+    TH2D* hist2D_ThLabEl_PhiPQ_mtch = new TH2D("hist2D_ThLabEl_PhiPQ_mtch", "Two dimensional map Match;#theta_{Lab} El;#phi_{PQ}" , 180,0.0,180.0, 360,-180.0,180.0);
+    TH2D* hist2D_PhiLabEl_PhiPQ_mtch = new TH2D("hist2D_PhiLabEl_PhiPQ_mtch", "Two dimensional map Match;#phi_{Lab} El;#phi_{PQ}" , 360,-30.0,330.0, 360,-180.0,180.0);
+    TH2D* hist2D_ThLab_PhiPQ_mtch = new TH2D("hist2D_ThLab_PhiPQ_mtch", "Two dimensional map Match;#theta_{Lab};#phi_{PQ}" , 180,0.0,180.0, 360,-180.0,180.0);
+    TH2D* hist2D_PhiLab_PhiPQ_mtch = new TH2D("hist2D_PhiLab_PhiPQ_mtch", "Two dimensional map Match;#phi_{Lab};#phi_{PQ}" , 360,-30.0,330.0, 360,-180.0,180.0);
+
+    TH2D* hist2D_ThLabEl_ThPQ_mtch = new TH2D("hist2D_ThLabEl_ThPQ_mtch", "Two dimensional map Match;#theta_{Lab} El;#theta_{PQ}" , 180,0.0,180.0, 180,0.0,180.0);
+    TH2D* hist2D_PhiLabEl_ThPQ_mtch = new TH2D("hist2D_PhiLabEl_ThPQ_mtch", "Two dimensional map Match;#phi_{Lab} El;#theta_{PQ}" , 360,-30.0,330.0, 180,0.0,180.0);
+    TH2D* hist2D_ThLab_ThPQ_mtch = new TH2D("hist2D_ThLab_ThPQ_mtch", "Two dimensional map Match;#theta_{Lab};#theta_{PQ}" , 180,0.0,180.0, 180,0.0,180.0);
+    TH2D* hist2D_PhiLab_ThPQ_mtch = new TH2D("hist2D_PhiLab_ThPQ_mtch", "Two dimensional map Match;#phi_{Lab};#theta_{PQ}" , 360,-30.0,330.0, 180,0.0,180.0);
+
+    // Generated (MC)
+    TH2D* hist2D_ThLabEl_PhiPQ_gene = new TH2D("hist2D_ThLabEl_PhiPQ_gene", "Two dimensional map Generated;#theta_{Lab} El;#phi_{PQ}" , 180,0.0,180.0, 360,-180.0,180.0);
+    TH2D* hist2D_PhiLabEl_PhiPQ_gene = new TH2D("hist2D_PhiLabEl_PhiPQ_gene", "Two dimensional map Generated;#phi_{Lab} El;#phi_{PQ}" , 360,-30.0,330.0, 360,-180.0,180.0);
+    TH2D* hist2D_ThLab_PhiPQ_gene = new TH2D("hist2D_ThLab_PhiPQ_gene", "Two dimensional map Generated;#theta_{Lab};#phi_{PQ}" , 180,0.0,180.0, 360,-180.0,180.0);
+    TH2D* hist2D_PhiLab_PhiPQ_gene = new TH2D("hist2D_PhiLab_PhiPQ_gene", "Two dimensional map Generated;#phi_{Lab};#phi_{PQ}" , 360,-30.0,330.0, 360,-180.0,180.0);
+
+    TH2D* hist2D_ThLabEl_ThPQ_gene = new TH2D("hist2D_ThLabEl_ThPQ_gene", "Two dimensional map Generated;#theta_{Lab} El;#theta_{PQ}" , 180,0.0,180.0, 180,0.0,180.0);
+    TH2D* hist2D_PhiLabEl_ThPQ_gene = new TH2D("hist2D_PhiLabEl_ThPQ_gene", "Two dimensional map Generated;#phi_{Lab} El;#theta_{PQ}" , 360,-30.0,330.0, 180,0.0,180.0);
+    TH2D* hist2D_ThLab_ThPQ_gene = new TH2D("hist2D_ThLab_ThPQ_gene", "Two dimensional map Generated;#theta_{Lab};#theta_{PQ}" , 180,0.0,180.0, 180,0.0,180.0);
+    TH2D* hist2D_PhiLab_ThPQ_gene = new TH2D("hist2D_PhiLab_ThPQ_gene", "Two dimensional map Generated;#phi_{Lab};#theta_{PQ}" , 360,-30.0,330.0, 180,0.0,180.0);
+
+    // Bin migration
+    TH2D* histMigrationMatrixThetaPQ = new TH2D("histMigrationMatrixThetaPQ", "Migration #theta_{PQ};True #theta_{PQ}; Reco #theta_{PQ}", 180,0.0,180.0, 180,0.0,180.0);
+
+    if (fChain == 0)
+        return;
+    Long64_t nentries = fChain->GetEntries();
+    Long64_t nbytes = 0, nb = 0;
+    unsigned int entries_to_process = nentries;
+    int n_pions = 0, n_pions_mc = 0, n_pions_match = 0;
+    bool good_electron_mc = false, good_electron = false;
+    bool good_pion_mc = false, good_pion = false;
+    // bool at_least_one_pion_mtch = false;
+
+    for (unsigned int jentry = 0; jentry < entries_to_process; jentry++)
+    {
+        if (jentry % 1000000 == 0)
+            printf("Processing entry %9u, progress at %6.2f%%\n",jentry,100.*(double)jentry/(entries_to_process));
+
+        // std::cout << "Processing entry " << jentry << ", progress at " << 100.*(double) jentry / (entries_to_process) << "%" << std::endl;
+        Long64_t ientry = LoadTree(jentry);
+        if (ientry < 0)
+            break;
+        nb = fChain->GetEntry(jentry);
+        nbytes += nb;
+
+        // if (Cut(ientry) < 0) continue;
+        good_electron_mc = false, good_electron = false;
+        // at_least_one_pion_mtch = false;
+
+        if (GoodElectron(ientry, DISLimits))
+        {
+            good_electron = true;
+        }
+
+        if (!_isData && GoodElectron_MC(ientry, DISLimits))
+        {
+            good_electron_mc = true;
+        }
+
+        // if (good_electron && good_electron_mc)
+        // {
+        // }
+
+        int vec_entries = PhiPQ->size();
+
+		for (int i=0; i<vec_entries; i++)
+        {
+            good_pion_mc = false, good_pion = false;
+
+            if (good_electron && GoodPiPlus(ientry, i, DISLimits))
+            {
+                n_pions++;
+                good_pion = true;
+
+                hist1D_ThetaPQ_reco->Fill(ThetaPQ->at(i));
+
+                hist2D_ThLabEl_PhiPQ_reco->Fill(ThetaLabEl, PhiPQ->at(i));
+                hist2D_PhiLabEl_PhiPQ_reco->Fill(PhiLabEl, PhiPQ->at(i));
+                hist2D_ThLab_PhiPQ_reco->Fill(ThetaLab->at(i), PhiPQ->at(i));
+                hist2D_PhiLab_PhiPQ_reco->Fill(PhiLab->at(i), PhiPQ->at(i));
+
+                hist2D_ThLabEl_ThPQ_reco->Fill(ThetaLabEl, ThetaPQ->at(i));
+                hist2D_PhiLabEl_ThPQ_reco->Fill(PhiLabEl, ThetaPQ->at(i));
+                hist2D_ThLab_ThPQ_reco->Fill(ThetaLab->at(i), ThetaPQ->at(i));
+                hist2D_PhiLab_ThPQ_reco->Fill(PhiLab->at(i), ThetaPQ->at(i));
+            }
+
+            if (!_isData && good_electron_mc && GoodPiPlus_MC(ientry, i, DISLimits))
+            {
+                good_pion_mc = true;
+                n_pions_mc++;
+
+                hist1D_ThetaPQ_gene->Fill(mc_ThetaPQ->at(i));
+
+                hist2D_ThLabEl_PhiPQ_gene->Fill(mc_ThetaLabEl, mc_PhiPQ->at(i));
+                hist2D_PhiLabEl_PhiPQ_gene->Fill(mc_PhiLabEl, mc_PhiPQ->at(i));
+                hist2D_ThLab_PhiPQ_gene->Fill(mc_ThetaLab->at(i), mc_PhiPQ->at(i));
+                hist2D_PhiLab_PhiPQ_gene->Fill(mc_PhiLab->at(i), mc_PhiPQ->at(i));
+
+                hist2D_ThLabEl_ThPQ_gene->Fill(mc_ThetaLabEl, mc_ThetaPQ->at(i));
+                hist2D_PhiLabEl_ThPQ_gene->Fill(mc_PhiLabEl, mc_ThetaPQ->at(i));
+                hist2D_ThLab_ThPQ_gene->Fill(mc_ThetaLab->at(i), mc_ThetaPQ->at(i));
+                hist2D_PhiLab_ThPQ_gene->Fill(mc_PhiLab->at(i), mc_ThetaPQ->at(i));
+            }
+
+            if (good_pion && good_pion_mc)
+            {
+                n_pions_match++;
+                // at_least_one_pion_mtch = true;
+
+                hist1D_ThetaPQ_mtch->Fill(ThetaPQ->at(i));
+
+                hist2D_ThLabEl_PhiPQ_mtch->Fill(ThetaLabEl, PhiPQ->at(i));
+                hist2D_PhiLabEl_PhiPQ_mtch->Fill(PhiLabEl, PhiPQ->at(i));
+                hist2D_ThLab_PhiPQ_mtch->Fill(ThetaLab->at(i), PhiPQ->at(i));
+                hist2D_PhiLab_PhiPQ_mtch->Fill(PhiLab->at(i), PhiPQ->at(i));
+
+                hist2D_ThLabEl_ThPQ_mtch->Fill(ThetaLabEl, ThetaPQ->at(i));
+                hist2D_PhiLabEl_ThPQ_mtch->Fill(PhiLabEl, ThetaPQ->at(i));
+                hist2D_ThLab_ThPQ_mtch->Fill(ThetaLab->at(i), ThetaPQ->at(i));
+                hist2D_PhiLab_ThPQ_mtch->Fill(PhiLab->at(i), ThetaPQ->at(i));
+
+
+                histMigrationMatrixThetaPQ->Fill(mc_ThetaPQ->at(i), ThetaPQ->at(i));
+            }
+        }   // loop over tracks
+    }       // loop over entries
+
+    std::cout << "There are " << n_pions << " final state Pions." << std::endl;
+    if (!_isData) std::cout << "There are " << n_pions_match << " matching pions out of " << n_pions_mc << " generated." << std::endl;
+
+    if (_isData)
+    {
+        hist1D_ThetaPQ_gene->Delete();
+
+        hist2D_ThLabEl_PhiPQ_gene->Delete();
+        hist2D_PhiLabEl_PhiPQ_gene->Delete();
+        hist2D_ThLab_PhiPQ_gene->Delete();
+        hist2D_PhiLab_PhiPQ_gene->Delete();
+
+        hist2D_ThLabEl_ThPQ_gene->Delete();
+        hist2D_PhiLabEl_ThPQ_gene->Delete();
+        hist2D_ThLab_ThPQ_gene->Delete();
+        hist2D_PhiLab_ThPQ_gene->Delete();
+
+        hist1D_ThetaPQ_mtch->Delete();
+
+        hist2D_ThLabEl_PhiPQ_mtch->Delete();
+        hist2D_PhiLabEl_PhiPQ_mtch->Delete();
+        hist2D_ThLab_PhiPQ_mtch->Delete();
+        hist2D_PhiLab_PhiPQ_mtch->Delete();
+
+        hist2D_ThLabEl_ThPQ_mtch->Delete();
+        hist2D_PhiLabEl_ThPQ_mtch->Delete();
+        hist2D_ThLab_ThPQ_mtch->Delete();
+        hist2D_PhiLab_ThPQ_mtch->Delete();
+
+        histMigrationMatrixThetaPQ->Delete();
     }
 
     std::cout << "Made it to the end. Saving..." << std::endl;

@@ -202,6 +202,7 @@ public:
     virtual void Hist2D_XfVsYh();
     virtual void Hist2D_ThetaPQ();
     virtual void Hist2D_LabAngles();
+    virtual void Hist2D_PQVsLab();
     virtual void Correction();
     virtual void ClosureTest();
     virtual Bool_t Notify();
