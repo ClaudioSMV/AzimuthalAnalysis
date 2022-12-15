@@ -1773,3 +1773,175 @@ void Acceptance::Hist2D_PQVsLab()
     fout->Write();
     fout->Close();
 }
+
+void Acceptance::Hist2D_PhiPQVsSector()
+{
+    ActivateBranches();
+    fChain->SetBranchStatus("SectorEl", 1);
+    fChain->SetBranchStatus("Sector", 1);
+
+    if (!_isData)
+    {
+        fChain->SetBranchStatus("mc_SectorEl", 1);
+        fChain->SetBranchStatus("mc_Sector", 1);
+    }
+
+    TFile *fout;
+    std::string h2d_folder = "../output/Hist2D" + getFoldNameExt();
+    CreateDir(h2d_folder);
+    if (_isData) fout = TFile::Open(Form("%s/PQVsSector_%s_data.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
+    else         fout = TFile::Open(Form("%s/PQVsSector_%s_hsim.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
+
+    //// Define Histograms
+    // Simple TH1
+    TH1D* hist1D_Sector_reco = new TH1D("hist1D_Sector_reco", "Histogram 1D Reconstructed;Sector;Counts", 6,0,6);
+    TH1D* hist1D_Sector_mtch = new TH1D("hist1D_Sector_mtch", "Histogram 1D Reconstructed match;Sector;Counts", 6,0,6);
+    TH1D* hist1D_Sector_gene = new TH1D("hist1D_Sector_gene", "Histogram 1D Generated;Sector;Counts", 6,0,6);
+
+    TH1D* hist1D_SectorEl_reco = new TH1D("hist1D_SectorEl_reco", "Histogram 1D Reconstructed;SectorEl;Counts", 6,0,6);
+    TH1D* hist1D_SectorEl_mtch = new TH1D("hist1D_SectorEl_mtch", "Histogram 1D Reconstructed match;SectorEl;Counts", 6,0,6);
+    TH1D* hist1D_SectorEl_gene = new TH1D("hist1D_SectorEl_gene", "Histogram 1D Generated;SectorEl;Counts", 6,0,6);
+
+    TH1D* hist1D_SectorEl_mtch_Pi = new TH1D("hist1D_SectorEl_mtch_Pi", "Histogram 1D Reconstructed match Pi;SectorEl;Counts", 6,0,6);
+
+    // Reconstructed or data
+    TH2D* hist2D_Sector_PhiPQ_reco = new TH2D("hist2D_Sector_PhiPQ_reco", "Two dimensional map Reco;Sector;#phi_{PQ}" , 6,0,6, 360,-180.0,180.0);
+    TH2D* hist2D_SectorEl_PhiPQ_reco = new TH2D("hist2D_SectorEl_PhiPQ_reco", "Two dimensional map Reco;SectorEl;#phi_{PQ}" , 6,0,6, 360,-180.0,180.0);
+
+    // Reconstructed match
+    TH2D* hist2D_Sector_PhiPQ_mtch = new TH2D("hist2D_Sector_PhiPQ_mtch", "Two dimensional map Match;Sector;#phi_{PQ}" , 6,0,6, 360,-180.0,180.0);
+    TH2D* hist2D_SectorEl_PhiPQ_mtch = new TH2D("hist2D_SectorEl_PhiPQ_mtch", "Two dimensional map Match;SectorEl;#phi_{PQ}" , 6,0,6, 360,-180.0,180.0);
+
+    // Generated (MC)
+    TH2D* hist2D_Sector_PhiPQ_gene = new TH2D("hist2D_Sector_PhiPQ_gene", "Two dimensional map Generated;Sector;#phi_{PQ}" , 6,0,6, 360,-180.0,180.0);
+    TH2D* hist2D_SectorEl_PhiPQ_gene = new TH2D("hist2D_SectorEl_PhiPQ_gene", "Two dimensional map Generated;SectorEl;#phi_{PQ}" , 6,0,6, 360,-180.0,180.0);
+
+    // Bin migration
+    TH2D* histMigrationMatrixSector = new TH2D("histMigrationMatrixSector", "Migration Sector;True Sector; Reco Sector", 6,0,6, 6,0,6);
+    TH2D* histMigrationMatrixSectorEl = new TH2D("histMigrationMatrixSectorEl", "Migration SectorEl;True SectorEl; Reco SectorEl", 6,0,6, 6,0,6);
+    TH2D* histMigrationMatrixSectorEl_Pi = new TH2D("histMigrationMatrixSectorEl_Pi", "Migration SectorEl Match Pi;True SectorEl; Reco SectorEl", 6,0,6, 6,0,6);
+
+    if (fChain == 0)
+        return;
+    Long64_t nentries = fChain->GetEntries();
+    Long64_t nbytes = 0, nb = 0;
+    unsigned int entries_to_process = nentries;
+    int n_pions = 0, n_pions_mc = 0, n_pions_match = 0;
+    bool good_electron_mc = false, good_electron = false;
+    bool good_pion_mc = false, good_pion = false;
+    bool at_least_one_pion_mtch = false;
+
+    for (unsigned int jentry = 0; jentry < entries_to_process; jentry++)
+    {
+        if (jentry % 1000000 == 0)
+            printf("Processing entry %9u, progress at %6.2f%%\n",jentry,100.*(double)jentry/(entries_to_process));
+
+        // std::cout << "Processing entry " << jentry << ", progress at " << 100.*(double) jentry / (entries_to_process) << "%" << std::endl;
+        Long64_t ientry = LoadTree(jentry);
+        if (ientry < 0)
+            break;
+        nb = fChain->GetEntry(jentry);
+        nbytes += nb;
+
+        // if (Cut(ientry) < 0) continue;
+        good_electron_mc = false, good_electron = false;
+        at_least_one_pion_mtch = false;
+
+        if (GoodElectron(ientry, DISLimits))
+        {
+            good_electron = true;
+            hist1D_SectorEl_reco->Fill(SectorEl);
+        }
+
+        if (!_isData && GoodElectron_MC(ientry, DISLimits))
+        {
+            good_electron_mc = true;
+            hist1D_SectorEl_gene->Fill(mc_SectorEl);
+        }
+
+        if (good_electron && good_electron_mc)
+        {
+            hist1D_SectorEl_mtch->Fill(SectorEl);
+
+            histMigrationMatrixSectorEl->Fill(mc_SectorEl, SectorEl);
+        }
+
+        int vec_entries = PhiPQ->size();
+
+		for (int i=0; i<vec_entries; i++)
+        {
+            good_pion_mc = false, good_pion = false;
+
+            if (good_electron && GoodPiPlus(ientry, i, DISLimits))
+            {
+                n_pions++;
+                good_pion = true;
+
+                hist1D_Sector_reco->Fill(Sector->at(i));
+
+                hist2D_Sector_PhiPQ_reco->Fill(Sector->at(i), PhiPQ->at(i));
+                hist2D_SectorEl_PhiPQ_reco->Fill(SectorEl, PhiPQ->at(i));
+            }
+
+            if (!_isData && good_electron_mc && GoodPiPlus_MC(ientry, i, DISLimits))
+            {
+                good_pion_mc = true;
+                n_pions_mc++;
+
+                hist1D_Sector_gene->Fill(mc_Sector->at(i));
+
+                hist2D_Sector_PhiPQ_gene->Fill(mc_Sector->at(i), mc_PhiPQ->at(i));
+                hist2D_SectorEl_PhiPQ_gene->Fill(mc_SectorEl, mc_PhiPQ->at(i));
+            }
+
+            if (good_pion && good_pion_mc)
+            {
+                n_pions_match++;
+                at_least_one_pion_mtch = true;
+
+                hist1D_Sector_mtch->Fill(Sector->at(i));
+
+                hist2D_Sector_PhiPQ_mtch->Fill(Sector->at(i), PhiPQ->at(i));
+                hist2D_SectorEl_PhiPQ_mtch->Fill(SectorEl, PhiPQ->at(i));
+
+                histMigrationMatrixSector->Fill(mc_Sector->at(i), Sector->at(i));
+            }
+        }   // loop over tracks
+
+        if (at_least_one_pion_mtch && good_electron && good_electron_mc)
+        {
+            hist1D_SectorEl_mtch_Pi->Fill(SectorEl);
+
+            histMigrationMatrixSectorEl_Pi->Fill(mc_SectorEl, SectorEl);
+        }
+    }       // loop over entries
+
+    std::cout << "There are " << n_pions << " final state Pions." << std::endl;
+    if (!_isData) std::cout << "There are " << n_pions_match << " matching pions out of " << n_pions_mc << " generated." << std::endl;
+
+    if (_isData)
+    {
+        hist1D_Sector_mtch->Delete();
+        hist1D_Sector_gene->Delete();
+
+        hist1D_SectorEl_mtch->Delete();
+        hist1D_SectorEl_gene->Delete();
+
+        hist1D_SectorEl_mtch_Pi->Delete();
+
+        hist2D_Sector_PhiPQ_mtch->Delete();
+        hist2D_SectorEl_PhiPQ_mtch->Delete();
+
+        hist2D_Sector_PhiPQ_gene->Delete();
+        hist2D_SectorEl_PhiPQ_gene->Delete();
+
+        histMigrationMatrixSector->Delete();
+        histMigrationMatrixSectorEl->Delete();
+        histMigrationMatrixSectorEl_Pi->Delete();
+    }
+
+    std::cout << "Made it to the end. Saving..." << std::endl;
+
+    fout->Write();
+    fout->Close();
+}
