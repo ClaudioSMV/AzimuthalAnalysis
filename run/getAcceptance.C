@@ -4,7 +4,7 @@ R__LOAD_LIBRARY(../include/Acceptance_C.so)
 #include "../include/Utility.h"
 
 void getAcceptance(std::string target = "Fe", int binName = 0, std::string cuts = "", std::string nfold = "*")
-// Cuts: "Xf": X Feynman
+// Cuts: "Xf": X Feynman; "DS": Delta Sector != 0;
 {
     if ("1"<=cuts && cuts<="9")
     {
@@ -35,5 +35,6 @@ void getAcceptance(std::string target = "Fe", int binName = 0, std::string cuts 
     acc.setTargName(target);
     acc.setBinningType(binName);
     if ( strstr(cuts.c_str(), "Xf") ) { acc.useCut_Xf(); std::cout << "Using Xf cut" << std::endl; }
+    if ( strstr(cuts.c_str(), "DS") ) { acc.useCut_DeltaSector0(); std::cout << "Using Delta Sector != 0 cut" << std::endl; }
     acc.Loop();
 }

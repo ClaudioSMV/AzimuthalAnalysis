@@ -43,7 +43,8 @@ def addBeforeRootExt(path, before_dot, other_extension = "root"):
 
 ### Cuts
 dict_Cut2Code = {"XF": "Xf", "Xf": "Xf",
-                "Sector": "Se", "Sctr": "Se", "Se": "Se",
+                "DeltaSector": "DS", "DSect": "DS", "DSctr": "DS", "DS": "DS",
+                # "Sector": "Se", "Sctr": "Se", "Sect": "Se", "Se": "Se",
                 "FErr": "FE", "FullError": "FE", "FE": "FE",
                 "Z": "Zx", "Zx": "Zx",
                 "P": "Px", "Px": "Px",
@@ -54,9 +55,9 @@ dict_Cut2Code = {"XF": "Xf", "Xf": "Xf",
                 "MixD": "MD", "MD": "MD",
                 }
 
-dict_CutCode2Name = {"Xf": "Xf", "Se": "Sect","FE": "FErr", "Zx": "Z", "Px": "P", "Fd": "Fold", "LR": "LR", "MD": "MixD", #"Lf": "Left", "Rg": "Right",
+dict_CutCode2Name = {"Xf": "Xf", "DS": "DSect0","FE": "FErr", "Zx": "Z", "Px": "P", "Fd": "Fold", "LR": "LR", "MD": "MixD", #"Lf": "Left", "Rg": "Right",
                     }
-cutMasterKey = "Xf0Se0FE0Zx0Px0Fd0LR0MD0" # Yh0 ; Write options in order of applicability (Acc, Corr, Fit, Summary)
+cutMasterKey = "Xf0DS0FE0Zx0Px0Fd0LR0MD0" # Yh0 ; Write options in order of applicability (Acc, Corr, Fit, Summary)
 
 def getCutStrFormat(list_cuts):
     cut_str = ""
@@ -88,7 +89,7 @@ def getCutStrFromStr(cut_str = ""): # Aaaa_Bbb_ccc_Ddd
             this_index = ref_list.index(dict_Cut2Code[elem])
             this_list[this_index] = dict_Cut2Code[elem]+"1"
         else:
-            print("Cut not found! : "%(elem))
+            print("Cut not found! : %s"%(elem))
 
     for elem in this_list:
         if (elem[-1] != "1"):

@@ -29,6 +29,15 @@ void Acceptance::ActivateBranches()
     fChain->SetBranchStatus("*",0);
     std::vector<string> activeBranches = {"TargType", "Q2", "Nu", "Xb", "Yb", "W", "vyec", "Zh", "Pt2", "PhiPQ", "pid", "Xf"}; // , "Nphe"};
     std::vector<string> activeBranches_mc = {"mc_TargType", "mc_Q2", "mc_Nu", "mc_Xb", "mc_Yb", "mc_W", "mc_Zh", "mc_Pt2", "mc_PhiPQ", "mc_pid", "mc_Xf"};
+
+    if (_cutDeltaSector0)
+    {
+        activeBranches.push_back("SectorEl");
+        activeBranches.push_back("Sector");
+        activeBranches_mc.push_back("mc_SectorEl");
+        activeBranches_mc.push_back("mc_Sector");
+    }
+
     for (const auto &activeBranch : activeBranches)
     {
         fChain->SetBranchStatus(activeBranch.c_str(), 1);

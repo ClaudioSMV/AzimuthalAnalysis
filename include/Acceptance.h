@@ -23,6 +23,7 @@ private:
     int _binIndex = -1;
     int _binNdims = 0; // 2: Leptonic, 3: Leptonic+Zh
     bool _cutXf = false;
+    bool _cutDeltaSector0 = false;
 
 public: // Internal values
     void setTargTypeCut(size_t targTypeCut) { _targTypeCut = targTypeCut; }
@@ -35,6 +36,7 @@ public: // Internal values
 
 public: // Cuts
     void useCut_Xf() { _cutXf = true; }
+    void useCut_DeltaSector0() { _cutDeltaSector0 = true; }
 
 public:
     TTree *fChain;  //! pointer to the analyzed TTree or TChain
@@ -308,6 +310,10 @@ std::string Acceptance::getAccFoldNameExt() //getNameAccFormat() // Only cuts
     if (_cutXf)
     {
         this_name+="_Xf";
+    }
+    if (_cutDeltaSector0)
+    {
+        this_name+="_DSect0";
     }
     return this_name;
 }
@@ -606,6 +612,10 @@ Bool_t Acceptance::GoodPiPlus_MC(Long64_t entry, int ivec, vector<vector<double>
     {
         pass_DIS = pass_DIS && (mc_Xf->at(ivec))>0;
     }
+    if (_cutDeltaSector0)
+    {
+        pass_DIS = pass_DIS && abs(mc_SectorEl - mc_Sector->at(ivec))>0;
+    }
 
     return pass_DIS;
 }
@@ -633,6 +643,10 @@ Bool_t Acceptance::GoodPiPlus(Long64_t entry, int ivec, vector<vector<double>> D
     if (_cutXf)
     {
         pass_DIS = pass_DIS && (Xf->at(ivec))>0;
+    }
+    if (_cutDeltaSector0)
+    {
+        pass_DIS = pass_DIS && abs(SectorEl - Sector->at(ivec))>0;
     }
 
     return pass_DIS;

@@ -11,9 +11,9 @@
 #               2: Regular bins in Zh, Pt2, and PhiPQ;                     #
 #               3: Regular bins in Pt2, and PhiPQ;)                        #
 #  <cuts>    = Format "AA_BB_CC" (Empty is default)                        #
-#  "Xf": Use Xf from data; "FE": Use FullError; "Zx": x-axis is Zh;        #
-#  "Px": x-axis is Pt2; "Fd": Fit uses Fold; "LR": Fit uses both tails;    #
-#  "MD": Mix D info is ratios;                                             #
+#  "Xf": Use Xf from data; "DS": Delta Sector != 0; "FE": Use FullError;   #
+#  "Zx": x-axis is Zh; "Px": x-axis is Pt2; "Fd": Fit uses Fold;           #
+#  "LR": Fit uses both tails; "MD": Mix D info is ratios;                  #
 #                                                                          #
 #  EG: ./FitCrossSection.sh C  0 2 Zx_FE_Fd                                #
 #      ./FitCrossSection.sh Fe 1 3 Zx_LR                                   #
@@ -55,6 +55,13 @@ if [[ $CUTINFO == *"Xf"* ]]; then
     PAR_NCUT="${PAR_NCUT}_Xf"
     PAR_RCUT="${PAR_RCUT}_Xf"
 fi
+if [[ $CUTINFO == *"DS"* ]]; then
+    PREV_CUT="${PREV_CUT}_DS"
+    CORR_CUT="${CORR_CUT}_DS"
+    FITS_CUT="${FITS_CUT}_DS"
+    PAR_NCUT="${PAR_NCUT}_DS"
+    PAR_RCUT="${PAR_RCUT}_DS"
+fi
 if [[ $CUTINFO == *"FE"* ]]; then
     PREV_CUT="${PREV_CUT}_FE"
     CORR_CUT="${CORR_CUT}_FE"
@@ -76,6 +83,7 @@ elif [[ $CUTINFO == *"Px"* ]]; then
     PAR_RCUT="${PAR_RCUT}_Px"
 else
     echo "Remember to select a dependence as x-axis (Zh or Pt2)"
+    exit
 fi
 
 ### From Fit
@@ -88,7 +96,8 @@ elif [[ $CUTINFO == *"LR"* ]]; then
     PAR_NCUT="${PAR_NCUT}_LR"
     PAR_RCUT="${PAR_RCUT}_LR"
 else
-    echo "Remember to choose Fold or Both wings method for the fit!"
+    echo "Remember to choose Fold (Fd) or Both wings (LR) method for the fit!"
+    exit
 fi
 
 ### From ParameterRatio
