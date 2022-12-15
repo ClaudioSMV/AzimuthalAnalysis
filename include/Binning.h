@@ -88,7 +88,7 @@ namespace DIS
       // This map uses _binNdims as input, and says if the final bins need to be redefined (irregular = 1) or remain regular (i.e. same length each = 0)
       // This should be related to what is known as Unbinned Acceptance Correction
       // As far as I know, setting all bins irregular (use 1 option) should be equivalent to use Binned Acceptance Correction
-      std::map<int,std::vector<int>> NIrregBins = {{1,{1,1,1,1,0}}, {2,{1,1,0,0,0}}, {3,{1,1,1,0,0}}};
+      std::map<int,std::vector<int>> NIrregBins = {{1,{1,1,1,1,1}}, {2,{1,1,0,0,0}}, {3,{1,1,1,0,0}}};
     }
 }
 
