@@ -43,6 +43,7 @@ def addBeforeRootExt(path, before_dot, other_extension = "root"):
 
 ### Cuts
 dict_Cut2Code = {"XF": "Xf", "Xf": "Xf",
+                "Sector": "Se", "Sctr": "Se", "Se": "Se",
                 "FErr": "FE", "FullError": "FE", "FE": "FE",
                 "Z": "Zx", "Zx": "Zx",
                 "P": "Px", "Px": "Px",
@@ -53,9 +54,9 @@ dict_Cut2Code = {"XF": "Xf", "Xf": "Xf",
                 "MixD": "MD", "MD": "MD",
                 }
 
-dict_CutCode2Name = {"Xf": "Xf", "FE": "FErr", "Zx": "Z", "Px": "P", "Fd": "Fold", "LR": "LR", "MD": "MixD", #"Lf": "Left", "Rg": "Right",
+dict_CutCode2Name = {"Xf": "Xf", "Se": "Sect","FE": "FErr", "Zx": "Z", "Px": "P", "Fd": "Fold", "LR": "LR", "MD": "MixD", #"Lf": "Left", "Rg": "Right",
                     }
-cutMasterKey = "Xf0FE0Zx0Px0Fd0LR0MD0" # Yh0
+cutMasterKey = "Xf0Se0FE0Zx0Px0Fd0LR0MD0" # Yh0 ; Write options in order of applicability (Acc, Corr, Fit, Summary)
 
 def getCutStrFormat(list_cuts):
     cut_str = ""
@@ -342,7 +343,23 @@ bin_dict_ThinZP = { 'Q': {'Name': "Q^{2}",      'Bins': [1.00, 1.30, 1.80, 4.10]
                     'Z': {'Name': "Z_{h}",      'Bins': [0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.00]},
                     'P': {'Name': "P_{t}^{2}",  'Bins': [0.047, 0.073, 0.112, 0.173, 0.267, 0.411, 0.633, 1.0]}}
 
-all_dicts = [bin_dict, bin_dict_SplitZ, bin_dict_ThinZh, bin_dict_ThinPt, bin_dict_ThinZP]
+bin_dict_ThinZh_CoarsePhi = {   'Q': {'Name': "Q^{2}",      'Bins': [1.00, 1.30, 1.80, 4.10]},
+                                'N': {'Name': "#nu",        'Bins': [2.20, 3.20, 3.70, 4.20]},
+                                'Z': {'Name': "Z_{h}",      'Bins': [0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.00]},
+                                'P': {'Name': "P_{t}^{2}",  'Bins': [0.00, 0.03, 0.06, 0.10, 0.18, 1.00]},
+                                'I': {'Name': "#phi_{PQ}", 'Bins': [-180.00, -162.00, -144.00, -126.00, -108.00, -90.00, -72.00, -54.00,
+                                                                     -36.00, -18.00, 0.00, 18.00, 36.00, 54.00, 72.00, 90.00, 108.00,
+                                                                     126.00, 144.00, 162.00, 180.00]}}
+
+bin_dict_ThinZP_CoarsePhi = {   'Q': {'Name': "Q^{2}",      'Bins': [1.00, 1.30, 1.80, 4.10]},
+                                'N': {'Name': "#nu",        'Bins': [2.20, 3.20, 3.70, 4.20]},
+                                'Z': {'Name': "Z_{h}",      'Bins': [0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.00]},
+                                'P': {'Name': "P_{t}^{2}",  'Bins': [0.047, 0.073, 0.112, 0.173, 0.267, 0.411, 0.633, 1.0]},
+                                'I': {'Name': "#phi_{PQ}", 'Bins': [-180.00, -162.00, -144.00, -126.00, -108.00, -90.00, -72.00, -54.00,
+                                                                     -36.00, -18.00, 0.00, 18.00, 36.00, 54.00, 72.00, 90.00, 108.00,
+                                                                     126.00, 144.00, 162.00, 180.00]}}
+
+all_dicts = [bin_dict, bin_dict_SplitZ, bin_dict_ThinZh, bin_dict_ThinPt, bin_dict_ThinZP, bin_dict_ThinZh_CoarsePhi, bin_dict_ThinZP_CoarsePhi]
 
 kin_vars_list = [   ["Q2", "Nu", "Zh", "Pt2", "PhiPQ"],
                     ["Q^{2}", "#nu", "Z_{h}", "P_{t}^{2}", "#phi_{PQ}"],
