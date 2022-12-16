@@ -90,6 +90,7 @@ def getCutStrFromStr(cut_str = ""): # Aaaa_Bbb_ccc_Ddd
             this_list[this_index] = dict_Cut2Code[elem]+"1"
         else:
             print("Cut not found! : %s"%(elem))
+            exit()
 
     for elem in this_list:
         if (elem[-1] != "1"):

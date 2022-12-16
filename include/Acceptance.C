@@ -1779,11 +1779,13 @@ void Acceptance::Hist2D_PhiPQVsSector()
     ActivateBranches();
     fChain->SetBranchStatus("SectorEl", 1);
     fChain->SetBranchStatus("Sector", 1);
+    fChain->SetBranchStatus("ThetaPQ", 1);
 
     if (!_isData)
     {
         fChain->SetBranchStatus("mc_SectorEl", 1);
         fChain->SetBranchStatus("mc_Sector", 1);
+        fChain->SetBranchStatus("mc_ThetaPQ", 1);
     }
 
     TFile *fout;
@@ -1808,13 +1810,22 @@ void Acceptance::Hist2D_PhiPQVsSector()
     TH2D* hist2D_Sector_PhiPQ_reco = new TH2D("hist2D_Sector_PhiPQ_reco", "Two dimensional map Reco;Sector;#phi_{PQ}" , 6,0,6, 360,-180.0,180.0);
     TH2D* hist2D_SectorEl_PhiPQ_reco = new TH2D("hist2D_SectorEl_PhiPQ_reco", "Two dimensional map Reco;SectorEl;#phi_{PQ}" , 6,0,6, 360,-180.0,180.0);
 
+    TH2D* hist2D_Sector_ThPQ_reco = new TH2D("hist2D_Sector_ThPQ_reco", "Two dimensional map Reco;Sector;#theta_{PQ}" , 6,0,6, 360,-180.0,180.0);
+    TH2D* hist2D_SectorEl_ThPQ_reco = new TH2D("hist2D_SectorEl_ThPQ_reco", "Two dimensional map Reco;SectorEl;#theta_{PQ}" , 6,0,6, 360,-180.0,180.0);
+
     // Reconstructed match
     TH2D* hist2D_Sector_PhiPQ_mtch = new TH2D("hist2D_Sector_PhiPQ_mtch", "Two dimensional map Match;Sector;#phi_{PQ}" , 6,0,6, 360,-180.0,180.0);
     TH2D* hist2D_SectorEl_PhiPQ_mtch = new TH2D("hist2D_SectorEl_PhiPQ_mtch", "Two dimensional map Match;SectorEl;#phi_{PQ}" , 6,0,6, 360,-180.0,180.0);
 
+    TH2D* hist2D_Sector_ThPQ_mtch = new TH2D("hist2D_Sector_ThPQ_mtch", "Two dimensional map Match;Sector;#theta_{PQ}" , 6,0,6, 360,-180.0,180.0);
+    TH2D* hist2D_SectorEl_ThPQ_mtch = new TH2D("hist2D_SectorEl_ThPQ_mtch", "Two dimensional map Match;SectorEl;#theta_{PQ}" , 6,0,6, 360,-180.0,180.0);
+
     // Generated (MC)
     TH2D* hist2D_Sector_PhiPQ_gene = new TH2D("hist2D_Sector_PhiPQ_gene", "Two dimensional map Generated;Sector;#phi_{PQ}" , 6,0,6, 360,-180.0,180.0);
     TH2D* hist2D_SectorEl_PhiPQ_gene = new TH2D("hist2D_SectorEl_PhiPQ_gene", "Two dimensional map Generated;SectorEl;#phi_{PQ}" , 6,0,6, 360,-180.0,180.0);
+
+    TH2D* hist2D_Sector_ThPQ_gene = new TH2D("hist2D_Sector_ThPQ_gene", "Two dimensional map Generated;Sector;#theta_{PQ}" , 6,0,6, 360,-180.0,180.0);
+    TH2D* hist2D_SectorEl_ThPQ_gene = new TH2D("hist2D_SectorEl_ThPQ_gene", "Two dimensional map Generated;SectorEl;#theta_{PQ}" , 6,0,6, 360,-180.0,180.0);
 
     // Bin migration
     TH2D* histMigrationMatrixSector = new TH2D("histMigrationMatrixSector", "Migration Sector;True Sector; Reco Sector", 6,0,6, 6,0,6);
@@ -1881,6 +1892,9 @@ void Acceptance::Hist2D_PhiPQVsSector()
 
                 hist2D_Sector_PhiPQ_reco->Fill(Sector->at(i), PhiPQ->at(i));
                 hist2D_SectorEl_PhiPQ_reco->Fill(SectorEl, PhiPQ->at(i));
+
+                hist2D_Sector_ThPQ_reco->Fill(Sector->at(i), ThetaPQ->at(i));
+                hist2D_SectorEl_ThPQ_reco->Fill(SectorEl, ThetaPQ->at(i));
             }
 
             if (!_isData && good_electron_mc && GoodPiPlus_MC(ientry, i, DISLimits))
@@ -1892,6 +1906,9 @@ void Acceptance::Hist2D_PhiPQVsSector()
 
                 hist2D_Sector_PhiPQ_gene->Fill(mc_Sector->at(i), mc_PhiPQ->at(i));
                 hist2D_SectorEl_PhiPQ_gene->Fill(mc_SectorEl, mc_PhiPQ->at(i));
+
+                hist2D_Sector_ThPQ_gene->Fill(mc_Sector->at(i), mc_ThetaPQ->at(i));
+                hist2D_SectorEl_ThPQ_gene->Fill(mc_SectorEl, mc_ThetaPQ->at(i));
             }
 
             if (good_pion && good_pion_mc)
@@ -1903,6 +1920,9 @@ void Acceptance::Hist2D_PhiPQVsSector()
 
                 hist2D_Sector_PhiPQ_mtch->Fill(Sector->at(i), PhiPQ->at(i));
                 hist2D_SectorEl_PhiPQ_mtch->Fill(SectorEl, PhiPQ->at(i));
+
+                hist2D_Sector_ThPQ_mtch->Fill(Sector->at(i), ThetaPQ->at(i));
+                hist2D_SectorEl_ThPQ_mtch->Fill(SectorEl, ThetaPQ->at(i));
 
                 histMigrationMatrixSector->Fill(mc_Sector->at(i), Sector->at(i));
             }
@@ -1931,9 +1951,13 @@ void Acceptance::Hist2D_PhiPQVsSector()
 
         hist2D_Sector_PhiPQ_mtch->Delete();
         hist2D_SectorEl_PhiPQ_mtch->Delete();
+        hist2D_Sector_ThPQ_mtch->Delete();
+        hist2D_SectorEl_ThPQ_mtch->Delete();
 
         hist2D_Sector_PhiPQ_gene->Delete();
         hist2D_SectorEl_PhiPQ_gene->Delete();
+        hist2D_Sector_ThPQ_gene->Delete();
+        hist2D_SectorEl_ThPQ_gene->Delete();
 
         histMigrationMatrixSector->Delete();
         histMigrationMatrixSectorEl->Delete();

@@ -81,9 +81,14 @@ void getHist2D(std::string target = "Fe", bool isData = true, std::string vars =
         std::cout << "\n >> Running Hist2D_PQVsLab for " << target << " target [file type: " << this_type << "]\n" << std::endl;
         acc.Hist2D_PQVsLab();
     }
+    else if (vars.find("VsSector") != string::npos)
+    {
+        std::cout << "\n >> Running Hist2D_PhiPQVsSector for " << target << " target [file type: " << this_type << "]\n" << std::endl;
+        acc.Hist2D_PhiPQVsSector();
+    }
     else
     {
         std::cout << "\n >> Enter a valid third parameter for macro name. " << std::endl;
-        std::cout << " >> Options: KinVars, XfVsYh, ThetaPQ, LabAngles, PQVsLab.\n" << std::endl;
+        std::cout << " >> Options: KinVars, XfVsYh, ThetaPQ, LabAngles, PQVsLab, PhiPQVsSector.\n" << std::endl;
     }
 }
