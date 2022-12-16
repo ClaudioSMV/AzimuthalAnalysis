@@ -122,4 +122,35 @@ void PrintFilledBins(THnSparse *hSparse)
     std::cout << Form("\tFilled bins: %i (%.4f %%)", (int)(fracFilled*nBins_withEdges), 100*fracFilled*nBins_withEdges/nBins_noEdges) << std::endl;
 }
 
+void CorrectBin(std::vector<double> this_bin, THnSparse *histAcc, THnSparse *histCorr, bool useFErr)
+{
+    int binAcc = histAcc->GetBin(&this_bin[0]);
+    double valueAcc = histAcc->GetBinContent(binAcc);
+
+    if (valueAcc != 0)
+    {
+        double acc_error  = histAcc->GetBinError(binAcc);
+        int binCorr = histCorr->GetBin(&this_bin[0]);
+        double this_content = histCorr->GetBinContent(binCorr) + 1./valueAcc;
+        histCorr->SetBinContent(binCorr, this_content);
+
+        // Get error propagation
+        if (useFErr)
+        {
+            double this_error = TMath::Sqrt(this_content / valueAcc * (1 + this_content*acc_error*acc_error/valueAcc));
+
+            histCorr->SetBinError(binCorr, this_error);
+        }
+        else
+        {
+            acc_error = TMath::Sqrt(1.0 + acc_error*acc_error/(valueAcc*valueAcc))/valueAcc;
+            double old_error = histCorr->GetBinError(binCorr);
+            // Assuming no correlation in event by event
+            double this_error = TMath::Sqrt(old_error*old_error + acc_error*acc_error);
+
+            histCorr->SetBinError(binCorr, this_error);
+        }
+    }
+}
+
 #endif // #ifdef Utility_h
