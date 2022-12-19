@@ -85,12 +85,16 @@ def getCutStrFromStr(cut_str = ""): # Aaaa_Bbb_ccc_Ddd
         list_input.remove("") # = cut_str.split("_")[1:-1]
 
     for elem in list_input:
-        if dict_Cut2Code[elem]:
-            this_index = ref_list.index(dict_Cut2Code[elem])
-            this_list[this_index] = dict_Cut2Code[elem]+"1"
-        else:
-            print("Cut not found! : %s"%(elem))
-            exit()
+        try:
+            if dict_Cut2Code[elem]:
+                this_index = ref_list.index(dict_Cut2Code[elem])
+                this_list[this_index] = dict_Cut2Code[elem]+"1"
+        except:
+            if (("Left" in elem) or ("Right" in elem)):
+                continue
+            else:
+                print("Cut not found! : %s"%(elem))
+                exit()
 
     for elem in this_list:
         if (elem[-1] != "1"):

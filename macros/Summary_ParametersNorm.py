@@ -134,11 +134,15 @@ dataset = options.Dataset
 isJLab = options.JLabCluster
 fit = options.fit
 
+if ("LR" in myStyle.getCutStrFromStr(options.inputCuts) and (not "Left" in options.inputCuts) and (not "Right" in options.inputCuts)):
+    print("Specify \"Left\" or \"Right\" in input when using \"LR\" method!")
+    exit()
+
 if "Fold" in myStyle.getCutStrFromStr(options.inputCuts):
     fit = "F"
-elif "Left" in myStyle.getCutStrFromStr(options.inputCuts):
+elif ("Left" in myStyle.getCutStrFromStr(options.inputCuts) or "Left" in options.inputCuts):
     fit = "L"
-elif "Right" in myStyle.getCutStrFromStr(options.inputCuts):
+elif ("Right" in myStyle.getCutStrFromStr(options.inputCuts) or "Right" in options.inputCuts):
     fit = "R"
 
 fit_type = "Fd" if "F" in fit else "LR"
@@ -365,9 +369,13 @@ for p,par in enumerate(["B", "C"]):
 
     this_title_gif = myStyle.getSummaryPath("Par%s_Norm%s"%(par,dataset_title), "gif", plots_cuts, isJLab)
     this_title_gif = myStyle.addBeforeRootExt(this_title_gif, "_%s"%(whatsPlot), "gif")
+    if ("LR" in this_title_gif):
+        this_title_gif = myStyle.addBeforeRootExt(this_title_gif, "-%s"%(fit), "gif")
 
     this_title_pdf = myStyle.getSummaryPath("Par%s_Norm%s"%(par,dataset_title), "pdf", plots_cuts, isJLab)
     this_title_pdf = myStyle.addBeforeRootExt(this_title_pdf, "_%s"%(whatsPlot), "pdf")
+    if ("LR" in this_title_pdf):
+        this_title_pdf = myStyle.addBeforeRootExt(this_title_pdf, "-%s"%(fit), "pdf")
 
     this_canvas.SaveAs(this_title_gif)
     this_canvas.SaveAs(this_title_pdf)
