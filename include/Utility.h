@@ -122,6 +122,21 @@ void PrintFilledBins(THnSparse *hSparse)
     std::cout << Form("\tFilled bins: %i (%.4f %%)", (int)(fracFilled*nBins_withEdges), 100*fracFilled*nBins_withEdges/nBins_noEdges) << std::endl;
 }
 
+pair<double, double> GetCorrectValue(std::vector<double> this_bin, THnSparse *histAcc)
+{
+    int binAcc = histAcc->GetBin(&this_bin[0]);
+    double acc_value = histAcc->GetBinContent(binAcc);
+    pair<double, double> this_pair;
+
+    if (acc_value != 0)
+    {
+        double acc_error  = histAcc->GetBinError(binAcc);
+        this_pair.first = acc_value;
+        this_pair.second = acc_error;
+    }
+    return this_pair;
+}
+
 void CorrectBin(std::vector<double> this_bin, THnSparse *histAcc, THnSparse *histCorr, bool useFErr)
 {
     int binAcc = histAcc->GetBin(&this_bin[0]);

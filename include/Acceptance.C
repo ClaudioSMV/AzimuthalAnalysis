@@ -1632,6 +1632,16 @@ void Acceptance::Hist2D_PhiPQVsSector()
         fChain->SetBranchStatus("mc_ThetaPQ", 1);
     }
 
+    std::string acc_folder = "../output/JLab_cluster/Acceptance" + getAccFoldNameExt();
+    if (!FileExists(Form("%s/Acceptance_%s.root", acc_folder.c_str(), getAccFileName().c_str())))
+    {
+        std::cout << "Acceptance file not found in JLab_cluster folder." << std::endl;
+        exit(0);
+    }
+    TFile *facc = TFile::Open(Form("%s/Acceptance_%s.root", acc_folder.c_str(), getAccFileName().c_str()), "READ");
+    THnSparse *histAcc = (THnSparse*)facc->Get("histAcc_Reconstru");
+
+    setBinningType(-1);
     TFile *fout;
     std::string h2d_folder = "../output/Hist2D" + getFoldNameExt();
     CreateDir(h2d_folder);
@@ -1657,12 +1667,24 @@ void Acceptance::Hist2D_PhiPQVsSector()
     TH2D* hist2D_Sector_ThPQ_reco = new TH2D("hist2D_Sector_ThPQ_reco", "Two dimensional map Reco;Sector;#theta_{PQ}" , 6,0,6, 360,-180.0,180.0);
     TH2D* hist2D_SectorEl_ThPQ_reco = new TH2D("hist2D_SectorEl_ThPQ_reco", "Two dimensional map Reco;SectorEl;#theta_{PQ}" , 6,0,6, 360,-180.0,180.0);
 
+    TH2D* hist2D_Sector_PhiPQ_recoAcc = new TH2D("hist2D_Sector_PhiPQ_recoAcc", "Two dimensional map Reco Acc;Sector;#phi_{PQ}" , 6,0,6, 360,-180.0,180.0);
+    TH2D* hist2D_SectorEl_PhiPQ_recoAcc = new TH2D("hist2D_SectorEl_PhiPQ_recoAcc", "Two dimensional map Reco Acc;SectorEl;#phi_{PQ}" , 6,0,6, 360,-180.0,180.0);
+
+    TH2D* hist2D_Sector_ThPQ_recoAcc = new TH2D("hist2D_Sector_ThPQ_recoAcc", "Two dimensional map Reco Acc;Sector;#theta_{PQ}" , 6,0,6, 360,-180.0,180.0);
+    TH2D* hist2D_SectorEl_ThPQ_recoAcc = new TH2D("hist2D_SectorEl_ThPQ_recoAcc", "Two dimensional map Reco Acc;SectorEl;#theta_{PQ}" , 6,0,6, 360,-180.0,180.0);
+
     // Reconstructed match
     TH2D* hist2D_Sector_PhiPQ_mtch = new TH2D("hist2D_Sector_PhiPQ_mtch", "Two dimensional map Match;Sector;#phi_{PQ}" , 6,0,6, 360,-180.0,180.0);
     TH2D* hist2D_SectorEl_PhiPQ_mtch = new TH2D("hist2D_SectorEl_PhiPQ_mtch", "Two dimensional map Match;SectorEl;#phi_{PQ}" , 6,0,6, 360,-180.0,180.0);
 
     TH2D* hist2D_Sector_ThPQ_mtch = new TH2D("hist2D_Sector_ThPQ_mtch", "Two dimensional map Match;Sector;#theta_{PQ}" , 6,0,6, 360,-180.0,180.0);
     TH2D* hist2D_SectorEl_ThPQ_mtch = new TH2D("hist2D_SectorEl_ThPQ_mtch", "Two dimensional map Match;SectorEl;#theta_{PQ}" , 6,0,6, 360,-180.0,180.0);
+
+    TH2D* hist2D_Sector_PhiPQ_mtchAcc = new TH2D("hist2D_Sector_PhiPQ_mtchAcc", "Two dimensional map Match Acc;Sector;#phi_{PQ}" , 6,0,6, 360,-180.0,180.0);
+    TH2D* hist2D_SectorEl_PhiPQ_mtchAcc = new TH2D("hist2D_SectorEl_PhiPQ_mtchAcc", "Two dimensional map Match Acc;SectorEl;#phi_{PQ}" , 6,0,6, 360,-180.0,180.0);
+
+    TH2D* hist2D_Sector_ThPQ_mtchAcc = new TH2D("hist2D_Sector_ThPQ_mtchAcc", "Two dimensional map Match Acc;Sector;#theta_{PQ}" , 6,0,6, 360,-180.0,180.0);
+    TH2D* hist2D_SectorEl_ThPQ_mtchAcc = new TH2D("hist2D_SectorEl_ThPQ_mtchAcc", "Two dimensional map Match Acc;SectorEl;#theta_{PQ}" , 6,0,6, 360,-180.0,180.0);
 
     // Generated (MC)
     TH2D* hist2D_Sector_PhiPQ_gene = new TH2D("hist2D_Sector_PhiPQ_gene", "Two dimensional map Generated;Sector;#phi_{PQ}" , 6,0,6, 360,-180.0,180.0);
@@ -1681,6 +1703,7 @@ void Acceptance::Hist2D_PhiPQVsSector()
     Long64_t nentries = fChain->GetEntries();
     Long64_t nbytes = 0, nb = 0;
     unsigned int entries_to_process = nentries;
+    std::vector<double> binKinVars;
     int n_pions = 0, n_pions_mc = 0, n_pions_match = 0;
     bool good_electron_mc = false, good_electron = false;
     bool good_pion_mc = false, good_pion = false;
@@ -1729,8 +1752,8 @@ void Acceptance::Hist2D_PhiPQVsSector()
 
             if (good_electron && GoodPiPlus(ientry, i, DISLimits))
             {
-                n_pions++;
                 good_pion = true;
+                n_pions++;
 
                 hist1D_Sector_reco->Fill(Sector->at(i));
 
@@ -1739,6 +1762,20 @@ void Acceptance::Hist2D_PhiPQVsSector()
 
                 hist2D_Sector_ThPQ_reco->Fill(Sector->at(i), ThetaPQ->at(i));
                 hist2D_SectorEl_ThPQ_reco->Fill(SectorEl, ThetaPQ->at(i));
+
+                binKinVars = {Q2, Nu, Zh->at(i), Pt2->at(i), PhiPQ->at(i)};
+
+                pair<double, double> acc_val = GetCorrectValue(binKinVars, histAcc);
+                if (acc_val.first != 0 && acc_val.second != 0)
+                {
+                    double weight = 1./acc_val.first;
+
+                    hist2D_Sector_PhiPQ_recoAcc->Fill(Sector->at(i), PhiPQ->at(i), weight);
+                    hist2D_SectorEl_PhiPQ_recoAcc->Fill(SectorEl, PhiPQ->at(i), weight);
+
+                    hist2D_Sector_ThPQ_recoAcc->Fill(Sector->at(i), ThetaPQ->at(i), weight);
+                    hist2D_SectorEl_ThPQ_recoAcc->Fill(SectorEl, ThetaPQ->at(i), weight);
+                }
             }
 
             if (!_isData && good_electron_mc && GoodPiPlus_MC(ientry, i, DISLimits))
@@ -1757,8 +1794,8 @@ void Acceptance::Hist2D_PhiPQVsSector()
 
             if (good_pion && good_pion_mc)
             {
-                n_pions_match++;
                 at_least_one_pion_mtch = true;
+                n_pions_match++;
 
                 hist1D_Sector_mtch->Fill(Sector->at(i));
 
@@ -1767,6 +1804,20 @@ void Acceptance::Hist2D_PhiPQVsSector()
 
                 hist2D_Sector_ThPQ_mtch->Fill(Sector->at(i), ThetaPQ->at(i));
                 hist2D_SectorEl_ThPQ_mtch->Fill(SectorEl, ThetaPQ->at(i));
+
+                binKinVars = {Q2, Nu, Zh->at(i), Pt2->at(i), PhiPQ->at(i)};
+
+                pair<double, double> acc_val = GetCorrectValue(binKinVars, histAcc);
+                if (acc_val.first != 0 && acc_val.second != 0)
+                {
+                    double weight = 1./acc_val.first;
+
+                    hist2D_Sector_PhiPQ_mtchAcc->Fill(Sector->at(i), PhiPQ->at(i), weight);
+                    hist2D_SectorEl_PhiPQ_mtchAcc->Fill(SectorEl, PhiPQ->at(i), weight);
+
+                    hist2D_Sector_ThPQ_mtchAcc->Fill(Sector->at(i), ThetaPQ->at(i), weight);
+                    hist2D_SectorEl_ThPQ_mtchAcc->Fill(SectorEl, ThetaPQ->at(i), weight);
+                }
 
                 histMigrationMatrixSector->Fill(mc_Sector->at(i), Sector->at(i));
             }
@@ -1798,6 +1849,11 @@ void Acceptance::Hist2D_PhiPQVsSector()
         hist2D_Sector_ThPQ_mtch->Delete();
         hist2D_SectorEl_ThPQ_mtch->Delete();
 
+        hist2D_Sector_PhiPQ_mtchAcc->Delete();
+        hist2D_SectorEl_PhiPQ_mtchAcc->Delete();
+        hist2D_Sector_ThPQ_mtchAcc->Delete();
+        hist2D_SectorEl_ThPQ_mtchAcc->Delete();
+
         hist2D_Sector_PhiPQ_gene->Delete();
         hist2D_SectorEl_PhiPQ_gene->Delete();
         hist2D_Sector_ThPQ_gene->Delete();
@@ -1812,4 +1868,5 @@ void Acceptance::Hist2D_PhiPQVsSector()
 
     fout->Write();
     fout->Close();
+    facc->Close();
 }
