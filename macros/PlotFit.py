@@ -3,6 +3,7 @@ import ROOT
 import os
 import optparse
 import myStyle
+from array import array
 
 gROOT.SetBatch( True )
 gStyle.SetOptFit(1)
@@ -79,9 +80,14 @@ for h in list_of_hists:
             hist = h.ReadObj()
             Nbins = hist.GetXaxis().GetNbins()
 
+            bin_zero = hist.FindBin(0.0)
+            vect_limits = [0.0]
+            for b in range(bin_zero, Nbins+1):
+                vect_limits.append(hist.GetBinLowEdge(b+1))
+
             if useFold:
                 ## Fold two tails in one
-                hist_tmp = TH1D("%s_Fd"%(h.GetName()), ";#phi_{PQ} (deg);Counts", Nbins/2, 0.0,180.0)
+                hist_tmp = TH1D("%s_Fd"%(h.GetName()), ";#phi_{PQ} (deg);Counts", len(vect_limits)-1, array('d',vect_limits))
                 # hist_tmp.Sumw2()
 
                 for b in range(1, Nbins+1):
@@ -115,6 +121,11 @@ for h in list_of_hists:
             limit_bin_R = hist_tmp.GetMinimumBin()
             fit_min_limit_R = hist_tmp.GetBinLowEdge(limit_bin_R)
             hist_tmp.GetXaxis().UnZoom()
+
+            if (Nbins%2==1):
+                if not useFold:
+                    fit_min_limit_L = hist.GetBinLowEdge(bin_zero)
+                fit_min_limit_R = hist_tmp.GetBinLowEdge(bin_zero+1)
 
             #print("Fit limit: %.2f (Bin %i)"%(fit_min_limit, limit_bin))
 
