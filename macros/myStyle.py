@@ -361,7 +361,15 @@ bin_dict_ThinZP_CoarsePhi = {   'Q': {'Name': "Q^{2}",      'Bins': [1.00, 1.30,
                                                                      -36.00, -18.00, 0.00, 18.00, 36.00, 54.00, 72.00, 90.00, 108.00,
                                                                      126.00, 144.00, 162.00, 180.00]}}
 
-all_dicts = [bin_dict, bin_dict_SplitZ, bin_dict_ThinZh, bin_dict_ThinPt, bin_dict_ThinZP, bin_dict_ThinZh_CoarsePhi, bin_dict_ThinZP_CoarsePhi]
+bin_dict_ThinZP_OddPhi = {  'Q': {'Name': "Q^{2}",      'Bins': [1.00, 1.30, 1.80, 4.10]},
+                            'N': {'Name': "#nu",        'Bins': [2.20, 3.20, 3.70, 4.20]},
+                            'Z': {'Name': "Z_{h}",      'Bins': [0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.00]},
+                            'P': {'Name': "P_{t}^{2}",  'Bins': [0.047, 0.073, 0.112, 0.173, 0.267, 0.411, 0.633, 1.0]},
+                            'I': {'Name': "#phi_{PQ}",  'Bins': [-180.00, -156.00, -132.00, -108.00, -84.00, -60.00, -36.00, -12.00,
+                                                                   12.00, 36.00, 60.00, 84.00, 108.00, 132.00, 156.00, 180.00]}}
+
+all_dicts = [   bin_dict, bin_dict_SplitZ, bin_dict_ThinZh, bin_dict_ThinPt, bin_dict_ThinZP, bin_dict_ThinZh_CoarsePhi,
+                bin_dict_ThinZP_CoarsePhi, bin_dict_ThinZP_OddPhi]
 
 kin_vars_list = [   ["Q2", "Nu", "Zh", "Pt2", "PhiPQ"],
                     ["Q^{2}", "#nu", "Z_{h}", "P_{t}^{2}", "#phi_{PQ}"],

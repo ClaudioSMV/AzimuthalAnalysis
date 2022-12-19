@@ -80,8 +80,15 @@ namespace DIS
                                                    {-180.00, -162.00, -144.00, -126.00, -108.00, -90.00, -72.00, -54.00, -36.00, -18.00, 0.00,
                                                      18.00, 36.00, 54.00, 72.00, 90.00, 108.00, 126.00, 144.00, 162.00, 180.00}}; // 20 bins
 
+    // 7
+    std::vector<std::vector<double>> Bin_ThinZP_OddPhi = {{1.00, 1.30, 1.80, 4.10}, // 3   -> Total = 9,450
+                                                   {2.20, 3.20, 3.70, 4.20}, // 3
+                                                   {0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.00}, // 10
+                                                   {0.047, 0.073, 0.112, 0.173, 0.267, 0.411, 0.633, 1.0}, // 7
+                                                   {-180, -156, -132, -108, -84, -60, -36, -12, 12, 36, 60, 84, 108, 132, 156, 180}}; // 15 bins
+
     std::vector<std::vector<std::vector<double>>> Bin_List = {Bin_Origin, Bin_SplitZ, Bin_ThinZh, Bin_ThinPt, Bin_ThinZP, Bin_ThinZh_CoarsePhi,
-                                                              Bin_ThinZP_CoarsePhi};
+                                                              Bin_ThinZP_CoarsePhi, Bin_ThinZP_OddPhi};
 
     namespace Correction
     {
