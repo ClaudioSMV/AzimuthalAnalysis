@@ -41,4 +41,4 @@
 # Unwanted folders
 .vscode
 /output
-/tmp
+run/sh/tmp
