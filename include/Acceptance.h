@@ -206,6 +206,7 @@ public:
     virtual void Hist2D_LabAngles();
     virtual void Hist2D_PQVsLab();
     virtual void Hist2D_PhiPQVsSector();
+    virtual void Hist2D_PhiPQVsDeltaSector();
     virtual void Correction();
     virtual void ClosureTest();
     virtual Bool_t Notify();

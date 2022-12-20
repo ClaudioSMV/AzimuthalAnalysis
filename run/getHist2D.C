@@ -91,9 +91,20 @@ void getHist2D(std::string target = "Fe", bool isData = true, std::string vars =
         std::cout << "\n >> Running Hist2D_PhiPQVsSector for " << target << " target [file type: " << this_type << "]\n" << std::endl;
         acc.Hist2D_PhiPQVsSector();
     }
+    else if (vars.find("VsDeltaSector") != string::npos)
+    {
+        // Select a binning for the acceptance!
+        int this_bin;
+        std::cout << "Enter binning for acceptance:" << std::endl;
+        std::cin >> this_bin;
+        acc.setBinningType(this_bin);
+        std::cout << "\n >> Running Hist2D_PhiPQVsDeltaSector for " << target << " target [file type: " << this_type << "]\n" << std::endl;
+        acc.Hist2D_PhiPQVsDeltaSector();
+    }
     else
     {
         std::cout << "\n >> Enter a valid third parameter for macro name. " << std::endl;
-        std::cout << " >> Options: KinVars, XfVsYh, ThetaPQ, LabAngles, PQVsLab, PhiPQVsSector.\n" << std::endl;
+        std::cout << " >> Options: KinVars, XfVsYh, ThetaPQ, LabAngles, PQVsLab," << std::endl;
+        std::cout << "             PhiPQVsSector, PhiPQVsDeltaSector.\n" << std::endl;
     }
 }
