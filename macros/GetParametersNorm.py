@@ -1,5 +1,6 @@
 from ROOT import TFile,TTree,TCanvas,TH1I,TH1D,TH1F,TH2D,TH2F,TLatex,TMath,TColor,TLegend,TEfficiency,TGraphAsymmErrors,gROOT,gPad,TF1,gStyle,kBlack,kWhite,TH1
 import ROOT
+import os
 import optparse
 import myStyle
 
@@ -32,6 +33,7 @@ parser.add_option('-v', dest='verbose', action='store_true', default = False, he
 
 parser.add_option('-F', dest='fold', action='store_true', default = False, help="Use fold tails (default does not)")
 parser.add_option('-e', dest='errorFull', action='store_true', default = False, help="Use FullError")
+parser.add_option('-O', dest='Overwrite', action='store_true', default = False, help="Overwrite if file already exists")
 
 # input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
@@ -67,6 +69,9 @@ inputfile = TFile(inputPath+inputROOT,"READ")
 ## Output
 outputPath = myStyle.getPlotsFolder("FitParametersNorm", plots_cuts, infoDict["Target"], isJLab)
 outputROOT = myStyle.getPlotsFile("Parameters", dataset, "root", fit_type)
+if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
+    print("Parameters normalized file already exists! Not overwriting it.")
+    exit()
 
 
 list_func_names = ["crossSectionR"]

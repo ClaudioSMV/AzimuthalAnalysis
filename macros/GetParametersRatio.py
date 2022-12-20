@@ -37,6 +37,7 @@ parser.add_option('-e', dest='errorFull', action='store_true', default = False, 
 parser.add_option('-m', dest='mixD', action='store_true', default = False, help="Mix deuterium data from all solid targets")
 parser.add_option('-Z', dest='useZh',  action='store_true', default = False, help="Use bin in Zh, integrate Pt2")
 parser.add_option('-P', dest='usePt2', action='store_true', default = False, help="Use bin in Pt2, integrate Zh")
+parser.add_option('-O', dest='Overwrite', action='store_true', default = False, help="Overwrite if file already exists")
 
 # input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
@@ -110,6 +111,9 @@ inputfile_solid = TFile(inputPath_solid+inputROOT_solid,"READ")
 ## Output
 outputPath = myStyle.getPlotsFolder("FitParametersRatio", plots_cuts, infoDict["Target"], isJLab)
 outputROOT = myStyle.getPlotsFile("ParametersRatio", dataset, "root", fit_type)
+if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
+    print("Parameters ratio file already exists! Not overwriting it.")
+    exit()
 
 list_func_names = ["crossSectionR"]
 if not useFold:

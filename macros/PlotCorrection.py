@@ -24,6 +24,7 @@ parser.add_option('-o', dest='outputCuts', default = "", help="Add output cuts F
 parser.add_option('-e', dest='errorFull', action='store_true', default = False, help="Use FullError")
 parser.add_option('-Z', dest='useZh',  action='store_true', default = False, help="Use bin in Zh, integrate Pt2")
 parser.add_option('-P', dest='usePt2', action='store_true', default = False, help="Use bin in Pt2, integrate Zh")
+parser.add_option('-O', dest='Overwrite', action='store_true', default = False, help="Overwrite if file already exists")
 
 # input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
@@ -69,6 +70,9 @@ inputfile = TFile(inputPath,"READ")
 ## Output
 outputPath = myStyle.getPlotsFolder("Correction", plots_cuts, infoDict["Target"], isJLab)
 outputROOT = myStyle.getPlotsFile("Corrected", dataset, "root")
+if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
+    print("Correction already exists! Not overwriting it.")
+    exit()
 
 histCorr_Reconstru = inputfile.Get("Corr_Reconstru")
 histCorr_ReMtch_mc = inputfile.Get("Corr_ReMtch_mc")

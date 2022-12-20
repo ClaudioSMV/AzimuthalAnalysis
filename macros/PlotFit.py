@@ -24,6 +24,7 @@ parser.add_option('-o', dest='outputCuts', default = "", help="Add output cuts F
 
 parser.add_option('-F', dest='fold', action='store_true', default = False, help="Use fold tails (default fits both tails separated)")
 parser.add_option('-e', dest='errorFull', action='store_true', default = False, help="Use FullError")
+parser.add_option('-O', dest='Overwrite', action='store_true', default = False, help="Overwrite if file already exists")
 
 # input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
@@ -58,6 +59,9 @@ inputfile = TFile(inputPath+inputROOT,"READ")
 ## Output
 outputPath = myStyle.getPlotsFolder("Fit", plots_cuts, infoDict["Target"], isJLab)
 outputROOT = myStyle.getPlotsFile("Fit", dataset, "root", fit_type)
+if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
+    print("Fit already exists! Not overwriting it.")
+    exit()
 
 list_of_hists = inputfile.GetListOfKeys()
 

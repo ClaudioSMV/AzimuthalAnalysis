@@ -25,6 +25,7 @@ parser.add_option('-v', dest='verbose', action='store_true', default = False, he
 parser.add_option('-F', dest='fold', action='store_true', default = False, help="Use fold tails (default does not)")
 parser.add_option('-e', dest='errorFull', action='store_true', default = False, help="Use FullError")
 parser.add_option('--zoom', dest='useZoom', action='store_true', default = False, help="Zoom y-axis range (useful for solid target)")
+parser.add_option('-O', dest='Overwrite', action='store_true', default = False, help="Overwrite if file already exists")
 
 # input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
@@ -62,6 +63,9 @@ inputfile = TFile(inputPath+inputROOT,"READ")
 ## Output
 outputPath = myStyle.getPlotsFolder("FitParameters", plots_cuts, infoDict["Target"], isJLab)
 outputROOT = myStyle.getPlotsFile("Parameters", dataset, "root", fit_type)
+if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
+    print("Parameters file already exists! Not overwriting it.")
+    exit()
 
 list_func_names = ["crossSectionR"]
 if not useFold:
