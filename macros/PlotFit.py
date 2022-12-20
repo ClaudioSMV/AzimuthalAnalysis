@@ -82,8 +82,8 @@ for h in list_of_hists:
 
             bin_zero = hist.FindBin(0.0)
             vect_limits = [0.0]
-            for b in range(bin_zero, Nbins+1):
-                vect_limits.append(hist.GetBinLowEdge(b+1))
+            for bt in range(bin_zero, Nbins+1):
+                vect_limits.append(hist.GetBinLowEdge(bt+1))
 
             if useFold:
                 ## Fold two tails in one
@@ -122,10 +122,10 @@ for h in list_of_hists:
             fit_min_limit_R = hist_tmp.GetBinLowEdge(limit_bin_R)
             hist_tmp.GetXaxis().UnZoom()
 
-            if (Nbins%2==1):
+            if ((Nbins%2)==1): # Odd binning
                 if not useFold:
                     fit_min_limit_L = hist.GetBinLowEdge(bin_zero)
-                fit_min_limit_R = hist_tmp.GetBinLowEdge(bin_zero+1)
+                fit_min_limit_R = hist.GetBinLowEdge(bin_zero+1)
 
             #print("Fit limit: %.2f (Bin %i)"%(fit_min_limit, limit_bin))
 
@@ -161,12 +161,16 @@ for h in list_of_hists:
             myStyle.DrawBinInfo(tmp_txt, infoDict["BinningType"])
 
             if not useFold:
-                str_FitL = TLatex(-15, 0.8*hist.GetBinContent(limit_bin_L), "#chi^2 / ndf = %.2f / %i"%(fit_funct_left.GetChisquare(), fit_funct_left.GetNDF()))
+                chisq_L = fit_funct_left.GetChisquare()
+                ndf_L = fit_funct_left.GetNDF()
+                str_FitL = TLatex(-15, 1.1*hist.GetMaximum(), "#chi^{2} / ndf = %.2f / %i = %.2f"%(chisq_L, ndf_L, chisq_L/ndf_L))
                 str_FitL.SetTextAlign(33)
                 str_FitL.SetTextSize(myStyle.GetSize()-6)
                 str_FitL.Draw()
 
-                str_FitR = TLatex(15, 0.8*hist.GetBinContent(limit_bin_R), "#chi^2 / ndf = %.2f / %i"%(fit_funct_right.GetChisquare(), fit_funct_right.GetNDF()))
+                chisq_R = fit_funct_right.GetChisquare()
+                ndf_R = fit_funct_right.GetNDF()
+                str_FitR = TLatex(15, 1.1*hist.GetMaximum(), "#chi^{2} / ndf = %.2f / %i = %.2f"%(chisq_R, ndf_R, chisq_R/ndf_R))
                 str_FitR.SetTextAlign(13)
                 str_FitR.SetTextSize(myStyle.GetSize()-6)
                 str_FitR.Draw()
