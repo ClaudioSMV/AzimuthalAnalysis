@@ -1635,8 +1635,17 @@ void Acceptance::Hist2D_PhiPQVsSector()
     std::string acc_folder = "../output/JLab_cluster/Acceptance" + getAccFoldNameExt();
     if (!FileExists(Form("%s/Acceptance_%s.root", acc_folder.c_str(), getAccFileName().c_str())))
     {
-        std::cout << "Acceptance file not found in JLab_cluster folder." << std::endl;
-        exit(0);
+        if (!FileExists(Form("../output/Acceptance%s/Acceptance_%s.root", getAccFoldNameExt().c_str(), getAccFileName().c_str())))
+        {
+            std::cout << "Acceptance file not found. Run getAcceptance before!" << std::endl;
+            exit(0);
+        }
+        else
+        {
+            std::cout << "Acceptance file not found in JLab_cluster folder." << std::endl;
+            std::cout << "Using Acceptance from /output/." << std::endl;
+            acc_folder = "../output/Acceptance" + getAccFoldNameExt();
+        }
     }
     TFile *facc = TFile::Open(Form("%s/Acceptance_%s.root", acc_folder.c_str(), getAccFileName().c_str()), "READ");
     THnSparse *histAcc = (THnSparse*)facc->Get("histAcc_Reconstru");
@@ -1888,8 +1897,17 @@ void Acceptance::Hist2D_PhiPQVsDeltaSector()
     std::string acc_folder = "../output/JLab_cluster/Acceptance" + getAccFoldNameExt();
     if (!FileExists(Form("%s/Acceptance_%s.root", acc_folder.c_str(), getAccFileName().c_str())))
     {
-        std::cout << "Acceptance file not found in JLab_cluster folder." << std::endl;
-        exit(0);
+        if (!FileExists(Form("../output/Acceptance%s/Acceptance_%s.root", getAccFoldNameExt().c_str(), getAccFileName().c_str())))
+        {
+            std::cout << "Acceptance file not found. Run getAcceptance before!" << std::endl;
+            exit(0);
+        }
+        else
+        {
+            std::cout << "Acceptance file not found in JLab_cluster folder." << std::endl;
+            std::cout << "Using Acceptance from /output/." << std::endl;
+            acc_folder = "../output/Acceptance" + getAccFoldNameExt();
+        }
     }
     TFile *facc = TFile::Open(Form("%s/Acceptance_%s.root", acc_folder.c_str(), getAccFileName().c_str()), "READ");
     THnSparse *histAcc = (THnSparse*)facc->Get("histAcc_Reconstru");
