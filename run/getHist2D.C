@@ -3,7 +3,7 @@
 R__LOAD_LIBRARY(../include/Acceptance_C.so)
 #include "../include/Utility.h"
 
-void getHist2D(std::string target = "Fe", bool isData = true, std::string vars = "")
+void getHist2D(std::string target = "Fe", bool isData = true, std::string vars = "", int nBinAcc = -1)
 {
     TChain ch("ntuple_data");
 
@@ -84,9 +84,9 @@ void getHist2D(std::string target = "Fe", bool isData = true, std::string vars =
     else if (vars.find("VsSector") != string::npos)
     {
         // Select a binning for the acceptance!
-        int this_bin;
-        std::cout << "Enter binning for acceptance:" << std::endl;
-        std::cin >> this_bin;
+        int this_bin = nBinAcc;
+        // std::cout << "Enter binning for acceptance:" << std::endl;
+        // std::cin >> this_bin;
         acc.setBinningType(this_bin);
         std::cout << "\n >> Running Hist2D_PhiPQVsSector for " << target << " target [file type: " << this_type << "]\n" << std::endl;
         acc.Hist2D_PhiPQVsSector();
@@ -94,9 +94,9 @@ void getHist2D(std::string target = "Fe", bool isData = true, std::string vars =
     else if (vars.find("VsDeltaSector") != string::npos)
     {
         // Select a binning for the acceptance!
-        int this_bin;
-        std::cout << "Enter binning for acceptance:" << std::endl;
-        std::cin >> this_bin;
+        int this_bin = nBinAcc;
+        // std::cout << "Enter binning for acceptance:" << std::endl;
+        // std::cin >> this_bin;
         acc.setBinningType(this_bin);
         std::cout << "\n >> Running Hist2D_PhiPQVsDeltaSector for " << target << " target [file type: " << this_type << "]\n" << std::endl;
         acc.Hist2D_PhiPQVsDeltaSector();
