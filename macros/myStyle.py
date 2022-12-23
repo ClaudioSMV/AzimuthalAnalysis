@@ -14,10 +14,12 @@ tsize=38 #35
 
 def getDictNameFormat(nameFormat):                  #input: <targ>_<nBin>_<nDim>   --->   <targ>_<nBin>B<nDim>
     targetDict = {}
-    targetList = nameFormat.split("_")              # { <targ> , <nBin>, <nDim> }
+    targetList = nameFormat.split("_")              # [ <targ> , <nBin>, <nDim> ]
     targetDict["Target"] = targetList[0]            # <targ>
     # binList = targetList[1].split("B")            # { <nBin> , <nDim> }
     targetDict["BinningType"] = int(targetList[1])  # <nBin>
+    if (len(targetList)==2):
+        targetList.append(0)
     targetDict["NDims"] = int(targetList[2])        # <nDim>
     # targetDict["Cuts"] = []
     # if len(targetList)>3:
