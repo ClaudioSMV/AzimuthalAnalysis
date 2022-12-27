@@ -9,6 +9,7 @@
 #include <vector>
 #include <map>
 
+// Files and folders
 bool FileExists(const std::string& name) // Also works with folders
 {
   struct stat buffer;
@@ -20,6 +21,7 @@ void CreateDir(std::string path)
     system(Form("mkdir -p %s",path.c_str()));
 }
 
+// Branches and leaves
 int VarPosition(double var, std::vector<double> *var_limits)
 {
 	for (unsigned int ivar=0; ivar<(var_limits->size()-1); ivar++)
@@ -68,6 +70,7 @@ int GlobalVarPosition(std::vector<double> *var_values, std::vector<std::vector<d
     return global_position;
 }
 
+// Histograms
 void SetVariableSize(THnSparse *hist, Int_t nbins[], Double_t Q2_limits[], Double_t Nu_limits[],
 					Double_t Zh_limits[], Double_t Pt2_limits[], Double_t PhiPQ_limits[], std::vector<int> *IrregBinBool = NULL)
 {
@@ -103,23 +106,6 @@ THnSparse* CreateFinalHist(TString name, int nbins[], std::vector<int> *reBinBoo
 
 	hist_tmp->Sumw2();
     return hist_tmp;
-}
-
-void PrintFilledBins(THnSparse *hSparse)
-{
-    double fracFilled = hSparse->GetSparseFractionBins();
-
-    long nBins_noEdges = 1;
-    long nBins_withEdges = 1;
-
-    for (int i=0; i<5; i++)
-    {
-        nBins_noEdges *= hSparse->GetAxis(i)->GetNbins();
-        nBins_withEdges *= hSparse->GetAxis(i)->GetNbins() + 2;
-    }
-
-    std::cout << Form("THnSparse name: %s", hSparse->GetName()) << std::endl;
-    std::cout << Form("\tFilled bins: %i (%.4f %%)", (int)(fracFilled*nBins_withEdges), 100*fracFilled*nBins_withEdges/nBins_noEdges) << std::endl;
 }
 
 pair<double, double> GetCorrectValue(std::vector<double> this_bin, THnSparse *histAcc)
@@ -166,6 +152,24 @@ void CorrectBin(std::vector<double> this_bin, THnSparse *histAcc, THnSparse *his
             histCorr->SetBinError(binCorr, this_error);
         }
     }
+}
+
+// Printout messages
+void PrintFilledBins(THnSparse *hSparse)
+{
+    double fracFilled = hSparse->GetSparseFractionBins();
+
+    long nBins_noEdges = 1;
+    long nBins_withEdges = 1;
+
+    for (int i=0; i<5; i++)
+    {
+        nBins_noEdges *= hSparse->GetAxis(i)->GetNbins();
+        nBins_withEdges *= hSparse->GetAxis(i)->GetNbins() + 2;
+    }
+
+    std::cout << Form("THnSparse name: %s", hSparse->GetName()) << std::endl;
+    std::cout << Form("\tFilled bins: %i (%.4f %%)", (int)(fracFilled*nBins_withEdges), 100*fracFilled*nBins_withEdges/nBins_noEdges) << std::endl;
 }
 
 #endif // #ifdef Utility_h
