@@ -71,6 +71,24 @@ int GlobalVarPosition(std::vector<double> *var_values, std::vector<std::vector<d
     return global_position;
 }
 
+void UpdateDISLimits(std::vector<std::vector<double>> &the_limits, std::vector<std::vector<double>> this_binning)
+{
+    int i_var = 0;
+    for (auto &var_binning : this_binning)
+    {
+        if (the_limits[0][i_var] != var_binning.front())
+        {
+            the_limits[0][i_var] = var_binning.front();
+        }
+        if (the_limits[1][i_var] != var_binning.back())
+        {
+            the_limits[1][i_var] = var_binning.back();
+        }
+
+        i_var++;
+    }
+}
+
 // Histograms
 void SetVariableSize(THnSparse *hist, Int_t nbins[], Double_t Q2_limits[], Double_t Nu_limits[],
 					Double_t Zh_limits[], Double_t Pt2_limits[], Double_t PhiPQ_limits[], std::vector<int> *IrregBinBool = NULL)

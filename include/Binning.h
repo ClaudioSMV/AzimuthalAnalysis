@@ -96,6 +96,8 @@ namespace DIS
                                                    {-180.00, -156.00, -132.00, -108.00, -84.00, -60.00, -36.00, -12.00, 12.00, 36.00, 60.00,
                                                       84.00, 108.00, 132.00, 156.00, 180.00}}; // 15 bins
 
+    // 0.047 cut in Pt2 removes the initial peak near 0 and the next peak. Is that ok?
+
     std::vector<std::vector<std::vector<double>>> Bin_List = {Bin_Origin, Bin_SplitZ, Bin_ThinZh, Bin_ThinPt, Bin_ThinZP, Bin_ThinZh_CoarsePhi,
                                                               Bin_ThinZP_CoarsePhi, Bin_ThinZP_OddPhi, Bin_ThinZHighP_OddPhi};
 

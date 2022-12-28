@@ -52,6 +52,14 @@ void Acceptance::ActivateBranches()
     }
 
     setNameFormat();
+
+    // Copy Bin info into a python file at /macros/
+    SaveBinningFilePy();
+    // Update binning limits for cuts
+    if (_binIndex!=-1)
+    {
+        UpdateDISLimits(DISLimits, Bin_List[_binIndex]);
+    }
 }
 
 void Acceptance::Loop()

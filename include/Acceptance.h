@@ -594,22 +594,22 @@ void Acceptance::Show(Long64_t entry)
 //// Generated (MC) Cuts
 /////////////////////////
 
-Bool_t Acceptance::GoodElectron_MC(Long64_t entry, vector<vector<double>> DISLimits)
+Bool_t Acceptance::GoodElectron_MC(Long64_t entry, vector<vector<double>> this_limit)
 {
     // This function may be called from Loop.
 
-    bool pass_DIS = (mc_TargType==_targTypeCut && DISLimits[0][0]<mc_Q2 && mc_Q2<DISLimits[1][0] && mc_Yb<0.85 && mc_W>2 &&
-                     DISLimits[0][1]<mc_Nu && mc_Nu<DISLimits[1][1]);
+    bool pass_DIS = (mc_TargType==_targTypeCut && this_limit[0][0]<mc_Q2 && mc_Q2<this_limit[1][0] && mc_Yb<0.85 && mc_W>2 &&
+                     this_limit[0][1]<mc_Nu && mc_Nu<this_limit[1][1]);
 
     return pass_DIS;
 }
 
-Bool_t Acceptance::GoodPiPlus_MC(Long64_t entry, int ivec, vector<vector<double>> DISLimits)
+Bool_t Acceptance::GoodPiPlus_MC(Long64_t entry, int ivec, vector<vector<double>> this_limit)
 {
     // This function may be called from Loop.
 
-    bool pass_DIS = (mc_pid->at(ivec)==211 && DISLimits[0][2]<mc_Zh->at(ivec) && mc_Zh->at(ivec)<DISLimits[1][2] &&
-            DISLimits[0][3]<mc_Pt2->at(ivec) && mc_Pt2->at(ivec)<DISLimits[1][3] && DISLimits[0][4]<mc_PhiPQ->at(ivec) && mc_PhiPQ->at(ivec)<DISLimits[1][4]);
+    bool pass_DIS = (mc_pid->at(ivec)==211 && this_limit[0][2]<mc_Zh->at(ivec) && mc_Zh->at(ivec)<this_limit[1][2] &&
+            this_limit[0][3]<mc_Pt2->at(ivec) && mc_Pt2->at(ivec)<this_limit[1][3] && this_limit[0][4]<mc_PhiPQ->at(ivec) && mc_PhiPQ->at(ivec)<this_limit[1][4]);
     if (_cutXf)
     {
         pass_DIS = pass_DIS && (mc_Xf->at(ivec))>0;
@@ -626,22 +626,22 @@ Bool_t Acceptance::GoodPiPlus_MC(Long64_t entry, int ivec, vector<vector<double>
 //// Reconstructed Cuts
 /////////////////////////
 
-Bool_t Acceptance::GoodElectron(Long64_t entry, vector<vector<double>> DISLimits)
+Bool_t Acceptance::GoodElectron(Long64_t entry, vector<vector<double>> this_limit)
 {
     // This function may be called from Loop.
 
-    bool pass_DIS = (TargType==_targTypeCut && DISLimits[0][0]<Q2 && Q2<DISLimits[1][0] && Yb<0.85 && W>2 && -1.4<vyec && vyec<1.4 &&
-            DISLimits[0][1]<Nu && Nu<DISLimits[1][1]);
+    bool pass_DIS = (TargType==_targTypeCut && this_limit[0][0]<Q2 && Q2<this_limit[1][0] && Yb<0.85 && W>2 && -1.4<vyec && vyec<1.4 &&
+            this_limit[0][1]<Nu && Nu<this_limit[1][1]);
 
     return pass_DIS;
 }
 
-Bool_t Acceptance::GoodPiPlus(Long64_t entry, int ivec, vector<vector<double>> DISLimits)
+Bool_t Acceptance::GoodPiPlus(Long64_t entry, int ivec, vector<vector<double>> this_limit)
 {
     // This function may be called from Loop.
 
-    bool pass_DIS = (pid->at(ivec)==211 && DISLimits[0][2]<Zh->at(ivec) && Zh->at(ivec)<DISLimits[1][2] &&
-            DISLimits[0][3]<Pt2->at(ivec) && Pt2->at(ivec)<DISLimits[1][3] && DISLimits[0][4]<PhiPQ->at(ivec) && PhiPQ->at(ivec)<DISLimits[1][4]);
+    bool pass_DIS = (pid->at(ivec)==211 && this_limit[0][2]<Zh->at(ivec) && Zh->at(ivec)<this_limit[1][2] &&
+            this_limit[0][3]<Pt2->at(ivec) && Pt2->at(ivec)<this_limit[1][3] && this_limit[0][4]<PhiPQ->at(ivec) && PhiPQ->at(ivec)<this_limit[1][4]);
     if (_cutXf)
     {
         pass_DIS = pass_DIS && (Xf->at(ivec))>0;

@@ -1,5 +1,6 @@
 import ROOT
 import os
+import Bins as bn
 
 ## Define global variables
 marg=0.05
@@ -293,9 +294,9 @@ def GetBinInfo(bin_name="X0X0", bin_type=0):
     for i,c in enumerate(bin_name): # "A0B1"
         if i%2 == 0: # A , B
             num_index = int(bin_name[i+1]) # 0 , 1
-            vmin = this_dict[c]['Bins'][num_index] # 0 , 1
-            vmax = this_dict[c]['Bins'][num_index+1] # 1 , 2
-            tmp_txt+="%.2f < %s < %.2f"%(vmin, this_dict[c]['Name'], vmax)
+            vmin = this_dict[c][num_index] # 0 , 1
+            vmax = this_dict[c][num_index+1] # 1 , 2
+            tmp_txt+="%.2f < %s < %.2f"%(vmin, axis_label(c,'Latex'), vmax)
             if i<(len(bin_name)-2): tmp_txt+="; "
     return tmp_txt
 
@@ -326,57 +327,27 @@ def GetColors(color_blind = False):
 color_target = {'C': GetColors(True)[0], 'Fe': GetColors(True)[2], 'Pb': GetColors(True)[3], 'D': GetColors(True)[4],
                 'DC': GetColors(True)[1], 'DFe': GetColors(True)[5], 'DPb': GetColors(True)[6]}
 
-bin_dict        = { 'Q': {'Name': "Q^{2}",      'Bins': [1.00, 1.30, 1.80, 4.10]},
-                    'N': {'Name': "#nu",        'Bins': [2.20, 3.20, 3.70, 4.20]},
-                    'Z': {'Name': "Z_{h}",      'Bins': [0.00, 0.15, 0.25, 0.40, 0.70, 1.00]},
-                    'P': {'Name': "P_{t}^{2}",  'Bins': [0.00, 0.03, 0.06, 0.10, 0.18, 1.00]}}
+# Copy dictionaries of bins from Bins.py
+all_dicts = list(bn.Bin_List)
 
-bin_dict_SplitZ = { 'Q': {'Name': "Q^{2}",      'Bins': [1.00, 1.30, 1.80, 4.10]},
-                    'N': {'Name': "#nu",        'Bins': [2.20, 3.20, 3.70, 4.20]},
-                    'Z': {'Name': "Z_{h}",      'Bins': [0.00, 0.15, 0.25, 0.40, 0.70, 0.90, 1.00]},
-                    'P': {'Name': "P_{t}^{2}",  'Bins': [0.00, 0.03, 0.06, 0.10, 0.18, 1.00]}}
+#        <initial> : [<name>,   <axis_name_latex>, <units>  ]
+var_label = {   'Q': ["Q2",     "Q^{2}",        "(GeV^{2})" ],
+                'N': ["Nu",     "#nu",          "(GeV)"     ],
+                'Z': ["Zh",     "Z_{h}",        ""          ],
+                'P': ["Pt2",    "P_{t}^{2}",    "(GeV^{2})" ],
+                'I': ["PhiPQ",  "#phi_{PQ}",    "(deg)"     ]}
 
-bin_dict_ThinZh = { 'Q': {'Name': "Q^{2}",      'Bins': [1.00, 1.30, 1.80, 4.10]},
-                    'N': {'Name': "#nu",        'Bins': [2.20, 3.20, 3.70, 4.20]},
-                    'Z': {'Name': "Z_{h}",      'Bins': [0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.00]},
-                    'P': {'Name': "P_{t}^{2}",  'Bins': [0.00, 0.03, 0.06, 0.10, 0.18, 1.00]}}
+def axis_label(var, text):
+    this_output = ""
+    if ("Name" in text):
+        this_output += var_label[var][0]
+    if ("Latex" in text):
+        if (this_output!=""):
+            this_output+=" "
+        this_output += var_label[var][1]
+    if ("Unit" in text):
+        if (this_output!=""):
+            this_output+=" "
+        this_output += var_label[var][2]
 
-bin_dict_ThinPt = { 'Q': {'Name': "Q^{2}",      'Bins': [1.00, 1.30, 1.80, 4.10]},
-                    'N': {'Name': "#nu",        'Bins': [2.20, 3.20, 3.70, 4.20]},
-                    'Z': {'Name': "Z_{h}",      'Bins': [0.00, 0.15, 0.25, 0.40, 0.70, 0.90, 1.00]},
-                    'P': {'Name': "P_{t}^{2}",  'Bins': [0.047, 0.073, 0.112, 0.173, 0.267, 0.411, 0.633, 1.0]}}
-
-bin_dict_ThinZP = { 'Q': {'Name': "Q^{2}",      'Bins': [1.00, 1.30, 1.80, 4.10]},
-                    'N': {'Name': "#nu",        'Bins': [2.20, 3.20, 3.70, 4.20]},
-                    'Z': {'Name': "Z_{h}",      'Bins': [0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.00]},
-                    'P': {'Name': "P_{t}^{2}",  'Bins': [0.047, 0.073, 0.112, 0.173, 0.267, 0.411, 0.633, 1.0]}}
-
-bin_dict_ThinZh_CoarsePhi = {   'Q': {'Name': "Q^{2}",      'Bins': [1.00, 1.30, 1.80, 4.10]},
-                                'N': {'Name': "#nu",        'Bins': [2.20, 3.20, 3.70, 4.20]},
-                                'Z': {'Name': "Z_{h}",      'Bins': [0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.00]},
-                                'P': {'Name': "P_{t}^{2}",  'Bins': [0.00, 0.03, 0.06, 0.10, 0.18, 1.00]},
-                                'I': {'Name': "#phi_{PQ}",  'Bins': [-180.00, -162.00, -144.00, -126.00, -108.00, -90.00, -72.00, -54.00,
-                                                                      -36.00, -18.00, 0.00, 18.00, 36.00, 54.00, 72.00, 90.00, 108.00,
-                                                                      126.00, 144.00, 162.00, 180.00]}}
-
-bin_dict_ThinZP_CoarsePhi = {   'Q': {'Name': "Q^{2}",      'Bins': [1.00, 1.30, 1.80, 4.10]},
-                                'N': {'Name': "#nu",        'Bins': [2.20, 3.20, 3.70, 4.20]},
-                                'Z': {'Name': "Z_{h}",      'Bins': [0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.00]},
-                                'P': {'Name': "P_{t}^{2}",  'Bins': [0.047, 0.073, 0.112, 0.173, 0.267, 0.411, 0.633, 1.0]},
-                                'I': {'Name': "#phi_{PQ}",  'Bins': [-180.00, -162.00, -144.00, -126.00, -108.00, -90.00, -72.00, -54.00,
-                                                                      -36.00, -18.00, 0.00, 18.00, 36.00, 54.00, 72.00, 90.00, 108.00,
-                                                                      126.00, 144.00, 162.00, 180.00]}}
-
-bin_dict_ThinZP_OddPhi = {  'Q': {'Name': "Q^{2}",      'Bins': [1.00, 1.30, 1.80, 4.10]},
-                            'N': {'Name': "#nu",        'Bins': [2.20, 3.20, 3.70, 4.20]},
-                            'Z': {'Name': "Z_{h}",      'Bins': [0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.00]},
-                            'P': {'Name': "P_{t}^{2}",  'Bins': [0.047, 0.073, 0.112, 0.173, 0.267, 0.411, 0.633, 1.0]},
-                            'I': {'Name': "#phi_{PQ}",  'Bins': [-180.00, -156.00, -132.00, -108.00, -84.00, -60.00, -36.00, -12.00,
-                                                                   12.00, 36.00, 60.00, 84.00, 108.00, 132.00, 156.00, 180.00]}}
-
-all_dicts = [   bin_dict, bin_dict_SplitZ, bin_dict_ThinZh, bin_dict_ThinPt, bin_dict_ThinZP, bin_dict_ThinZh_CoarsePhi,
-                bin_dict_ThinZP_CoarsePhi, bin_dict_ThinZP_OddPhi]
-
-kin_vars_list = [   ["Q2", "Nu", "Zh", "Pt2", "PhiPQ"],
-                    ["Q^{2}", "#nu", "Z_{h}", "P_{t}^{2}", "#phi_{PQ}"],
-                    ["(GeV^{2})", "(GeV)", "", "(GeV^{2})", "(deg)"]]
+    return this_output

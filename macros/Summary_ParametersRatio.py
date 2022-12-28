@@ -2,7 +2,7 @@ from ROOT import TFile,TTree,TCanvas,TH1I,TH1D,TH1F,TH2D,TH2F,TLatex,TMath,TColo
 import ROOT
 import os
 import optparse
-import myStyle
+import myStyle as mS
 from array import array
 import ctypes ## Needed to get pointer values
 
@@ -10,12 +10,12 @@ gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
 
 ## Defining Style
-myStyle.ForceStyle()
-# font=myStyle.GetFont()
-tsize=myStyle.GetSize()
+mS.ForceStyle()
+# font=mS.GetFont()
+tsize=mS.GetSize()
 
-# gStyle.SetStatX(1 - myStyle.GetMargin() - 0.005)
-# gStyle.SetStatY(2*myStyle.GetMargin() + 0.205)
+# gStyle.SetStatX(1 - mS.GetMargin() - 0.005)
+# gStyle.SetStatY(2*mS.GetMargin() + 0.205)
 
 def CanvasPartition(canvas, nx, ny, lMarg, rMarg, bMarg, tMarg, extra_name=""):
     ## Labelling xy:
@@ -131,21 +131,21 @@ dataset = options.Dataset
 isJLab = options.JLabCluster
 fit = options.fit
 
-if ("LR" in myStyle.getCutStrFromStr(options.inputCuts) and (not "Left" in options.inputCuts) and (not "Right" in options.inputCuts)):
+if ("LR" in mS.getCutStrFromStr(options.inputCuts) and (not "Left" in options.inputCuts) and (not "Right" in options.inputCuts)):
     print("Specify \"Left\" or \"Right\" in input when using \"LR\" method!")
     exit()
 
-if "Fold" in myStyle.getCutStrFromStr(options.inputCuts):
+if "Fold" in mS.getCutStrFromStr(options.inputCuts):
     fit = "F"
-elif ("Left" in myStyle.getCutStrFromStr(options.inputCuts) or "Left" in options.inputCuts):
+elif ("Left" in mS.getCutStrFromStr(options.inputCuts) or "Left" in options.inputCuts):
     fit = "L"
-elif ("Right" in myStyle.getCutStrFromStr(options.inputCuts) or "Right" in options.inputCuts):
+elif ("Right" in mS.getCutStrFromStr(options.inputCuts) or "Right" in options.inputCuts):
     fit = "R"
 
 fit_type = "Fd" if "F" in fit else "LR"
 fit_num = 0 if (fit != "L") else 1
 mixD = options.mixD
-if "MixD" in myStyle.getCutStrFromStr(options.outputCuts):
+if "MixD" in mS.getCutStrFromStr(options.outputCuts):
     mixD = True
 
 ## Cuts
@@ -163,9 +163,9 @@ plots_cuts+="_"+fit_type
 
 useZh = options.useZh
 usePt2 = options.usePt2
-if ("Z" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.outputCuts))) or ("Z" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.inputCuts))):
+if ("Z" in mS.getCutsAsList(mS.getCutStrFromStr(options.outputCuts))) or ("Z" in mS.getCutsAsList(mS.getCutStrFromStr(options.inputCuts))):
     useZh = True
-if ("P" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.outputCuts))) or ("P" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.inputCuts))):
+if ("P" in mS.getCutsAsList(mS.getCutStrFromStr(options.outputCuts))) or ("P" in mS.getCutsAsList(mS.getCutStrFromStr(options.inputCuts))):
     usePt2 = True
 
 if (useZh) and (usePt2):
@@ -190,21 +190,21 @@ except:
     dataset = "%s_%s"%(dataset_elemts[1],dataset_elemts[2])
     print("")
 this_binning_type = int(dataset[0])
-dataset_title = myStyle.getNameFormatted("_"+dataset)
-this_bin_dict = myStyle.all_dicts[this_binning_type]
+dataset_title = mS.getNameFormatted("_"+dataset)
+this_bin_dict = mS.all_dicts[this_binning_type]
 
-nBinsQ = len(this_bin_dict['Q']['Bins'])-1
-nBinsN = len(this_bin_dict['N']['Bins'])-1
-nBinsZ = len(this_bin_dict['Z']['Bins'])-1
-nBinsP = len(this_bin_dict['P']['Bins'])-1
+nBinsQ = len(this_bin_dict['Q'])-1
+nBinsN = len(this_bin_dict['N'])-1
+nBinsZ = len(this_bin_dict['Z'])-1
+nBinsP = len(this_bin_dict['P'])-1
 
 gStyle.SetOptStat(0)
 canvas_B = TCanvas("cvB","cvB",1000,800)
-CanvasPartition(canvas_B, nBinsQ, nBinsN,2*myStyle.GetMargin(),myStyle.GetMargin(),2*myStyle.GetMargin(),myStyle.GetMargin(),"B")
+CanvasPartition(canvas_B, nBinsQ, nBinsN,2*mS.GetMargin(),mS.GetMargin(),2*mS.GetMargin(),mS.GetMargin(),"B")
 canvas_B.SetGrid(0,1)
 
 canvas_C = TCanvas("cvC","cvC",1000,800)
-CanvasPartition(canvas_C, nBinsQ, nBinsN,2*myStyle.GetMargin(),myStyle.GetMargin(),2*myStyle.GetMargin(),myStyle.GetMargin(),"C")
+CanvasPartition(canvas_C, nBinsQ, nBinsN,2*mS.GetMargin(),mS.GetMargin(),2*mS.GetMargin(),mS.GetMargin(),"C")
 canvas_C.SetGrid(0,1)
 
 list_canvas = [canvas_B, canvas_C]
@@ -216,8 +216,8 @@ list_infiles = []
 # Open files
 for targ in list_targets:
     this_dataset = "%s_%s"%(targ, dataset)
-    inputPath = myStyle.getPlotsFolder("FitParametersRatio", input_cuts, targ, isJLab, False) # "../output/"
-    inputROOT = myStyle.getPlotsFile("ParametersRatio", this_dataset, "root", fit_type)
+    inputPath = mS.getPlotsFolder("FitParametersRatio", input_cuts, targ, isJLab, False) # "../output/"
+    inputROOT = mS.getPlotsFile("ParametersRatio", this_dataset, "root", fit_type)
 
     inputfile = TFile(inputPath+inputROOT,"READ")
     list_infiles.append(inputfile)
@@ -237,7 +237,7 @@ for p,par in enumerate(["B", "C"]): # 2
             for iN in range(nBinsN): #nN
                 bin_label = "Q%iN%i"%(iQ,iN)
                 if useZh:
-                    hist_tmp = TH1D("%s_%s_Q%iN%i"%(par,targ,iQ,iN),";Z_{h};(%s/A)_{Solid}/(%s/A)_{D}"%(par,par),nBinsZ,array('d',this_bin_dict['Z']['Bins']))
+                    hist_tmp = TH1D("%s_%s_Q%iN%i"%(par,targ,iQ,iN),";Z_{h};(%s/A)_{Solid}/(%s/A)_{D}"%(par,par),nBinsZ,array('d',this_bin_dict['Z']))
 
                     for iZ in range(1,nBinsZ+1):
                         this_label = "%sZ%i"%(bin_label,iZ-1)
@@ -248,7 +248,7 @@ for p,par in enumerate(["B", "C"]): # 2
                         hist_tmp.SetBinContent(iZ, bin_value)
                         hist_tmp.SetBinError(iZ, bin_error)
                 elif usePt2:
-                    hist_tmp = TH1D("%s_%s_Q%iN%i"%(par,targ,iQ,iN),";P_{t}^{2} (GeV^{2});(%s/A)_{Solid}/(%s/A)_{D}"%(par,par),nBinsP,array('d',this_bin_dict['P']['Bins']))
+                    hist_tmp = TH1D("%s_%s_Q%iN%i"%(par,targ,iQ,iN),";P_{t}^{2} (GeV^{2});(%s/A)_{Solid}/(%s/A)_{D}"%(par,par),nBinsP,array('d',this_bin_dict['P']))
 
                     for iP in range(1,nBinsP+1):
                         this_label = "%sP%i"%(bin_label,iP-1)
@@ -278,8 +278,8 @@ for p,par in enumerate(["B", "C"]):
     this_canvas.cd(0)
 
     solid_mix = "_All" if mixD else "_Solid"
-    myStyle.DrawSummaryInfo("%s ratio Solid/D%s %s"%(par,solid_mix,fit))
-    myStyle.DrawTargetInfo("Solid_targets", "Data")
+    mS.DrawSummaryInfo("%s ratio Solid/D%s %s"%(par,solid_mix,fit))
+    mS.DrawTargetInfo("Solid_targets", "Data")
 
     l_x1, l_x2 = 0.3, 0.7
     l_y1, l_y2 = 0.6, 0.8
@@ -288,8 +288,8 @@ for p,par in enumerate(["B", "C"]):
         l_y2 = 0.25
     legend = TLegend(l_x1, l_y1, l_x2, l_y2)
     legend.SetBorderSize(0)
-    legend.SetTextFont(myStyle.GetFont())
-    legend.SetTextSize(myStyle.GetSize()-14)
+    legend.SetTextFont(mS.GetFont())
+    legend.SetTextSize(mS.GetSize()-14)
     legend.SetFillStyle(0)
     legend.SetNColumns(2)
 
@@ -329,9 +329,9 @@ for p,par in enumerate(["B", "C"]):
                 this_hist.SetTitleOffset(1.0,"x")
                 this_hist.SetTitleOffset(1.8,"y")
 
-                this_hist.SetLineColor(myStyle.color_target[targ])
+                this_hist.SetLineColor(mS.color_target[targ])
                 this_hist.SetMarkerStyle(4)
-                this_hist.SetMarkerColor(myStyle.color_target[targ])
+                this_hist.SetMarkerColor(mS.color_target[targ])
                 this_hist.Draw("same")
 
                 # Draw line at ratio = 1.0
@@ -344,8 +344,8 @@ for p,par in enumerate(["B", "C"]):
                     text = ROOT.TLatex()
                     text.SetTextSize(tsize-14)
                     text.SetTextAlign(23)
-                    # title = myStyle.GetBinInfo("Q%iN%i"%(iQ,iN), this_binning_type)
-                    title = myStyle.GetBinInfo("Q%i"%(iQ), this_binning_type)
+                    # title = mS.GetBinInfo("Q%iN%i"%(iQ,iN), this_binning_type)
+                    title = mS.GetBinInfo("Q%i"%(iQ), this_binning_type)
                     text.DrawLatexNDC(XtoPad(0.5),YtoPad(Q2_bin_info_Ypos),title)
 
                 if (iQ==2):
@@ -353,8 +353,8 @@ for p,par in enumerate(["B", "C"]):
                     text.SetTextSize(tsize-14)
                     text.SetTextAlign(23)
                     text.SetTextAngle(90)
-                    # title = myStyle.GetBinInfo("Q%iN%i"%(iQ,iN), this_binning_type)
-                    title = myStyle.GetBinInfo("N%i"%(iN), this_binning_type)
+                    # title = mS.GetBinInfo("Q%iN%i"%(iQ,iN), this_binning_type)
+                    title = mS.GetBinInfo("N%i"%(iN), this_binning_type)
                     text.DrawLatexNDC(XtoPad(1.05),YtoPad(0.5),title)
 
                 if (iQ==2 and iN==0):
@@ -363,13 +363,13 @@ for p,par in enumerate(["B", "C"]):
                         legend.Draw()
 
     this_canvas.cd(0)
-    this_title_gif = myStyle.getSummaryPath("Par%s_Ratio%s"%(par,dataset_title), "gif", plots_cuts, isJLab)
+    this_title_gif = mS.getSummaryPath("Par%s_Ratio%s"%(par,dataset_title), "gif", plots_cuts, isJLab)
     if ("LR" in this_title_gif):
-        this_title_gif = myStyle.addBeforeRootExt(this_title_gif, "-%s"%(fit), "gif")
+        this_title_gif = mS.addBeforeRootExt(this_title_gif, "-%s"%(fit), "gif")
 
-    this_title_pdf = myStyle.getSummaryPath("Par%s_Ratio%s"%(par,dataset_title), "pdf", plots_cuts, isJLab)
+    this_title_pdf = mS.getSummaryPath("Par%s_Ratio%s"%(par,dataset_title), "pdf", plots_cuts, isJLab)
     if ("LR" in this_title_pdf):
-        this_title_pdf = myStyle.addBeforeRootExt(this_title_pdf, "-%s"%(fit), "pdf")
+        this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "-%s"%(fit), "pdf")
 
     this_canvas.SaveAs(this_title_gif)
     this_canvas.SaveAs(this_title_pdf)

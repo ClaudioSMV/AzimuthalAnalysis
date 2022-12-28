@@ -2,17 +2,17 @@ from ROOT import TFile,TTree,TCanvas,TH1D,TH1F,TH2D,TH2F,TLatex,TMath,TColor,TLe
 import ROOT
 import os
 import optparse
-import myStyle
+import myStyle as mS
 from array import array
 
 gROOT.SetBatch( True )
 gStyle.SetOptFit(1)
 
 ## Defining Style
-myStyle.ForceStyle()
+mS.ForceStyle()
 
-gStyle.SetStatX(1 - myStyle.GetMargin() - 0.005)
-gStyle.SetStatY(2*myStyle.GetMargin() + 0.205)
+gStyle.SetStatX(1 - mS.GetMargin() - 0.005)
+gStyle.SetStatY(2*mS.GetMargin() + 0.205)
 
 # Construct the argument parser
 parser = optparse.OptionParser("usage: %prog [options]\n")
@@ -32,8 +32,8 @@ rootpath = options.rootpath
 dataset = options.Dataset
 isJLab = options.JLabCluster
 
-infoDict = myStyle.getDictNameFormat(dataset)
-nameFormatted = myStyle.getNameFormatted(dataset)
+infoDict = mS.getDictNameFormat(dataset)
+nameFormatted = mS.getNameFormatted(dataset)
 
 ## Cuts
 input_cuts_eE = options.inputCuts
@@ -43,22 +43,23 @@ input_cuts_FE = options.inputCuts + "_FE"
 plots_cuts_FE = options.inputCuts + "_FE_" + options.outputCuts
 
 ## Input
-inputPath_eE = myStyle.getPlotsFolder("Correction", input_cuts_eE, infoDict["Target"], isJLab, False)
-inputPath_FE = myStyle.getPlotsFolder("Correction", input_cuts_FE, infoDict["Target"], isJLab, False)
-inputROOT = myStyle.getPlotsFile("Corrected", dataset, "root")
+inputPath_eE = mS.getPlotsFolder("Correction", input_cuts_eE, infoDict["Target"], isJLab, False)
+inputPath_FE = mS.getPlotsFolder("Correction", input_cuts_FE, infoDict["Target"], isJLab, False)
+inputROOT = mS.getPlotsFile("Corrected", dataset, "root")
 
 inputfile_eE = TFile(inputPath_eE+inputROOT,"READ")
 inputfile_FE = TFile(inputPath_FE+inputROOT,"READ")
 
 ## Output
-outputPath = myStyle.getPlotsFolder("ErrorsCompared", plots_cuts_eE, infoDict["Target"], isJLab)
-outputROOT = myStyle.getPlotsFile("Errors", dataset, "root")
+outputPath = mS.getPlotsFolder("ErrorsCompared", plots_cuts_eE, infoDict["Target"], isJLab)
+outputROOT = mS.getPlotsFile("Errors", dataset, "root")
 # if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
 #     print("Fit already exists! Not overwriting it.")
 #     exit()
 
 list_hists = inputfile_eE.GetListOfKeys()
-phi_binning = myStyle.all_dicts[infoDict["BinningType"]]['I']['Bins']
+this_dict = mS.all_dicts[infoDict["BinningType"]]
+phi_binning = this_dict['I']
 
 canvas = TCanvas("cv","cv",1000,800)
 gStyle.SetOptStat(0)
@@ -108,11 +109,11 @@ for h in list_hists:
             hist_tmp.Draw("hist col")
             hist_tmp.Write()
 
-            myStyle.DrawPreliminaryInfo("Compare error")
-            myStyle.DrawTargetInfo(nameFormatted, "Data")
-            myStyle.DrawBinInfo(tmp_txt, infoDict["BinningType"])
+            mS.DrawPreliminaryInfo("Compare error")
+            mS.DrawTargetInfo(nameFormatted, "Data")
+            mS.DrawBinInfo(tmp_txt, infoDict["BinningType"])
 
-            outputName = myStyle.getPlotsFile("CompareError_"+tmp_name, dataset, "gif",tmp_txt)
+            outputName = mS.getPlotsFile("CompareError_"+tmp_name, dataset, "gif",tmp_txt)
             canvas.SaveAs(outputPath+outputName)
             canvas.Clear()
 

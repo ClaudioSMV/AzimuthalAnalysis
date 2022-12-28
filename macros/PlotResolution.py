@@ -53,9 +53,9 @@ canvas = TCanvas("cv","cv",1000,800)
 gStyle.SetOptStat(0)
 gStyle.SetOptFit()
 
-list_vars = myStyle.kin_vars_list[0]
-list_vars_axistitle = myStyle.kin_vars_list[1]
-list_vars_axisunits = myStyle.kin_vars_list[2]
+list_vars = ["Q2", "Nu", "Zh", "Pt2", "PhiPQ"]
+list_vars_axistitle = ["Q^{2}", "#nu", "Z_{h}", "P_{t}^{2}", "#phi_{PQ}"]
+list_vars_axisunits = ["(GeV^{2})", "(GeV)", "", "(GeV^{2})", "(deg)"]
 
 for i,this_var in enumerate(list_vars):
     this_res_hist = inputfile.Get("res%s"%this_var)

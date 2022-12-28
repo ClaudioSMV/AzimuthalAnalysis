@@ -2,17 +2,16 @@ from ROOT import TFile,TTree,TCanvas,TH1D,TH1F,TH2D,TH2F,TLatex,TMath,TColor,TLe
 import ROOT
 import os
 import optparse
-import myStyle
+import myStyle as mS
 import math
-import numpy as np
 
 gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
 
 ## Defining Style
-myStyle.ForceStyle()
-gStyle.SetPadRightMargin(2*myStyle.GetMargin())
-gStyle.SetLabelSize(myStyle.GetSize()-10,"z")
+mS.ForceStyle()
+gStyle.SetPadRightMargin(2*mS.GetMargin())
+gStyle.SetLabelSize(mS.GetSize()-10,"z")
 gROOT.ForceStyle()
 
 # Construct the argument parser
@@ -32,13 +31,13 @@ rootpath = options.rootpath
 dataset = options.Dataset
 if options.JLabCluster: rootpath = "JLab_cluster"
 
-infoDict = myStyle.getNameFormattedDict(dataset)
-inputPath = myStyle.getInputFile("Hist2D",dataset,rootpath) # ClosureTest_%s_B%i_%iD.root
+infoDict = mS.getNameFormattedDict(dataset)
+inputPath = mS.getInputFile("Hist2D",dataset,rootpath) # ClosureTest_%s_B%i_%iD.root
 if isData:  inputPath += "data.root"
 else:       inputPath += "hsim.root"
 inputfile = TFile(inputPath,"READ")
 
-outputPath = myStyle.getOutputDir("Hist2D",infoDict["Target"],rootpath)
+outputPath = mS.getOutputDir("Hist2D",infoDict["Target"],rootpath)
 
 correct_prefix = {"reco": "Reconstructed", "mtch": "Reconstructed", "gene": "Generated"}
 
@@ -69,8 +68,8 @@ for h in list_of_hists:
             hist.GetZaxis().SetMaxDigits(3)
             hist.Draw("colz")
 
-            x_axis = myStyle.bin_dict[var1]['Bins']
-            y_axis = myStyle.bin_dict[var2]['Bins']
+            x_axis = mS.all_dicts[0][var1] # ['Bins']
+            y_axis = mS.all_dicts[0][var2] # ['Bins']
 
             if drawLines:
                 # Draw vertical lines
@@ -81,14 +80,14 @@ for h in list_of_hists:
                 for iy in range(1,len(y_axis)-1):
                     line.DrawLine(x_axis[0],y_axis[iy], x_axis[-1],y_axis[iy])
 
-            myStyle.DrawPreliminaryInfo(type_hist)
+            mS.DrawPreliminaryInfo(type_hist)
             dataOrSim = "Data" if isData else "Simulation"
 
             text_UpRight = ROOT.TLatex()
-            text_UpRight.SetTextSize(myStyle.GetSize()-5)
+            text_UpRight.SetTextSize(mS.GetSize()-5)
             text_UpRight.SetTextAlign(31)
-            to_write = "%s vs %s, %s"%(myStyle.bin_dict[var1]['Name'], myStyle.bin_dict[var2]['Name'], dataOrSim)
-            text_UpRight.DrawLatexNDC(1-2*myStyle.GetMargin()-0.005,1-myStyle.GetMargin()+0.01, to_write)
+            to_write = "%s vs %s, %s"%(mS.axis_label(var1, "Name"), mS.axis_label(var2, "Name"), dataOrSim)
+            text_UpRight.DrawLatexNDC(1-2*mS.GetMargin()-0.005,1-mS.GetMargin()+0.01, to_write)
 
             canvas.SaveAs(outputPath+"KinVars_"+dataOrSim+"_"+type_hist+"_"+var1+"_"+var2+".gif")
             canvas.Clear()
