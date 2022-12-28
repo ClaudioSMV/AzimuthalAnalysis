@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 #include <vector>
 #include <map>
+#include <fstream>
 
 // Files and folders
 bool FileExists(const std::string& name) // Also works with folders
@@ -170,6 +171,150 @@ void PrintFilledBins(THnSparse *hSparse)
 
     std::cout << Form("THnSparse name: %s", hSparse->GetName()) << std::endl;
     std::cout << Form("\tFilled bins: %i (%.4f %%)", (int)(fracFilled*nBins_withEdges), 100*fracFilled*nBins_withEdges/nBins_noEdges) << std::endl;
+}
+
+// Copy Binning from .C to .py
+void SaveBinningFilePy()
+{
+    std::string vars[5] = {"Q","N","Z","P","I"}; // Q2, Nu, Zh, Pt2, PhiPQ
+    ofstream MyWriteFile("../macros/Bins.py", std::ofstream::trunc);
+
+    // Create a text string, which is used to output the text file
+    std::string myText;
+    // Read from the text file
+    ifstream MyReadFile("Binning.h", std::ifstream::in);
+
+    // Format:
+    // // // B 0
+    // // std::vector<std::vector<double>> Bin_Origin = {{1.00, 1.30, 1.80, 4.10}, // 3   -> Total = 9,000
+    // //                                                {2.20, 3.20, 3.70, 4.20}, // 3 ...
+    // //                                                {-180.00, -171.00, -162.00, -153.00, -144.00,
+    // //                                                  -90.00,  -81.00,  -72.00,  -63.00,  -54.00,
+    // //                                                   90.00,   99.00,  108.00,  117.00,  126.00}}; // 40 bins
+
+    bool in_new_bin = false;
+    int var_count = 0;
+    bool write_bin = false;
+    bool init_line = false, end_line = false;
+    std::string list_line = "";
+    std::vector<std::string> bin_list;
+
+    // Use a while loop together with the getline() function to read the file line by line
+    while (getline (MyReadFile, myText))
+    {
+        // Gets: // B 0
+        if (myText.find("// B") != string::npos)
+        {
+            in_new_bin = true;
+            var_count = 0;
+
+            // Writes: "# // B 0"
+            list_line+= "#" + myText + "\n";
+            continue;
+        }
+
+        // Gets: std::vector<std::vector<double>> Bin_Origin = {{1.00, 1.30, 1.80, 4.10}, ...
+        if (in_new_bin && myText.find("or<std::vector<double>> Bin_") != string::npos)
+        {
+            write_bin = true;
+            in_new_bin = false;
+
+            std::string bin_name = "";
+            // Gets "Bin_Origin" (37 is the position of the "B")
+            bin_name.append(myText, 37, myText.find('=')-37-1);
+
+            // Writes: "Bin_Origin = {"
+            list_line.append(bin_name);
+            list_line.append(" = {");
+
+            // Adds name of the bin to the final list
+            bin_list.push_back(bin_name);
+        }
+
+        if (write_bin)
+        {
+            if (myText.find("{") != string::npos)
+            {
+                init_line = true;
+            }
+            if (myText.find("}") != string::npos)
+            {
+                end_line = true;
+            }
+            if (myText.find("};") != string::npos)
+            {
+                write_bin = false;
+            }
+
+            // Gets "  {2.20, 3.20, 3.70, 4.20}, // 3 ..."
+            if (init_line && end_line)
+            {
+                int pos_open = myText.find_last_of("{")+1;
+
+                // Writes: "'N': [2.20, 3.20, 3.70, 4.20]"
+                list_line+= "\'"+vars[var_count]+"\': [";
+                list_line.append(myText, pos_open, myText.find("}")-pos_open);
+                list_line.append("],\n");
+
+                init_line = false;
+                var_count++;
+                end_line = false;
+            }
+            // Gets "  {-180.00, -171.00, -162.00, -153.00, -144.00,"
+            else if (init_line)
+            {
+                int pos_elem = myText.find_last_of("{") +1;
+
+                // Writes: "'I': [-180.00, -171.00, -162.00, -153.00, -144.00,"
+                list_line+= "\'"+vars[var_count]+"\': [";
+                list_line.append(myText, pos_elem, myText.find_last_of(",")-pos_elem+1);
+
+                init_line = false;
+                var_count++;
+            }
+            // Gets "  (...), 108.00,  117.00,  126.00}}; // 40 bins"
+            else if (end_line)
+            {
+                int pos_elem_in = myText.find(",") -7;
+
+                // Writes: "'I': [-180.00, -171.00, ...,  108.00,  117.00,  126.00]"
+                list_line.append(myText, pos_elem_in, myText.find("}")-pos_elem_in);
+                list_line.append("],\n");
+
+                end_line = false;
+            }
+            // Gets "  (...), -81.00, -72.00, -63.00, -54.00,"
+            else
+            {
+                int pos_elem_in = myText.find(",") -7;
+
+                // Writes: "'I': [-180.00, -171.00, ...,  -81.00, -72.00, -63.00, -54.00,"
+                list_line.append(myText, pos_elem_in, myText.find_last_of(",")-pos_elem_in+1);
+            }
+
+            if (!write_bin)
+            {
+                list_line.append("}\n\n");
+                MyWriteFile << list_line;
+                list_line = "";
+            }
+        }
+    }
+
+    // Writes "Bin_List = [Bin_Origin, Bin_SplitZ, ..., Bin_OddPhi]"
+    list_line = "Bin_List = [";
+    for (auto &str : bin_list)
+    {
+        list_line+= str + ", ";
+    }
+    list_line.pop_back();
+    list_line.pop_back();
+    list_line+= "]\n\n";
+    MyWriteFile << list_line;
+
+    // Close the file
+    MyReadFile.close();
+    MyWriteFile.close();
 }
 
 #endif // #ifdef Utility_h
