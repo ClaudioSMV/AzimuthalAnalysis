@@ -185,7 +185,7 @@ public:
 
     Acceptance(TTree *tree = 0, bool isData = false);
     virtual ~Acceptance();
-    virtual void setTargName(std::string name, std::string solid_name);
+    virtual void setTargName(std::string name);
     std::string getFoldNameExt();
     virtual void setNameFormat();
     std::string getAccFoldNameExt();
@@ -266,11 +266,26 @@ Long64_t Acceptance::LoadTree(Long64_t entry)
 
 // Set Names
 
-void Acceptance::setTargName(std::string name, std::string solid_name = "")
+void Acceptance::setTargName(std::string name)
 {
-    _nameTarget = name;
-    if (name!="D") setTargTypeCut(2);
-    else if (name=="D" && solid_name!="") _nameSolidTarget = solid_name;
+    if (name.find("D")!=std::string::npos)
+    {
+        if (name=="D" || name.find("S")!=std::string::npos) // "S" runs over all solid targets
+        {
+            _nameTarget = name;
+        }
+        else
+        {
+            _nameTarget = "D";
+            _nameSolidTarget = name.substr(1); // Substring gets what's after "D"
+        }
+    }
+    else
+    {
+        // Since "D" is not in the name, it's a solid target!
+        setTargTypeCut(2); // Solid
+        _nameTarget = name;
+    }
 }
 
 // Folder and file names

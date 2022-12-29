@@ -5,5 +5,7 @@ void runAll_Correction(int binName = 0, int binNdim = 2, std::string cuts = "")
     gROOT->ProcessLine(Form(".x ../run/getCorrection.C(\"Fe\",%i,%i,\"%s\")",binName,binNdim,cuts));
     gROOT->ProcessLine(Form(".x ../run/getCorrection.C(\"C\",%i,%i,\"%s\")",binName,binNdim,cuts));
     gROOT->ProcessLine(Form(".x ../run/getCorrection.C(\"Pb\",%i,%i,\"%s\")",binName,binNdim,cuts));
-    gROOT->ProcessLine(Form(".x ../run/getCorrection.C(\"D\",%i,%i,\"%s\")",binName,binNdim,cuts));
+    gROOT->ProcessLine(Form(".x ../run/getCorrection.C(\"DFe\",%i,%i,\"%s\")",binName,binNdim,cuts));
+    gROOT->ProcessLine(Form(".x ../run/getCorrection.C(\"DC\",%i,%i,\"%s\")",binName,binNdim,cuts));
+    gROOT->ProcessLine(Form(".x ../run/getCorrection.C(\"DPb\",%i,%i,\"%s\")",binName,binNdim,cuts));
 }

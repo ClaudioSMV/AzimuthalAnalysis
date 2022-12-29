@@ -60,7 +60,9 @@ echo "-- Data --"                                                          >> ${
 echo "root -l -b 'getHist2D.C(\"Fe\", true, \"${VARNAME}\",${NBINACC})'"   >> ${jobfile}
 echo "root -l -b 'getHist2D.C(\"C\", true, \"${VARNAME}\",${NBINACC})'"    >> ${jobfile}
 echo "root -l -b 'getHist2D.C(\"Pb\", true, \"${VARNAME}\",${NBINACC})'"   >> ${jobfile}
-echo "root -l -b 'getHist2D.C(\"D\", true, \"${VARNAME}\",${NBINACC})'"    >> ${jobfile}
+echo "root -l -b 'getHist2D.C(\"DFe\", true, \"${VARNAME}\",${NBINACC})'"  >> ${jobfile}
+echo "root -l -b 'getHist2D.C(\"DC\", true, \"${VARNAME}\",${NBINACC})'"   >> ${jobfile}
+echo "root -l -b 'getHist2D.C(\"DPb\", true, \"${VARNAME}\",${NBINACC})'"  >> ${jobfile}
 
 echo "-- Simulations --"                                                   >> ${jobfile}
 echo "root -l -b 'getHist2D.C(\"Fe\", false, \"${VARNAME}\",${NBINACC})'"  >> ${jobfile}

@@ -9,42 +9,114 @@ void getHist2D(std::string target = "Fe", bool isData = true, std::string vars =
 
     if (FileExists("../../clas-HSim"))
     {
-        if (isData && target=="D")
+        if (isData)
         {
-            ch.Add("../../clas-data/data_Fe1_light.root");
-            ch.Add("../../clas-data/data_C1_light.root");
-            ch.Add("../../clas-data/data_Pb1_light.root");
+            if (target.find("Fe")!=std::string::npos)
+            {
+                ch.Add("../../clas-data/data_Fe1_light.root");
+            }
+            else if (target.find("C")!=std::string::npos)
+            {
+                ch.Add("../../clas-data/data_C1_light.root");
+            }
+            else if (target.find("Pb")!=std::string::npos)
+            {
+                ch.Add("../../clas-data/data_Pb1_light.root");
+            }
+            else if (target=="DS")
+            {
+                ch.Add("../../clas-data/data_Fe1_light.root");
+                ch.Add("../../clas-data/data_C1_light.root");
+                ch.Add("../../clas-data/data_Pb1_light.root");
+            }
+            else
+            {
+                std::cout << "Deuterium target requires solid target information!" << std::endl;
+                std::cout << "If you want to run over all solid targets for deuterium use \"DS\"" << std::endl;
+                return 0;
+            }
         }
-        else if (isData) ch.Add(Form("../../clas-data/data_%s1_light.root",target.c_str()));
         else
         {
             ch.SetName("ntuple_sim");
-            ch.Add(Form("../../clas-HSim/hsim_%s*.root",target.c_str()));
+            if (target=="D" || target=="DS")
+            {
+                ch.Add("../../clas-HSim/hsim_D*.root");
+            }
+            else if (target.find("D")==std::string::npos)
+            {
+                ch.Add(Form("../../clas-HSim/hsim_%s*.root",target.c_str()));
+            }
+            else
+            {
+                std::cout << "Deuterium simulations don't need solid target info!" << std::endl;
+                std::cout << "If you want to run over deuterium simulations use \"D\" or \"DS\"" << std::endl;
+                return 0;
+            }
         }
     }
     else
     {
-        if (isData && target=="D")
+        if (isData)
         {
-            ch.Add("/home/csanmart/work/data/out/GetSimpleTuple_data/Fe/prunedFe_*.root");
-            ch.Add("/home/csanmart/work/data/out/GetSimpleTuple_data/Pb/prunedPb_*.root");
-            ch.Add("/home/csanmart/work/data/out/GetSimpleTuple_data/C/prunedC_*.root");
+            if (target.find("Fe")!=std::string::npos)
+            {
+                ch.Add("/home/csanmart/work/data/out/GetSimpleTuple_data/Fe/prunedFe_*.root");
+            }
+            else if (target.find("C")!=std::string::npos)
+            {
+                ch.Add("/home/csanmart/work/data/out/GetSimpleTuple_data/C/prunedC_*.root");
+            }
+            else if (target.find("Pb")!=std::string::npos)
+            {
+                ch.Add("/home/csanmart/work/data/out/GetSimpleTuple_data/Pb/prunedPb_*.root");
+            }
+            else if (target=="DS")
+            {
+                ch.Add("/home/csanmart/work/data/out/GetSimpleTuple_data/Fe/prunedFe_*.root");
+                ch.Add("/home/csanmart/work/data/out/GetSimpleTuple_data/C/prunedC_*.root");
+                ch.Add("/home/csanmart/work/data/out/GetSimpleTuple_data/Pb/prunedPb_*.root");
+            }
+            else
+            {
+                std::cout << "Deuterium target requires solid target information!" << std::endl;
+                std::cout << "If you want to run over all solid targets for deuterium use \"DS\"" << std::endl;
+                return 0;
+            }
         }
-        else if (isData) ch.Add(Form("/home/csanmart/work/data/out/GetSimpleTuple_data/%s/pruned%s_*.root",target.c_str(),target.c_str()));
         else
         {
             ch.SetName("ntuple_sim");
-            std::string suffix = "";
-            if (target=="D") { suffix+="2_pb"; }
-            ch.Add(Form("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/%s%s1/pruned%s_*.root",target.c_str(),suffix.c_str(),target.c_str()));
-            ch.Add(Form("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/%s%s2/pruned%s_*.root",target.c_str(),suffix.c_str(),target.c_str()));
-            ch.Add(Form("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/%s%s3/pruned%s_*.root",target.c_str(),suffix.c_str(),target.c_str()));
-            ch.Add(Form("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/%s%s4_yshiftm03/pruned%s_*.root",target.c_str(),suffix.c_str(),target.c_str()));
-            ch.Add(Form("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/%s%s5_yshiftm03/pruned%s_*.root",target.c_str(),suffix.c_str(),target.c_str()));
-            ch.Add(Form("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/%s%s6_yshiftm03/pruned%s_*.root",target.c_str(),suffix.c_str(),target.c_str()));
-            ch.Add(Form("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/%s%s7_yshiftm03/pruned%s_*.root",target.c_str(),suffix.c_str(),target.c_str()));
-            ch.Add(Form("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/%s%s8_yshiftm03/pruned%s_*.root",target.c_str(),suffix.c_str(),target.c_str()));
-            ch.Add(Form("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/%s%s9_yshiftm03/pruned%s_*.root",target.c_str(),suffix.c_str(),target.c_str()));
+            if (target=="D" || target=="DS")
+            {
+                ch.Add("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/D2_pb1/prunedD_*.root");
+                ch.Add("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/D2_pb2/prunedD_*.root");
+                ch.Add("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/D2_pb3/prunedD_*.root");
+                ch.Add("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/D2_pb4_yshiftm03/prunedD_*.root");
+                ch.Add("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/D2_pb5_yshiftm03/prunedD_*.root");
+                ch.Add("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/D2_pb6_yshiftm03/prunedD_*.root");
+                ch.Add("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/D2_pb7_yshiftm03/prunedD_*.root");
+                ch.Add("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/D2_pb8_yshiftm03/prunedD_*.root");
+                ch.Add("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/D2_pb9_yshiftm03/prunedD_*.root");
+            }
+            else if (target.find("D")==std::string::npos)
+            {
+                ch.Add(Form("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/%s1/pruned%s_*.root",target.c_str(),target.c_str()));
+                ch.Add(Form("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/%s2/pruned%s_*.root",target.c_str(),target.c_str()));
+                ch.Add(Form("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/%s3/pruned%s_*.root",target.c_str(),target.c_str()));
+                ch.Add(Form("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/%s4_yshiftm03/pruned%s_*.root",target.c_str(),target.c_str()));
+                ch.Add(Form("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/%s5_yshiftm03/pruned%s_*.root",target.c_str(),target.c_str()));
+                ch.Add(Form("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/%s6_yshiftm03/pruned%s_*.root",target.c_str(),target.c_str()));
+                ch.Add(Form("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/%s7_yshiftm03/pruned%s_*.root",target.c_str(),target.c_str()));
+                ch.Add(Form("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/%s8_yshiftm03/pruned%s_*.root",target.c_str(),target.c_str()));
+                ch.Add(Form("/home/csanmart/work/sim/out/GetSimpleTuple_HSim/%s9_yshiftm03/pruned%s_*.root",target.c_str(),target.c_str()));
+            }
+            else
+            {
+                std::cout << "Deuterium simulations don't need solid target info!" << std::endl;
+                std::cout << "If you want to run over deuterium simulations use \"D\" or \"DS\"" << std::endl;
+                return 0;
+            }
         }
     }
 
