@@ -14,6 +14,7 @@
 #  "Xf": Use Xf from data; "DS": Delta Sector != 0; "FE": Use FullError;   #
 #  "Zx": x-axis is Zh; "Px": x-axis is Pt2; "Fd": Fit uses Fold;           #
 #  "LR": Fit uses both tails; "MD": Mix D info is ratios;                  #
+#        Add option: -O: To Overwrite files if created                     #
 #                                                                          #
 #  EG: ./FitCrossSection.sh C  0 2 Zx_FE_Fd                                #
 #      ./FitCrossSection.sh Fe 1 3 Zx_LR                                   #
@@ -105,6 +106,12 @@ if [[ $CUTINFO == *"MD"* ]]; then
     PAR_RCUT="${PAR_RCUT}_MD"
 fi
 
+# Overwrite
+OW=""
+if [[ $CUTINFO == *"-O"* ]]; then
+    OW="-O"
+fi
+
 # echo $PREV_CUT
 # echo $CORR_CUT
 # echo $FITS_CUT
@@ -112,8 +119,8 @@ fi
 # echo $PAR_RCUT
 
 for t in "${TAR_LIST[@]}"; do
-    python PlotCorrection.py        -D ${t}_${BINNAME}_${BINNDIM} -i $PREV_CUT -o $CORR_CUT -J
-    python PlotFit.py               -D ${t}_${BINNAME}_${BINNDIM} -i $CORR_CUT -o $FITS_CUT -J
-    python GetParametersNorm.py     -D ${t}_${BINNAME}_${BINNDIM} -i $FITS_CUT -o $PAR_NCUT -J
-    python GetParametersRatio.py    -D ${t}_${BINNAME}_${BINNDIM} -i $FITS_CUT -o $PAR_RCUT -J
+    python PlotCorrection.py        -D ${t}_${BINNAME}_${BINNDIM} -i $PREV_CUT -o $CORR_CUT -J $OW
+    python PlotFit.py               -D ${t}_${BINNAME}_${BINNDIM} -i $CORR_CUT -o $FITS_CUT -J $OW
+    python GetParametersNorm.py     -D ${t}_${BINNAME}_${BINNDIM} -i $FITS_CUT -o $PAR_NCUT -J $OW
+    python GetParametersRatio.py    -D ${t}_${BINNAME}_${BINNDIM} -i $FITS_CUT -o $PAR_RCUT -J $OW
 done

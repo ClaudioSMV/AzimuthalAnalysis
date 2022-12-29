@@ -13,6 +13,7 @@
 #  "Xf": Use Xf from data; "FE": Use FullError; "Zx": x-axis is Zh;     #
 #  "Px": x-axis is Pt2; "Fd": Fit uses Fold; "LR": Fit uses both tails; #
 #  "MD": Mix D info is ratios;                                          #
+#        Add option: -O: To Overwrite files if created                  #
 #  <run>     = "" (empty): Both Fit and Summary; "F": Get Fits;         #
 #              "S": Only get Summary;                                   #
 #                                                                       #
