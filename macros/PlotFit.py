@@ -167,14 +167,20 @@ for h in list_of_hists:
             if not useFold:
                 chisq_L = fit_funct_left.GetChisquare()
                 ndf_L = fit_funct_left.GetNDF()
-                str_FitL = TLatex(-15, 1.1*hist.GetMaximum(), "#chi^{2} / ndf = %.2f / %i = %.2f"%(chisq_L, ndf_L, chisq_L/ndf_L))
+                if (ndf_L != 0):
+                    str_FitL = TLatex(-15, 1.1*hist.GetMaximum(), "#chi^{2} / ndf = %.2f / %i = %.2f"%(chisq_L, ndf_L, chisq_L/ndf_L))
+                else:
+                    str_FitL = TLatex(-15, 1.1*hist.GetMaximum(), "#chi^{2} / ndf = %.2f / %i"%(chisq_L, ndf_L))
                 str_FitL.SetTextAlign(33)
                 str_FitL.SetTextSize(myStyle.GetSize()-6)
                 str_FitL.Draw()
 
                 chisq_R = fit_funct_right.GetChisquare()
                 ndf_R = fit_funct_right.GetNDF()
-                str_FitR = TLatex(15, 1.1*hist.GetMaximum(), "#chi^{2} / ndf = %.2f / %i = %.2f"%(chisq_R, ndf_R, chisq_R/ndf_R))
+                if (ndf_R != 0):
+                    str_FitR = TLatex(15, 1.1*hist.GetMaximum(), "#chi^{2} / ndf = %.2f / %i = %.2f"%(chisq_R, ndf_R, chisq_R/ndf_R))
+                else:
+                    str_FitR = TLatex(15, 1.1*hist.GetMaximum(), "#chi^{2} / ndf = %.2f / %i"%(chisq_R, ndf_R))
                 str_FitR.SetTextAlign(13)
                 str_FitR.SetTextSize(myStyle.GetSize()-6)
                 str_FitR.Draw()
