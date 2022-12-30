@@ -4,7 +4,7 @@ R__LOAD_LIBRARY(../include/Acceptance_C.so)
 #include "../include/Utility.h"
 
 void getClosureTest(std::string target = "Fe", int binName = 0, int binNdim = 1, std::string cuts = "", std::string nfold = "*")
-// Cuts: "Xf": X Feynman; "DS": Delta Sector != 0; "FE": Full error
+// Cuts: "Xf": X Feynman; "DS": Delta Sector != 0; "BS": Remove bad sector (5); "FE": Full error
 {
     TChain ch("ntuple_sim");
     if (FileExists("../../clas-HSim"))
@@ -32,6 +32,7 @@ void getClosureTest(std::string target = "Fe", int binName = 0, int binNdim = 1,
     acc.setBinNdims(binNdim);
     if ( strstr(cuts.c_str(), "Xf") ) { acc.useCut_Xf(); std::cout << "Using Xf cut" << std::endl; }
     if ( strstr(cuts.c_str(), "DS") ) { acc.useCut_DeltaSector0(); std::cout << "Using Delta Sector != 0 cut" << std::endl; }
+    if ( strstr(cuts.c_str(), "BS") ) { acc.useCut_rmBadSector(); std::cout << "Using rm Bad Sector (5) cut" << std::endl; }
     if ( strstr(cuts.c_str(), "FE") ) { acc.setFullError(); std::cout << "Using full error calculation" << std::endl; }
     acc.ClosureTest();
 }

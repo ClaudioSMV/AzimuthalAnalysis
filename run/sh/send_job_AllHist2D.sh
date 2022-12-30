@@ -2,7 +2,6 @@
 
 #####################################################
 #       ./send_job_AllHist2D.sh <vars> <nAcc>       #
-#    <target> = (D, C, Fe, Pb)                      #
 #    <vars> = "KinVars", "XfVsYh", "ThetaPQ",       #
 #             "LabAngles", "PQVsLab"                #
 #    <nAcc> = nBin Acceptance (for corrected plots) #

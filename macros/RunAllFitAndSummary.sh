@@ -10,8 +10,11 @@
 #               2: Regular bins in Zh, Pt2, and PhiPQ;                  #
 #               3: Regular bins in Pt2, and PhiPQ;)                     #
 #  <cuts>    = Format "AA_BB_CC" (Empty is default)                     #
-#  "Xf": Use Xf from data; "FE": Use FullError; "Zx": x-axis is Zh;     #
-#  "Px": x-axis is Pt2; "Fd": Fit uses Fold; "LR": Fit uses both tails; #
+#  "Xf": Use Xf from data; "DS": Delta Sector != 0; "BS": rm Bad Sect;  #
+#  "FE": Use FullError;                                                 #
+#  "Zx": x-axis is Zh; "Px": x-axis is Pt2;                             #
+#  "Fd": Fit uses Fold; "LR": Fit uses both tails;                      #
+#  "Left" or "Right" if "LR" is under use;                              #
 #  "MD": Mix D info is ratios;                                          #
 #        Add option: -O: To Overwrite files if created                  #
 #  <run>     = "" (empty): Both Fit and Summary; "F": Get Fits;         #
