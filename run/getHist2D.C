@@ -13,7 +13,8 @@ void getHist2D(std::string target = "Fe", bool isData = true, std::string vars =
         {
             if (target.find("Fe")!=std::string::npos)
             {
-                ch.Add("../../clas-data/data_Fe1_light.root");
+                ch.Add("../../clas-data/data_Fe1_light.root"); // This file has old cuts :'(
+                // ch.Add("../../clas-data/prunedFe_41146.root"); // This is the same as in the cluster
             }
             else if (target.find("C")!=std::string::npos)
             {
@@ -146,6 +147,7 @@ void getHist2D(std::string target = "Fe", bool isData = true, std::string vars =
     else if (vars.find("LabAngles") != string::npos)
     {
         std::cout << "\n >> Running Hist2D_LabAngles for " << target << " target [file type: " << this_type << "]\n" << std::endl;
+        // acc.useCut_PiFiducial(); std::cout << "Using Pi+ fiducial cut" << std::endl;
         acc.Hist2D_LabAngles();
     }
     else if (vars.find("PQVsLab") != string::npos)

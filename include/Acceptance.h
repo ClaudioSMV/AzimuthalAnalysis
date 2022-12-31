@@ -1,6 +1,7 @@
 #ifndef Acceptance_h
 #define Acceptance_h
 
+#include "Cuts.h"
 #include <TROOT.h>
 #include <TChain.h>
 #include <TFile.h>
@@ -25,6 +26,8 @@ private:
     bool _cutXf = false;
     bool _cutDeltaSector0 = false;
     bool _cutBadSector = false;
+    bool _cutPiFiducial = false;
+    int _count = 0; // Usefull for debug
 
 public: // Internal values
     void setTargTypeCut(size_t targTypeCut) { _targTypeCut = targTypeCut; }
@@ -39,6 +42,7 @@ public: // Cuts
     void useCut_Xf() { _cutXf = true; }
     void useCut_DeltaSector0() { _cutDeltaSector0 = true; }
     void useCut_rmBadSector() { _cutBadSector = true; }
+    void useCut_PiFiducial() { _cutPiFiducial = true; }
 
 public:
     TTree *fChain;  //! pointer to the analyzed TTree or TChain
@@ -338,6 +342,10 @@ std::string Acceptance::getAccFoldNameExt() //getNameAccFormat() // Only cuts
     {
         this_name+="_NoBadSec";
     }
+    if (_cutPiFiducial)
+    {
+        this_name+="_PiFid";
+    }
     return this_name;
 }
 
@@ -633,15 +641,19 @@ Bool_t Acceptance::GoodPiPlus_MC(Long64_t entry, int ivec, vector<vector<double>
             this_limit[0][3]<mc_Pt2->at(ivec) && mc_Pt2->at(ivec)<this_limit[1][3] && this_limit[0][4]<mc_PhiPQ->at(ivec) && mc_PhiPQ->at(ivec)<this_limit[1][4]);
     if (_cutXf)
     {
-        pass_DIS = pass_DIS && (mc_Xf->at(ivec))>0;
+        pass_DIS = pass_DIS && pass_Xf(mc_Xf->at(ivec));
     }
     if (_cutDeltaSector0)
     {
-        pass_DIS = pass_DIS && abs(mc_SectorEl - mc_Sector->at(ivec))>0;
+        pass_DIS = pass_DIS && pass_DeltaSect0(mc_SectorEl, mc_Sector->at(ivec));
     }
     if (_cutBadSector)
     {
-        pass_DIS = pass_DIS && mc_SectorEl != 5 && mc_Sector->at(ivec) != 5;
+        pass_DIS = pass_DIS && pass_rmBadSect(mc_SectorEl, mc_Sector->at(ivec));
+    }
+    if (_cutPiFiducial)
+    {
+        pass_DIS = pass_DIS && pass_PiFiducial(mc_Sector->at(ivec), mc_P->at(ivec), mc_ThetaLab->at(ivec), mc_PhiLab->at(ivec));
     }
 
     return pass_DIS;
@@ -667,17 +679,22 @@ Bool_t Acceptance::GoodPiPlus(Long64_t entry, int ivec, vector<vector<double>> t
 
     bool pass_DIS = (pid->at(ivec)==211 && this_limit[0][2]<Zh->at(ivec) && Zh->at(ivec)<this_limit[1][2] &&
             this_limit[0][3]<Pt2->at(ivec) && Pt2->at(ivec)<this_limit[1][3] && this_limit[0][4]<PhiPQ->at(ivec) && PhiPQ->at(ivec)<this_limit[1][4]);
+
     if (_cutXf)
     {
-        pass_DIS = pass_DIS && (Xf->at(ivec))>0;
+        pass_DIS = pass_DIS && pass_Xf(Xf->at(ivec));
     }
     if (_cutDeltaSector0)
     {
-        pass_DIS = pass_DIS && abs(SectorEl - Sector->at(ivec))>0;
+        pass_DIS = pass_DIS && pass_DeltaSect0(SectorEl, Sector->at(ivec));
     }
     if (_cutBadSector)
     {
-        pass_DIS = pass_DIS && SectorEl != 5 && Sector->at(ivec) != 5;
+        pass_DIS = pass_DIS && pass_rmBadSect(SectorEl, Sector->at(ivec));
+    }
+    if (_cutPiFiducial)
+    {
+        pass_DIS = pass_DIS && pass_PiFiducial(Sector->at(ivec), P->at(ivec), ThetaLab->at(ivec), PhiLab->at(ivec));
     }
 
     return pass_DIS;

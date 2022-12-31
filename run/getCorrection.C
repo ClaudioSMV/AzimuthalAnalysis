@@ -5,7 +5,8 @@ R__LOAD_LIBRARY(../include/Acceptance_C.so)
 
 void getCorrection(std::string target = "Fe", int binName = 0, int binNdim = 1, std::string cuts = "")
 // Target can be "Fe", "C", "Pb" or "DFe", "DC", "DPb", "DS"
-// Cuts: "Xf": X Feynman; "DS": Delta Sector != 0; "BS": Remove bad sector (5); "FE": Full error
+// Cuts: "Xf": X Feynman; "DS": Delta Sector != 0; "BS": Remove bad sector (5); "PF": Pi+ fiducial cut;
+//       "FE": Full error;
 {
     TChain ch("ntuple_data");
     if (FileExists("../../clas-data"))
@@ -70,6 +71,7 @@ void getCorrection(std::string target = "Fe", int binName = 0, int binNdim = 1, 
     if ( strstr(cuts.c_str(), "Xf") ) { acc.useCut_Xf(); std::cout << "Using Xf cut" << std::endl; }
     if ( strstr(cuts.c_str(), "DS") ) { acc.useCut_DeltaSector0(); std::cout << "Using Delta Sector != 0 cut" << std::endl; }
     if ( strstr(cuts.c_str(), "BS") ) { acc.useCut_rmBadSector(); std::cout << "Using rm Bad Sector (5) cut" << std::endl; }
+    if ( strstr(cuts.c_str(), "PF") ) { acc.useCut_PiFiducial(); std::cout << "Using Pi+ fiducial cut" << std::endl; }
     if ( strstr(cuts.c_str(), "FE") ) { acc.setFullError(); std::cout << "Using full error calculation" << std::endl; }
     acc.Correction();
 }

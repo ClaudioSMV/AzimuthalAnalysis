@@ -37,6 +37,17 @@ void Acceptance::ActivateBranches()
         activeBranches_mc.push_back("mc_SectorEl");
         activeBranches_mc.push_back("mc_Sector");
     }
+    if (_cutPiFiducial)
+    {
+        activeBranches.push_back("Sector");
+        activeBranches.push_back("P");
+        activeBranches.push_back("ThetaLab");
+        activeBranches.push_back("PhiLab");
+        activeBranches_mc.push_back("mc_Sector");
+        activeBranches_mc.push_back("mc_P");
+        activeBranches_mc.push_back("mc_ThetaLab");
+        activeBranches_mc.push_back("mc_PhiLab");
+    }
 
     for (const auto &activeBranch : activeBranches)
     {
