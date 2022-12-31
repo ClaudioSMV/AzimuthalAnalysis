@@ -38,7 +38,7 @@ OUTDIR=${REPODIR}/run/sh
 TMPDIR=${OUTDIR}/tmp
 mkdir -p ${OUTDIR} ${TMPDIR}
 
-if [[ -n $NBINACC ]]; then
+if [[ -z $NBINACC ]]; then
     NBINACC="-1"
 fi
 
