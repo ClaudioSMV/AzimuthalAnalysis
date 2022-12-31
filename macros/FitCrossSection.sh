@@ -74,11 +74,11 @@ if [[ $CUTINFO == *"BS"* ]]; then
     PAR_RCUT="${PAR_RCUT}_BS"
 fi
 if [[ $CUTINFO == *"PF"* ]]; then
-    PREV_CUT="${PREV_CUT}_BS"
-    CORR_CUT="${CORR_CUT}_BS"
-    FITS_CUT="${FITS_CUT}_BS"
-    PAR_NCUT="${PAR_NCUT}_BS"
-    PAR_RCUT="${PAR_RCUT}_BS"
+    PREV_CUT="${PREV_CUT}_PF"
+    CORR_CUT="${CORR_CUT}_PF"
+    FITS_CUT="${FITS_CUT}_PF"
+    PAR_NCUT="${PAR_NCUT}_PF"
+    PAR_RCUT="${PAR_RCUT}_PF"
 fi
 if [[ $CUTINFO == *"FE"* ]]; then
     PREV_CUT="${PREV_CUT}_FE"
