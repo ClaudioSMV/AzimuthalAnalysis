@@ -12,6 +12,7 @@
 #               3: Regular bins in Pt2, and PhiPQ;)                        #
 #  <cuts>    = Format "AA_BB_CC" (Empty is default)                        #
 #  "Xf": Use Xf from data; "DS": Delta Sector != 0; "BS": rm Bad Sect;     #
+#  "PF": Pi+ fiducial cut;                                                 #
 #  "FE": Use FullError;                                                    #
 #  "Zx": x-axis is Zh; "Px": x-axis is Pt2;                                #
 #  "Fd": Fit uses Fold; "LR": Fit uses both tails;                         #
@@ -66,6 +67,13 @@ if [[ $CUTINFO == *"DS"* ]]; then
     PAR_RCUT="${PAR_RCUT}_DS"
 fi
 if [[ $CUTINFO == *"BS"* ]]; then
+    PREV_CUT="${PREV_CUT}_BS"
+    CORR_CUT="${CORR_CUT}_BS"
+    FITS_CUT="${FITS_CUT}_BS"
+    PAR_NCUT="${PAR_NCUT}_BS"
+    PAR_RCUT="${PAR_RCUT}_BS"
+fi
+if [[ $CUTINFO == *"PF"* ]]; then
     PREV_CUT="${PREV_CUT}_BS"
     CORR_CUT="${CORR_CUT}_BS"
     FITS_CUT="${FITS_CUT}_BS"

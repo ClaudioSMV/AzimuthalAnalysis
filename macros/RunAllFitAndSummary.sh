@@ -11,6 +11,7 @@
 #               3: Regular bins in Pt2, and PhiPQ;)                     #
 #  <cuts>    = Format "AA_BB_CC" (Empty is default)                     #
 #  "Xf": Use Xf from data; "DS": Delta Sector != 0; "BS": rm Bad Sect;  #
+#  "PF": Pi+ fiducial cut;                                              #
 #  "FE": Use FullError;                                                 #
 #  "Zx": x-axis is Zh; "Px": x-axis is Pt2;                             #
 #  "Fd": Fit uses Fold; "LR": Fit uses both tails;                      #
