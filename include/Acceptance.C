@@ -1637,7 +1637,7 @@ void Acceptance::Hist2D_PQVsLab()
     fout->Close();
 }
 
-void Acceptance::Hist2D_PhiPQVsSector()
+void Acceptance::Hist2D_PQVsSector()
 {
     ActivateBranches();
     fChain->SetBranchStatus("SectorEl", 1);
@@ -1899,7 +1899,7 @@ void Acceptance::Hist2D_PhiPQVsSector()
     facc->Close();
 }
 
-void Acceptance::Hist2D_PhiPQVsDeltaSector()
+void Acceptance::Hist2D_PQVsDeltaSector()
 {
     ActivateBranches();
     fChain->SetBranchStatus("SectorEl", 1);

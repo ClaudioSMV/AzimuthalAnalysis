@@ -34,9 +34,7 @@ void getAcceptance(std::string target = "Fe", int binName = 0, std::string cuts 
     Acceptance acc(&ch);
     acc.setTargName(target);
     acc.setBinningType(binName);
-    if ( strstr(cuts.c_str(), "Xf") ) { acc.useCut_Xf(); std::cout << "Using Xf cut" << std::endl; }
-    if ( strstr(cuts.c_str(), "DS") ) { acc.useCut_DeltaSector0(); std::cout << "Using Delta Sector != 0 cut" << std::endl; }
-    if ( strstr(cuts.c_str(), "BS") ) { acc.useCut_rmBadSector(); std::cout << "Using rm Bad Sector (5) cut" << std::endl; }
-    if ( strstr(cuts.c_str(), "PF") ) { acc.useCut_PiFiducial(); std::cout << "Using Pi+ fiducial cut" << std::endl; }
+    acc.ActivateCuts(cuts);
+
     acc.Loop();
 }

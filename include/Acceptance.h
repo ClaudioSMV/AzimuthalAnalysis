@@ -205,14 +205,15 @@ public:
     virtual Long64_t LoadTree(Long64_t entry);
     virtual void Init(TTree *tree);
     virtual void ActivateBranches();
+    virtual void ActivateCuts(std::string);
     virtual void Loop();
     virtual void Hist2D_KinVars();
     virtual void Hist2D_XfVsYh();
     virtual void Hist2D_ThetaPQ();
     virtual void Hist2D_LabAngles();
     virtual void Hist2D_PQVsLab();
-    virtual void Hist2D_PhiPQVsSector();
-    virtual void Hist2D_PhiPQVsDeltaSector();
+    virtual void Hist2D_PQVsSector();
+    virtual void Hist2D_PQVsDeltaSector();
     virtual void Correction();
     virtual void ClosureTest();
     virtual Bool_t Notify();
@@ -617,6 +618,30 @@ void Acceptance::Show(Long64_t entry)
     if (!fChain)
         return;
     fChain->Show(entry);
+}
+
+void Acceptance::ActivateCuts(std::string str_cuts)
+{
+    if (str_cuts.find("Xf")!=std::string::npos)
+    {
+        useCut_Xf();            std::cout << "Using Xf cut" << std::endl;
+    }
+    if (str_cuts.find("DS")!=std::string::npos)
+    {
+        useCut_DeltaSector0();  std::cout << "Using Delta Sector != 0 cut" << std::endl;
+    }
+    if (str_cuts.find("BS")!=std::string::npos)
+    {
+        useCut_rmBadSector();   std::cout << "Using rm Bad Sector (5) cut" << std::endl;
+    }
+    if (str_cuts.find("PF")!=std::string::npos)
+    {
+        useCut_PiFiducial();    std::cout << "Using Pi+ fiducial cut" << std::endl;
+    }
+    if (str_cuts.find("FE")!=std::string::npos)
+    {
+        setFullError();         std::cout << "Using full error calculation" << std::endl;
+    }
 }
 
 /////////////////////////

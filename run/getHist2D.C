@@ -3,7 +3,7 @@
 R__LOAD_LIBRARY(../include/Acceptance_C.so)
 #include "../include/Utility.h"
 
-void getHist2D(std::string target = "Fe", bool isData = true, std::string vars = "", int nBinAcc = -1)
+void getHist2D(std::string target = "Fe", bool isData = true, std::string plot_name = "", std::string cuts = "", int nBinAcc = -1)
 {
     TChain ch("ntuple_data");
 
@@ -13,8 +13,8 @@ void getHist2D(std::string target = "Fe", bool isData = true, std::string vars =
         {
             if (target.find("Fe")!=std::string::npos)
             {
-                ch.Add("../../clas-data/data_Fe1_light.root"); // This file has old cuts :'(
-                // ch.Add("../../clas-data/prunedFe_41146.root"); // This is the same as in the cluster
+                // ch.Add("../../clas-data/data_Fe1_light.root"); // This file has old cuts :'(
+                ch.Add("../../clas-data/prunedFe_41146.root"); // This is the same as in the cluster
             }
             else if (target.find("C")!=std::string::npos)
             {
@@ -129,56 +129,57 @@ void getHist2D(std::string target = "Fe", bool isData = true, std::string vars =
 
     Acceptance acc(&ch, isData);
     acc.setTargName(target);
-    if (vars.find("KinVars") != string::npos)
+    acc.ActivateCuts(cuts);
+
+    if (plot_name == "KinVars")
     {
         std::cout << "\n >> Running Hist2D_KinVars for " << target << " target [file type: " << this_type << "]\n" << std::endl;
         acc.Hist2D_KinVars();
     }
-    else if (vars.find("XfVsYh") != string::npos)
+    else if (plot_name == "XfVsYh")
     {
         std::cout << "\n >> Running Hist2D_XfVsYh for " << target << " target [file type: " << this_type << "]\n" << std::endl;
         acc.Hist2D_XfVsYh();
     }
-    else if (vars.find("ThetaPQ") != string::npos)
+    else if (plot_name == "ThetaPQ")
     {
         std::cout << "\n >> Running Hist2D_ThetaPQ for " << target << " target [file type: " << this_type << "]\n" << std::endl;
         acc.Hist2D_ThetaPQ();
     }
-    else if (vars.find("LabAngles") != string::npos)
+    else if (plot_name == "LabAngles")
     {
         std::cout << "\n >> Running Hist2D_LabAngles for " << target << " target [file type: " << this_type << "]\n" << std::endl;
-        // acc.useCut_PiFiducial(); std::cout << "Using Pi+ fiducial cut" << std::endl;
         acc.Hist2D_LabAngles();
     }
-    else if (vars.find("PQVsLab") != string::npos)
+    else if (plot_name == "PQVsLab")
     {
         std::cout << "\n >> Running Hist2D_PQVsLab for " << target << " target [file type: " << this_type << "]\n" << std::endl;
         acc.Hist2D_PQVsLab();
     }
-    else if (vars.find("VsSector") != string::npos)
+    else if (plot_name == "VsSector" || plot_name == "PQVsSector")
     {
         // Select a binning for the acceptance!
         int this_bin = nBinAcc;
         // std::cout << "Enter binning for acceptance:" << std::endl;
         // std::cin >> this_bin;
         acc.setBinningType(this_bin);
-        std::cout << "\n >> Running Hist2D_PhiPQVsSector for " << target << " target [file type: " << this_type << "]\n" << std::endl;
-        acc.Hist2D_PhiPQVsSector();
+        std::cout << "\n >> Running Hist2D_PQVsSector for " << target << " target [file type: " << this_type << "]\n" << std::endl;
+        acc.Hist2D_PQVsSector();
     }
-    else if (vars.find("VsDeltaSector") != string::npos)
+    else if (plot_name == "VsDeltaSector" || plot_name == "PQVsDeltaSector")
     {
         // Select a binning for the acceptance!
         int this_bin = nBinAcc;
         // std::cout << "Enter binning for acceptance:" << std::endl;
         // std::cin >> this_bin;
         acc.setBinningType(this_bin);
-        std::cout << "\n >> Running Hist2D_PhiPQVsDeltaSector for " << target << " target [file type: " << this_type << "]\n" << std::endl;
-        acc.Hist2D_PhiPQVsDeltaSector();
+        std::cout << "\n >> Running Hist2D_PQVsDeltaSector for " << target << " target [file type: " << this_type << "]\n" << std::endl;
+        acc.Hist2D_PQVsDeltaSector();
     }
     else
     {
         std::cout << "\n >> Enter a valid third parameter for macro name. " << std::endl;
         std::cout << " >> Options: KinVars, XfVsYh, ThetaPQ, LabAngles, PQVsLab," << std::endl;
-        std::cout << "             PhiPQVsSector, PhiPQVsDeltaSector.\n" << std::endl;
+        std::cout << "             (PQ)VsSector, (PQ)VsDeltaSector.\n" << std::endl;
     }
 }
