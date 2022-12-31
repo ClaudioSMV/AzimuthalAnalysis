@@ -38,6 +38,10 @@ OUTDIR=${REPODIR}/run/sh
 TMPDIR=${OUTDIR}/tmp
 mkdir -p ${OUTDIR} ${TMPDIR}
 
+if [[ -n $NBINACC ]]; then
+    NBINACC="-1"
+fi
+
 # setting jobname
 jobname="Hist2D_${VARNAME}"
 if [[ -n $CUTLIST ]]; then
