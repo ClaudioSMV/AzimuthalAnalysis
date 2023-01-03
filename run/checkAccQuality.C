@@ -8,7 +8,7 @@
 
 using namespace DIS;
 
-void checkAccQuality(std::string target = "Fe", int binName = 0, std::string acc_cuts = "")
+void checkAccQuality(std::string target = "Fe", int binName = 0, std::string acc_cuts = "", bool isLocal = false)
 {
     std::vector<std::vector<double>> this_binning = DIS::Bin_List[binName];
 
@@ -18,6 +18,12 @@ void checkAccQuality(std::string target = "Fe", int binName = 0, std::string acc
     }
     std::string acc_path = Form("../output/JLab_cluster/Acceptance%s",acc_cuts.c_str());
     std::string out_path = Form("../output/JLab_cluster/QualityCheck%s",acc_cuts.c_str());
+    if (isLocal)
+    {
+        acc_path = Form("../output/Acceptance%s",acc_cuts.c_str());
+        out_path = Form("../output/QualityCheck%s",acc_cuts.c_str());
+    }
+
     CreateDir(out_path);
 
     TFile *facc = TFile::Open(Form("%s/Acceptance_%s_%iB.root", acc_path.c_str(), target.c_str(), binName), "READ");
