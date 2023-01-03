@@ -676,10 +676,9 @@ Bool_t Acceptance::GoodPiPlus_MC(Long64_t entry, int ivec, vector<vector<double>
     {
         pass_DIS = pass_DIS && pass_rmBadSect(mc_SectorEl, mc_Sector->at(ivec));
     }
-    if (_cutPiFiducial)
-    {
-        pass_DIS = pass_DIS && pass_PiFiducial(mc_Sector->at(ivec), mc_P->at(ivec), mc_ThetaLab->at(ivec), mc_PhiLab->at(ivec));
-    }
+
+    // Fiducial cuts are applied in reconstruction only, not generated!
+    // if (_cutPiFiducial) pass_DIS = pass_DIS && pass_PiFiducial(mc_Sector->at(ivec), mc_P->at(ivec), mc_ThetaLab->at(ivec), mc_PhiLab->at(ivec));
 
     return pass_DIS;
 }
