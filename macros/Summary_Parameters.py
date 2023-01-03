@@ -182,9 +182,10 @@ try:
         print("")
 except:
     dataset = "%s_%s"%(dataset_elemts[1],dataset_elemts[2])
+    dataset_elemts = dataset.split("_")
     print("")
 
-this_binning_type = int(dataset[0])
+this_binning_type = int(dataset_elemts[0])
 dataset_title = mS.getNameFormatted("_"+dataset)
 this_bin_dict = mS.all_dicts[this_binning_type]
 
