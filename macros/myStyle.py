@@ -177,10 +177,12 @@ def getPlotsFile(nameMethod, nameFileExt, fileExt = "root", plotBin = ""):
     return this_file
 
 ### /plots/Summary
-def getSummaryPath(nameMethod, fileExt = "pdf", cuts = "", JLab_cluster = True):
+def getSummaryPath(nameMethod, fileExt = "pdf", cuts = "", JLab_cluster = True, extra_path = ""):
     this_folder = "../macros/plots/"
     if JLab_cluster: this_folder+="JLab_cluster/"
     this_folder+="Summary/"
+    if extra_path:
+        this_folder+=extra_path+"/"
 
     if not os.path.exists(this_folder):
         CreateFolder(this_folder, "", False, False)

@@ -365,11 +365,11 @@ for p,par in enumerate(["B", "C"]):
                         legend.Draw()
 
     this_canvas.cd(0)
-    this_title_gif = mS.getSummaryPath("Par%s_Ratio%s"%(par,dataset_title), "gif", plots_cuts, isJLab)
+    this_title_gif = mS.getSummaryPath("Par%s_Ratio%s"%(par,dataset_title), "gif", plots_cuts, isJLab, dataset_title[1:])
     if ("LR" in this_title_gif):
         this_title_gif = mS.addBeforeRootExt(this_title_gif, "-%s"%(fit), "gif")
 
-    this_title_pdf = mS.getSummaryPath("Par%s_Ratio%s"%(par,dataset_title), "pdf", plots_cuts, isJLab)
+    this_title_pdf = mS.getSummaryPath("Par%s_Ratio%s"%(par,dataset_title), "pdf", plots_cuts, isJLab, dataset_title[1:])
     if ("LR" in this_title_pdf):
         this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "-%s"%(fit), "pdf")
 
