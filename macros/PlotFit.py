@@ -25,6 +25,7 @@ parser.add_option('-o', dest='outputCuts', default = "", help="Add output cuts F
 parser.add_option('-F', dest='fold', action='store_true', default = False, help="Use fold tails (default fits both tails separated)")
 parser.add_option('-e', dest='errorFull', action='store_true', default = False, help="Use FullError")
 parser.add_option('-O', dest='Overwrite', action='store_true', default = False, help="Overwrite if file already exists")
+parser.add_option('-s', dest='useSin', action='store_true', default = False, help="Add a sin\phi term in the fit (expected to be negligible)")
 
 # input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
@@ -38,6 +39,10 @@ if "Fold" in myStyle.getCutStrFromStr(options.outputCuts):
     useFold = True
 fit_type = "Fd" if useFold else "LR"
 
+useSin = options.useSin
+if "Sin" in myStyle.getCutStrFromStr(options.outputCuts):
+    useSin = True
+
 infoDict = myStyle.getDictNameFormat(dataset)
 nameFormatted = myStyle.getNameFormatted(dataset)
 
@@ -47,6 +52,8 @@ plots_cuts = options.inputCuts + "_" + options.outputCuts
 if options.errorFull:
     input_cuts+="_FE"
     plots_cuts+="_FE"
+if useSin:
+    plots_cuts+="_Fs"
 
 plots_cuts+="_"+fit_type # Add Fold or LR extension
 
@@ -142,9 +149,13 @@ for h in list_of_hists:
 
             hist_tmp.Draw("hist axis")
 
+            the_func = "[0] + [1]*cos(TMath::Pi()*x/180.0) + [2]*cos(2*TMath::Pi()*x/180.0)"
+            if useSin:
+                the_func+= "+ [3]*sin(TMath::Pi()*x/180.0)"
+
             # fit_funct_fold  = TF1("crossSectionF","[0] + [1]*cos(TMath::Pi()*x/180.0) + [2]*cos(2*TMath::Pi()*x/180.0)",  fit_min_limit_R, 180.0)
-            fit_funct_left  = TF1("crossSectionL","[0] + [1]*cos(TMath::Pi()*x/180.0) + [2]*cos(2*TMath::Pi()*x/180.0)", -180.0,fit_min_limit_L)
-            fit_funct_right = TF1("crossSectionR","[0] + [1]*cos(TMath::Pi()*x/180.0) + [2]*cos(2*TMath::Pi()*x/180.0)",  fit_min_limit_R, 180.0)
+            fit_funct_left  = TF1("crossSectionL",the_func, -180.0,fit_min_limit_L)
+            fit_funct_right = TF1("crossSectionR",the_func,  fit_min_limit_R, 180.0)
 
             cov_matrix_R = hist_tmp.Fit("crossSectionR", "MSQ", "", fit_min_limit_R, 180.0) # M: Uses IMPROVED TMinuit; S: Saves covariance matrix
             # hist_tmp.Fit("crossSection", "WL MS", "", fit_min_limit, 180.0) # WL: Uses Weighted log likelihood method

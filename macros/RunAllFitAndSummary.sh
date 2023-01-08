@@ -14,6 +14,7 @@
 #  "PF": Pi+ fiducial cut;                                              #
 #  "FE": Use FullError;                                                 #
 #  "Zx": x-axis is Zh; "Px": x-axis is Pt2;                             #
+#  "Fs": Add Sin(x) term in fit;                                        #
 #  "Fd": Fit uses Fold; "LR": Fit uses both tails;                      #
 #  "Left" or "Right" if "LR" is under use;                              #
 #  "MD": Mix D info is ratios;                                          #

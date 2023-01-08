@@ -15,6 +15,7 @@
 #  "PF": Pi+ fiducial cut;                                                 #
 #  "FE": Use FullError;                                                    #
 #  "Zx": x-axis is Zh; "Px": x-axis is Pt2;                                #
+#  "Fs": Add Sin(x) term in fit;                                           #
 #  "Fd": Fit uses Fold; "LR": Fit uses both tails;                         #
 #  "MD": Mix D info is ratios;                                             #
 #        Add option: -O: To Overwrite files if created                     #
@@ -105,6 +106,11 @@ else
 fi
 
 ### From Fit
+if [[ $CUTINFO == *"Fs"* ]]; then
+    FITS_CUT="${FITS_CUT}_Fs"
+    PAR_NCUT="${PAR_NCUT}_Fs"
+    PAR_RCUT="${PAR_RCUT}_Fs"
+fi
 if [[ $CUTINFO == *"Fd"* ]]; then
     FITS_CUT="${FITS_CUT}_Fd"
     PAR_NCUT="${PAR_NCUT}_Fd"
