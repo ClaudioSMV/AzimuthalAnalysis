@@ -282,7 +282,7 @@ def DrawTargetInfo(target="X", fileType="SimOrData"):
     text.SetTextSize(tsize-4)
     text.SetTextAlign(31)
     nameCode = target.split("_")
-    if len(nameCode)==1: text.DrawLatexNDC(1-marg-0.005,1-marg+0.01,"#bf{"+str(target) + " target, "+str(fileType)+"}")
+    if "targ" not in target: text.DrawLatexNDC(1-marg-0.005,1-marg+0.01,"#bf{"+str(target) + " target, "+str(fileType)+"}")
     else:                text.DrawLatexNDC(1-marg-0.005,1-marg+0.01,"#bf{"+str(target) + ", "+str(fileType)+"}")
 
 def DrawBinInfo(bin_name="X0X0", bin_type=0, xR=0, yT=0):
