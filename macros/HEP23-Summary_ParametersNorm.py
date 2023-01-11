@@ -281,20 +281,24 @@ par_y_lmts = [[-0.999,0.199], [-0.399,0.099]]
 Q2_bin_info_Ypos = -0.22
 
 if usePt2:
-    par_y_lmts = [[-0.399,0.049], [-0.099,0.149]]
+    par_y_lmts = [[-0.499,0.049], [-0.099,0.149]]
     # Q2_bin_info_Ypos = -0.22
 
 for p,par in enumerate(["B", "C"]):
     this_canvas = list_canvas[p]
     this_canvas.cd(0)
-    mS.DrawSummaryInfo("Norm %s/A %s"%(par,fit))
+    # mS.DrawSummaryInfo("Norm %s/A %s"%(par,fit))
     if (whatsPlot=="All"):
         targs_drawn = "All_targets"
     elif (whatsPlot=="Solid"):
         targs_drawn = "Solid targets"
     elif (whatsPlot=="D"):
         targs_drawn = "Deuterium"
-    mS.DrawTargetInfo(targs_drawn, "Data")
+    # mS.DrawTargetInfo(targs_drawn, "Data")
+
+    # mS.DrawSummaryInfo("%s ratio Solid/D%s %s"%(par,solid_mix,fit))
+    mS.DrawPreliminaryInfo("%s normalized for %s"%(par,targs_drawn))
+    # mS.DrawTargetInfo("Solid targets", "Data")
 
     l_x1, l_x2 = 0.1, 0.9
     l_y1, l_y2 = 0.60, 0.80
@@ -351,12 +355,16 @@ for p,par in enumerate(["B", "C"]):
                 this_hist.SetMarkerStyle(4)
                 this_hist.SetMarkerColor(mS.color_target[targ])
                 this_hist.Draw("same")
+                # this_hist.Draw("e X0 same")
+                # this_hist.Draw("hist L X0 same")
 
                 # Draw line at ratio = 1.0
                 lineZero.DrawLine(this_hist.GetXaxis().GetXmin(),0.0, this_hist.GetXaxis().GetXmax(),0.0)
 
                 # Draw hist in last layer
                 this_hist.Draw("e same")
+                # this_hist.Draw("e X0 same")
+                # this_hist.Draw("hist L e X0 same")
 
                 if (iN==2):
                     text = ROOT.TLatex()

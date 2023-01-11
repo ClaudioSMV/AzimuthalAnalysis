@@ -263,10 +263,10 @@ def ForceStyle():
     ROOT.gROOT.ForceStyle()
 
 
-def DrawPreliminaryInfo(text = ""):
+def DrawPreliminaryInfo(text = "", xl=0.0, yb=0.0):
     upLeft_text = ROOT.TLatex()
     upLeft_text.SetTextSize(tsize-4)
-    upLeft_text.DrawLatexNDC(2*marg+0.005,1-marg+0.01,"#bf{%s} Preliminary"%(text))
+    upLeft_text.DrawLatexNDC(2*marg+0.005+xl,1-marg+0.01+yb,"#bf{%s} Preliminary"%(text))
 
     # prelimilar = ROOT.TLatex()
     # prelimilar.SetTextSize(tsize-4)

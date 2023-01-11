@@ -281,8 +281,9 @@ for p,par in enumerate(["B", "C"]):
     this_canvas.cd(0)
 
     solid_mix = "_All" if mixD else "_Solid"
-    mS.DrawSummaryInfo("%s ratio Solid/D%s %s"%(par,solid_mix,fit))
-    mS.DrawTargetInfo("Solid targets", "Data")
+    # mS.DrawSummaryInfo("%s ratio Solid/D%s %s"%(par,solid_mix,fit))
+    mS.DrawPreliminaryInfo("%s ratio Solid/D"%(par))
+    # mS.DrawTargetInfo("Solid targets", "Data")
 
     l_x1, l_x2 = 0.1, 0.9
     l_y1, l_y2 = 0.65, 0.85
@@ -336,12 +337,14 @@ for p,par in enumerate(["B", "C"]):
                 this_hist.SetMarkerStyle(4)
                 this_hist.SetMarkerColor(mS.color_target[targ])
                 this_hist.Draw("same")
+                # this_hist.Draw("hist L X0 same")
 
                 # Draw line at ratio = 1.0
                 ratio1L.DrawLine(this_hist.GetXaxis().GetXmin(),1.0, this_hist.GetXaxis().GetXmax(),1.0)
 
                 # Draw hist in last layer
                 this_hist.Draw("e same")
+                # this_hist.Draw("hist L e X0 same")
 
                 if (iN==2):
                     text = ROOT.TLatex()
