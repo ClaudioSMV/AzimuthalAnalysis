@@ -268,7 +268,7 @@ for p,par in enumerate(["B", "C"]): # 2
 
     list_hists.append(list_this_par) #  npar*nTarg*nQ*nN = 2*4*nQ*nN hists
 
-par_y_lmts = [[0.201,1.799], [0.001,1.999]]
+par_y_lmts = [[0.201,1.899], [0.001,1.999]]
 # Q2_bin_info_Ypos = -0.15
 Q2_bin_info_Ypos = -0.22
 
@@ -336,7 +336,9 @@ for p,par in enumerate(["B", "C"]):
                 this_hist.SetLineColor(mS.color_target[targ])
                 this_hist.SetMarkerStyle(4)
                 this_hist.SetMarkerColor(mS.color_target[targ])
+                this_hist.SetLineWidth(2)
                 this_hist.Draw("same")
+                # this_hist.Draw("e X0 same")
                 # this_hist.Draw("hist L X0 same")
 
                 # Draw line at ratio = 1.0
@@ -344,6 +346,7 @@ for p,par in enumerate(["B", "C"]):
 
                 # Draw hist in last layer
                 this_hist.Draw("e same")
+                # this_hist.Draw("e X0 same")
                 # this_hist.Draw("hist L e X0 same")
 
                 if (iN==2):
