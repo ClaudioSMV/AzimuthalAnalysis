@@ -29,11 +29,9 @@ parser.add_option('-p', dest='rootpath', default = "", help="Add path to files, 
 parser.add_option('-J', dest='JLabCluster', action='store_true', default = False, help="Use folder from JLab_cluster")
 parser.add_option('-i', dest='inputCuts', default = "", help="Add input cuts Xf_Yb_...")
 parser.add_option('-o', dest='outputCuts', default = "", help="Add output cuts FE_...")
-parser.add_option('-v', dest='verbose', action='store_true', default = False, help="Print values")
 
 parser.add_option('-F', dest='fold', action='store_true', default = False, help="Use fold tails (default does not)")
 parser.add_option('-e', dest='errorFull', action='store_true', default = False, help="Use FullError")
-parser.add_option('-O', dest='Overwrite', action='store_true', default = False, help="Overwrite if file already exists")
 
 # input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
@@ -41,7 +39,6 @@ options, args = parser.parse_args()
 rootpath = options.rootpath
 dataset = options.Dataset
 isJLab = options.JLabCluster
-verbose = options.verbose
 
 useFold = options.fold
 if ("Fold" in mS.getCutStrFromStr(options.inputCuts) or "Fold" in mS.getCutStrFromStr(options.outputCuts)):
@@ -68,11 +65,6 @@ inputfile = TFile(inputPath+inputROOT,"READ")
 
 ## Output
 outputPath = mS.getPlotsFolder("ParametersCorrelation", plots_cuts, infoDict["Target"], isJLab)
-# outputROOT = mS.getPlotsFile("Parameters", dataset, "root", fit_type)
-# if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
-#     print("Parameters normalized file already exists! Not overwriting it.")
-#     exit()
-
 
 list_func_names = ["crossSectionR"]
 if not useFold:
