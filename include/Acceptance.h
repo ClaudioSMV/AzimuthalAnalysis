@@ -23,6 +23,8 @@ private:
     bool _isClosureTest = false;
     int _binIndex = -1;
     int _binNdims = 0; // 2: Leptonic, 3: Leptonic+Zh
+    int _useNu = true;
+    int _useXb = false; // !_useNu
     bool _cutXf = false;
     bool _cutDeltaSector0 = false;
     bool _cutBadSector = false;
@@ -214,6 +216,7 @@ public:
     virtual void Hist2D_PQVsLab();
     virtual void Hist2D_PQVsSector();
     virtual void Hist2D_PQVsDeltaSector();
+    virtual void Hist2D_VarsVsXb();
     virtual void Correction();
     virtual void ClosureTest();
     virtual Bool_t Notify();

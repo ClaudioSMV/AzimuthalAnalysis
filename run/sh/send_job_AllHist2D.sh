@@ -3,7 +3,8 @@
 ######################################################
 #    ./send_job_AllHist2D.sh <name> <CUTS> <nAcc>    #
 #    <name> = "KinVars", "XfVsYh", "ThetaPQ",        #
-#             "LabAngles", "PQVsLab"                 #
+#             "LabAngles", "PQVsLab", "VsSector",    #
+#             "VsDeltaSector", "VarsVsXb"            #
 #    <CUTS>    = Format "AA_BB_CC" ("" is default)   #
 #    "Xf": Use Xf>0; "DS": Delta Sector != 0;        #
 #    "BS": rm Bad Sect;                              #
