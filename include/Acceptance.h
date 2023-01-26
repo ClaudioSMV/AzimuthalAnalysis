@@ -23,7 +23,6 @@ private:
     bool _isClosureTest = false;
     int _binIndex = -1;
     int _binNdims = 0; // 2: Leptonic, 3: Leptonic+Zh
-    int _useNu = true;
     int _useXb = false; // !_useNu
     bool _cutXf = false;
     bool _cutDeltaSector0 = false;
@@ -39,6 +38,7 @@ public: // Internal values
     void setClosureTest() { _isClosureTest = true; }
     void setBinningType(int binning_number) { _binIndex = binning_number; }
     void setBinNdims(int binningNdims) { _binNdims = binningNdims; }
+    void setUseXb(bool boolXb) { _useXb = boolXb; }
 
 public: // Cuts
     void useCut_Xf() { _cutXf = true; }
@@ -656,7 +656,7 @@ Bool_t Acceptance::GoodElectron_MC(Long64_t entry, vector<vector<double>> this_l
     // This function may be called from Loop.
 
     bool pass_DIS = (mc_TargType==_targTypeCut && this_limit[0][0]<mc_Q2 && mc_Q2<this_limit[1][0] && mc_Yb<0.85 && mc_W>2 &&
-                     this_limit[0][1]<mc_Nu && mc_Nu<this_limit[1][1]);
+                  ((!_useXb && this_limit[0][1]<mc_Nu && mc_Nu<this_limit[1][1]) || (_useXb && this_limit[0][1]<mc_Xb && mc_Xb<this_limit[1][1])));
 
     return pass_DIS;
 }
@@ -695,7 +695,7 @@ Bool_t Acceptance::GoodElectron(Long64_t entry, vector<vector<double>> this_limi
     // This function may be called from Loop.
 
     bool pass_DIS = (TargType==_targTypeCut && this_limit[0][0]<Q2 && Q2<this_limit[1][0] && Yb<0.85 && W>2 && -1.4<vyec && vyec<1.4 &&
-            this_limit[0][1]<Nu && Nu<this_limit[1][1]);
+                  ((!_useXb && this_limit[0][1]<Nu && Nu<this_limit[1][1]) || (_useXb && this_limit[0][1]<Xb && Xb<this_limit[1][1])));
 
     return pass_DIS;
 }

@@ -70,6 +70,7 @@ void Acceptance::ActivateBranches()
     if (_binIndex!=-1)
     {
         UpdateDISLimits(DISLimits, Bin_List[_binIndex]);
+        setUseXb(list_boolXb[_binIndex]);
     }
 }
 
@@ -146,6 +147,7 @@ void Acceptance::Loop()
     // one-dimensional resolution histograms
     TH1F* resQ2 = new TH1F("resQ2", "ResolutionQ2;Q^{2}-mc_Q^{2};Counts", 64, -0.3, 0.3);
     TH1F* resNu = new TH1F("resNu", "ResolutionNu;#nu-mc_#nu;Counts", 64, -0.3, 0.3);
+    TH1F* resXb = new TH1F("resXb", "ResolutionXb;X_{b}-mc_X_{b};Counts", 64, -0.3, 0.3);
     TH1F* resZh = new TH1F("resZh", "ResolutionZh;z_{h}-mc_z_{h};Counts", 64, -0.15, 0.15);
     TH1F* resPt2 = new TH1F("resPt2", "ResolutionPt2;p_{T}^{2}-mc_p_{T}^{2};Counts", 64, -0.15, 0.15);
     TH1F* resPhiPQ = new TH1F("resPhiPQ", "ResolutionPhiPQ;#phi_{PQ}-mc_#phi_{PQ};Counts", 80, -4.0, 4.0);
@@ -153,7 +155,8 @@ void Acceptance::Loop()
     // bin Migration
     TH2F* histMigrationMatrixQ2 = new TH2F("histMigrationMatrixQ2", "MigrationQ2;True Q^{2}; Reco Q^{2}", 50, DISLimits[0][0], DISLimits[1][0], 50, DISLimits[0][0], DISLimits[1][0]);
     TH2F* histMigrationMatrixNu = new TH2F("histMigrationMatrixNu", "MigrationNu;True #nu; Reco #nu", 50, DISLimits[0][1], DISLimits[1][1], 50, DISLimits[0][1], DISLimits[1][1]);
-    TH2F* histMigrationMatrixZh = new TH2F("histMigrationMatrixZh", "MigrationZh;True z_{h}; Reco z_{h}", 50, DISLimits[0][2], DISLimits[1][2], 50, DISLimits[0][2], DISLimits[1][2]);
+    TH2F* histMigrationMatrixXb = new TH2F("histMigrationMatrixXb", "MigrationXb;True X_{b}; Reco X_{b}", 50, DISLimits[0][1], DISLimits[1][1], 50, DISLimits[0][1], DISLimits[1][1]);
+    TH2F* histMigrationMatrixZh = new TH2F("histMigrationMatrixZh", "MigrationZh;True Z_{h}; Reco Z_{h}", 50, DISLimits[0][2], DISLimits[1][2], 50, DISLimits[0][2], DISLimits[1][2]);
     TH2F* histMigrationMatrixPt2 = new TH2F("histMigrationMatrixPt2", "MigrationPt2;True p_{T}^{2} (GeV^{2});Reco p_{T}^{2} (GeV^{2})", 50, DISLimits[0][3], DISLimits[1][3], 50, DISLimits[0][3], DISLimits[1][3]);
     TH2F* histMigrationMatrixPhiPQ = new TH2F("histMigrationMatrixPhiPQ", "MigrationPhiPQ;True #phi_{PQ} (deg);Reco #phi_{PQ} (deg)", 120, DISLimits[0][4], DISLimits[1][4], 120, DISLimits[0][4], DISLimits[1][4]);
 
@@ -227,7 +230,9 @@ void Acceptance::Loop()
         {
             mc_El_Reject_count["Not accepted"]++;
             if (mc_TargType!=_targTypeCut) mc_El_Reject_count["Wrong mc_TargType"]++;
-            if (mc_Q2<DISLimits[0][0] || DISLimits[1][0]<mc_Q2 || 0.85<mc_Yb || mc_W<2 || mc_Nu<DISLimits[0][1] || DISLimits[1][1]<mc_Nu) mc_El_Reject_count["Out of DIS range"]++;
+            if (mc_Q2<DISLimits[0][0] || DISLimits[1][0]<mc_Q2 || 0.85<mc_Yb || mc_W<2 ||
+                (!_useXb && mc_Nu<DISLimits[0][1]) || (!_useXb && DISLimits[1][1]<mc_Nu) ||
+                (_useXb && mc_Xb<DISLimits[0][1]) || (_useXb && DISLimits[1][1]<mc_Xb)) mc_El_Reject_count["Out of DIS range"]++;
         }
 
         if (GoodElectron(ientry, DISLimits))
@@ -245,7 +250,9 @@ void Acceptance::Loop()
         {
             rec_El_Reject_count["Not good El"]++;
             if (TargType!=_targTypeCut) rec_El_Reject_count["Wrong TargType"]++;
-            if (Q2<DISLimits[0][0] || DISLimits[1][0]<Q2 || 0.85<Yb || W<2 || Nu<DISLimits[0][1] || DISLimits[1][1]<Nu) rec_El_Reject_count["Out of DIS range"]++;
+            if (Q2<DISLimits[0][0] || DISLimits[1][0]<Q2 || 0.85<Yb || W<2 ||
+                (!_useXb && Nu<DISLimits[0][1]) || (!_useXb && DISLimits[1][1]<Nu) ||
+                (_useXb && Xb<DISLimits[0][1]) || (_useXb && DISLimits[1][1]<Xb)) rec_El_Reject_count["Out of DIS range"]++;
             if (vyec<-1.4 || 1.4<vyec) rec_El_Reject_count["Out of VertexY Correction"]++;
         }
 
@@ -300,6 +307,11 @@ void Acceptance::Loop()
             double mc_bin[] = {mc_Q2, mc_Nu, mc_Zh->at(i), mc_Pt2->at(i), mc_PhiPQ->at(i)};
             double rec_bin[] = {Q2, Nu, Zh->at(i), Pt2->at(i), PhiPQ->at(i)};
 
+            if (_useXb){
+                mc_bin[1] = mc_Xb;
+                rec_bin[1] = Xb;
+            }
+
             if (good_pion_mc)
             {
                 histTrue->Fill(mc_bin);
@@ -339,9 +351,11 @@ void Acceptance::Loop()
                 {
                     histMigrationMatrixQ2->Fill(mc_Q2, Q2);
                     histMigrationMatrixNu->Fill(mc_Nu, Nu);
+                    histMigrationMatrixXb->Fill(mc_Xb, Xb);
 
                     resQ2->Fill(Q2 - mc_Q2);
                     resNu->Fill(Nu - mc_Nu);
+                    resXb->Fill(Xb - mc_Xb);
 
                     save_lepton_vars = false;
                 }
@@ -392,6 +406,15 @@ void Acceptance::Loop()
         SaveSummaryTable(rec_Pi_Reject_count,  "Rejected reco Pions", fileSummary, inclusive_count);
         SaveSummaryTable(rec_Pi_Accept_count,  "Matching of reconstructed Pions", fileSummary, general_Pi_count["Total rec_Pi"]);
         fileSummary.close();
+    }
+
+    if (_useXb){
+        resNu->Delete();
+        histMigrationMatrixNu->Delete();
+    }
+    else{
+        resXb->Delete();
+        histMigrationMatrixXb->Delete();
     }
 
     PrintFilledBins(histAcc_Reconstru);
@@ -483,6 +506,7 @@ void Acceptance::Correction()
             {
                 good_pion = true;
                 binKinVars = {Q2, Nu, Zh->at(i), Pt2->at(i), PhiPQ->at(i)};
+                if (_useXb) binKinVars[1] = Xb;
             }
 
             if (!good_pion) continue;
@@ -600,12 +624,14 @@ void Acceptance::ClosureTest()
             {
                 good_pion_mc = true;
                 binKinVars_mc = {mc_Q2, mc_Nu, mc_Zh->at(i), mc_Pt2->at(i), mc_PhiPQ->at(i)};
+                if (_useXb) binKinVars_mc[1] = mc_Xb;
             }
 
             if (good_electron && GoodPiPlus(ientry, i, DISLimits))
             {
                 good_pion = true;
                 binKinVars = {Q2, Nu, Zh->at(i), Pt2->at(i), PhiPQ->at(i)};
+                if (_useXb) binKinVars[1] = Xb;
             }
 
             if (!good_pion_mc && !good_pion) continue;

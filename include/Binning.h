@@ -7,9 +7,9 @@
 namespace DIS
 {
     // DIS limits
-    // vector<vector<float>> DISLimits = {{1.0, 4.1}, {2.2, 4.2}, {0.0, 1.0}, {0.0, 1.0}, {-180.0, 180.0}}; // Q2, Nu, Zh, Pt2, PhiPQ
+    // vector<vector<float>> DISLimits = {{1.0, 4.1}, {2.2, 4.2}, {0.0, 1.0}, {0.0, 1.0}, {-180.0, 180.0}, {0.0, 1.0}}; // Q2, Nu, Zh, Pt2, PhiPQ, Xb
     std::vector<std::vector<double>> DISLimits = {{1.0, 2.2, 0.0, 0.0,-180.0},
-                                                  {4.1, 4.2, 1.0, 1.0, 180.0}}; // Q2, Nu, Zh, Pt2, PhiPQ
+                                                  {4.1, 4.2, 1.0, 1.0, 180.0}}; // Q2, Nu/Xb, Zh, Pt2, PhiPQ
     // Xb {0.11, 0.56}
 
     // Ordered always following: Q2, Nu, Zh, Pt2, PhiPQ
@@ -113,7 +113,7 @@ namespace DIS
 
     // B 11
     std::vector<std::vector<double>> Bin_Xb_B10 = {{1.00, 1.30, 1.80, 4.10}, // 3   -> Total = 6,552
-                                                   {0.110, 0.220, 0.290, 0.56}, // 3 Xb
+                                                   {0.110, 0.220, 0.290, 0.560}, // 3 Xb
                                                    {0.10, 0.22, 0.32, 0.40, 0.50, 0.60, 0.75, 0.85, 1.00}, // 8
                                                    {0.047, 0.073, 0.112, 0.173, 0.267, 0.411, 0.633, 1.2}, // 7
                                                    {-180.00, -152.31, -124.62, -96.92, -69.23, -41.54, -13.85, 13.85, 41.54, 69.23, 96.92,
@@ -131,7 +131,10 @@ namespace DIS
 
     std::vector<std::vector<std::vector<double>>> Bin_List = {Bin_Origin, Bin_SplitZ, Bin_ThinZh, Bin_ThinPt, Bin_ThinZP, Bin_ThinZh_CoarsePhi,
                                                               Bin_ThinZP_CoarsePhi, Bin_ThinZP_OddPhi, Bin_ThinZHighP_OddPhi, Bin_ThinZPeakP_OddPhi,
-                                                              Bin_CoarseOddPhi};
+                                                              Bin_CoarseOddPhi, Bin_Xb_B10};
+
+    // Vector that says if the second variable is \nu or X_b
+    std::vector<bool> list_boolXb = {false, false, false, false, false, false, false, false, false, false, false, true};
 
     namespace Correction
     {

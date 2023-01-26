@@ -86,5 +86,13 @@ Bin_CoarseOddPhi = {'Q': [1.00, 1.30, 1.80, 4.10],
 'I': [-180.00, -152.31, -124.62, -96.92, -69.23, -41.54, -13.85, 13.85, 41.54, 69.23, 96.92, 124.62, 152.31, 180.00],
 }
 
-Bin_List = [Bin_Origin, Bin_SplitZ, Bin_ThinZh, Bin_ThinPt, Bin_ThinZP, Bin_ThinZh_CoarsePhi, Bin_ThinZP_CoarsePhi, Bin_ThinZP_OddPhi, Bin_ThinZHighP_OddPhi, Bin_ThinZPeakP_OddPhi, Bin_CoarseOddPhi]
+#    // B 11
+Bin_Xb_B10 = {'Q': [1.00, 1.30, 1.80, 4.10],
+'N': [0.110, 0.220, 0.290, 0.560],
+'Z': [0.10, 0.22, 0.32, 0.40, 0.50, 0.60, 0.75, 0.85, 1.00],
+'P': [0.047, 0.073, 0.112, 0.173, 0.267, 0.411, 0.633, 1.2],
+'I': [-180.00, -152.31, -124.62, -96.92, -69.23, -41.54, -13.85, 13.85, 41.54, 69.23, 96.92, 124.62, 152.31, 180.00],
+}
+
+Bin_List = [Bin_Origin, Bin_SplitZ, Bin_ThinZh, Bin_ThinPt, Bin_ThinZP, Bin_ThinZh_CoarsePhi, Bin_ThinZP_CoarsePhi, Bin_ThinZP_OddPhi, Bin_ThinZHighP_OddPhi, Bin_ThinZPeakP_OddPhi, Bin_CoarseOddPhi, Bin_Xb_B10]
 
