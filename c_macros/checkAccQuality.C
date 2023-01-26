@@ -42,6 +42,10 @@ void checkAccQuality(std::string target = "Fe", int binName = 0, std::string acc
     TH1D *hNuEmpty_ReMtch_mc = new TH1D("hNuEmpty_ReMtch_mc", "hNuEmpty_ReMtch_mc", this_binning[1].size()-1, &this_binning[1][0]);
     TH1D *hNuEmpty_ReMtch_re = new TH1D("hNuEmpty_ReMtch_re", "hNuEmpty_ReMtch_re", this_binning[1].size()-1, &this_binning[1][0]);
 
+    TH1D *hXbEmpty_Reconstru = new TH1D("hXbEmpty_Reconstru", "hXbEmpty_Reconstru", this_binning[1].size()-1, &this_binning[1][0]);
+    TH1D *hXbEmpty_ReMtch_mc = new TH1D("hXbEmpty_ReMtch_mc", "hXbEmpty_ReMtch_mc", this_binning[1].size()-1, &this_binning[1][0]);
+    TH1D *hXbEmpty_ReMtch_re = new TH1D("hXbEmpty_ReMtch_re", "hXbEmpty_ReMtch_re", this_binning[1].size()-1, &this_binning[1][0]);
+
     TH1D *hZhEmpty_Reconstru = new TH1D("hZhEmpty_Reconstru", "hZhEmpty_Reconstru", this_binning[2].size()-1, &this_binning[2][0]);
     TH1D *hZhEmpty_ReMtch_mc = new TH1D("hZhEmpty_ReMtch_mc", "hZhEmpty_ReMtch_mc", this_binning[2].size()-1, &this_binning[2][0]);
     TH1D *hZhEmpty_ReMtch_re = new TH1D("hZhEmpty_ReMtch_re", "hZhEmpty_ReMtch_re", this_binning[2].size()-1, &this_binning[2][0]);
@@ -86,7 +90,8 @@ void checkAccQuality(std::string target = "Fe", int binName = 0, std::string acc
                         {
                             std::cout << Form("R1: Bin %i is empty! >> (%.2f, %.2f, %.2f, %.2f, %.2f)",bin_Reconstru,kinVars[0],kinVars[1],kinVars[2],kinVars[3],kinVars[4]) << std::endl;
                             hQ2Empty_Reconstru->Fill(kinVars[0]);
-                            hNuEmpty_Reconstru->Fill(kinVars[1]);
+                            if (DIS::list_boolXb[binName]) hXbEmpty_Reconstru->Fill(kinVars[1]);
+                            else hNuEmpty_Reconstru->Fill(kinVars[1]);
                             hZhEmpty_Reconstru->Fill(kinVars[2]);
                             hPtEmpty_Reconstru->Fill(kinVars[3]);
                             hPQEmpty_Reconstru->Fill(kinVars[4]);
@@ -101,7 +106,8 @@ void checkAccQuality(std::string target = "Fe", int binName = 0, std::string acc
                         {
                             std::cout << Form("R2: Bin %i is empty! >> (%.2f, %.2f, %.2f, %.2f, %.2f)",bin_ReMtch_mc,kinVars[0],kinVars[1],kinVars[2],kinVars[3],kinVars[4]) << std::endl;
                             hQ2Empty_ReMtch_mc->Fill(kinVars[0]);
-                            hNuEmpty_ReMtch_mc->Fill(kinVars[1]);
+                            if (DIS::list_boolXb[binName]) hXbEmpty_ReMtch_mc->Fill(kinVars[1]);
+                            else hNuEmpty_ReMtch_mc->Fill(kinVars[1]);
                             hZhEmpty_ReMtch_mc->Fill(kinVars[2]);
                             hPtEmpty_ReMtch_mc->Fill(kinVars[3]);
                             hPQEmpty_ReMtch_mc->Fill(kinVars[4]);
@@ -116,7 +122,8 @@ void checkAccQuality(std::string target = "Fe", int binName = 0, std::string acc
                         {
                             std::cout << Form("R3: Bin %i is empty! >> (%.2f, %.2f, %.2f, %.2f, %.2f)",bin_ReMtch_re,kinVars[0],kinVars[1],kinVars[2],kinVars[3],kinVars[4]) << std::endl;
                             hQ2Empty_ReMtch_re->Fill(kinVars[0]);
-                            hNuEmpty_ReMtch_re->Fill(kinVars[1]);
+                            if (DIS::list_boolXb[binName]) hXbEmpty_ReMtch_re->Fill(kinVars[1]);
+                            else hNuEmpty_ReMtch_re->Fill(kinVars[1]);
                             hZhEmpty_ReMtch_re->Fill(kinVars[2]);
                             hPtEmpty_ReMtch_re->Fill(kinVars[3]);
                             hPQEmpty_ReMtch_re->Fill(kinVars[4]);
@@ -129,6 +136,17 @@ void checkAccQuality(std::string target = "Fe", int binName = 0, std::string acc
                 }
             }
         }
+    }
+
+    if (DIS::list_boolXb[binName]){
+        hNuEmpty_Reconstru->Delete();
+        hNuEmpty_ReMtch_mc->Delete();
+        hNuEmpty_ReMtch_re->Delete();
+    }
+    else{
+        hXbEmpty_Reconstru->Delete();
+        hXbEmpty_ReMtch_mc->Delete();
+        hXbEmpty_ReMtch_re->Delete();
     }
 
     fout->Write();
