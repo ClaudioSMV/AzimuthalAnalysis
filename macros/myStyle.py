@@ -342,7 +342,8 @@ var_label = {   'Q': ["Q2",     "Q^{2}",        "(GeV^{2})" ],
                 'N': ["Nu",     "#nu",          "(GeV)"     ],
                 'Z': ["Zh",     "Z_{h}",        ""          ],
                 'P': ["Pt2",    "P_{t}^{2}",    "(GeV^{2})" ],
-                'I': ["PhiPQ",  "#phi_{PQ}",    "(deg)"     ]}
+                'I': ["PhiPQ",  "#phi_{PQ}",    "(deg)"     ],
+                'X': ["Xb",     "X_{b}",        ""          ],}
 
 def axis_label(var, text):
     this_output = ""

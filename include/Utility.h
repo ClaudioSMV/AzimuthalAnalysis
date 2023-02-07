@@ -214,6 +214,7 @@ void SaveBinningFilePy()
     int var_count = 0;
     bool write_bin = false;
     bool init_line = false, end_line = false;
+    bool using_Xb = false;
     std::string list_line = "";
     std::vector<std::string> bin_list;
 
@@ -225,6 +226,8 @@ void SaveBinningFilePy()
         {
             in_new_bin = true;
             var_count = 0;
+            if (myText.find("Xb") != string::npos) using_Xb = true;
+            else using_Xb = false;
 
             // Writes: "# // B 0"
             list_line+= "#" + myText + "\n";
@@ -270,7 +273,9 @@ void SaveBinningFilePy()
                 int pos_open = myText.find_last_of("{")+1;
 
                 // Writes: "'N': [2.20, 3.20, 3.70, 4.20]"
-                list_line+= "\'"+vars[var_count]+"\': [";
+                std::string this_var = vars[var_count];
+                if (using_Xb && var_count==1) this_var = "X";
+                list_line+= "\'" + this_var + "\': [";
                 list_line.append(myText, pos_open, myText.find("}")-pos_open);
                 list_line.append("],\n");
 
@@ -284,7 +289,9 @@ void SaveBinningFilePy()
                 int pos_elem = myText.find_last_of("{") +1;
 
                 // Writes: "'I': [-180.00, -171.00, -162.00, -153.00, -144.00,"
-                list_line+= "\'"+vars[var_count]+"\': [";
+                std::string this_var = vars[var_count];
+                if (using_Xb && var_count==1) this_var = "X";
+                list_line+= "\'" + this_var + "\': [";
                 list_line.append(myText, pos_elem, myText.find_last_of(",")-pos_elem+1);
 
                 init_line = false;
