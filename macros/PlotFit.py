@@ -78,6 +78,8 @@ gStyle.SetOptStat(0)
 outputfile = TFile(outputPath+outputROOT,"RECREATE")
 # # FitBothTails_
 
+phi_axis_title = myStyle.axis_label('I',"LatexUnit") # "#phi_{PQ} (deg)"
+
 for h in list_of_hists:
     if (h.ReadObj().Class_Name() == "TH1D"):
         if "Corr" in h.GetName(): ## ADD SUPPORT FOR ALL CORRECTIONS!
@@ -101,7 +103,7 @@ for h in list_of_hists:
 
             if useFold:
                 ## Fold two tails in one
-                hist_tmp = TH1D("%s_Fd"%(h.GetName()), ";#phi_{PQ} (deg);Counts", len(vect_limits)-1, array('d',vect_limits))
+                hist_tmp = TH1D("%s_Fd"%(h.GetName()), ";%s;Counts"%phi_axis_title, len(vect_limits)-1, array('d',vect_limits))
                 # hist_tmp.Sumw2()
 
                 for b in range(1, Nbins+1):
@@ -147,7 +149,7 @@ for h in list_of_hists:
             ylim = hist_tmp.GetMaximum()*1.4
             hist_tmp.SetMaximum(ylim)
 
-            hist_tmp.GetXaxis().SetTitle("#phi_{PQ} (deg)")
+            hist_tmp.GetXaxis().SetTitle(phi_axis_title)
             hist_tmp.GetYaxis().SetTitle("Counts")
 
             hist_tmp.Draw("hist axis")

@@ -179,6 +179,8 @@ else:
     input_cuts+="_Zx"
     plots_cuts+="_Zx"
 
+keyX = 'Z' if useZh else 'P'
+
 dataset_elemts = dataset.split("_")
 try:
     if (int(dataset_elemts[0])):
@@ -192,8 +194,10 @@ this_binning_type = int(dataset_elemts[0])
 dataset_title = mS.getNameFormatted("_"+dataset)
 this_bin_dict = mS.all_dicts[this_binning_type]
 
+key1 = 'N' if ("N" in this_bin_dict) else 'X'
+
 nBinsQ = len(this_bin_dict['Q'])-1
-nBinsN = len(this_bin_dict['N'])-1 if ("N" in this_bin_dict) else len(this_bin_dict['X'])-1
+nBinsN = len(this_bin_dict[key1])-1
 nBinsZ = len(this_bin_dict['Z'])-1
 nBinsP = len(this_bin_dict['P'])-1
 
@@ -232,6 +236,12 @@ for targ in list_targets:
     inputfile = TFile(inputPath+inputROOT,"READ")
     list_infiles.append(inputfile)
 
+
+# Define variables for different x-axis (Zh or Pt2)
+
+x_axis_title = mS.axis_label(keyX,"LatexUnit") # "Z_{h}" or "P_{t}^{2} (GeV^{2})"
+this_n = nBinsZ if useZh else nBinsP
+
 list_hists = []
 
 ## Create histograms
@@ -245,29 +255,40 @@ for p,par in enumerate(["B", "C"]): # 2
         for iQ in range(nBinsQ): #nQ
             list_this_Q = []
             for iN in range(nBinsN): #nN
-                bin_label = "Q%iN%i"%(iQ,iN) if ("N" in this_bin_dict) else "Q%iX%i"%(iQ,iN)
-                if useZh:
-                    hist_tmp = TH1D("%s_%s_%s"%(par,targ,bin_label),";Z_{h};%s/A"%(par),nBinsZ,array('d',this_bin_dict['Z']))
+                bin_label = "Q%i%s%i"%(iQ,key1,iN) # "Q%iN%i" or "Q%iX%i"
 
-                    for iZ in range(1,nBinsZ+1):
-                        this_label = "%sZ%i"%(bin_label,iZ-1)
-                        this_bin = hist_par_Pos.GetXaxis().FindBin(this_label)
-                        bin_value = hist_par_Pos.GetBinContent(this_bin) if hist_par_Pos.GetBinContent(this_bin)>0.0 else -hist_par_Neg.GetBinContent(this_bin)
-                        bin_error = hist_par_Pos.GetBinError(this_bin) if hist_par_Pos.GetBinContent(this_bin)>0.0 else hist_par_Neg.GetBinError(this_bin)
+                hist_tmp = TH1D("%s_%s_%s"%(par,targ,bin_label),";%s;%s/A"%(x_axis_title,par),this_n,array('d',this_bin_dict[keyX]))
+                for i_n in range(1,this_n+1):
+                    this_label = "%s%s%i"%(bin_label, keyX, i_n-1) # "Q0N0Z0" or "Q0X0P0"
+                    this_bin = hist_par_Pos.GetXaxis().FindBin(this_label)
+                    bin_value = hist_par_Pos.GetBinContent(this_bin) if hist_par_Pos.GetBinContent(this_bin)>0.0 else -hist_par_Neg.GetBinContent(this_bin)
+                    bin_error = hist_par_Pos.GetBinError(this_bin) if hist_par_Pos.GetBinContent(this_bin)>0.0 else hist_par_Neg.GetBinError(this_bin)
 
-                        hist_tmp.SetBinContent(iZ, bin_value)
-                        hist_tmp.SetBinError(iZ, bin_error)
-                elif usePt2:
-                    hist_tmp = TH1D("%s_%s_%s"%(par,targ,bin_label),";P_{t}^{2} (GeV^{2});%s/A"%(par),nBinsP,array('d',this_bin_dict['P']))
+                    hist_tmp.SetBinContent(i_n, bin_value)
+                    hist_tmp.SetBinError(i_n, bin_error)
 
-                    for iP in range(1,nBinsP+1):
-                        this_label = "%sP%i"%(bin_label,iP-1)
-                        this_bin = hist_par_Pos.GetXaxis().FindBin(this_label)
-                        bin_value = hist_par_Pos.GetBinContent(this_bin) if hist_par_Pos.GetBinContent(this_bin)>0.0 else -hist_par_Neg.GetBinContent(this_bin)
-                        bin_error = hist_par_Pos.GetBinError(this_bin) if hist_par_Pos.GetBinContent(this_bin)>0.0 else hist_par_Neg.GetBinError(this_bin)
+                # if useZh:
+                #     hist_tmp = TH1D("%s_%s_%s"%(par,targ,bin_label),";Z_{h};%s/A"%(par),nBinsZ,array('d',this_bin_dict['Z']))
 
-                        hist_tmp.SetBinContent(iP, bin_value)
-                        hist_tmp.SetBinError(iP, bin_error)
+                #     for iZ in range(1,nBinsZ+1):
+                #         this_label = "%sZ%i"%(bin_label,iZ-1)
+                #         this_bin = hist_par_Pos.GetXaxis().FindBin(this_label)
+                #         bin_value = hist_par_Pos.GetBinContent(this_bin) if hist_par_Pos.GetBinContent(this_bin)>0.0 else -hist_par_Neg.GetBinContent(this_bin)
+                #         bin_error = hist_par_Pos.GetBinError(this_bin) if hist_par_Pos.GetBinContent(this_bin)>0.0 else hist_par_Neg.GetBinError(this_bin)
+
+                #         hist_tmp.SetBinContent(iZ, bin_value)
+                #         hist_tmp.SetBinError(iZ, bin_error)
+                # elif usePt2:
+                #     hist_tmp = TH1D("%s_%s_%s"%(par,targ,bin_label),";P_{t}^{2} (GeV^{2});%s/A"%(par),nBinsP,array('d',this_bin_dict['P']))
+
+                #     for iP in range(1,nBinsP+1):
+                #         this_label = "%sP%i"%(bin_label,iP-1)
+                #         this_bin = hist_par_Pos.GetXaxis().FindBin(this_label)
+                #         bin_value = hist_par_Pos.GetBinContent(this_bin) if hist_par_Pos.GetBinContent(this_bin)>0.0 else -hist_par_Neg.GetBinContent(this_bin)
+                #         bin_error = hist_par_Pos.GetBinError(this_bin) if hist_par_Pos.GetBinContent(this_bin)>0.0 else hist_par_Neg.GetBinError(this_bin)
+
+                #         hist_tmp.SetBinContent(iP, bin_value)
+                #         hist_tmp.SetBinError(iP, bin_error)
 
                 list_this_Q.append(hist_tmp)
             list_this_tar.append(list_this_Q)
@@ -358,7 +379,7 @@ for p,par in enumerate(["B", "C"]):
                     text.SetTextSize(tsize-14)
                     text.SetTextAlign(23)
                     text.SetTextAngle(90)
-                    title = mS.GetBinInfo("N%i"%(iN), this_binning_type) if ("N" in this_bin_dict) else mS.GetBinInfo("X%i"%(iN), this_binning_type)
+                    title = mS.GetBinInfo("%s%i"%(key1,iN), this_binning_type) # "Q%iN%i" or "Q%iX%i"
                     text.DrawLatexNDC(XtoPad(1.05),YtoPad(0.5),title)
 
                 if (iQ==2 and iN==0):

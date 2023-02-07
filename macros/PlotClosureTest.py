@@ -111,6 +111,9 @@ gStyle.SetOptStat(0)
 
 # Plot 2D histograms
 outputfile = TFile(outputPath+outputROOT,"RECREATE")
+
+phi_axis_title = myStyle.axis_label('I',"LatexUnit") # "#phi_{PQ} (deg)"
+
 for i,info in enumerate(names_list):
 
     if saveAll:
@@ -123,7 +126,7 @@ for i,info in enumerate(names_list):
             ylim = this_proj.GetMaximum()*1.2
             htemp.SetMaximum(ylim)
             # htemp.SetLineColor(kBlack)
-            htemp.GetXaxis().SetTitle("#phi_{PQ} (deg)")
+            htemp.GetXaxis().SetTitle(phi_axis_title)
             htemp.GetYaxis().SetTitle("Counts")
             htemp.Draw("AXIS")
 
@@ -156,7 +159,7 @@ for i,info in enumerate(names_list):
     htemp.SetMinimum(0.3)
     htemp.SetMaximum(1.7)
     # htemp.SetLineColor(kBlack)
-    htemp.GetXaxis().SetTitle("#phi_{PQ} (deg)")
+    htemp.GetXaxis().SetTitle(phi_axis_title)
     htemp.GetYaxis().SetTitle("Corr / True")
     htemp.Draw("AXIS")
 
