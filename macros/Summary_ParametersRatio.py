@@ -196,7 +196,7 @@ dataset_title = mS.getNameFormatted("_"+dataset)
 this_bin_dict = mS.all_dicts[this_binning_type]
 
 nBinsQ = len(this_bin_dict['Q'])-1
-nBinsN = len(this_bin_dict['N'])-1
+nBinsN = len(this_bin_dict['N'])-1 if ("N" in this_bin_dict) else len(this_bin_dict['X'])-1
 nBinsZ = len(this_bin_dict['Z'])-1
 nBinsP = len(this_bin_dict['P'])-1
 
@@ -237,9 +237,9 @@ for p,par in enumerate(["B", "C"]): # 2
         for iQ in range(nBinsQ): #nQ
             list_this_Q = []
             for iN in range(nBinsN): #nN
-                bin_label = "Q%iN%i"%(iQ,iN)
+                bin_label = "Q%iN%i"%(iQ,iN) if ("N" in this_bin_dict) else "Q%iX%i"%(iQ,iN)
                 if useZh:
-                    hist_tmp = TH1D("%s_%s_Q%iN%i"%(par,targ,iQ,iN),";Z_{h};(%s/A)_{Solid}/(%s/A)_{D}"%(par,par),nBinsZ,array('d',this_bin_dict['Z']))
+                    hist_tmp = TH1D("%s_%s_%s"%(par,targ,bin_label),";Z_{h};(%s/A)_{Solid}/(%s/A)_{D}"%(par,par),nBinsZ,array('d',this_bin_dict['Z']))
 
                     for iZ in range(1,nBinsZ+1):
                         this_label = "%sZ%i"%(bin_label,iZ-1)
@@ -250,7 +250,7 @@ for p,par in enumerate(["B", "C"]): # 2
                         hist_tmp.SetBinContent(iZ, bin_value)
                         hist_tmp.SetBinError(iZ, bin_error)
                 elif usePt2:
-                    hist_tmp = TH1D("%s_%s_Q%iN%i"%(par,targ,iQ,iN),";P_{t}^{2} (GeV^{2});(%s/A)_{Solid}/(%s/A)_{D}"%(par,par),nBinsP,array('d',this_bin_dict['P']))
+                    hist_tmp = TH1D("%s_%s_%s"%(par,targ,bin_label),";P_{t}^{2} (GeV^{2});(%s/A)_{Solid}/(%s/A)_{D}"%(par,par),nBinsP,array('d',this_bin_dict['P']))
 
                     for iP in range(1,nBinsP+1):
                         this_label = "%sP%i"%(bin_label,iP-1)
@@ -346,7 +346,6 @@ for p,par in enumerate(["B", "C"]):
                     text = ROOT.TLatex()
                     text.SetTextSize(tsize-14)
                     text.SetTextAlign(23)
-                    # title = mS.GetBinInfo("Q%iN%i"%(iQ,iN), this_binning_type)
                     title = mS.GetBinInfo("Q%i"%(iQ), this_binning_type)
                     text.DrawLatexNDC(XtoPad(0.5),YtoPad(Q2_bin_info_Ypos),title)
 
@@ -355,8 +354,7 @@ for p,par in enumerate(["B", "C"]):
                     text.SetTextSize(tsize-14)
                     text.SetTextAlign(23)
                     text.SetTextAngle(90)
-                    # title = mS.GetBinInfo("Q%iN%i"%(iQ,iN), this_binning_type)
-                    title = mS.GetBinInfo("N%i"%(iN), this_binning_type)
+                    title = mS.GetBinInfo("N%i"%(iN), this_binning_type) if ("N" in this_bin_dict) else mS.GetBinInfo("X%i"%(iN), this_binning_type)
                     text.DrawLatexNDC(XtoPad(1.05),YtoPad(0.5),title)
 
                 if (iQ==2 and iN==0):

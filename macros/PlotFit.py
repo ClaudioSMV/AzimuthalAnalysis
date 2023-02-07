@@ -89,6 +89,9 @@ for h in list_of_hists:
             tmp_txt = h.GetName().split("_")[-1] # Q0N0Z0
 
             hist = h.ReadObj()
+            if (hist.GetEntries() == 0):
+                print("Histogram %s is empty! Fit is not possible"%h.GetName())
+                continue
             Nbins = hist.GetXaxis().GetNbins()
 
             bin_zero = hist.FindBin(0.0)

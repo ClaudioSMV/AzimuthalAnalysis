@@ -122,6 +122,12 @@ for i,i_bool in enumerate(this_conf):
 names_list = []
 Proj1DTHnSparse_list = [[],[],[],[]]
 symbol_list = ["Q","N","Z","P"]
+
+if ('X' in myStyle.all_dicts[infoDict["BinningType"]]):
+    symbol_list[1] = "X"
+
+print(symbol_list)
+
 for i in range(totalsize):
     total_tmp = totalsize
     i_tmp = i
@@ -173,7 +179,7 @@ for i,info in enumerate(names_list):
         htemp.SetMaximum(ylim)
         # htemp.SetLineColor(kBlack)
         htemp.GetYaxis().SetMaxDigits(3)
-        htemp.GetXaxis().SetTitle("#phi_{PQ} (deg)")
+        htemp.GetXaxis().SetTitle(myStyle.axis_label('I',"LatexUnit")) # "#phi_{PQ} (deg)")
         htemp.GetYaxis().SetTitle("Counts")
         htemp.Draw("AXIS")
 
@@ -199,6 +205,7 @@ for i,info in enumerate(names_list):
         canvas.SaveAs(outputPath+outputName)
         this_proj.Write()
         htemp.Delete()
+        canvas.Clear()
 
 outputfile.Close()
 
