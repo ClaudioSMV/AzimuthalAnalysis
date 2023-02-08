@@ -337,6 +337,9 @@ color_target = {'C': GetColors(True)[0], 'Fe': GetColors(True)[2], 'Pb': GetColo
 # Copy dictionaries of bins from Bins.py
 all_dicts = list(bn.Bin_List)
 
+varname2key = { "Q2":'Q', "Nu":'N', "Zh":'Z', "Pt2":'P', "PhiPQ":'I', "Xb":'X',
+                "Pt":'P', "PQ":'I'} # Short name
+
 #        <initial> : [<name>,   <axis_name_latex>, <units>  ]
 var_label = {   'Q': ["Q2",     "Q^{2}",        "(GeV^{2})" ],
                 'N': ["Nu",     "#nu",          "(GeV)"     ],
