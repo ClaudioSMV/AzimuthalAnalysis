@@ -9,6 +9,7 @@ font=43 # Helvetica
 tsize=38 #35
 
 ### Names' formats
+
 # Acceptance_%s_B%i.root      ; <Target>,<_binIndex>
 # Corrected_%s_B%i_%iD.root   ; <Target>,<_binIndex>,<_binNdims (non-integrated dims)>
 # ClosureTest_%s_B%i_%iD.root ; <Target>,<_binIndex>,<_binNdims (non-integrated dims)>
@@ -39,6 +40,11 @@ def getNameFormatted(nameFormat, isAcc = False): #input: Fe_0_1 ; <targ>_<nBin>_
     #         fileName+="_"+e
 
     return fileName #output: Fe_0B1 ; <target>_<binningType number>B<non-integrated dimensions>
+
+def getBinNameFormatted(nameFormat): #input: Fe_0_1 ; <targ>_<nBin>_<nDim>
+    nameFull = getNameFormatted(nameFormat) # Fe_0B1 ; <targ>_<nBin>B<nDim>
+    return nameFull.split('_')[1] # 0B1 ; <nBin>B<nDim>
+
 
 def addBeforeRootExt(path, before_dot, other_extension = "root"):
     new_path = path.split(".%s"%other_extension)[0]

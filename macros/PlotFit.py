@@ -59,12 +59,12 @@ plots_cuts+="_"+fit_type # Add Fold or LR extension
 
 
 ## Input
-inputPath = myStyle.getPlotsFolder("Correction", input_cuts, infoDict["Target"], isJLab, False) # "../output/"
+inputPath = myStyle.getPlotsFolder("Correction", input_cuts, myStyle.getBinNameFormatted(dataset) + "/" + infoDict["Target"], isJLab, False) # "../output/"
 inputROOT = myStyle.getPlotsFile("Corrected", dataset, "root")
 inputfile = TFile(inputPath+inputROOT,"READ")
 
 ## Output
-outputPath = myStyle.getPlotsFolder("Fit", plots_cuts, infoDict["Target"], isJLab)
+outputPath = myStyle.getPlotsFolder("Fit", plots_cuts, myStyle.getBinNameFormatted(dataset) + "/" + infoDict["Target"], isJLab)
 outputROOT = myStyle.getPlotsFile("Fit", dataset, "root", fit_type)
 if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
     print("Fit already exists! Not overwriting it.")

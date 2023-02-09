@@ -99,17 +99,17 @@ else:
 solid_targ = infoDict["Target"] if not mixD else ""
 dataset_D = "D%s_%s_%s"%(solid_targ,infoDict["BinningType"],infoDict["NDims"])
 
-inputPath_D = myStyle.getPlotsFolder("Fit", input_cuts, "D"+solid_targ, isJLab, False) # "../output/"
+inputPath_D = myStyle.getPlotsFolder("Fit", input_cuts, myStyle.getBinNameFormatted(dataset_D) + "/D" + solid_targ, isJLab, False) # "../output/"
 inputROOT_D = myStyle.getPlotsFile("Fit", dataset_D, "root", fit_type)
 inputfile_D = TFile(inputPath_D+inputROOT_D,"READ")
 
 ## Input
-inputPath_solid = myStyle.getPlotsFolder("Fit", input_cuts, infoDict["Target"], isJLab, False) # "../output/"
+inputPath_solid = myStyle.getPlotsFolder("Fit", input_cuts, myStyle.getBinNameFormatted(dataset) + "/" + infoDict["Target"], isJLab, False) # "../output/"
 inputROOT_solid = myStyle.getPlotsFile("Fit", dataset, "root", fit_type)
 inputfile_solid = TFile(inputPath_solid+inputROOT_solid,"READ")
 
 ## Output
-outputPath = myStyle.getPlotsFolder("FitParametersRatio", plots_cuts, infoDict["Target"], isJLab)
+outputPath = myStyle.getPlotsFolder("ParametersRatio", plots_cuts, myStyle.getBinNameFormatted(dataset) + "/" + infoDict["Target"], isJLab)
 outputROOT = myStyle.getPlotsFile("ParametersRatio", dataset, "root", fit_type)
 if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
     print("Parameters ratio file already exists! Not overwriting it.")

@@ -62,12 +62,12 @@ input_cuts+="_"+fit_type # Add Fold or LR extension
 plots_cuts+="_"+fit_type
 
 ## Input
-inputPath = myStyle.getPlotsFolder("Fit", input_cuts, infoDict["Target"], isJLab, False) # "../output/"
+inputPath = myStyle.getPlotsFolder("Fit", input_cuts, myStyle.getBinNameFormatted(dataset) + "/" + infoDict["Target"], isJLab, False) # "../output/"
 inputROOT = myStyle.getPlotsFile("Fit", dataset, "root", fit_type)
 inputfile = TFile(inputPath+inputROOT,"READ")
 
 ## Output
-outputPath = myStyle.getPlotsFolder("FitParametersNorm", plots_cuts, infoDict["Target"], isJLab)
+outputPath = myStyle.getPlotsFolder("ParametersNorm", plots_cuts, myStyle.getBinNameFormatted(dataset) + "/" + infoDict["Target"], isJLab)
 outputROOT = myStyle.getPlotsFile("Parameters", dataset, "root", fit_type)
 if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
     print("Parameters normalized file already exists! Not overwriting it.")

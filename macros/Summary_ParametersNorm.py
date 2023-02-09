@@ -230,7 +230,7 @@ list_infiles = []
 # Open files
 for targ in list_targets:
     this_dataset = "%s_%s"%(targ, dataset)
-    inputPath = mS.getPlotsFolder("FitParametersNorm", input_cuts, targ, isJLab, False) # "../output/"
+    inputPath = mS.getPlotsFolder("ParametersNorm", input_cuts, mS.getBinNameFormatted(this_dataset) + "/" + targ, isJLab, False) # "../output/"
     inputROOT = mS.getPlotsFile("Parameters", this_dataset, "root", fit_type)
 
     inputfile = TFile(inputPath+inputROOT,"READ")

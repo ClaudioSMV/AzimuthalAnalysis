@@ -68,7 +68,7 @@ inputPath = myStyle.getOutputFileWithPath("Correction", dataset, input_cuts, isJ
 inputfile = TFile(inputPath,"READ")
 
 ## Output
-outputPath = myStyle.getPlotsFolder("Correction", plots_cuts, infoDict["Target"], isJLab)
+outputPath = myStyle.getPlotsFolder("Correction", plots_cuts, myStyle.getBinNameFormatted(dataset) + "/" + infoDict["Target"], isJLab)
 outputROOT = myStyle.getPlotsFile("Corrected", dataset, "root")
 if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
     print("Correction already exists! Not overwriting it.")
@@ -110,6 +110,7 @@ else:
     this_conf = default_conf # Plot Z
 
 
+# Retrieve 5d-hists, get projections and save them, along with a label to identify the bin
 totalsize = 1
 for i,i_bool in enumerate(this_conf):
     if i_bool:
@@ -151,10 +152,6 @@ for i in range(totalsize):
 
         Proj1DTHnSparse_list[n].append(proj_tmp)
 
-    # histCorr_Reconstru_Proj = histCorr_Reconstru.Projection(4)
-    # histCorr_Reconstru_Proj.SetName(histCorr_Reconstru.GetName()+"_"+txt_tmp)
-
-    # list_Corr_Reconstru.append(histCorr_Reconstru_Proj)
     names_list.append(txt_tmp)
 
 
@@ -168,6 +165,7 @@ gStyle.SetOptStat(0)
 # Plot 2D histograms
 outputfile = TFile(outputPath+outputROOT,"RECREATE")
 phi_axis_title = myStyle.axis_label('I',"LatexUnit") # "#phi_{PQ} (deg)"
+
 for i,info in enumerate(names_list):
     for p,proj in enumerate(Proj1DTHnSparse_list):
         if (("Good" in prefixType[p]) and (not saveAll)): continue
