@@ -119,38 +119,76 @@ list_func_names = ["crossSectionR"]
 if not useFold:
     list_func_names.append("crossSectionL")
 
+n_htypeReco = [0, 0, 0]
+
 list_of_hists = inputfile_solid.GetListOfKeys().Clone()
 for elem in list_of_hists:
     if (elem.ReadObj().Class_Name() != "TH1D"):
         list_of_hists.Remove(elem)
 
-ratio_th1_b_list = []
-ratio_th1_c_list = []
-for e,elem in enumerate(list_func_names):
-    ratio_th1_b = TH1D("f_ratio_B%i"%e,";Bin;Ratio (b_{%s}/a_{%s}) / (b_{D}/a_{D})"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
-    ratio_th1_b_list.append(ratio_th1_b)
+    else:
+        if ("Corr_Reconstru" in elem.GetName()):
+            n_htypeReco[0]+=1
+        elif ("Corr_ReMtch_mc" in elem.GetName()):
+            n_htypeReco[1]+=1
+        elif ("Corr_ReMtch_re" in elem.GetName()):
+            n_htypeReco[2]+=1
 
-    ratio_th1_c = TH1D("f_ratio_C%i"%e,";Bin;Ratio (c_{%s}/a_{%s}) / (c_{D}/a_{D})"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
-    ratio_th1_c_list.append(ratio_th1_c)
+print("Corr_Reconstru: %i"%n_htypeReco[0])
+print("Corr_ReMtch_mc: %i"%n_htypeReco[1])
+print("Corr_ReMtch_re: %i"%n_htypeReco[2])
+
+type_reco = ["Reconstru",] # Corr_
+type_reco_short = ["Reco",]
+
+if n_htypeReco[1]!=0:
+    type_reco.append("ReMtch_mc")
+    type_reco_short.append("RMmc")
+
+if n_htypeReco[2]!=0:
+    type_reco.append("ReMtch_re")
+    type_reco_short.append("RMre")
+
+
+ratio_th1_b_list = [[],[],[]]
+ratio_th1_c_list = [[],[],[]]
+
+for e,elem in enumerate(list_func_names):
+    for t,typeR in enumerate(type_reco_short):
+        this_n = n_htypeReco[t]
+        if (this_n>0):
+            ratio_th1_b = TH1D("f_Ratio_B%i_%s"%(e,typeR),";Bin;Ratio (b_{{{0}}}/a_{{{0}}}) / (b_{{D}}/a_{{D}})".format(infoDict["Target"]), this_n,0.0,this_n)
+            ratio_th1_b_list[t].append(ratio_th1_b)
+
+            ratio_th1_c = TH1D("f_Ratio_C%i_%s"%(e,typeR),";Bin;Ratio (c_{{{0}}}/a_{{{0}}}) / (c_{{D}}/a_{{D}})".format(infoDict["Target"]), this_n,0.0,this_n)
+            ratio_th1_c_list[t].append(ratio_th1_c)
 
 print("")
-print("Target %s"%infoDict["Target"])
+print("Parameters Ratio of target %s"%infoDict["Target"])
 
-index_h = 0
+# index_h = 0
+binIndex_htype = list(n_htypeReco) # [X, Y, Z] This will give the bins remaining in the different Reco Methods (after the loop will be full of 0s)
+
 for i_h,h in enumerate(inputfile_solid.GetListOfKeys()):
-    if ((h.ReadObj().Class_Name() == "TH1D") and ("Corr_Reconstru" in h.GetName())): ## ADD SUPPORT FOR ALL CORRECTIONS!
+    if (h.ReadObj().Class_Name() == "TH1D"):
         hist_solid = h.ReadObj()
         hist_name = h.GetName()
         hist_D = inputfile_D.Get(hist_name) # Corr_Reconstru_Q0N0Z0_fold
 
         tmp_name = "_".join(h.GetName().split("_")[1:-2]) # Reconstru
-        bin_name = hist_name.split("_")[2] # Q0N0Z0
+        bin_name = hist_name.split("_")[-2] # Q0N0Z0
+
+        type_index = type_reco.index(tmp_name) # Index in ["Reconstru", "ReMtch_mc", "ReMtch_re"]
+
+        this_binIndex = n_htypeReco[type_index] - binIndex_htype[type_index] # X-X = 0, next X-(X-1) = 1, ..., X-(X-X) = X
+
 
         for i_f,f in enumerate(list_func_names):
             # Get covariance matrix
-            name_cov = "%s_covM"%(bin_name)
+            name_cov = "covM" # "covM"
             if "L" in f:
-                name_cov+="L"
+                name_cov+="L" # "covML"
+            name_cov+="_%s_%s"%(bin_name, type_reco_short[type_index]) # "covML_Q0N0Z0_Reco"
 
             cov_matrix_X = inputfile_solid.Get(name_cov)
             cov_matrix_D = inputfile_D.Get(name_cov)
@@ -183,8 +221,8 @@ for i_h,h in enumerate(inputfile_solid.GetListOfKeys()):
                 print("       (%5.2f, %5.2f, %5.2f)"%( (par0_X/par0_X)/(par0_D/par0_D) , (par1_X/par0_X)/(par1_D/par0_D) , (par2_X/par0_X)/(par2_D/par0_D)))
                 print("")
 
-            ratio_th1_b_list[i_f].Fill(bin_name, 0.0)
-            ratio_th1_c_list[i_f].Fill(bin_name, 0.0)
+            ratio_th1_b_list[type_index][i_f].Fill(bin_name, 0.0)
+            ratio_th1_c_list[type_index][i_f].Fill(bin_name, 0.0)
 
             # Get error propagated and fill B/A
             cov10_X = GetMatrixElem(cov_matrix_X, 0, 1) # Get Cov AB
@@ -193,8 +231,8 @@ for i_h,h in enumerate(inputfile_solid.GetListOfKeys()):
             err10_X = PropErrorDivision(par1_X, err1_X, par0_X, err0_X, cov10_X)
             err10_D = PropErrorDivision(par1_D, err1_D, par0_D, err0_D, cov10_D)
             err1_XD = PropErrorDivision((par1_X/par0_X), err10_X, (par1_D/par0_D), err10_D)
-            ratio_th1_b_list[i_f].SetBinContent(index_h+1, (par1_X/par0_X)/(par1_D/par0_D))
-            ratio_th1_b_list[i_f].SetBinError(index_h+1, err1_XD)
+            ratio_th1_b_list[type_index][i_f].SetBinContent(this_binIndex+1, (par1_X/par0_X)/(par1_D/par0_D))
+            ratio_th1_b_list[type_index][i_f].SetBinError(this_binIndex+1, err1_XD)
 
             # Get error propagated and fill C/A
             cov20_X = GetMatrixElem(cov_matrix_X, 0, 2) # Get Cov AC
@@ -203,9 +241,10 @@ for i_h,h in enumerate(inputfile_solid.GetListOfKeys()):
             err20_X = PropErrorDivision(par2_X, err2_X, par0_X, err0_X, cov20_X)
             err20_D = PropErrorDivision(par2_D, err2_D, par0_D, err0_D, cov20_D)
             err2_XD = PropErrorDivision((par2_X/par0_X), err20_X, (par2_D/par0_D), err20_D)
-            ratio_th1_c_list[i_f].SetBinContent(index_h+1, (par2_X/par0_X)/(par2_D/par0_D))
-            ratio_th1_c_list[i_f].SetBinError(index_h+1, err2_XD)
-        index_h+=1
+            ratio_th1_c_list[type_index][i_f].SetBinContent(this_binIndex+1, (par2_X/par0_X)/(par2_D/par0_D))
+            ratio_th1_c_list[type_index][i_f].SetBinError(this_binIndex+1, err2_XD)
+
+        binIndex_htype[type_index]-=1
 
 print("")
 
@@ -219,37 +258,39 @@ outputFile = TFile(outputPath+outputROOT,"RECREATE")
 ymin = 0.001
 ymax = 1.2
 for e,elem in enumerate(list_func_names):
-    if ("L" in elem): name_ext = "L"
-    elif ("R" in elem): name_ext = "R"
-    if ("F" in fit_type): name_ext = "F"
+    for t,typeR in enumerate(type_reco_short):
 
-    hist_b = ratio_th1_b_list[e]
-    hist_b.SetMinimum(ymin)
-    hist_b.SetMaximum(2*ymax)
+        if ("L" in elem): name_ext = "L"
+        elif ("R" in elem): name_ext = "R"
+        if ("F" in fit_type): name_ext = "F"
 
-    hist_b.Write()
-    hist_b.Draw("hist e")
+        hist_b = ratio_th1_b_list[t][e]
+        hist_b.SetMinimum(ymin)
+        hist_b.SetMaximum(2*ymax)
 
-    myStyle.DrawPreliminaryInfo("Ratio over D%s %s"%(solid_targ,fit_type))
-    myStyle.DrawTargetInfo(nameFormatted, "Data")
+        hist_b.Write()
+        hist_b.Draw("hist e")
 
-    outputName = myStyle.getPlotsFile("RatioOverD%s_B"%solid_targ, dataset, "gif", name_ext)
-    canvas.SaveAs(outputPath+outputName)
-    canvas.Clear()
+        myStyle.DrawPreliminaryInfo("Ratio over D%s %s"%(solid_targ,fit_type))
+        myStyle.DrawTargetInfo(nameFormatted, "Data")
 
-    hist_c = ratio_th1_c_list[e]
-    hist_c.SetMinimum(ymin)
-    hist_c.SetMaximum(2*ymax)
+        outputName = myStyle.getPlotsFile("RatioD%s_B_%s"%(solid_targ,typeR), dataset, "gif", name_ext)
+        canvas.SaveAs(outputPath+outputName)
+        canvas.Clear()
 
-    hist_c.Write()
-    hist_c.Draw("hist e")
+        hist_c = ratio_th1_c_list[t][e]
+        hist_c.SetMinimum(ymin)
+        hist_c.SetMaximum(2*ymax)
 
-    myStyle.DrawPreliminaryInfo("Ratio over D%s %s"%(solid_targ,fit_type))
-    myStyle.DrawTargetInfo(nameFormatted, "Data")
+        hist_c.Write()
+        hist_c.Draw("hist e")
 
-    outputName = myStyle.getPlotsFile("RatioOverD%s_C"%solid_targ, dataset, "gif", name_ext)
-    canvas.SaveAs(outputPath+outputName)
-    canvas.Clear()
+        myStyle.DrawPreliminaryInfo("Ratio over D%s %s"%(solid_targ,fit_type))
+        myStyle.DrawTargetInfo(nameFormatted, "Data")
+
+        outputName = myStyle.getPlotsFile("RatioD%s_C_%s"%(solid_targ,typeR), dataset, "gif", name_ext)
+        canvas.SaveAs(outputPath+outputName)
+        canvas.Clear()
 
 outputFile.Write()
 outputFile.Close()

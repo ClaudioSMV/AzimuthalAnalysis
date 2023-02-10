@@ -242,60 +242,46 @@ for targ in list_targets:
 x_axis_title = mS.axis_label(keyX,"LatexUnit") # "Z_{h}" or "P_{t}^{2} (GeV^{2})"
 this_n = nBinsZ if useZh else nBinsP
 
-list_hists = []
+type_reco_short = ["Reco", "RMmc", "RMre"]
+
+list_type_reco = []
 
 ## Create histograms
-for p,par in enumerate(["B", "C"]): # 2
-    list_this_par = []
-    for t,targ in enumerate(list_targets): # 4
-        list_this_tar = []
-        hist_par_Pos = list_infiles[t].Get("f_Norm_%s%i_Pos"%(par,fit_num))
-        hist_par_Neg = list_infiles[t].Get("f_Norm_%s%i_Neg"%(par,fit_num))
+for r,typeR in enumerate(type_reco_short):
+    list_hists = []
+    for p,par in enumerate(["B", "C"]): # 2
+        list_this_par = []
+        for t,targ in enumerate(list_targets): # 4
+            list_this_tar = []
 
-        for iQ in range(nBinsQ): #nQ
-            list_this_Q = []
-            for iN in range(nBinsN): #nN
-                bin_label = "Q%i%s%i"%(iQ,key1,iN) # "Q%iN%i" or "Q%iX%i"
+            hist_par = list_infiles[t].Get("f_Norm_%s%i_%s"%(par,fit_num,typeR))
 
-                hist_tmp = TH1D("%s_%s_%s"%(par,targ,bin_label),";%s;%s/A"%(x_axis_title,par),this_n,array('d',this_bin_dict[keyX]))
-                for i_n in range(1,this_n+1):
-                    this_label = "%s%s%i"%(bin_label, keyX, i_n-1) # "Q0N0Z0" or "Q0X0P0"
-                    this_bin = hist_par_Pos.GetXaxis().FindBin(this_label)
-                    bin_value = hist_par_Pos.GetBinContent(this_bin) if hist_par_Pos.GetBinContent(this_bin)>0.0 else -hist_par_Neg.GetBinContent(this_bin)
-                    bin_error = hist_par_Pos.GetBinError(this_bin) if hist_par_Pos.GetBinContent(this_bin)>0.0 else hist_par_Neg.GetBinError(this_bin)
+            if not hist_par:
+                print("  [SummaryNorm] %s hist not found. Skipping!"%typeR)
+                type_reco_short[r] = 0 # Skip reco method when does not exist!
+                break
 
-                    hist_tmp.SetBinContent(i_n, bin_value)
-                    hist_tmp.SetBinError(i_n, bin_error)
+            for iQ in range(nBinsQ): #nQ
+                list_this_Q = []
+                for iN in range(nBinsN): #nN
+                    bin_label = "Q%i%s%i"%(iQ,key1,iN) # "Q%iN%i" or "Q%iX%i"
 
-                # if useZh:
-                #     hist_tmp = TH1D("%s_%s_%s"%(par,targ,bin_label),";Z_{h};%s/A"%(par),nBinsZ,array('d',this_bin_dict['Z']))
+                    hist_tmp = TH1D("%s_%s_%s-%s"%(typeR,par,targ,bin_label),";%s;%s/A"%(x_axis_title,par),this_n,array('d',this_bin_dict[keyX]))
+                    for i_n in range(1,this_n+1):
+                        this_label = "%s%s%i"%(bin_label, keyX, i_n-1) # "Q0N0Z0" or "Q0X0P0"
+                        this_bin = hist_par.GetXaxis().FindBin(this_label)
+                        bin_value = hist_par.GetBinContent(this_bin)
+                        bin_error = hist_par.GetBinError(this_bin)
 
-                #     for iZ in range(1,nBinsZ+1):
-                #         this_label = "%sZ%i"%(bin_label,iZ-1)
-                #         this_bin = hist_par_Pos.GetXaxis().FindBin(this_label)
-                #         bin_value = hist_par_Pos.GetBinContent(this_bin) if hist_par_Pos.GetBinContent(this_bin)>0.0 else -hist_par_Neg.GetBinContent(this_bin)
-                #         bin_error = hist_par_Pos.GetBinError(this_bin) if hist_par_Pos.GetBinContent(this_bin)>0.0 else hist_par_Neg.GetBinError(this_bin)
+                        hist_tmp.SetBinContent(i_n, bin_value)
+                        hist_tmp.SetBinError(i_n, bin_error)
 
-                #         hist_tmp.SetBinContent(iZ, bin_value)
-                #         hist_tmp.SetBinError(iZ, bin_error)
-                # elif usePt2:
-                #     hist_tmp = TH1D("%s_%s_%s"%(par,targ,bin_label),";P_{t}^{2} (GeV^{2});%s/A"%(par),nBinsP,array('d',this_bin_dict['P']))
+                    list_this_Q.append(hist_tmp)
+                list_this_tar.append(list_this_Q)
+            list_this_par.append(list_this_tar)
 
-                #     for iP in range(1,nBinsP+1):
-                #         this_label = "%sP%i"%(bin_label,iP-1)
-                #         this_bin = hist_par_Pos.GetXaxis().FindBin(this_label)
-                #         bin_value = hist_par_Pos.GetBinContent(this_bin) if hist_par_Pos.GetBinContent(this_bin)>0.0 else -hist_par_Neg.GetBinContent(this_bin)
-                #         bin_error = hist_par_Pos.GetBinError(this_bin) if hist_par_Pos.GetBinContent(this_bin)>0.0 else hist_par_Neg.GetBinError(this_bin)
-
-                #         hist_tmp.SetBinContent(iP, bin_value)
-                #         hist_tmp.SetBinError(iP, bin_error)
-
-                list_this_Q.append(hist_tmp)
-            list_this_tar.append(list_this_Q)
-        list_this_par.append(list_this_tar)
-        # inputfile.Close()
-
-    list_hists.append(list_this_par) #  npar*nTarg*nQ*nN = 2*4*nQ*nN hists
+        list_hists.append(list_this_par) #  npar*nTarg*nQ*nN = 2*4*nQ*nN hists
+    list_type_reco.append(list_hists)
 
 par_y_lmts = [[-1.199,1.199], [-0.599,0.599]] if use_ysym else [[-1.199,0.299], [-0.499,0.199]]
 Q2_bin_info_Ypos = -0.15
@@ -304,101 +290,112 @@ if usePt2:
     par_y_lmts = [[-0.399,0.399], [-0.149,0.149]] if use_ysym else [[-0.399,0.199], [-0.149,0.149]]
     Q2_bin_info_Ypos = -0.22
 
-for p,par in enumerate(["B", "C"]):
-    this_canvas = list_canvas[p]
-    this_canvas.cd(0)
-    mS.DrawSummaryInfo("Norm %s/A %s"%(par,fit))
-    if (whatsPlot=="All"):
-        targs_drawn = "All_targets"
-    elif (whatsPlot=="Solid"):
-        targs_drawn = "Solid_targets"
-    elif (whatsPlot=="D"):
-        targs_drawn = "Deuterium"
-    mS.DrawTargetInfo(targs_drawn, "Data")
+for r,typeR in enumerate(type_reco_short):
+    if typeR==0: # Skip reco method when does not exist!
+        continue
 
-    l_x1, l_x2 = 0.3, 0.7
-    l_y1, l_y2 = 0.5, 0.7
-    if not use_ysym and not usePt2:
-        l_y1 = 0.1
-        l_y2 = 0.3
-    legend = TLegend(l_x1, l_y1, l_x2, l_y2)
-    legend.SetBorderSize(0)
-    legend.SetTextFont(mS.GetFont())
-    legend.SetTextSize(mS.GetSize()-14)
-    legend.SetFillStyle(0)
-    legend.SetNColumns(2)
-
-    for t,targ in enumerate(list_targets):
+    for p,par in enumerate(["B", "C"]):
+        this_canvas = list_canvas[p]
         this_canvas.cd(0)
-        for iQ in range(nBinsQ):
-            for iN in range(nBinsN): # iQ,iN = 0,0 (B)
-                this_pad = gROOT.FindObject("pad%s_%i_%i"%(par,iQ,nBinsN-iN-1)) # -> 0,2 (A)
-                this_pad.SetGrid(0,1)
+        mS.DrawSummaryInfo("Norm %s/A %s"%(par,fit))
+        if (whatsPlot=="All"):
+            targs_drawn = "All_targets"
+        elif (whatsPlot=="Solid"):
+            targs_drawn = "Solid_targets"
+        elif (whatsPlot=="D"):
+            targs_drawn = "Deuterium"
+        mS.DrawTargetInfo(targs_drawn, "Data")
 
-                ## This selection labels xy such as:
-                ##       (A)              (B)
-                ##  ------------     ------------
-                ##  - 02 12 22 -     - 00 10 20 -
-                ##  - 01 11 21 - --> - 01 11 21 -
-                ##  - 00 10 20 -     - 02 12 22 -
-                ##  ------------     ------------
+        l_x1, l_x2 = 0.3, 0.7
+        l_y1, l_y2 = 0.5, 0.7
+        if not use_ysym and not usePt2:
+            l_y1 = 0.1
+            l_y2 = 0.3
+        legend = TLegend(l_x1, l_y1, l_x2, l_y2)
+        legend.SetBorderSize(0)
+        legend.SetTextFont(mS.GetFont())
+        legend.SetTextSize(mS.GetSize()-14)
+        legend.SetFillStyle(0)
+        legend.SetNColumns(2)
 
-                # this_pad.Draw()
-                # this_pad.SetFillStyle(4000)
-                # this_pad.SetFrameFillStyle(4000)
-                this_pad.cd()
+        new_pad = True
 
-                this_hist = list_hists[p][t][iQ][iN]
+        for t,targ in enumerate(list_targets):
+            this_canvas.cd(0)
+            for iQ in range(nBinsQ):
+                for iN in range(nBinsN): # iQ,iN = 0,0 (B)
+                    this_pad = gROOT.FindObject("pad%s_%i_%i"%(par,iQ,nBinsN-iN-1)) # -> 0,2 (A)
+                    this_pad.SetGrid(0,1)
 
-                if (iQ!=0 and iN!=2): this_hist.GetYaxis().SetNoExponent(ROOT.kTRUE)
+                    ## This selection labels xy such as:
+                    ##       (A)              (B)
+                    ##  ------------     ------------
+                    ##  - 02 12 22 -     - 00 10 20 -
+                    ##  - 01 11 21 - --> - 01 11 21 -
+                    ##  - 00 10 20 -     - 02 12 22 -
+                    ##  ------------     ------------
 
-                this_hist.SetMinimum(par_y_lmts[p][0])
-                this_hist.SetMaximum(par_y_lmts[p][1])
-                # this_hist.SetLabelSize(tsize-18,"xy")
-                # this_hist.SetTitleSize(tsize-14,"xy")
-                # this_hist.SetTitleOffset(2.5,"xy")
-                this_hist.SetLabelSize(tsize-20,"xy")
-                this_hist.SetTitleSize(tsize-16,"xy")
-                this_hist.SetTitleOffset(1.0,"x")
-                this_hist.SetTitleOffset(1.8,"y")
+                    # this_pad.Draw()
+                    # this_pad.SetFillStyle(4000)
+                    # this_pad.SetFrameFillStyle(4000)
+                    this_pad.cd()
 
-                this_hist.SetLineColor(mS.color_target[targ])
-                this_hist.SetMarkerStyle(4)
-                this_hist.SetMarkerColor(mS.color_target[targ])
-                this_hist.Draw("e same")
+                    this_hist = list_type_reco[r][p][t][iQ][iN]
 
-                if (iN==2):
-                    text = ROOT.TLatex()
-                    text.SetTextSize(tsize-14)
-                    text.SetTextAlign(23)
-                    title = mS.GetBinInfo("Q%i"%(iQ), this_binning_type)
-                    text.DrawLatexNDC(XtoPad(0.5),YtoPad(Q2_bin_info_Ypos),title)
+                    if (iQ!=0 and iN!=2): this_hist.GetYaxis().SetNoExponent(ROOT.kTRUE)
 
-                if (iQ==2):
-                    text = ROOT.TLatex()
-                    text.SetTextSize(tsize-14)
-                    text.SetTextAlign(23)
-                    text.SetTextAngle(90)
-                    title = mS.GetBinInfo("%s%i"%(key1,iN), this_binning_type) # "Q%iN%i" or "Q%iX%i"
-                    text.DrawLatexNDC(XtoPad(1.05),YtoPad(0.5),title)
+                    this_hist.SetMinimum(par_y_lmts[p][0])
+                    this_hist.SetMaximum(par_y_lmts[p][1])
+                    # this_hist.SetLabelSize(tsize-18,"xy")
+                    # this_hist.SetTitleSize(tsize-14,"xy")
+                    # this_hist.SetTitleOffset(2.5,"xy")
+                    this_hist.SetLabelSize(tsize-20,"xy")
+                    this_hist.SetTitleSize(tsize-16,"xy")
+                    this_hist.SetTitleOffset(1.0,"x")
+                    this_hist.SetTitleOffset(1.8,"y")
 
-                if (iQ==2 and iN==0):
-                    legend.AddEntry(this_hist,targ)
-                    if (legend.GetListOfPrimitives().GetEntries()==len(list_targets)):
-                        legend.Draw()
+                    this_hist.SetLineColor(mS.color_target[targ])
+                    this_hist.SetMarkerStyle(4)
+                    this_hist.SetMarkerColor(mS.color_target[targ])
 
-    this_title_gif = mS.getSummaryPath("Par%s_Norm%s"%(par,dataset_title), "gif", plots_cuts, isJLab, dataset_title[1:])
-    this_title_gif = mS.addBeforeRootExt(this_title_gif, "_%s"%(whatsPlot), "gif")
-    if ("LR" in this_title_gif):
-        this_title_gif = mS.addBeforeRootExt(this_title_gif, "-%s"%(fit), "gif")
+                    if new_pad:
+                        this_hist.Draw("e")
+                    else:
+                        this_hist.Draw("e same")
 
-    this_title_pdf = mS.getSummaryPath("Par%s_Norm%s"%(par,dataset_title), "pdf", plots_cuts, isJLab, dataset_title[1:])
-    this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "_%s"%(whatsPlot), "pdf")
-    if ("LR" in this_title_pdf):
-        this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "-%s"%(fit), "pdf")
+                    if (iN==2):
+                        text = ROOT.TLatex()
+                        text.SetTextSize(tsize-14)
+                        text.SetTextAlign(23)
+                        title = mS.GetBinInfo("Q%i"%(iQ), this_binning_type)
+                        text.DrawLatexNDC(XtoPad(0.5),YtoPad(Q2_bin_info_Ypos),title)
 
-    this_canvas.SaveAs(this_title_gif)
-    this_canvas.SaveAs(this_title_pdf)
+                    if (iQ==2):
+                        text = ROOT.TLatex()
+                        text.SetTextSize(tsize-14)
+                        text.SetTextAlign(23)
+                        text.SetTextAngle(90)
+                        title = mS.GetBinInfo("%s%i"%(key1,iN), this_binning_type) # "Q%iN%i" or "Q%iX%i"
+                        text.DrawLatexNDC(XtoPad(1.05),YtoPad(0.5),title)
+
+                    if (iQ==2 and iN==0):
+                        legend.AddEntry(this_hist,targ)
+                        if (legend.GetListOfPrimitives().GetEntries()==len(list_targets)):
+                            legend.Draw()
+            new_pad = False
+
+        this_title_gif = mS.getSummaryPath("%s_%s_Norm%s"%(typeR,par,dataset_title), "gif", plots_cuts, isJLab, dataset_title[1:])
+        this_title_gif = mS.addBeforeRootExt(this_title_gif, "_%s"%(whatsPlot), "gif")
+        if ("LR" in this_title_gif):
+            this_title_gif = mS.addBeforeRootExt(this_title_gif, "-%s"%(fit), "gif")
+
+        this_title_pdf = mS.getSummaryPath("%s_%s_Norm%s"%(typeR,par,dataset_title), "pdf", plots_cuts, isJLab, dataset_title[1:])
+        this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "_%s"%(whatsPlot), "pdf")
+        if ("LR" in this_title_pdf):
+            this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "-%s"%(fit), "pdf")
+
+        this_canvas.SaveAs(this_title_gif)
+        this_canvas.SaveAs(this_title_pdf)
 
 for t,targ in enumerate(list_targets):
     list_infiles[t].Close()

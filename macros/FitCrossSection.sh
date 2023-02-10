@@ -135,6 +135,12 @@ if [[ $CUTINFO == *"-O"* ]]; then
     OW="-O"
 fi
 
+# Draw ALL acceptance types (Reco, RecoMtch_mc, RecoMtch_re)
+DA=""
+if [[ $CUTINFO == *"-A"* ]]; then
+    DA="-A"
+fi
+
 # echo $PREV_CUT
 # echo $CORR_CUT
 # echo $FITS_CUT
@@ -142,7 +148,7 @@ fi
 # echo $PAR_RCUT
 
 for t in "${TAR_LIST[@]}"; do
-    python PlotCorrection.py        -D ${t}_${BINNAME}_${BINNDIM} -i $PREV_CUT -o $CORR_CUT -J $OW
+    python PlotCorrection.py        -D ${t}_${BINNAME}_${BINNDIM} -i $PREV_CUT -o $CORR_CUT -J $OW $DA
     python PlotFit.py               -D ${t}_${BINNAME}_${BINNDIM} -i $CORR_CUT -o $FITS_CUT -J $OW
     python GetParametersNorm.py     -D ${t}_${BINNAME}_${BINNDIM} -i $FITS_CUT -o $PAR_NCUT -J $OW
     python GetParametersRatio.py    -D ${t}_${BINNAME}_${BINNDIM} -i $FITS_CUT -o $PAR_RCUT -J $OW

@@ -49,8 +49,10 @@ if [[ $WHATRUN == *"F"* || $WHATRUN == "" ]]; then
 fi
 
 if [[ $WHATRUN == *"S"* || $WHATRUN == "" ]]; then
-    # ${CUTINFO/-O/} removes "-O" so that summary plots work!
-    python Summary_ParametersNorm.py  -D ${BINNAME}_${BINNDIM} -i ${CUTINFO/-O/} -J -s
-    python Summary_ParametersNorm.py  -D ${BINNAME}_${BINNDIM} -i ${CUTINFO/-O/} -J -a
-    python Summary_ParametersRatio.py -D ${BINNAME}_${BINNDIM} -i ${CUTINFO/-O/} -J
+    # ${CUTINFO/XX/} removes "XX" so that summary plots work!
+    CUTINFO=${CUTINFO/-O/}
+    CUTINFO=${CUTINFO/-A/}
+    python Summary_ParametersNorm.py  -D ${BINNAME}_${BINNDIM} -i ${CUTINFO} -J -s
+    python Summary_ParametersNorm.py  -D ${BINNAME}_${BINNDIM} -i ${CUTINFO} -J -a
+    python Summary_ParametersRatio.py -D ${BINNAME}_${BINNDIM} -i ${CUTINFO} -J
 fi

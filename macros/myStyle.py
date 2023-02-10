@@ -208,20 +208,20 @@ def CreateFolder(outdir, title, overwrite = False, enumerate = True):
 
     if overwrite:
         os.makedirs(outdir2)
-        print(outdir2,"created.")
+        print("  [myStyle] %s created."%outdir2)
     else:
         if not os.path.exists(outdir2):
             os.makedirs(outdir2)
-            print(outdir2,"created.")
+            print("  [myStyle] %s created."%outdir2)
         elif enumerate:
             i = 1
             while(os.path.exists(outdir2)):
                     outdir2 = outdir2[0:-2] + str(i) + outdir2[-1]
                     i+=1
             os.mkdir(outdir2)
-            print(outdir2,"created.")
+            print("  [myStyle] %s created."%outdir2)
         else:
-            print(outdir2," already exists!")
+            print("  [myStyle] %s already exists!."%outdir2)
     return outdir2
 
 ### Style functions

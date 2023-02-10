@@ -78,47 +78,74 @@ list_func_names = ["crossSectionR"]
 if not useFold:
     list_func_names.append("crossSectionL")
 
+n_htypeReco = [0, 0, 0]
+
 list_of_hists = inputfile.GetListOfKeys().Clone()
 for elem in list_of_hists:
     if (elem.ReadObj().Class_Name() != "TH1D"):
         list_of_hists.Remove(elem)
 
-th1_b_norm_pos_list = []
-th1_b_norm_neg_list = []
-th1_c_norm_pos_list = []
-th1_c_norm_neg_list = []
+    else:
+        if ("Corr_Reconstru" in elem.GetName()):
+            n_htypeReco[0]+=1
+        elif ("Corr_ReMtch_mc" in elem.GetName()):
+            n_htypeReco[1]+=1
+        elif ("Corr_ReMtch_re" in elem.GetName()):
+            n_htypeReco[2]+=1
 
+print("Corr_Reconstru: %i"%n_htypeReco[0])
+print("Corr_ReMtch_mc: %i"%n_htypeReco[1])
+print("Corr_ReMtch_re: %i"%n_htypeReco[2])
+
+type_reco = ["Reconstru",] # Corr_
+type_reco_short = ["Reco",]
+
+if n_htypeReco[1]!=0:
+    type_reco.append("ReMtch_mc")
+    type_reco_short.append("RMmc")
+
+if n_htypeReco[2]!=0:
+    type_reco.append("ReMtch_re")
+    type_reco_short.append("RMre")
+
+
+th1_b_norm_list = [[],[],[]]
+th1_c_norm_list = [[],[],[]]
+
+# print(list_of_hists.GetSize())
 for e,elem in enumerate(list_func_names):
-    th1_b_norm_pos = TH1D("f_Norm_B%i_Pos"%e,";Bin;b_{%s}/a_{%s}"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
-    th1_b_norm_pos_list.append(th1_b_norm_pos)
+    for t,typeR in enumerate(type_reco_short):
+        this_n = n_htypeReco[t]
+        if (this_n>0):
+            th1_b_norm = TH1D("f_Norm_B%i_%s"%(e,typeR),";Bin;b/a", this_n,0.0,this_n)
+            th1_b_norm_list[t].append(th1_b_norm)
 
-    th1_b_norm_neg = TH1D("f_Norm_B%i_Neg"%e,";Bin;b_{%s}/a_{%s}"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
-    th1_b_norm_neg_list.append(th1_b_norm_neg)
-
-    th1_c_norm_pos = TH1D("f_Norm_C%i_Pos"%e,";Bin;c_{%s}/a_{%s}"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
-    th1_c_norm_pos_list.append(th1_c_norm_pos)
-
-    th1_c_norm_neg = TH1D("f_Norm_C%i_Neg"%e,";Bin;c_{%s}/a_{%s}"%(infoDict["Target"],infoDict["Target"]), list_of_hists.GetSize(),0.0,list_of_hists.GetSize())
-    th1_c_norm_neg_list.append(th1_c_norm_neg)
+            th1_c_norm = TH1D("f_Norm_C%i_%s"%(e,typeR),";Bin;c/a", this_n,0.0,this_n)
+            th1_c_norm_list[t].append(th1_c_norm)
 
 print("")
-print("Target %s"%infoDict["Target"])
+print("Parameters Norm of target %s"%infoDict["Target"])
 
-index_h = 0
+binIndex_htype = list(n_htypeReco) # [X, Y, Z] This will give the bins remaining in the different Reco Methods (after the loop will be full of 0s)
+
 for i_h,h in enumerate(inputfile.GetListOfKeys()): #list_of_hists):
-    # if (h.ReadObj().Class_Name() == "TH1D"):
-    if ((h.ReadObj().Class_Name() == "TH1D") and ("Corr_Reconstru" in h.GetName())): ## ADD SUPPORT FOR ALL CORRECTIONS!
+    if (h.ReadObj().Class_Name() == "TH1D"):
         hist_targ = h.ReadObj()
         hist_name = h.GetName() # Corr_Reconstru_Q0N0Z0_type (type: Fd or LR)
 
         tmp_name = "_".join(h.GetName().split("_")[1:-2]) # Reconstru
         bin_name = hist_name.split("_")[-2] # Q0N0Z0
 
+        type_index = type_reco.index(tmp_name) # Index in ["Reconstru", "ReMtch_mc", "ReMtch_re"]
+
+        this_binIndex = n_htypeReco[type_index] - binIndex_htype[type_index] # X-X = 0, next X-(X-1) = 1, ..., X-(X-X) = X
+
         for i_f,f in enumerate(list_func_names):
             # Get covariance matrix
-            name_cov = "%s_covM"%(bin_name)
+            name_cov = "covM" # "covM"
             if "L" in f:
-                name_cov+="L"
+                name_cov+="L" # "covML"
+            name_cov+="_%s_%s"%(bin_name, type_reco_short[type_index]) # "covML_Q0N0Z0_Reco"
             cov_matrix = inputfile.Get(name_cov)
 
             fit_targ = hist_targ.GetFunction(f)
@@ -137,31 +164,25 @@ for i_h,h in enumerate(inputfile.GetListOfKeys()): #list_of_hists):
                 print("")
 
             # Fill norm hists with the name (string as label per bin)
-            th1_b_norm_pos_list[i_f].Fill(bin_name, 0.0)
-            th1_b_norm_neg_list[i_f].Fill(bin_name, 0.0)
-            th1_c_norm_pos_list[i_f].Fill(bin_name, 0.0)
-            th1_c_norm_neg_list[i_f].Fill(bin_name, 0.0)
+
+            th1_b_norm_list[type_index][i_f].Fill(bin_name, 0.0)
+            th1_c_norm_list[type_index][i_f].Fill(bin_name, 0.0)
 
             # Get error propagated and fill B/A
             cov10 = GetMatrixElem(cov_matrix, 0, 1) # Get Cov AB
             err10 = PropErrorDivision(par1, err1, par0, err0, cov10)
-            if (par1/par0)>0:
-                th1_b_norm_pos_list[i_f].SetBinContent(index_h+1, (par1/par0))
-                th1_b_norm_pos_list[i_f].SetBinError(index_h+1, err10)
-            else:
-                th1_b_norm_neg_list[i_f].SetBinContent(index_h+1, abs(par1/par0))
-                th1_b_norm_neg_list[i_f].SetBinError(index_h+1, err10)
+
+            th1_b_norm_list[type_index][i_f].SetBinContent(this_binIndex+1, (par1/par0))
+            th1_b_norm_list[type_index][i_f].SetBinError(this_binIndex+1, err10)
 
             # Get error propagated and fill C/A
             cov20 = GetMatrixElem(cov_matrix, 0, 2) # Get Cov AC
             err20 = PropErrorDivision(par2, err2, par0, err0, cov20)
-            if (par2/par0)>0:
-                th1_c_norm_pos_list[i_f].SetBinContent(index_h+1, (par2/par0))
-                th1_c_norm_pos_list[i_f].SetBinError(index_h+1, err20)
-            else:
-                th1_c_norm_neg_list[i_f].SetBinContent(index_h+1, abs(par2/par0))
-                th1_c_norm_neg_list[i_f].SetBinError(index_h+1, err20)
-        index_h+=1
+
+            th1_c_norm_list[type_index][i_f].SetBinContent(this_binIndex+1, (par2/par0))
+            th1_c_norm_list[type_index][i_f].SetBinError(this_binIndex+1, err20)
+
+        binIndex_htype[type_index]-=1
 
 
 print("")
@@ -173,86 +194,70 @@ canvas.SetGrid(0,1)
 ### Ratio b/a and c/a per target
 outputFile = TFile(outputPath+outputROOT,"RECREATE")
 
-ymin = 0.001
-ymax = 1.2
+ymin = -1.2
+ymax =  1.2
 # canvas.SetLogy(0)
 for e,elem in enumerate(list_func_names):
-    if ("L" in elem): name_ext = "L"
-    elif ("R" in elem): name_ext = "R"
-    if ("F" in fit_type): name_ext = "F"
+    for t,typeR in enumerate(type_reco_short):
 
-    ## Ratio b/a
-    legend_b = TLegend(1-myStyle.GetMargin()-0.35,1-myStyle.GetMargin()-0.12, 1-myStyle.GetMargin()-0.05,1-myStyle.GetMargin()-0.02)
-    legend_b.SetBorderSize(0)
-    # legend_b.SetFillColor(ROOT.kWhite)
-    legend_b.SetTextFont(myStyle.GetFont())
-    legend_b.SetTextSize(myStyle.GetSize()-8)
-    legend_b.SetFillStyle(0)
-    ## Positive ratios
-    hist_b_pos = th1_b_norm_pos_list[e]
-    hist_b_pos.SetMinimum(ymin)
-    hist_b_pos.SetMaximum(ymax)
+        if ("L" in elem): name_ext = "L"
+        elif ("R" in elem): name_ext = "R"
+        if ("F" in fit_type): name_ext = "F"
 
-    hist_b_pos.SetLineWidth(2)
-    hist_b_pos.SetLineColor(ROOT.kBlue)
-    legend_b.AddEntry(hist_b_pos,"Positive ratio")
+        ## Ratio b/a
+        legend_b = TLegend(1-myStyle.GetMargin()-0.35,1-myStyle.GetMargin()-0.12, 1-myStyle.GetMargin()-0.05,1-myStyle.GetMargin()-0.02)
+        legend_b.SetBorderSize(0)
+        # legend_b.SetFillColor(ROOT.kWhite)
+        legend_b.SetTextFont(myStyle.GetFont())
+        legend_b.SetTextSize(myStyle.GetSize()-8)
+        legend_b.SetFillStyle(0)
+        ## Positive ratios
+        hist_b = th1_b_norm_list[t][e]
+        hist_b.SetMinimum(ymin)
+        hist_b.SetMaximum(ymax)
 
-    hist_b_pos.Write()
-    hist_b_pos.Draw("hist e")
+        hist_b.SetLineWidth(2)
+        hist_b.SetLineColor(ROOT.kBlue)
+        legend_b.AddEntry(hist_b,"Positive ratio")
 
-    hist_b_neg = th1_b_norm_neg_list[e]
+        hist_b.Write()
+        hist_b.Draw("hist e")
 
-    hist_b_neg.SetLineWidth(2)
-    hist_b_neg.SetLineColor(ROOT.kRed)
-    legend_b.AddEntry(hist_b_neg,"Negative ratio")
+        legend_b.Draw()
+        myStyle.DrawPreliminaryInfo("Parameters normalized %s"%(fit_type))
+        myStyle.DrawTargetInfo(nameFormatted, "Data")
 
-    hist_b_neg.Write()
-    hist_b_neg.Draw("hist e same")
+        outputName = myStyle.getPlotsFile("ParNorm_B_%s"%(typeR), dataset, "gif", name_ext)
+        canvas.SaveAs(outputPath+outputName)
+        canvas.Clear()
 
-    legend_b.Draw()
-    myStyle.DrawPreliminaryInfo("Parameters normalized %s"%(fit_type))
-    myStyle.DrawTargetInfo(nameFormatted, "Data")
+        ## Ratio c/a
+        # legend_c = TLegend()
+        legend_c = TLegend(1-myStyle.GetMargin()-0.35,1-myStyle.GetMargin()-0.12, 1-myStyle.GetMargin()-0.05,1-myStyle.GetMargin()-0.02)
+        legend_c.SetBorderSize(0)
+        # legend_c.SetFillColor(ROOT.kWhite)
+        legend_c.SetTextFont(myStyle.GetFont())
+        legend_c.SetTextSize(myStyle.GetSize()-8)
+        legend_c.SetFillStyle(0)
+        ## Positive ratios
+        hist_c = th1_c_norm_list[t][e]
+        hist_c.SetMinimum(ymin)
+        hist_c.SetMaximum(ymax)
 
-    outputName = myStyle.getPlotsFile("ParameterNorm_B", dataset, "gif", name_ext)
-    canvas.SaveAs(outputPath+outputName)
-    canvas.Clear()
+        hist_c.SetLineWidth(2)
+        hist_c.SetLineColor(ROOT.kBlue)
+        legend_c.AddEntry(hist_c,"Positive ratio")
 
-    ## Ratio c/a
-    # legend_c = TLegend()
-    legend_c = TLegend(1-myStyle.GetMargin()-0.35,1-myStyle.GetMargin()-0.12, 1-myStyle.GetMargin()-0.05,1-myStyle.GetMargin()-0.02)
-    legend_c.SetBorderSize(0)
-    # legend_c.SetFillColor(ROOT.kWhite)
-    legend_c.SetTextFont(myStyle.GetFont())
-    legend_c.SetTextSize(myStyle.GetSize()-8)
-    legend_c.SetFillStyle(0)
-    ## Positive ratios
-    hist_c_pos = th1_c_norm_pos_list[e]
-    hist_c_pos.SetMinimum(ymin)
-    hist_c_pos.SetMaximum(ymax)
+        hist_c.Write()
+        hist_c.Draw("hist e")
 
-    hist_c_pos.SetLineWidth(2)
-    hist_c_pos.SetLineColor(ROOT.kBlue)
-    legend_c.AddEntry(hist_c_pos,"Positive ratio")
+        legend_c.Draw()
+        myStyle.DrawPreliminaryInfo("Parameters normalized %s"%(fit_type))
+        myStyle.DrawTargetInfo(nameFormatted, "Data")
 
-    hist_c_pos.Write()
-    hist_c_pos.Draw("hist e")
-
-    hist_c_neg = th1_c_norm_neg_list[e]
-
-    hist_c_neg.SetLineWidth(2)
-    hist_c_neg.SetLineColor(ROOT.kRed)
-    legend_c.AddEntry(hist_c_neg,"Negative ratio")
-
-    hist_c_neg.Write()
-    hist_c_neg.Draw("hist e same")
-
-    legend_c.Draw()
-    myStyle.DrawPreliminaryInfo("Parameters normalized %s"%(fit_type))
-    myStyle.DrawTargetInfo(nameFormatted, "Data")
-
-    outputName = myStyle.getPlotsFile("ParameterNorm_C", dataset, "gif", name_ext)
-    canvas.SaveAs(outputPath+outputName)
-    canvas.Clear()
+        outputName = myStyle.getPlotsFile("ParNorm_C_%s"%(typeR), dataset, "gif", name_ext)
+        canvas.SaveAs(outputPath+outputName)
+        canvas.Clear()
 
 outputFile.Write()
 outputFile.Close()

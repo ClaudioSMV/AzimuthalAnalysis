@@ -72,27 +72,33 @@ if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
 
 list_of_hists = inputfile.GetListOfKeys()
 
+type_reco = ["Reconstru", "ReMtch_mc", "ReMtch_re"] # Corr_
+type_reco_short = ["Reco", "RMmc", "RMre"]
+
 canvas = TCanvas("cv","cv",1000,800)
 gStyle.SetOptStat(0)
 
 outputfile = TFile(outputPath+outputROOT,"RECREATE")
-# # FitBothTails_
+# # TO DO FitBothTails_
 
 phi_axis_title = myStyle.axis_label('I',"LatexUnit") # "#phi_{PQ} (deg)"
 
 for h in list_of_hists:
     if (h.ReadObj().Class_Name() == "TH1D"):
-        if "Corr" in h.GetName(): ## ADD SUPPORT FOR ALL CORRECTIONS!
-            # if "PQ" in h.GetName(): continue
-            # if not isData and "reco" in h.GetName(): continue
+        hist_name = h.GetName() # Corr_Reconstru_Q0N0Z0
+        if "Corr" in hist_name:
+            # if "PQ" in hist_name: continue
+            # if not isData and "reco" in hist_name: continue
 
             # Name format is: Corr_Reconstru_Q0N0
-            tmp_name = "_".join(h.GetName().split("_")[1:-1]) # Reconstru
-            tmp_txt = h.GetName().split("_")[-1] # Q0N0Z0
+            tmp_name = "_".join(hist_name.split("_")[1:-1]) # Reconstru
+            tmp_txt = hist_name.split("_")[-1] # Q0N0Z0
+
+            type_index = type_reco.index(tmp_name) # Index in ["Reconstru", "ReMtch_mc", "ReMtch_re"]
 
             hist = h.ReadObj()
             if (hist.GetEntries() == 0):
-                print("Histogram %s is empty! Fit is not possible"%h.GetName())
+                print("Histogram %s is empty! Fit is not possible"%hist_name)
                 continue
             Nbins = hist.GetXaxis().GetNbins()
 
@@ -103,7 +109,7 @@ for h in list_of_hists:
 
             if useFold:
                 ## Fold two tails in one
-                hist_tmp = TH1D("%s_Fd"%(h.GetName()), ";%s;Counts"%phi_axis_title, len(vect_limits)-1, array('d',vect_limits))
+                hist_tmp = TH1D("%s_Fd"%(hist_name), ";%s;Counts"%phi_axis_title, len(vect_limits)-1, array('d',vect_limits))
                 # hist_tmp.Sumw2()
 
                 for b in range(1, Nbins+1):
@@ -120,7 +126,7 @@ for h in list_of_hists:
                     hist_tmp.SetBinContent(this_bin, value)
                     hist_tmp.SetBinError(this_bin, error)
             else:
-                hist_tmp = hist.Clone("%s_LR"%(h.GetName()))
+                hist_tmp = hist.Clone("%s_LR"%(hist_name))
 
             ### Get limit of the fit just before the central peak
             ## Left (Negative)
@@ -164,13 +170,16 @@ for h in list_of_hists:
 
             cov_matrix_R = hist_tmp.Fit("crossSectionR", "MSQ", "", fit_min_limit_R, 180.0) # M: Uses IMPROVED TMinuit; S: Saves covariance matrix
             # hist_tmp.Fit("crossSection", "WL MS", "", fit_min_limit, 180.0) # WL: Uses Weighted log likelihood method
-            cov_matrix_R.GetCorrelationMatrix().Write("%s_corrM"%(tmp_txt))
-            cov_matrix_R.GetCovarianceMatrix().Write("%s_covM"%(tmp_txt))
+
+            name_ext_cov = "%s_%s"%(tmp_txt, type_reco_short[type_index]) # "Q0N0Z0_Reco"
+
+            cov_matrix_R.GetCorrelationMatrix().Write("corrM_%s"%(name_ext_cov)) # "corrM_Q0N0Z0_Reco"
+            cov_matrix_R.GetCovarianceMatrix().Write("covM_%s"%(name_ext_cov)) # "covM_Q0N0Z0_Reco"
 
             if not useFold:
                 cov_matrix_L = hist_tmp.Fit("crossSectionL", "MSQ+", "", -180.0,fit_min_limit_L) # M: Uses IMPROVED TMinuit; S: Saves covariance matrix
-                cov_matrix_L.GetCorrelationMatrix().Write("%s_corrML"%(tmp_txt))
-                cov_matrix_L.GetCovarianceMatrix().Write("%s_covML"%(tmp_txt))
+                cov_matrix_L.GetCorrelationMatrix().Write("corrML_%s"%(name_ext_cov)) # "corrML_Q0N0Z0_Reco"
+                cov_matrix_L.GetCovarianceMatrix().Write("covML_%s"%(name_ext_cov)) # "corrML_Q0N0Z0_Reco"
 
             hist_tmp.Draw("FUNC same")
 
