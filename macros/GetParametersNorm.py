@@ -43,10 +43,29 @@ dataset = options.Dataset
 isJLab = options.JLabCluster
 verbose = options.verbose
 
-useFold = options.fold
+use_Fold = options.fold
 if "Fold" in myStyle.getCutStrFromStr(options.outputCuts):
-    useFold = True
-fit_type = "Fd" if useFold else "LR"
+    use_Fold = True
+
+use_Shift = False
+if (("Shift" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.outputCuts))) or ("Shift" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.inputCuts)))):
+    use_Shift = True
+
+### Define type of fit used
+# [LR] is default
+fit_type = "LR"
+
+if (use_Fold and use_Shift):
+    print("  [ParNorm] Two fit methods selected. Please, choose only one of the options!")
+    exit()
+# [Fold]
+elif (use_Fold):
+    fit_type = "Fd"
+# [Shift]
+elif (use_Shift):
+    fit_type = "Sh"
+# [LR]
+# else: fit_type = "LR" # Default
 
 infoDict = myStyle.getDictNameFormat(dataset)
 nameFormatted = myStyle.getNameFormatted(dataset)
@@ -58,6 +77,7 @@ if options.errorFull:
     input_cuts+="_FE"
     plots_cuts+="_FE"
 
+# Add fit type to the list of cuts!
 input_cuts+="_"+fit_type # Add Fold or LR extension
 plots_cuts+="_"+fit_type
 
@@ -70,12 +90,13 @@ inputfile = TFile(inputPath+inputROOT,"READ")
 outputPath = myStyle.getPlotsFolder("ParametersNorm", plots_cuts, myStyle.getBinNameFormatted(dataset) + "/" + infoDict["Target"], isJLab)
 outputROOT = myStyle.getPlotsFile("Parameters", dataset, "root", fit_type)
 if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
-    print("Parameters normalized file already exists! Not overwriting it.")
+    print("  [ParNorm] Parameters normalized file already exists! Not overwriting it.")
     exit()
 
-
+# [Fold], [Shift]
 list_func_names = ["crossSectionR"]
-if not useFold:
+# [LR]
+if ((not use_Fold) and (not use_Shift)):
     list_func_names.append("crossSectionL")
 
 n_htypeReco = [0, 0, 0]
@@ -132,6 +153,7 @@ for i_h,h in enumerate(inputfile.GetListOfKeys()): #list_of_hists):
     if (h.ReadObj().Class_Name() == "TH1D"):
         hist_targ = h.ReadObj()
         hist_name = h.GetName() # Corr_Reconstru_Q0N0Z0_type (type: Fd or LR)
+        # print(hist_name)
 
         tmp_name = "_".join(h.GetName().split("_")[1:-2]) # Reconstru
         bin_name = hist_name.split("_")[-2] # Q0N0Z0
@@ -202,15 +224,16 @@ for e,elem in enumerate(list_func_names):
 
         if ("L" in elem): name_ext = "L"
         elif ("R" in elem): name_ext = "R"
-        if ("F" in fit_type): name_ext = "F"
+        if ("Fd" in fit_type): name_ext = "F"
+        elif ("Sh" in fit_type): name_ext = "S"
 
         ## Ratio b/a
-        legend_b = TLegend(1-myStyle.GetMargin()-0.35,1-myStyle.GetMargin()-0.12, 1-myStyle.GetMargin()-0.05,1-myStyle.GetMargin()-0.02)
-        legend_b.SetBorderSize(0)
-        # legend_b.SetFillColor(ROOT.kWhite)
-        legend_b.SetTextFont(myStyle.GetFont())
-        legend_b.SetTextSize(myStyle.GetSize()-8)
-        legend_b.SetFillStyle(0)
+        # legend_b = TLegend(1-myStyle.GetMargin()-0.35,1-myStyle.GetMargin()-0.12, 1-myStyle.GetMargin()-0.05,1-myStyle.GetMargin()-0.02)
+        # legend_b.SetBorderSize(0)
+        # # legend_b.SetFillColor(ROOT.kWhite)
+        # legend_b.SetTextFont(myStyle.GetFont())
+        # legend_b.SetTextSize(myStyle.GetSize()-8)
+        # legend_b.SetFillStyle(0)
         ## Positive ratios
         hist_b = th1_b_norm_list[t][e]
         hist_b.SetMinimum(ymin)
@@ -218,12 +241,12 @@ for e,elem in enumerate(list_func_names):
 
         hist_b.SetLineWidth(2)
         hist_b.SetLineColor(ROOT.kBlue)
-        legend_b.AddEntry(hist_b,"Positive ratio")
+        # legend_b.AddEntry(hist_b,"Positive ratio")
 
         hist_b.Write()
         hist_b.Draw("hist e")
 
-        legend_b.Draw()
+        # legend_b.Draw()
         myStyle.DrawPreliminaryInfo("Parameters normalized %s"%(fit_type))
         myStyle.DrawTargetInfo(nameFormatted, "Data")
 
@@ -232,13 +255,12 @@ for e,elem in enumerate(list_func_names):
         canvas.Clear()
 
         ## Ratio c/a
-        # legend_c = TLegend()
-        legend_c = TLegend(1-myStyle.GetMargin()-0.35,1-myStyle.GetMargin()-0.12, 1-myStyle.GetMargin()-0.05,1-myStyle.GetMargin()-0.02)
-        legend_c.SetBorderSize(0)
-        # legend_c.SetFillColor(ROOT.kWhite)
-        legend_c.SetTextFont(myStyle.GetFont())
-        legend_c.SetTextSize(myStyle.GetSize()-8)
-        legend_c.SetFillStyle(0)
+        # legend_c = TLegend(1-myStyle.GetMargin()-0.35,1-myStyle.GetMargin()-0.12, 1-myStyle.GetMargin()-0.05,1-myStyle.GetMargin()-0.02)
+        # legend_c.SetBorderSize(0)
+        # # legend_c.SetFillColor(ROOT.kWhite)
+        # legend_c.SetTextFont(myStyle.GetFont())
+        # legend_c.SetTextSize(myStyle.GetSize()-8)
+        # legend_c.SetFillStyle(0)
         ## Positive ratios
         hist_c = th1_c_norm_list[t][e]
         hist_c.SetMinimum(ymin)
@@ -246,12 +268,12 @@ for e,elem in enumerate(list_func_names):
 
         hist_c.SetLineWidth(2)
         hist_c.SetLineColor(ROOT.kBlue)
-        legend_c.AddEntry(hist_c,"Positive ratio")
+        # legend_c.AddEntry(hist_c,"Positive ratio")
 
         hist_c.Write()
         hist_c.Draw("hist e")
 
-        legend_c.Draw()
+        # legend_c.Draw()
         myStyle.DrawPreliminaryInfo("Parameters normalized %s"%(fit_type))
         myStyle.DrawTargetInfo(nameFormatted, "Data")
 
@@ -262,6 +284,6 @@ for e,elem in enumerate(list_func_names):
 outputFile.Write()
 outputFile.Close()
 
-print("Made it to the end!")
+print("  [ParNorm] Made it to the end!")
 
 inputfile.Close()

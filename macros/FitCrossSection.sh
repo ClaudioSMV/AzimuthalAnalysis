@@ -104,6 +104,12 @@ else
     echo "Remember to select a dependence as x-axis (Zh or Pt2)"
     exit
 fi
+if [[ $CUTINFO == *"Sh"* ]]; then
+    CORR_CUT="${CORR_CUT}_Sh"
+    FITS_CUT="${FITS_CUT}_Sh"
+    PAR_NCUT="${PAR_NCUT}_Sh"
+    PAR_RCUT="${PAR_RCUT}_Sh"
+fi
 
 ### From Fit
 if [[ $CUTINFO == *"Fs"* ]]; then
@@ -119,7 +125,7 @@ elif [[ $CUTINFO == *"LR"* ]]; then
     FITS_CUT="${FITS_CUT}_LR"
     PAR_NCUT="${PAR_NCUT}_LR"
     PAR_RCUT="${PAR_RCUT}_LR"
-else
+elif [[ $CUTINFO != *"Sh"* ]]; then
     echo "Remember to choose Fold (Fd) or Both wings (LR) method for the fit!"
     exit
 fi

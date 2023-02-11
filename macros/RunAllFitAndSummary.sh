@@ -13,7 +13,7 @@
 #  "Xf": Use Xf from data; "DS": Delta Sector != 0; "BS": rm Bad Sect;  #
 #  "PF": Pi+ fiducial cut;                                              #
 #  "FE": Use FullError;                                                 #
-#  "Zx": x-axis is Zh; "Px": x-axis is Pt2;                             #
+#  "Zx": x-axis is Zh; "Px": x-axis is Pt2; "Sh": Shift reco distrib    #
 #  "Fs": Add Sin(x) term in fit;                                        #
 #  "Fd": Fit uses Fold; "LR": Fit uses both tails;                      #
 #  "Left" or "Right" if "LR" is under use;                              #

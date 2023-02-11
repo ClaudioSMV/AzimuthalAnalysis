@@ -34,14 +34,39 @@ rootpath = options.rootpath
 dataset = options.Dataset
 isJLab = options.JLabCluster
 
-useFold = options.fold
+# Define use of Fold method
+use_Fold = options.fold
 if "Fold" in myStyle.getCutStrFromStr(options.outputCuts):
-    useFold = True
-fit_type = "Fd" if useFold else "LR"
+    use_Fold = True
 
 useSin = options.useSin
 if "Sin" in myStyle.getCutStrFromStr(options.outputCuts):
     useSin = True
+
+use_Shift = False
+# if shift:
+#     plots_cuts+="_Sh"
+
+if (("Shift" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.outputCuts))) or ("Shift" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.inputCuts)))):
+    use_Shift = True
+    print("  [Fit] Fit PhiPQ shifted, ranging in ~(0., 360.)")
+
+
+### Define type of fit used
+# [LR] is default
+fit_type = "LR"
+
+if (use_Fold and use_Shift):
+    print("  [Fit] More than one fit method selected. Please, choose only one of the options!")
+    exit()
+# [Fold]
+elif (use_Fold):
+    fit_type = "Fd"
+# [Shift]
+elif (use_Shift):
+    fit_type = "Sh"
+# [LR]
+# else: fit_type = "LR" # Default
 
 infoDict = myStyle.getDictNameFormat(dataset)
 nameFormatted = myStyle.getNameFormatted(dataset)
@@ -67,7 +92,7 @@ inputfile = TFile(inputPath+inputROOT,"READ")
 outputPath = myStyle.getPlotsFolder("Fit", plots_cuts, myStyle.getBinNameFormatted(dataset) + "/" + infoDict["Target"], isJLab)
 outputROOT = myStyle.getPlotsFile("Fit", dataset, "root", fit_type)
 if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
-    print("Fit already exists! Not overwriting it.")
+    print("  [Fit] Fit already exists! Not overwriting it.")
     exit()
 
 list_of_hists = inputfile.GetListOfKeys()
@@ -79,7 +104,6 @@ canvas = TCanvas("cv","cv",1000,800)
 gStyle.SetOptStat(0)
 
 outputfile = TFile(outputPath+outputROOT,"RECREATE")
-# # TO DO FitBothTails_
 
 phi_axis_title = myStyle.axis_label('I',"LatexUnit") # "#phi_{PQ} (deg)"
 
@@ -87,8 +111,6 @@ for h in list_of_hists:
     if (h.ReadObj().Class_Name() == "TH1D"):
         hist_name = h.GetName() # Corr_Reconstru_Q0N0Z0
         if "Corr" in hist_name:
-            # if "PQ" in hist_name: continue
-            # if not isData and "reco" in hist_name: continue
 
             # Name format is: Corr_Reconstru_Q0N0
             tmp_name = "_".join(hist_name.split("_")[1:-1]) # Reconstru
@@ -96,57 +118,82 @@ for h in list_of_hists:
 
             type_index = type_reco.index(tmp_name) # Index in ["Reconstru", "ReMtch_mc", "ReMtch_re"]
 
+            # Get Histogram
             hist = h.ReadObj()
-            if (hist.GetEntries() == 0):
-                print("Histogram %s is empty! Fit is not possible"%hist_name)
+
+            Nbins = hist.GetXaxis().GetNbins()
+            bin1 = hist.GetBinContent(1)
+            bin2 = hist.GetBinContent(2)
+
+            # print("  GetEntries: %i;  GetNbins: %i ;  Value bin1: %i; bin2: %i"%(hist.GetEntries(),Nbins, bin1, bin2))
+            if (hist.GetEntries() == 0): # Maybe require a minimum number of entries?
+                print("  [Fit] Histogram %s is empty! Fit is not possible."%hist_name)
                 continue
+
             Nbins = hist.GetXaxis().GetNbins()
 
+            # Define bin range of folded distribution [Fold]
             bin_zero = hist.FindBin(0.0)
             vect_limits = [0.0]
             for bt in range(bin_zero, Nbins+1):
                 vect_limits.append(hist.GetBinLowEdge(bt+1))
 
-            if useFold:
-                ## Fold two tails in one
-                hist_tmp = TH1D("%s_Fd"%(hist_name), ";%s;Counts"%phi_axis_title, len(vect_limits)-1, array('d',vect_limits))
-                # hist_tmp.Sumw2()
+            if use_Shift:
+                hist_tmp = hist.Clone("%s_Sh"%(hist_name))
+            else: # No shift PhiPQ
+                if use_Fold:
+                    ## Fold two tails in one
+                    hist_tmp = TH1D("%s_Fd"%(hist_name), ";%s;Counts"%phi_axis_title, len(vect_limits)-1, array('d',vect_limits))
+                    # hist_tmp.Sumw2()
 
-                for b in range(1, Nbins+1):
-                    x_center = hist.GetBinCenter(b)
-                    value = hist.GetBinContent(b)
-                    error = hist.GetBinError(b)
+                    for b in range(1, Nbins+1):
+                        x_center = hist.GetBinCenter(b)
+                        value = hist.GetBinContent(b)
+                        error = hist.GetBinError(b)
 
-                    this_bin = hist_tmp.FindBin(abs(x_center))
+                        this_bin = hist_tmp.FindBin(abs(x_center))
 
-                    if (hist_tmp.GetBinContent(this_bin) > 1.0):
-                        value+=hist_tmp.GetBinContent(this_bin)
-                        error = TMath.Sqrt(hist_tmp.GetBinError(this_bin)*hist_tmp.GetBinError(this_bin) + error*error)
+                        if (hist_tmp.GetBinContent(this_bin) > 1.0):
+                            value+=hist_tmp.GetBinContent(this_bin)
+                            error = TMath.Sqrt(hist_tmp.GetBinError(this_bin)*hist_tmp.GetBinError(this_bin) + error*error)
 
-                    hist_tmp.SetBinContent(this_bin, value)
-                    hist_tmp.SetBinError(this_bin, error)
-            else:
-                hist_tmp = hist.Clone("%s_LR"%(hist_name))
+                        hist_tmp.SetBinContent(this_bin, value)
+                        hist_tmp.SetBinError(this_bin, error)
+                else:
+                    hist_tmp = hist.Clone("%s_LR"%(hist_name))
 
             ### Get limit of the fit just before the central peak
-            ## Left (Negative)
-            if not useFold:
+            ## Left (Negative) [LR - Left]
+            if ((not use_Fold) and (not use_Shift)):
                 hist_tmp.GetXaxis().SetRangeUser(-45.0, 0.0)
                 limit_bin_L = hist_tmp.GetMinimumBin()
-                fit_min_limit_L = hist.GetBinLowEdge(limit_bin_L+1)
+                fit_max_limit_L = hist.GetBinLowEdge(limit_bin_L+1)
                 hist.GetXaxis().UnZoom()
-            else:
-                fit_min_limit_L = 0.0
+            else: # [Fold], [Shift]
+                fit_max_limit_L = 0.0
 
             ## Right (Positive)
-            hist_tmp.GetXaxis().SetRangeUser(0.0, 45.0)
-            limit_bin_R = hist_tmp.GetMinimumBin()
-            fit_min_limit_R = hist_tmp.GetBinLowEdge(limit_bin_R)
-            hist_tmp.GetXaxis().UnZoom()
+            if (use_Shift): # [Shift]
+                # Set min of fit
+                fit_min_limit_R = hist_tmp.GetBinLowEdge(2)
 
-            if ((Nbins%2)==1): # Odd binning
-                if not useFold:
-                    fit_min_limit_L = hist.GetBinLowEdge(bin_zero)
+                # Set max of fit
+                fit_max_limit_R = hist_tmp.GetBinLowEdge(Nbins)
+
+            else: #  [LR - Right], [Fold]
+                # Set min of fit
+                hist_tmp.GetXaxis().SetRangeUser(0.0, 45.0)
+                limit_bin_R = hist_tmp.GetMinimumBin()
+                fit_min_limit_R = hist_tmp.GetBinLowEdge(limit_bin_R)
+                hist_tmp.GetXaxis().UnZoom()
+
+                # Set max of fit
+                fit_max_limit_R = 180.
+
+            # Odd binning
+            if (((Nbins%2)==1) and (not use_Shift)):
+                if (not use_Fold):
+                    fit_max_limit_L = hist.GetBinLowEdge(bin_zero)
                 fit_min_limit_R = hist.GetBinLowEdge(bin_zero+1)
 
             #print("Fit limit: %.2f (Bin %i)"%(fit_min_limit, limit_bin))
@@ -165,10 +212,11 @@ for h in list_of_hists:
                 the_func+= "+ [3]*sin(TMath::Pi()*x/180.0)"
 
             # fit_funct_fold  = TF1("crossSectionF","[0] + [1]*cos(TMath::Pi()*x/180.0) + [2]*cos(2*TMath::Pi()*x/180.0)",  fit_min_limit_R, 180.0)
-            fit_funct_left  = TF1("crossSectionL",the_func, -180.0,fit_min_limit_L)
-            fit_funct_right = TF1("crossSectionR",the_func,  fit_min_limit_R, 180.0)
+            fit_funct_left  = TF1("crossSectionL",the_func, -180.0,fit_max_limit_L)
+            fit_funct_right = TF1("crossSectionR",the_func,  fit_min_limit_R, fit_max_limit_R)
 
-            cov_matrix_R = hist_tmp.Fit("crossSectionR", "MSQ", "", fit_min_limit_R, 180.0) # M: Uses IMPROVED TMinuit; S: Saves covariance matrix
+            ### Make fit and save covariance and correlation matrices
+            cov_matrix_R = hist_tmp.Fit("crossSectionR", "MSQ", "", fit_min_limit_R, fit_max_limit_R) # M: Uses IMPROVED TMinuit; S: Saves covariance matrix
             # hist_tmp.Fit("crossSection", "WL MS", "", fit_min_limit, 180.0) # WL: Uses Weighted log likelihood method
 
             name_ext_cov = "%s_%s"%(tmp_txt, type_reco_short[type_index]) # "Q0N0Z0_Reco"
@@ -176,8 +224,10 @@ for h in list_of_hists:
             cov_matrix_R.GetCorrelationMatrix().Write("corrM_%s"%(name_ext_cov)) # "corrM_Q0N0Z0_Reco"
             cov_matrix_R.GetCovarianceMatrix().Write("covM_%s"%(name_ext_cov)) # "covM_Q0N0Z0_Reco"
 
-            if not useFold:
-                cov_matrix_L = hist_tmp.Fit("crossSectionL", "MSQ+", "", -180.0,fit_min_limit_L) # M: Uses IMPROVED TMinuit; S: Saves covariance matrix
+            # [LR - Left]
+            # Save Left fit only when using LR fit method
+            if ((not use_Fold) and (not use_Shift)):
+                cov_matrix_L = hist_tmp.Fit("crossSectionL", "MSQ+", "", -180.0,fit_max_limit_L) # M: Uses IMPROVED TMinuit; S: Saves covariance matrix
                 cov_matrix_L.GetCorrelationMatrix().Write("corrML_%s"%(name_ext_cov)) # "corrML_Q0N0Z0_Reco"
                 cov_matrix_L.GetCovarianceMatrix().Write("covML_%s"%(name_ext_cov)) # "corrML_Q0N0Z0_Reco"
 
@@ -189,7 +239,9 @@ for h in list_of_hists:
             myStyle.DrawTargetInfo(nameFormatted, "Data")
             myStyle.DrawBinInfo(tmp_txt, infoDict["BinningType"])
 
-            if not useFold:
+            # [LR - Left]
+            # Write ChiSquare/ndf when making two fits
+            if ((not use_Fold) and (not use_Shift)):
                 chisq_L = fit_funct_left.GetChisquare()
                 ndf_L = fit_funct_left.GetNDF()
                 if (ndf_L != 0):
@@ -214,5 +266,5 @@ for h in list_of_hists:
             canvas.SaveAs(outputPath+outputName)
             canvas.Clear()
 
-print("Fit parameters saved!")
+print("  [Fit] Fit parameters saved!")
 outputfile.Close()

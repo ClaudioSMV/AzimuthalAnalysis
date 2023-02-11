@@ -48,10 +48,30 @@ dataset = options.Dataset
 isJLab = options.JLabCluster
 verbose = options.verbose
 
-useFold = options.fold
+use_Fold = options.fold
 if "Fold" in myStyle.getCutStrFromStr(options.inputCuts):
-    useFold = True
-fit_type = "Fd" if useFold else "LR"
+    use_Fold = True
+
+use_Shift = False
+if (("Shift" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.outputCuts))) or ("Shift" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.inputCuts)))):
+    use_Shift = True
+
+### Define type of fit used
+# [LR] is default
+fit_type = "LR"
+
+if (use_Fold and use_Shift):
+    print("  [ParRatio] Two fit methods selected. Please, choose only one of the options!")
+    exit()
+# [Fold]
+elif (use_Fold):
+    fit_type = "Fd"
+# [Shift]
+elif (use_Shift):
+    fit_type = "Sh"
+# [LR]
+# else: fit_type = "LR" # Default
+
 mixD = options.mixD
 if "MixD" in myStyle.getCutStrFromStr(options.outputCuts):
     mixD = True
@@ -60,7 +80,7 @@ infoDict = myStyle.getDictNameFormat(dataset) # ["Target", "BinningType", "NDims
 nameFormatted = myStyle.getNameFormatted(dataset)
 
 if ("D" in infoDict["Target"]):
-    print("Can't get ratio of D. Try with a solid target.")
+    print("  [ParRatio] Trivial ratio with D. Try with a solid target.")
     exit()
 
 ## Cuts
@@ -72,6 +92,7 @@ if options.errorFull:
 if mixD:
     plots_cuts+="_MD"
 
+# Add fit type to the list of cuts!
 input_cuts+="_"+fit_type # Add Fold or LR extension
 plots_cuts+="_"+fit_type
 
@@ -83,7 +104,7 @@ if ("P" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.outputCuts))) 
     usePt2 = True
 
 if (useZh) and (usePt2):
-    print("Two binning selected. Please, choose only one of the options!")
+    print("  [ParRatio] Two binning selected. Please, choose only one of the options!")
     exit()
 elif useZh:
     input_cuts+="_Zx"
@@ -92,7 +113,7 @@ elif usePt2:
     input_cuts+="_Px"
     plots_cuts+="_Px"
 else:
-    print("Using Zx as default x binning!")
+    print("  [ParRatio] Using Zx as default x binning!")
     plots_cuts+="_Zx"
 
 ## Deuterium info
@@ -115,8 +136,10 @@ if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
     print("Parameters ratio file already exists! Not overwriting it.")
     exit()
 
+# [Fold], [Shift]
 list_func_names = ["crossSectionR"]
-if not useFold:
+# [LR]
+if ((not use_Fold) and (not use_Shift)):
     list_func_names.append("crossSectionL")
 
 n_htypeReco = [0, 0, 0]
@@ -262,7 +285,8 @@ for e,elem in enumerate(list_func_names):
 
         if ("L" in elem): name_ext = "L"
         elif ("R" in elem): name_ext = "R"
-        if ("F" in fit_type): name_ext = "F"
+        if ("Fd" in fit_type): name_ext = "F"
+        elif ("Sh" in fit_type): name_ext = "S"
 
         hist_b = ratio_th1_b_list[t][e]
         hist_b.SetMinimum(ymin)
@@ -295,7 +319,7 @@ for e,elem in enumerate(list_func_names):
 outputFile.Write()
 outputFile.Close()
 
-print("Made it to the end!")
+print("  [ParRatio] Made it to the end!")
 
 inputfile_solid.Close()
 inputfile_D.Close()

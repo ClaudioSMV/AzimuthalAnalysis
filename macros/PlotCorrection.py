@@ -10,6 +10,63 @@ gStyle.SetOptFit(1011)
 ## Defining Style
 myStyle.ForceStyle()
 
+
+def getPhiHist(th1_input, name, do_shift):
+    this_xmin = th1_input.GetXaxis().GetXmin() # -180.
+    this_xmax = th1_input.GetXaxis().GetXmax() #  180.
+    this_nbin = th1_input.GetNbinsX()
+
+    if (do_shift):
+        # if (this_nbin%2 == 0): # Even (0. is in a bin edge) (default)
+        this_xmin =   0.
+        this_xmax = 360.
+        central_bin = int(this_nbin/2)+1 # Even: Right to the center; Odd: Central bin
+
+        if (this_nbin%2 == 1): # Odd (0. is in the middle of a bin)
+            bin_width = th1_input.GetBinWidth(central_bin)
+
+            # Slightly shift edges so that bins are correct
+            this_xmin -= bin_width/2.
+            this_xmax -= bin_width/2.
+
+    h_tmp = TH1D(name,";%s;Counts"%(myStyle.axis_label('I',"LatexUnit")), this_nbin, this_xmin, this_xmax)
+
+    for i in range(1,this_nbin+1):
+
+        this_value = th1_input.GetBinContent(i)
+        this_error = th1_input.GetBinError(i)
+
+        # if (this_value == 0):
+        #     print("    %s : Value: %i"%(name,this_value))
+        #     this_value = 0.0
+        #     this_error = 0.0
+
+        bin_L_edge = th1_input.GetBinLowEdge(i)
+        bin_center = th1_input.GetBinCenter(i)
+
+        the_bin = i
+
+        if (do_shift):
+            if (this_nbin%2 == 0): # Even   6 -> First right bin is 4
+                if (bin_L_edge < 0.0):
+                    the_bin = i + central_bin -1 # 4,5,6
+                else:
+                    the_bin = i - central_bin + 1 # 1,2,3
+
+            elif (this_nbin%2 == 1): # Odd   5 -> center is 3
+                if (bin_center < 0.0):
+                    the_bin = i + central_bin # 4,5
+                else:
+                    the_bin = i - central_bin + 1 # 1,2,3
+
+        # Skip bins that are empty (if not, they will count as an entry with zero value)
+        if (this_value != 0):
+            h_tmp.SetBinContent(the_bin, this_value)
+            h_tmp.SetBinError(the_bin, this_error)
+
+    return h_tmp
+
+
 # Construct the argument parser
 parser = optparse.OptionParser("usage: %prog [options]\n")
 # parser.add_option('-x','--xlength', dest='xlength', default = 4.0, help="X axis range [-x, x]")
@@ -20,6 +77,8 @@ parser.add_option('-A', dest='saveAll', action='store_true', default = False, he
 parser.add_option('-J', dest='JLabCluster', action='store_true', default = False, help="Use folder from JLab_cluster")
 parser.add_option('-i', dest='inputCuts', default = "", help="Add input cuts Xf_Yb_...")
 parser.add_option('-o', dest='outputCuts', default = "", help="Add output cuts FE_Z_P_...")
+
+parser.add_option('-S', dest='shiftPhi', action='store_true', default = False, help="Move Phi to cover [0,2pi] instead of [-pi,pi] (default)")
 
 parser.add_option('-e', dest='errorFull', action='store_true', default = False, help="Use FullError")
 parser.add_option('-Z', dest='useZh',  action='store_true', default = False, help="Use bin in Zh, integrate Pt2")
@@ -44,6 +103,14 @@ if options.errorFull:
     input_cuts+="_FE"
     plots_cuts+="_FE"
 
+shift = options.shiftPhi
+if shift:
+    plots_cuts+="_Sh"
+
+if ("Shift" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.outputCuts))):
+    shift = True
+    print("  [Correction] Plot PhiPQ shifted, ranging in ~(0., 360.)")
+
 useZh = options.useZh
 usePt2 = options.usePt2
 # print(myStyle.getCutStrFromStr(options.outputCuts))
@@ -53,14 +120,14 @@ if ("P" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.outputCuts))) 
     usePt2 = True
 
 if (useZh) and (usePt2):
-    print("Two binning selected. Please, choose only one of the options!")
+    print("  [Correction] Two binning selected. Please, choose only one of the options!")
     exit()
 elif useZh:
     plots_cuts+="_Zx"
 elif usePt2:
     plots_cuts+="_Px"
 elif infoDict["BinningType"] != 0:
-    print("Using Zx as default x binning!")
+    print("  [Correction] Using Zx as default x binning!")
     plots_cuts+="_Zx"
 
 ## Input
@@ -71,7 +138,7 @@ inputfile = TFile(inputPath,"READ")
 outputPath = myStyle.getPlotsFolder("Correction", plots_cuts, myStyle.getBinNameFormatted(dataset) + "/" + infoDict["Target"], isJLab)
 outputROOT = myStyle.getPlotsFile("Corrected", dataset, "root")
 if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
-    print("Correction already exists! Not overwriting it.")
+    print("  [Correction] Correction already exists! Not overwriting it.")
     exit()
 
 histCorr_Reconstru = inputfile.Get("Corr_Reconstru")
@@ -127,7 +194,7 @@ symbol_list = ["Q","N","Z","P"]
 if ('X' in myStyle.all_dicts[infoDict["BinningType"]]):
     symbol_list[1] = "X"
 
-print(symbol_list)
+print("  [Correction] Using variables [%s]"%(', '.join(symbol_list)))
 
 for i in range(totalsize):
     total_tmp = totalsize
@@ -148,9 +215,12 @@ for i in range(totalsize):
 
     for n,newRangeInput in enumerate(inputTHnSparse_list):
         proj_tmp = newRangeInput.Projection(4)
-        proj_tmp.SetName(newRangeInput.GetName()+"_"+txt_tmp)
+        proj_tmp.SetName("proj_tmp") # (newRangeInput.GetName()+"_"+txt_tmp)
 
-        Proj1DTHnSparse_list[n].append(proj_tmp)
+        this_hist = getPhiHist(proj_tmp, newRangeInput.GetName()+"_"+txt_tmp, shift)
+
+        Proj1DTHnSparse_list[n].append(this_hist)
+        proj_tmp.Delete() # Prevent possible memory leak
 
     names_list.append(txt_tmp)
 
@@ -170,7 +240,11 @@ for i,info in enumerate(names_list):
     for p,proj in enumerate(Proj1DTHnSparse_list):
         if (("Good" in prefixType[p]) and (not saveAll)): continue
         this_proj = proj[i]
-        htemp = TH1F("htemp","",1,-180.,180.)
+
+        x_min = this_proj.GetXaxis().GetXmin()
+        x_max = this_proj.GetXaxis().GetXmax()
+
+        htemp = TH1F("htemp","",1, x_min,x_max)
         htemp.SetStats(0)
         htemp.SetMinimum(0.0001)
         # ylim = 30000
@@ -183,10 +257,6 @@ for i,info in enumerate(names_list):
         htemp.Draw("AXIS")
 
         this_proj.SetLineColor(kBlack)
-        # list_Corr_Reconstru[i].SetTitle(info.title)
-        # list_Corr_Reconstru[i].GetXaxis().SetTitle(info.xlabel)
-        # list_Corr_Reconstru[i].GetXaxis().SetRangeUser(-0.32, 0.32)
-        # list_Corr_Reconstru[i].GetYaxis().SetTitle(info.ylabel)
 
         # gPad.RedrawAxis("g")
 
@@ -206,5 +276,6 @@ for i,info in enumerate(names_list):
         htemp.Delete()
         canvas.Clear()
 
+print("  [Correction] Correction plots saved!")
 outputfile.Close()
 

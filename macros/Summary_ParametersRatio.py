@@ -129,21 +129,32 @@ options, args = parser.parse_args()
 rootpath = options.rootpath
 dataset = options.Dataset
 isJLab = options.JLabCluster
+
+### Set Fit method under use
 fit = options.fit
 
 if ("LR" in mS.getCutStrFromStr(options.inputCuts) and (not "Left" in options.inputCuts) and (not "Right" in options.inputCuts)):
-    print("Specify \"Left\" or \"Right\" in input when using \"LR\" method!")
+    print("  [SummaryRatio] Specify \"Left\" or \"Right\" in input when using \"LR\" method!")
     exit()
 
-if "Fold" in mS.getCutStrFromStr(options.inputCuts):
+if ("Fold" in mS.getCutStrFromStr(options.inputCuts)):
     fit = "F"
+elif ("Shift" in mS.getCutStrFromStr(options.inputCuts)):
+    fit = "S"
 elif ("Left" in mS.getCutStrFromStr(options.inputCuts) or "Left" in options.inputCuts):
     fit = "L"
 elif ("Right" in mS.getCutStrFromStr(options.inputCuts) or "Right" in options.inputCuts):
     fit = "R"
 
-fit_type = "Fd" if "F" in fit else "LR"
+fit_type = "LR"
+if ("F" in fit):
+    fit_type = "Fd"
+elif ("S" in fit):
+    fit_type = "Sh"
+
 fit_num = 0 if (fit != "L") else 1
+
+### Set mixing of D info in one
 mixD = options.mixD
 if "MixD" in mS.getCutStrFromStr(options.outputCuts):
     mixD = True
@@ -169,7 +180,7 @@ if ("P" in mS.getCutsAsList(mS.getCutStrFromStr(options.outputCuts))) or ("P" in
     usePt2 = True
 
 if (useZh) and (usePt2):
-    print("Two binning selected. Please, choose only one of the options!")
+    print("  [SummaryRatio] Two binning selected. Please, choose only one of the options!")
     exit()
 elif useZh:
     input_cuts+="_Zx"
@@ -178,7 +189,7 @@ elif usePt2:
     input_cuts+="_Px"
     plots_cuts+="_Px"
 else:
-    print("Using Zx as default x binning!")
+    print("  [SummaryRatio] Using Zx as default x binning!")
     input_cuts+="_Zx"
     plots_cuts+="_Zx"
 
@@ -247,6 +258,7 @@ for r,typeR in enumerate(type_reco_short):
             list_this_tar = []
             hist_par = list_infiles[t].Get("f_Ratio_%s%i_%s"%(par,fit_num,typeR))
 
+            # This is in case the Reco method found is not used, so unnecessary files are not created
             if not hist_par:
                 print("  [SummaryRatio] %s hist not found. Skipping!"%typeR)
                 type_reco_short[r] = 0 # Skip reco method when does not exist!
@@ -343,6 +355,7 @@ for r,typeR in enumerate(type_reco_short):
                     this_hist.SetTitleOffset(1.0,"x")
                     this_hist.SetTitleOffset(1.8,"y")
 
+                    this_hist.SetLineWidth(3)
                     this_hist.SetLineColor(mS.color_target[targ])
                     this_hist.SetMarkerStyle(4)
                     this_hist.SetMarkerColor(mS.color_target[targ])
