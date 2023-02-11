@@ -395,18 +395,22 @@ for r,typeR in enumerate(type_reco_short):
                             legend.Draw()
             new_pad = False
 
-        this_title_gif = mS.getSummaryPath("%s_%s_Norm%s"%(typeR,par,dataset_title), "gif", plots_cuts, isJLab, dataset_title[1:])
-        this_title_gif = mS.addBeforeRootExt(this_title_gif, "_%s"%(whatsPlot), "gif")
+        # this_title_gif = mS.getSummaryPath("%s_%s_Norm%s"%(typeR,par,dataset_title), "gif", plots_cuts, isJLab, dataset_title[1:])
+        # this_title_gif = mS.addBeforeRootExt(this_title_gif, "_%s"%(whatsPlot), "gif")
+        this_title_gif = mS.getSummaryPath("%s_%s"%(dataset_title[1:],typeR), "gif", plots_cuts, isJLab, dataset_title[1:])
+        this_title_gif = mS.addBeforeRootExt(this_title_gif, "-Norm%s_%s"%(par,whatsPlot), "gif")
         if ("LR" in this_title_gif):
             this_title_gif = mS.addBeforeRootExt(this_title_gif, "-%s"%(fit), "gif")
 
-        this_title_pdf = mS.getSummaryPath("%s_%s_Norm%s"%(typeR,par,dataset_title), "pdf", plots_cuts, isJLab, dataset_title[1:])
-        this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "_%s"%(whatsPlot), "pdf")
+        # this_title_pdf = mS.getSummaryPath("%s_%s_Norm%s"%(typeR,par,dataset_title), "pdf", plots_cuts, isJLab, dataset_title[1:])
+        # this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "_%s"%(whatsPlot), "pdf")
+        this_title_pdf = mS.getSummaryPath("%s_%s"%(dataset_title[1:],typeR), "pdf", plots_cuts, isJLab, dataset_title[1:])
+        this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "-Norm%s_%s"%(par,whatsPlot), "pdf")
         if ("LR" in this_title_pdf):
             this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "-%s"%(fit), "pdf")
 
         this_canvas.SaveAs(this_title_gif)
-        this_canvas.SaveAs(this_title_pdf)
+        # this_canvas.SaveAs(this_title_pdf)
 
 for t,targ in enumerate(list_targets):
     list_infiles[t].Close()
