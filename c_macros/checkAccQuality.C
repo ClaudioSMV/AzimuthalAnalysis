@@ -72,6 +72,10 @@ void checkAccQuality(std::string target = "Fe", int binName = 0, std::string acc
     TH1D *hAccRatio_ReMtch_mc = new TH1D("hAccRatio_ReMtch_mc", "hAccRatio_ReMtch_mc", 400, 0.0, 2.0);
     TH1D *hAccRatio_ReMtch_re = new TH1D("hAccRatio_ReMtch_re", "hAccRatio_ReMtch_re", 400, 0.0, 2.0);
 
+    // Other methods when Reconstru is zero
+    TH1D *hAccVal_ReMtch_mc_Reco0 = new TH1D("hAccVal_ReMtch_mc_Reco0", "hAccVal_ReMtch_mc_Reco0", 220, 0.0, 1.1);
+    TH1D *hAccVal_ReMtch_re_Reco0 = new TH1D("hAccVal_ReMtch_re_Reco0", "hAccVal_ReMtch_re_Reco0", 220, 0.0, 1.1);
+
     for (int Qi=0; Qi<this_binning[0].size()-1; Qi++)
     {
         for (int Ni=0; Ni<this_binning[1].size()-1; Ni++)
@@ -102,6 +106,9 @@ void checkAccQuality(std::string target = "Fe", int binName = 0, std::string acc
                             hZhEmpty_Reconstru->Fill(kinVars[2]);
                             hPtEmpty_Reconstru->Fill(kinVars[3]);
                             hPQEmpty_Reconstru->Fill(kinVars[4]);
+
+                            hAccVal_ReMtch_mc_Reco0->Fill(val_ReMtch_mc);
+                            hAccVal_ReMtch_re_Reco0->Fill(val_ReMtch_re);
                         }
                         else
                         {
