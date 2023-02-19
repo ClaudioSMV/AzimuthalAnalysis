@@ -21,6 +21,7 @@ private:
     bool _useFullError = false;
     bool _isData = false;
     bool _isClosureTest = false;
+    int _fracCT = 100;
     int _binIndex = -1;
     int _binNdims = 0; // 2: Leptonic, 3: Leptonic+Zh
     int _useXb = false; // !_useNu
@@ -35,7 +36,6 @@ public: // Internal values
     std::string getNameTarget() { return _nameTarget; }
     void setFullError() { _useFullError = true; }
     void setDataType() { _isData = true; }
-    void setClosureTest() { _isClosureTest = true; }
     void setBinningType(int binning_number) { _binIndex = binning_number; }
     void setBinNdims(int binningNdims) { _binNdims = binningNdims; }
     void setUseXb(bool boolXb) { _useXb = boolXb; }
@@ -198,6 +198,7 @@ public:
     virtual void setNameFormat();
     std::string getAccFoldNameExt();
     std::string getAccFileName();
+    void setClosureTest(int fractionAcc);
     virtual Int_t Cut(Long64_t entry);
     virtual Bool_t GoodElectron_MC(Long64_t entry, vector<vector<double>> DISLimits);
     virtual Bool_t GoodPiPlus_MC(Long64_t entry, int ivec, vector<vector<double>> DISLimits);
@@ -363,6 +364,14 @@ std::string Acceptance::getAccFileName()
     }
     return this_name;
 }
+
+void Acceptance::setClosureTest(int fractionAcc = 50)
+{
+    _isClosureTest = true;
+    _fracCT = fractionAcc;
+    std::cout << Form("Set Closure Test to use %i%% of simulations in acceptance calculation.", fractionAcc) << std::endl;
+}
+
 
 // Init
 

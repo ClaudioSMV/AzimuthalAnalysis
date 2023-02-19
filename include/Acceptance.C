@@ -108,7 +108,7 @@ void Acceptance::Loop()
     }
     else
     {
-        std::string ct_folder = "../output/ClosureTest" + getFoldNameExt();
+        std::string ct_folder = "../output/ClosureTest" + std::to_string(_fracCT) + "p" + getFoldNameExt();
         CreateDir(ct_folder);
         fout = TFile::Open(Form("%s/AccCT_%s.root", ct_folder.c_str(), getAccFileName().c_str()), "RECREATE");
     }
@@ -180,9 +180,8 @@ void Acceptance::Loop()
         return;
     Long64_t nentries = fChain->GetEntries();
     Long64_t nbytes = 0, nb = 0;
-    unsigned int entries_to_process;
-    if (!_isClosureTest) entries_to_process = nentries;
-    else                entries_to_process = nentries/2;
+    unsigned int entries_to_process = _fracCT*nentries/100.; // _fracCT = 100. by default, 50. for ClosureTest
+
     int inclusive_count=0; // global_bin=-1,
     int vec_entries_MC=0, vec_entries=0;
     bool good_electron_mc = false, good_electron = false;
@@ -542,9 +541,9 @@ void Acceptance::Correction()
 void Acceptance::ClosureTest()
 {
     // Run over half of the sim and save in "../output/ClosureTest/AccCT_%s_B%i_%iD.root"
-    setClosureTest();
+    // setClosureTest();
 
-    std::string ct_folder = "../output/ClosureTest" + getFoldNameExt();
+    std::string ct_folder = "../output/ClosureTest" + std::to_string(_fracCT) + "p" + getFoldNameExt();
     if (!FileExists(Form("%s/AccCT_%s.root", ct_folder.c_str(), getAccFileName().c_str())))
     {
         std::cout << "Acceptance for ClosureTest doesn't exist. Creating file." << std::endl;
@@ -580,7 +579,7 @@ void Acceptance::ClosureTest()
     THnSparse *histTrue_PionReco  = CreateFinalHist("True_PionReco",  nbins, &(Correction::NIrregBins[_binNdims]), ThisBins, DISLimits);
 
     Long64_t nentries = fChain->GetEntries();
-    unsigned int entries_to_process = nentries/2;
+    unsigned int first_entry = _fracCT*nentries/100.; // Default for ClosureTest is 50.
 
     Long64_t nbytes = 0, nb = 0;
     
@@ -589,11 +588,11 @@ void Acceptance::ClosureTest()
     bool good_electron_mc = false, good_electron = false;
     bool good_pion_mc = false, good_pion = false;
     std::vector<double> binKinVars, binKinVars_mc;
-    for (unsigned int jentry = entries_to_process; jentry < nentries; jentry++)
+    for (unsigned int jentry = first_entry; jentry < nentries; jentry++)
     {
         count++;
-        if ((jentry-entries_to_process) % 1000000 == 0)
-            printf("Processing entry %9u, progress at %6.2f%%\n",jentry-entries_to_process,100.*(double)(jentry-entries_to_process)/(nentries-entries_to_process));
+        if ((jentry-first_entry) % 1000000 == 0)
+            printf("Processing entry %9u, progress at %6.2f%%\n",jentry-first_entry,100.*(double)(jentry-first_entry)/(nentries-first_entry));
 
         Long64_t ientry = LoadTree(jentry);
         if (ientry < 0)
