@@ -34,6 +34,7 @@ void checkAccQuality(std::string target = "Fe", int binName = 0, std::string acc
     THnSparse *histAcc_ReMtch_mc = (THnSparse*)facc->Get("histAcc_ReMtch_mc");
     THnSparse *histAcc_ReMtch_re = (THnSparse*)facc->Get("histAcc_ReMtch_re");
 
+    // Get empty bin projections
     TH1D *hQ2Empty_Reconstru = new TH1D("hQ2Empty_Reconstru", "hQ2Empty_Reconstru", this_binning[0].size()-1, &this_binning[0][0]);
     TH1D *hQ2Empty_ReMtch_mc = new TH1D("hQ2Empty_ReMtch_mc", "hQ2Empty_ReMtch_mc", this_binning[0].size()-1, &this_binning[0][0]);
     TH1D *hQ2Empty_ReMtch_re = new TH1D("hQ2Empty_ReMtch_re", "hQ2Empty_ReMtch_re", this_binning[0].size()-1, &this_binning[0][0]);
@@ -58,6 +59,7 @@ void checkAccQuality(std::string target = "Fe", int binName = 0, std::string acc
     TH1D *hPQEmpty_ReMtch_mc = new TH1D("hPQEmpty_ReMtch_mc", "hPQEmpty_ReMtch_mc", this_binning[4].size()-1, &this_binning[4][0]);
     TH1D *hPQEmpty_ReMtch_re = new TH1D("hPQEmpty_ReMtch_re", "hPQEmpty_ReMtch_re", this_binning[4].size()-1, &this_binning[4][0]);
 
+    // Get Acceptance values and error
     TH1D *hAccVal_Reconstru = new TH1D("hAccVal_Reconstru", "hAccVal_Reconstru", 220, 0.0, 1.1);
     TH1D *hAccVal_ReMtch_mc = new TH1D("hAccVal_ReMtch_mc", "hAccVal_ReMtch_mc", 220, 0.0, 1.1);
     TH1D *hAccVal_ReMtch_re = new TH1D("hAccVal_ReMtch_re", "hAccVal_ReMtch_re", 220, 0.0, 1.1);
@@ -65,6 +67,10 @@ void checkAccQuality(std::string target = "Fe", int binName = 0, std::string acc
     TH1D *hAccErr_Reconstru = new TH1D("hAccErr_Reconstru", "hAccErr_Reconstru", 300, 0.0, 0.3);
     TH1D *hAccErr_ReMtch_mc = new TH1D("hAccErr_ReMtch_mc", "hAccErr_ReMtch_mc", 300, 0.0, 0.3);
     TH1D *hAccErr_ReMtch_re = new TH1D("hAccErr_ReMtch_re", "hAccErr_ReMtch_re", 300, 0.0, 0.3);
+
+    // Get ratio  other method / Reconstructed
+    TH1D *hAccRatio_ReMtch_mc = new TH1D("hAccRatio_ReMtch_mc", "hAccRatio_ReMtch_mc", 400, 0.0, 2.0);
+    TH1D *hAccRatio_ReMtch_re = new TH1D("hAccRatio_ReMtch_re", "hAccRatio_ReMtch_re", 400, 0.0, 2.0);
 
     for (int Qi=0; Qi<this_binning[0].size()-1; Qi++)
     {
@@ -85,6 +91,7 @@ void checkAccQuality(std::string target = "Fe", int binName = 0, std::string acc
                         double val_ReMtch_mc = histAcc_ReMtch_mc->GetBinContent(bin_ReMtch_mc);
                         double val_ReMtch_re = histAcc_ReMtch_re->GetBinContent(bin_ReMtch_re);
 
+                        // Fill Reconstru
                         hAccVal_Reconstru->Fill(val_Reconstru);
                         if (val_Reconstru==0)
                         {
@@ -99,8 +106,13 @@ void checkAccQuality(std::string target = "Fe", int binName = 0, std::string acc
                         else
                         {
                             hAccErr_Reconstru->Fill(histAcc_Reconstru->GetBinError(bin_Reconstru));
+
+                            // Fill ratio plots
+                            hAccRatio_ReMtch_mc->Fill(val_ReMtch_mc/val_Reconstru);
+                            hAccRatio_ReMtch_re->Fill(val_ReMtch_re/val_Reconstru);
                         }
 
+                        // Fill ReMtch_mc
                         hAccVal_ReMtch_mc->Fill(val_ReMtch_mc);
                         if (val_ReMtch_mc==0)
                         {
@@ -117,6 +129,7 @@ void checkAccQuality(std::string target = "Fe", int binName = 0, std::string acc
                             hAccErr_ReMtch_mc->Fill(histAcc_ReMtch_mc->GetBinError(bin_ReMtch_mc));
                         }
 
+                        // Fill ReMtch_re
                         hAccVal_ReMtch_re->Fill(val_ReMtch_re);
                         if (val_ReMtch_re==0)
                         {
