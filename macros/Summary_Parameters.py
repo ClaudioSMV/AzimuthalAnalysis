@@ -386,17 +386,17 @@ for p,par in enumerate(par_list):
                     if (legend.GetListOfPrimitives().GetEntries()==len(list_targets)):
                         legend.Draw()
 
-    this_title_gif = mS.getSummaryPath("Par%s%s"%(par,dataset_title), "gif", plots_cuts, isJLab, dataset_title[1:])
-    this_title_gif = mS.addBeforeRootExt(this_title_gif, "_%s"%(whatsPlot), "gif")
-    if ("LR" in this_title_gif):
-        this_title_gif = mS.addBeforeRootExt(this_title_gif, "-%s"%(fit), "gif")
+    this_title_png = mS.getSummaryPath("Par%s%s"%(par,dataset_title), "png", plots_cuts, isJLab, dataset_title[1:])
+    this_title_png = mS.addBeforeRootExt(this_title_png, "_%s"%(whatsPlot), "png")
+    if ("LR" in this_title_png):
+        this_title_png = mS.addBeforeRootExt(this_title_png, "-%s"%(fit), "png")
 
     this_title_pdf = mS.getSummaryPath("Par%s%s"%(par,dataset_title), "pdf", plots_cuts, isJLab, dataset_title[1:])
     this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "_%s"%(whatsPlot), "pdf")
     if ("LR" in this_title_pdf):
         this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "-%s"%(fit), "pdf")
 
-    this_canvas.SaveAs(this_title_gif)
+    this_canvas.SaveAs(this_title_png)
     this_canvas.SaveAs(this_title_pdf)
 
 for t,targ in enumerate(list_targets):

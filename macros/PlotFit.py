@@ -262,7 +262,7 @@ for h in list_of_hists:
                 str_FitR.SetTextSize(myStyle.GetSize()-6)
                 str_FitR.Draw()
 
-            outputName = myStyle.getPlotsFile("Fit_"+tmp_name, dataset, "gif",tmp_txt)
+            outputName = myStyle.getPlotsFile("Fit_"+tmp_name, dataset, "png",tmp_txt)
             canvas.SaveAs(outputPath+outputName)
             canvas.Clear()
 

@@ -106,19 +106,19 @@ canvas = TCanvas("cv","cv",1000,800)
 # Plot histograms
 for h,hist in enumerate(list_THnSparse):
     list_EvntsOverTotal[h].Draw()
-    canvas.SaveAs(outputPath+"CountTotal_"+infoDict["Target"]+"_"+prefixType[h]+".gif")
+    canvas.SaveAs(outputPath+"CountTotal_"+infoDict["Target"]+"_"+prefixType[h]+".png")
     canvas.Clear()
 
     list_EvntsOverFilled[h].Draw()
-    canvas.SaveAs(outputPath+"CountFill_"+infoDict["Target"]+"_"+prefixType[h]+".gif")
+    canvas.SaveAs(outputPath+"CountFill_"+infoDict["Target"]+"_"+prefixType[h]+".png")
     canvas.Clear()
 
     list_EvntsOverTotal_NoEmpty[h].Draw()
-    canvas.SaveAs(outputPath+"CountTotal_NoEmpty_"+infoDict["Target"]+"_"+prefixType[h]+".gif")
+    canvas.SaveAs(outputPath+"CountTotal_NoEmpty_"+infoDict["Target"]+"_"+prefixType[h]+".png")
     canvas.Clear()
 
     list_EvntsOverFilled_NoEmpty[h].Draw()
-    canvas.SaveAs(outputPath+"CountFill_NoEmpty_"+infoDict["Target"]+"_"+prefixType[h]+".gif")
+    canvas.SaveAs(outputPath+"CountFill_NoEmpty_"+infoDict["Target"]+"_"+prefixType[h]+".png")
     canvas.Clear()
 
 print("Finished!")

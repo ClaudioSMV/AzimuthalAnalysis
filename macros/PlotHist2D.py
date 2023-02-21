@@ -116,6 +116,6 @@ for h in list_of_hists:
             to_write = "%s vs %s, %s"%(mS.axis_label(var1, "Name"), mS.axis_label(var2, "Name"), dataOrSim)
             text_UpRight.DrawLatexNDC(1-2*mS.GetMargin()-0.005,1-mS.GetMargin()+0.01, to_write)
 
-            canvas.SaveAs(outputPath+nameFormatted+"_"+out_DatOrSim+"-"+out_pref+"_"+var1+var2+".gif")
+            canvas.SaveAs(outputPath+nameFormatted+"_"+out_DatOrSim+"-"+out_pref+"_"+var1+var2+".png")
             canvas.Clear()
 

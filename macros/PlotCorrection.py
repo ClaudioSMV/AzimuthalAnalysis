@@ -270,7 +270,7 @@ for i,info in enumerate(names_list):
         myStyle.DrawBinInfo(info, infoDict["BinningType"])
 
         histName = "_".join(this_proj.GetName().split("_")[0:-1]) # Corr_A_B_Q1N2 -> Corr_A_B
-        outputName = myStyle.getPlotsFile(histName, dataset, "gif", info)
+        outputName = myStyle.getPlotsFile(histName, dataset, "png", info)
         canvas.SaveAs(outputPath+outputName)
         this_proj.Write()
         htemp.Delete()

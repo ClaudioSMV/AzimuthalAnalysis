@@ -250,7 +250,7 @@ for e,elem in enumerate(list_func_names):
         myStyle.DrawPreliminaryInfo("Parameters normalized %s"%(fit_type))
         myStyle.DrawTargetInfo(nameFormatted, "Data")
 
-        outputName = myStyle.getPlotsFile("ParNorm_B_%s"%(typeR), dataset, "gif", name_ext)
+        outputName = myStyle.getPlotsFile("ParNorm_B_%s"%(typeR), dataset, "png", name_ext)
         canvas.SaveAs(outputPath+outputName)
         canvas.Clear()
 
@@ -277,7 +277,7 @@ for e,elem in enumerate(list_func_names):
         myStyle.DrawPreliminaryInfo("Parameters normalized %s"%(fit_type))
         myStyle.DrawTargetInfo(nameFormatted, "Data")
 
-        outputName = myStyle.getPlotsFile("ParNorm_C_%s"%(typeR), dataset, "gif", name_ext)
+        outputName = myStyle.getPlotsFile("ParNorm_C_%s"%(typeR), dataset, "png", name_ext)
         canvas.SaveAs(outputPath+outputName)
         canvas.Clear()
 

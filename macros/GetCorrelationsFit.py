@@ -134,15 +134,15 @@ for e,elem in enumerate(list_func_names):
     mS.DrawPreliminaryInfo("Correlation AB %s"%(fit_type))
     mS.DrawTargetInfo(nameFormatted, "Data")
 
-    this_title_gif = outputPath + mS.getPlotsFile("CorrelationAB", dataset, "gif")
-    if ("LR" in this_title_gif):
-        this_title_gif = mS.addBeforeRootExt(this_title_gif, "-%s"%(name_ext), "gif")
+    this_title_png = outputPath + mS.getPlotsFile("CorrelationAB", dataset, "png")
+    if ("LR" in this_title_png):
+        this_title_png = mS.addBeforeRootExt(this_title_png, "-%s"%(name_ext), "png")
 
     this_title_pdf = outputPath + mS.getPlotsFile("CorrelationAB", dataset, "pdf")
     if ("LR" in this_title_pdf):
         this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "-%s"%(name_ext), "pdf")
 
-    canvas.SaveAs(this_title_gif)
+    canvas.SaveAs(this_title_png)
     canvas.SaveAs(this_title_pdf)
     canvas.Clear()
 
@@ -152,15 +152,15 @@ for e,elem in enumerate(list_func_names):
     mS.DrawPreliminaryInfo("Correlation AC %s"%(fit_type))
     mS.DrawTargetInfo(nameFormatted, "Data")
 
-    this_title_gif = outputPath + mS.getPlotsFile("CorrelationAC", dataset, "gif")
-    if ("LR" in this_title_gif):
-        this_title_gif = mS.addBeforeRootExt(this_title_gif, "-%s"%(name_ext), "gif")
+    this_title_png = outputPath + mS.getPlotsFile("CorrelationAC", dataset, "png")
+    if ("LR" in this_title_png):
+        this_title_png = mS.addBeforeRootExt(this_title_png, "-%s"%(name_ext), "png")
 
     this_title_pdf = outputPath + mS.getPlotsFile("CorrelationAC", dataset, "pdf")
     if ("LR" in this_title_pdf):
         this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "-%s"%(name_ext), "pdf")
 
-    canvas.SaveAs(this_title_gif)
+    canvas.SaveAs(this_title_png)
     canvas.SaveAs(this_title_pdf)
     canvas.Clear()
 
@@ -170,15 +170,15 @@ for e,elem in enumerate(list_func_names):
     mS.DrawPreliminaryInfo("Correlation BC %s"%(fit_type))
     mS.DrawTargetInfo(nameFormatted, "Data")
 
-    this_title_gif = outputPath + mS.getPlotsFile("CorrelationBC", dataset, "gif")
-    if ("LR" in this_title_gif):
-        this_title_gif = mS.addBeforeRootExt(this_title_gif, "-%s"%(name_ext), "gif")
+    this_title_png = outputPath + mS.getPlotsFile("CorrelationBC", dataset, "png")
+    if ("LR" in this_title_png):
+        this_title_png = mS.addBeforeRootExt(this_title_png, "-%s"%(name_ext), "png")
 
     this_title_pdf = outputPath + mS.getPlotsFile("CorrelationBC", dataset, "pdf")
     if ("LR" in this_title_pdf):
         this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "-%s"%(name_ext), "pdf")
 
-    canvas.SaveAs(this_title_gif)
+    canvas.SaveAs(this_title_png)
     canvas.SaveAs(this_title_pdf)
     canvas.Clear()
 

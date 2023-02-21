@@ -201,9 +201,9 @@ for pt,pref in enumerate(prefixType):
                 myStyle.DrawBinInfo(info, infoDict["BinningType"])
 
                 histName = "_".join(this_proj.GetName().split("_")[0:-1]) # Corr_A_B_Q1N2 -> Corr_A_B
-                outputName = myStyle.getPlotsFile(histName, dataset, "gif", info)
+                outputName = myStyle.getPlotsFile(histName, dataset, "png", info)
                 canvas.SaveAs(outputPath+outputName)
-                # canvas.SaveAs(outputPath+nameFormatted+"-"+this_proj.GetName()+".gif")
+                # canvas.SaveAs(outputPath+nameFormatted+"-"+this_proj.GetName()+".png")
                 this_proj.Write()
                 htemp.Delete()
 
@@ -241,9 +241,9 @@ for pt,pref in enumerate(prefixType):
 
             gPad.RedrawAxis("g")
 
-            outputName = myStyle.getPlotsFile(this_name, dataset, "gif", info)
+            outputName = myStyle.getPlotsFile(this_name, dataset, "png", info)
             canvas.SaveAs(outputPath+outputName)
-            # canvas.SaveAs(outputPath+nameFormatted+"-ClosureTest_"+info+ext_error+".gif")
+            # canvas.SaveAs(outputPath+nameFormatted+"-ClosureTest_"+info+ext_error+".png")
             hCT.Write()
             htemp.Delete()
 

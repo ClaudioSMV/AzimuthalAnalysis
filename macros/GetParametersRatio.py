@@ -298,7 +298,7 @@ for e,elem in enumerate(list_func_names):
         myStyle.DrawPreliminaryInfo("Ratio over D%s %s"%(solid_targ,fit_type))
         myStyle.DrawTargetInfo(nameFormatted, "Data")
 
-        outputName = myStyle.getPlotsFile("RatioD%s_B_%s"%(solid_targ,typeR), dataset, "gif", name_ext)
+        outputName = myStyle.getPlotsFile("RatioD%s_B_%s"%(solid_targ,typeR), dataset, "png", name_ext)
         canvas.SaveAs(outputPath+outputName)
         canvas.Clear()
 
@@ -312,7 +312,7 @@ for e,elem in enumerate(list_func_names):
         myStyle.DrawPreliminaryInfo("Ratio over D%s %s"%(solid_targ,fit_type))
         myStyle.DrawTargetInfo(nameFormatted, "Data")
 
-        outputName = myStyle.getPlotsFile("RatioD%s_C_%s"%(solid_targ,typeR), dataset, "gif", name_ext)
+        outputName = myStyle.getPlotsFile("RatioD%s_C_%s"%(solid_targ,typeR), dataset, "png", name_ext)
         canvas.SaveAs(outputPath+outputName)
         canvas.Clear()
 

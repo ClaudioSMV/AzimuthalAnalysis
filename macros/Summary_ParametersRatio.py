@@ -393,11 +393,11 @@ for r,typeR in enumerate(type_reco_short):
             new_pad = False
 
         this_canvas.cd(0)
-        # this_title_gif = mS.getSummaryPath("%s_%s_Ratio%s"%(typeR,par,dataset_title), "gif", plots_cuts, isJLab, dataset_title[1:])
-        this_title_gif = mS.getSummaryPath("%s_%s"%(dataset_title[1:],typeR), "gif", plots_cuts, isJLab, dataset_title[1:])
-        this_title_gif = mS.addBeforeRootExt(this_title_gif, "-Ratio%s"%(par), "gif")
-        if ("LR" in this_title_gif):
-            this_title_gif = mS.addBeforeRootExt(this_title_gif, "-%s"%(fit), "gif")
+        # this_title_png = mS.getSummaryPath("%s_%s_Ratio%s"%(typeR,par,dataset_title), "png", plots_cuts, isJLab, dataset_title[1:])
+        this_title_png = mS.getSummaryPath("%s_%s"%(dataset_title[1:],typeR), "png", plots_cuts, isJLab, dataset_title[1:])
+        this_title_png = mS.addBeforeRootExt(this_title_png, "-Ratio%s"%(par), "png")
+        if ("LR" in this_title_png):
+            this_title_png = mS.addBeforeRootExt(this_title_png, "-%s"%(fit), "png")
 
         # this_title_pdf = mS.getSummaryPath("%s_%s_Ratio%s"%(typeR,par,dataset_title), "pdf", plots_cuts, isJLab, dataset_title[1:])
         this_title_pdf = mS.getSummaryPath("%s_%s"%(dataset_title[1:],typeR), "pdf", plots_cuts, isJLab, dataset_title[1:])
@@ -405,7 +405,7 @@ for r,typeR in enumerate(type_reco_short):
         if ("LR" in this_title_pdf):
             this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "-%s"%(fit), "pdf")
 
-        this_canvas.SaveAs(this_title_gif)
+        this_canvas.SaveAs(this_title_png)
         # this_canvas.SaveAs(this_title_pdf)
 
 for t,targ in enumerate(list_targets):

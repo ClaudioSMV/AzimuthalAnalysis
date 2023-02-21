@@ -113,7 +113,7 @@ for h in list_hists:
             mS.DrawTargetInfo(nameFormatted, "Data")
             mS.DrawBinInfo(tmp_txt, infoDict["BinningType"])
 
-            outputName = mS.getPlotsFile("CompareError_"+tmp_name, dataset, "gif",tmp_txt)
+            outputName = mS.getPlotsFile("CompareError_"+tmp_name, dataset, "png",tmp_txt)
             canvas.SaveAs(outputPath+outputName)
             canvas.Clear()
 

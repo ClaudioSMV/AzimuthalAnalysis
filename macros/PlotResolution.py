@@ -71,7 +71,7 @@ for i,this_var in enumerate(list_vars):
     myStyle.DrawPreliminaryInfo("Resolution")
     myStyle.DrawTargetInfo(infoDict["Target"], "Simulation")
 
-    outputName = myStyle.getPlotsFile("Resolution1D", dataset, "gif",this_var)
+    outputName = myStyle.getPlotsFile("Resolution1D", dataset, "png",this_var)
     canvas.SaveAs(outputPath+outputName)
     canvas.Clear()
 
@@ -107,7 +107,7 @@ for i,this_var in enumerate(list_vars):
             # if (debugMode):
             #     tmpHist.Draw("hist")
             #     fit.Draw("same")
-            #     canvas.SaveAs(outdir_q+"q_"+info.outHistoName+str(i)+".gif")
+            #     canvas.SaveAs(outdir_q+"q_"+info.outHistoName+str(i)+".png")
             #     print ("Bin : " + str(i) + " (x = %.3f"%(info.th1.GetXaxis().GetBinCenter(i)) +") -> Resolution: %.3f +/- %.3f"%(value, error))
 
         else:
@@ -123,7 +123,7 @@ for i,this_var in enumerate(list_vars):
     myStyle.DrawPreliminaryInfo("Resolution vs x")
     myStyle.DrawTargetInfo(infoDict["Target"], "Simulation")
 
-    outputName = myStyle.getPlotsFile("ResolutionVsX", dataset, "gif",this_var)
+    outputName = myStyle.getPlotsFile("ResolutionVsX", dataset, "png",this_var)
     canvas.SaveAs(outputPath+outputName)
     canvas.Clear()
 
