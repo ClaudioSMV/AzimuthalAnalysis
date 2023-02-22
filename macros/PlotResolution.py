@@ -45,26 +45,41 @@ inputPath = myStyle.getOutputFileWithPath("Acceptance", dataset, input_cuts, isJ
 inputfile = TFile(inputPath,"READ")
 
 ## Output
-outputPath = myStyle.getPlotsFolder("Resolution", plots_cuts, infoDict["Target"], isJLab)
+outputPath = myStyle.getPlotsFolder("Resolution", plots_cuts, myStyle.getBinNameFormatted(dataset) + "/" + infoDict["Target"], isJLab)
 # outputROOT = myStyle.getPlotsFile("Resolution", dataset, "root")
+
+list_vars = ["Q2", "Nu", "Xb", "Zh", "Pt2", "PhiPQ"]
+
+fit_limits = {  "Q2": [-0.9,1.1], "Nu": [-1.1,0.8], "Xb": [-0.8,1.0],
+                "Zh": [-0.9,1.0], "Pt2": [-0.8,0.8], "PhiPQ": [-1.1,1.1]}
 
 ### Fit from res<var> histograms (<var> - <mc_var>)
 canvas = TCanvas("cv","cv",1000,800)
 gStyle.SetOptStat(0)
 gStyle.SetOptFit()
 
-list_vars = ["Q2", "Nu", "Zh", "Pt2", "PhiPQ"]
-list_vars_axistitle = ["Q^{2}", "#nu", "Z_{h}", "P_{t}^{2}", "#phi_{PQ}"]
-list_vars_axisunits = ["(GeV^{2})", "(GeV)", "", "(GeV^{2})", "(deg)"]
+for this_var in list_vars:
+    # Skip Xb or Nu when not in the file
+    if (not inputfile.Get("res%s"%this_var)):
+        continue
 
-for i,this_var in enumerate(list_vars):
+    this_key = myStyle.varname2key[this_var]
+    this_axis = myStyle.axis_label(this_key, "LatexUnit")
+    this_ltex = myStyle.axis_label(this_key, "Latex")
+    this_unit = myStyle.axis_label(this_key, "Unit")
+
+    # Hist 1D
+    fmin = fit_limits[this_var][0]
+    fmax = fit_limits[this_var][1]
+
     this_res_hist = inputfile.Get("res%s"%this_var)
 
     myMean = this_res_hist.GetMean()
     myRMS  = this_res_hist.GetRMS()
-    fit = TF1('fit','gaus',myMean-1.3*myRMS,myMean+1.3*myRMS)
-    this_res_hist.Fit(fit,"Q","",myMean-1.3*myRMS,myMean+1.3*myRMS)
+    fit = TF1('fit','gaus',myMean+fmin*myRMS,myMean+fmax*myRMS)
+    this_res_hist.Fit(fit,"Q","",myMean+fmin*myRMS,myMean+fmax*myRMS)
 
+    this_res_hist.GetXaxis().SetTitle("{0} - mc_{0} {1}".format(this_ltex, this_unit))
     this_res_hist.Draw("hist e")
     fit.Draw("same")
 
@@ -75,10 +90,11 @@ for i,this_var in enumerate(list_vars):
     canvas.SaveAs(outputPath+outputName)
     canvas.Clear()
 
+    # Hisy 2D-Projection
     this_migr_2d = inputfile.Get("histMigrationMatrix%s"%this_var)
     Nbins = this_migr_2d.GetXaxis().GetNbins()
 
-    res_vs_X = TH1D("ResolutionVsX%s"%this_var, "Resolution Vs X;True %s %s;Resolution %s"%(list_vars_axistitle[i],list_vars_axisunits[i],list_vars_axisunits[i]), Nbins, this_migr_2d.GetXaxis().GetXmin(), this_migr_2d.GetXaxis().GetXmax())
+    res_vs_X = TH1D("ResolutionVsX%s"%this_var, "Resolution Vs X;True %s;Resolution %s"%(this_axis,this_unit), Nbins, this_migr_2d.GetXaxis().GetXmin(), this_migr_2d.GetXaxis().GetXmax())
 
     for b in range(0, Nbins+1):
         totalEvents = this_migr_2d.GetEntries()
@@ -104,11 +120,11 @@ for i,this_var in enumerate(list_vars):
             error = mySigmaError
             
             # ##For Debugging
-            # if (debugMode):
+            # if (True):
             #     tmpHist.Draw("hist")
             #     fit.Draw("same")
-            #     canvas.SaveAs(outdir_q+"q_"+info.outHistoName+str(i)+".png")
-            #     print ("Bin : " + str(i) + " (x = %.3f"%(info.th1.GetXaxis().GetBinCenter(i)) +") -> Resolution: %.3f +/- %.3f"%(value, error))
+            #     canvas.SaveAs("%sq_%s_%i.png"%(outputPath,this_var,b))
+            #     print ("Bin : " + str(b) + " (%s = %.3f"%(this_var,this_migr_2d.GetXaxis().GetBinCenter(b)) +") -> Resolution: %.3f +/- %.3f"%(value, error))
 
         else:
             print("Bin %i doesn't have enough statistics."%b)
