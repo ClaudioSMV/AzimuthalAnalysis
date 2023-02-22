@@ -11,7 +11,7 @@
 #               3: Regular bins in Pt2, and PhiPQ;)                     #
 #  <cuts>    = Format "AA_BB_CC" (Empty is default)                     #
 #  "Xf": Use Xf from data; "DS": Delta Sector != 0; "BS": rm Bad Sect;  #
-#  "PF": Pi+ fiducial cut;                                              #
+#  "PF": Pi+ fiducial cut; "MM": Mirror Match;                          #
 #  "FE": Use FullError;                                                 #
 #  "Zx": x-axis is Zh; "Px": x-axis is Pt2;                             #
 #  <fracAcc> = Fraction of stats used in calculation of Acc (50, 70...) #
@@ -54,6 +54,10 @@ fi
 if [[ $CUTINFO == *"PF"* ]]; then
     PREV_CUT="${PREV_CUT}_PF"
     CORR_CUT="${CORR_CUT}_PF"
+fi
+if [[ $CUTINFO == *"MM"* ]]; then
+    PREV_CUT="${PREV_CUT}_MM"
+    CORR_CUT="${CORR_CUT}_MM"
 fi
 if [[ $CUTINFO == *"FE"* ]]; then
     PREV_CUT="${PREV_CUT}_FE"
