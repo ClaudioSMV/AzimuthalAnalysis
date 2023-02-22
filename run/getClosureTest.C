@@ -4,8 +4,9 @@ R__LOAD_LIBRARY(../include/Acceptance_C.so)
 #include "../include/Utility.h"
 
 void getClosureTest(std::string target = "Fe", int binName = 0, int binNdim = 1, int fractionAcc = 50, std::string cuts = "", std::string nfold = "*")
-// Cuts: "Xf": X Feynman; "DS": Delta Sector != 0; "BS": Remove bad sector (5); "PF": Pi+ fiducial cut;
-//       "FE": Full error;
+// Cuts:    "Xf": X Feynman; "DS": Delta Sector != 0; "BS": Remove bad sector (5); "PF": Pi+ fiducial cut;
+//          "MM": Mirror Matching;
+//          "FE": Full error;
 {
     TChain ch("ntuple_sim");
     if (FileExists("../../clas-HSim"))

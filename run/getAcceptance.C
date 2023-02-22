@@ -4,7 +4,8 @@ R__LOAD_LIBRARY(../include/Acceptance_C.so)
 #include "../include/Utility.h"
 
 void getAcceptance(std::string target = "Fe", int binName = 0, std::string cuts = "", std::string nfold = "*")
-// Cuts: "Xf": X Feynman; "DS": Delta Sector != 0; "BS": Remove bad sector (5); "PF": Pi+ fiducial cut;
+// Cuts:    "Xf": X Feynman; "DS": Delta Sector != 0; "BS": Remove bad sector (5); "PF": Pi+ fiducial cut;
+//          "MM": Mirror Matching;
 {
     if ("1"<=cuts && cuts<="9")
     {

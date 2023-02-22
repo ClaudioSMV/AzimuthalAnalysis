@@ -48,6 +48,11 @@ void Acceptance::ActivateBranches()
         activeBranches_mc.push_back("mc_ThetaLab");
         activeBranches_mc.push_back("mc_PhiLab");
     }
+    if (_cutMirrorMtch)
+    {
+        activeBranches.push_back("P");
+        activeBranches.push_back("Nphe");
+    }
 
     for (const auto &activeBranch : activeBranches)
     {

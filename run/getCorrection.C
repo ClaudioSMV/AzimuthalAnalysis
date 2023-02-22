@@ -5,8 +5,9 @@ R__LOAD_LIBRARY(../include/Acceptance_C.so)
 
 void getCorrection(std::string target = "Fe", int binName = 0, int binNdim = 1, std::string cuts = "")
 // Target can be "Fe", "C", "Pb" or "DFe", "DC", "DPb", "DS"
-// Cuts: "Xf": X Feynman; "DS": Delta Sector != 0; "BS": Remove bad sector (5); "PF": Pi+ fiducial cut;
-//       "FE": Full error;
+// Cuts:    "Xf": X Feynman; "DS": Delta Sector != 0; "BS": Remove bad sector (5); "PF": Pi+ fiducial cut;
+//          "MM": Mirror Matching;
+//          "FE": Full error;
 {
     TChain ch("ntuple_data");
     if (FileExists("../../clas-data"))

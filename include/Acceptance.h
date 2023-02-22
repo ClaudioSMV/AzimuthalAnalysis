@@ -29,6 +29,7 @@ private:
     bool _cutDeltaSector0 = false;
     bool _cutBadSector = false;
     bool _cutPiFiducial = false;
+    bool _cutMirrorMtch = false;
     int _count = 0; // Usefull for debug
 
 public: // Internal values
@@ -45,6 +46,7 @@ public: // Cuts
     void useCut_DeltaSector0() { _cutDeltaSector0 = true; }
     void useCut_rmBadSector() { _cutBadSector = true; }
     void useCut_PiFiducial() { _cutPiFiducial = true; }
+    void useCut_MirrorMtch() { _cutMirrorMtch = true; }
 
 public:
     TTree *fChain;  //! pointer to the analyzed TTree or TChain
@@ -351,6 +353,10 @@ std::string Acceptance::getAccFoldNameExt() //getNameAccFormat() // Only cuts
     {
         this_name+="_PiFid";
     }
+    if (_cutMirrorMtch)
+    {
+        this_name+="_MMtch";
+    }
     return this_name;
 }
 
@@ -636,23 +642,28 @@ void Acceptance::ActivateCuts(std::string str_cuts)
 {
     if (str_cuts.find("Xf")!=std::string::npos)
     {
-        useCut_Xf();            std::cout << "Using Xf cut" << std::endl;
+        useCut_Xf();            std::cout << "Using Xf cut." << std::endl;
     }
     if (str_cuts.find("DS")!=std::string::npos)
     {
-        useCut_DeltaSector0();  std::cout << "Using Delta Sector != 0 cut" << std::endl;
+        useCut_DeltaSector0();  std::cout << "Using Delta Sector != 0 cut." << std::endl;
     }
     if (str_cuts.find("BS")!=std::string::npos)
     {
-        useCut_rmBadSector();   std::cout << "Using rm Bad Sector (5) cut" << std::endl;
+        useCut_rmBadSector();   std::cout << "Using rm Bad Sector (5) cut." << std::endl;
     }
     if (str_cuts.find("PF")!=std::string::npos)
     {
-        useCut_PiFiducial();    std::cout << "Using Pi+ fiducial cut" << std::endl;
+        useCut_PiFiducial();    std::cout << "Using Pi+ fiducial cut." << std::endl;
     }
+    if (str_cuts.find("MM")!=std::string::npos)
+    {
+        useCut_MirrorMtch();    std::cout << "Using Mirror Match cut." << std::endl;
+    }
+
     if (str_cuts.find("FE")!=std::string::npos)
     {
-        setFullError();         std::cout << "Using full error calculation" << std::endl;
+        setFullError();         std::cout << "Using full error calculation." << std::endl;
     }
 }
 
@@ -691,6 +702,7 @@ Bool_t Acceptance::GoodPiPlus_MC(Long64_t entry, int ivec, vector<vector<double>
 
     // Fiducial cuts are applied in reconstruction only, not generated!
     // if (_cutPiFiducial) pass_DIS = pass_DIS && pass_PiFiducial(mc_Sector->at(ivec), mc_P->at(ivec), mc_ThetaLab->at(ivec), mc_PhiLab->at(ivec));
+    // Mirror Match is applied in reconstruction only!
 
     return pass_DIS;
 }
@@ -731,6 +743,10 @@ Bool_t Acceptance::GoodPiPlus(Long64_t entry, int ivec, vector<vector<double>> t
     if (_cutPiFiducial)
     {
         pass_DIS = pass_DIS && pass_PiFiducial(Sector->at(ivec), P->at(ivec), ThetaLab->at(ivec), PhiLab->at(ivec));
+    }
+    if (_cutMirrorMtch)
+    {
+        pass_DIS = pass_DIS && pass_MirrorMatch(P->at(ivec), Nphe->at(ivec));
     }
 
     return pass_DIS;

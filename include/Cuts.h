@@ -135,5 +135,9 @@ bool pass_PiFiducial(int sector, float momentum, float ThetaLab, float PhiLab)
     return FidCheckCutPiPlus(sector, momentum, ThetaLab, PhiLab);
 }
 
+bool pass_MirrorMatch(float momentum, float Nph)
+{
+    return ((momentum < 2.7 && Nph < 25) || (momentum > 2.7));
+}
 
 #endif // #ifdef Cuts_h

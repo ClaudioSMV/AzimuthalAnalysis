@@ -55,6 +55,7 @@ dict_Cut2Code = {"XF": "Xf", "Xf": "Xf",
                 "DeltaSector": "DS", "DSect": "DS", "DSctr": "DS", "DS": "DS",
                 "BadSector": "BS", "rmBadSector": "BS", "BS": "BS",
                 "PionFiducial": "PF", "PiFiducial": "PF", "PF": "PF",
+                "MirrorMatch": "MM", "MMtch": "MM", "MM": "MM",
                 # "Sector": "Se", "Sctr": "Se", "Sect": "Se", "Se": "Se",
                 "FErr": "FE", "FullError": "FE", "FE": "FE",
                 "Z": "Zx", "Zx": "Zx",
@@ -68,11 +69,12 @@ dict_Cut2Code = {"XF": "Xf", "Xf": "Xf",
                 "MixD": "MD", "MD": "MD",
                 }
 
-dict_CutCode2Name = {   "Xf": "Xf", "DS": "DSect0", "BS": "NoBadSec", "PF": "PiFid", "FE": "FErr",
+dict_CutCode2Name = {   "Xf": "Xf", "DS": "DSect0", "BS": "NoBadSec", "PF": "PiFid", "MM": "MMtch",
+                        "FE": "FErr",
                         "Zx": "Z", "Px": "P", "Sh": "Shift",
                         "Fs": "Sin", "Fd": "Fold", "LR": "LR", "MD": "MixD", #"Lf": "Left", "Rg": "Right",
                     }
-cutMasterKey = "Xf0DS0BS0PF0FE0Zx0Px0Sh0Fs0Fd0LR0MD0" # Yh0 ; Write options in order of applicability (Acc, Corr, Fit, Summary)
+cutMasterKey = "Xf0DS0BS0PF0MM0FE0Zx0Px0Sh0Fs0Fd0LR0MD0" # Yh0 ; Write options in order of applicability (Acc, Corr, Fit, Summary)
 
 def getCutStrFormat(list_cuts):
     cut_str = ""
