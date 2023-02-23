@@ -18,6 +18,7 @@ private:
     int _targTypeCut = 1;
     std::string _nameTarget;
     std::string _nameSolidTarget = "";
+    std::string _cutList = "";
     bool _useFullError = false;
     bool _isData = false;
     bool _isClosureTest = false;
@@ -25,6 +26,8 @@ private:
     int _binIndex = -1;
     int _binNdims = 0; // 2: Leptonic, 3: Leptonic+Zh
     int _useXb = false; // !_useNu
+
+    // Cut bools
     bool _cutXf = false;
     bool _cutDeltaSector0 = false;
     bool _cutBadSector = false;
@@ -303,17 +306,6 @@ void Acceptance::setTargName(std::string name)
 
 // Folder and file names
 
-std::string Acceptance::getFoldNameExt() //getNameAccFormat() // Cuts + other selections
-{
-    // _<extra cuts, ex. Xf>
-    std::string this_name = getAccFoldNameExt();
-    if (_useFullError)
-    {
-        this_name+="_FErr";
-    }
-    return this_name;
-}
-
 void Acceptance::setNameFormat()
 {
     // <target>_<_binIndex>B<_binNdims> -> If D: DC, DFe, DPb
@@ -337,25 +329,26 @@ std::string Acceptance::getAccFoldNameExt() //getNameAccFormat() // Only cuts
 {
     // _<extra cuts, ex. Xf>
     std::string this_name = "";
-    if (_cutXf)
+    for(const auto &cutpair : lookuptable_cutAcc)
     {
-        this_name+="_Xf";
+        if((_cutList.find(cutpair[0]))!=std::string::npos && (cutpair[0] != ""))
+        {
+            this_name+="_"+cutpair[1];
+        }
     }
-    if (_cutDeltaSector0)
+    return this_name;
+}
+
+std::string Acceptance::getFoldNameExt() //getNameAccFormat() // Cuts + other selections
+{
+    // _<extra cuts, ex. Xf>
+    std::string this_name = getAccFoldNameExt();
+    for(const auto &cutpair : lookuptable_cutCor)
     {
-        this_name+="_DSect0";
-    }
-    if (_cutBadSector)
-    {
-        this_name+="_NoBadSec";
-    }
-    if (_cutPiFiducial)
-    {
-        this_name+="_PiFid";
-    }
-    if (_cutMirrorMtch)
-    {
-        this_name+="_MMtch";
+        if((_cutList.find(cutpair[0]))!=std::string::npos && (cutpair[0] != ""))
+        {
+            this_name+="_"+cutpair[1];
+        }
     }
     return this_name;
 }
@@ -642,28 +635,28 @@ void Acceptance::ActivateCuts(std::string str_cuts)
 {
     if (str_cuts.find("Xf")!=std::string::npos)
     {
-        useCut_Xf();            std::cout << "Using Xf cut." << std::endl;
+        useCut_Xf();            _cutList+="_Xf";    std::cout << "Using Xf cut." << std::endl;
     }
     if (str_cuts.find("DS")!=std::string::npos)
     {
-        useCut_DeltaSector0();  std::cout << "Using Delta Sector != 0 cut." << std::endl;
+        useCut_DeltaSector0();  _cutList+="_DS";    std::cout << "Using Delta Sector != 0 cut." << std::endl;
     }
     if (str_cuts.find("BS")!=std::string::npos)
     {
-        useCut_rmBadSector();   std::cout << "Using rm Bad Sector (5) cut." << std::endl;
+        useCut_rmBadSector();   _cutList+="_BS";    std::cout << "Using rm Bad Sector (5) cut." << std::endl;
     }
     if (str_cuts.find("PF")!=std::string::npos)
     {
-        useCut_PiFiducial();    std::cout << "Using Pi+ fiducial cut." << std::endl;
+        useCut_PiFiducial();    _cutList+="_PF";    std::cout << "Using Pi+ fiducial cut." << std::endl;
     }
     if (str_cuts.find("MM")!=std::string::npos)
     {
-        useCut_MirrorMtch();    std::cout << "Using Mirror Match cut." << std::endl;
+        useCut_MirrorMtch();    _cutList+="_MM";    std::cout << "Using Mirror Match cut." << std::endl;
     }
 
     if (str_cuts.find("FE")!=std::string::npos)
     {
-        setFullError();         std::cout << "Using full error calculation." << std::endl;
+        setFullError();         _cutList+="_FE";    std::cout << "Using full error calculation." << std::endl;
     }
 }
 
