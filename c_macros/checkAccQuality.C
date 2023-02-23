@@ -3,6 +3,7 @@
 // R__LOAD_LIBRARY(../include/Acceptance_C.so)
 #include "../include/Utility.h"
 #include "../include/Binning.h"
+#include "../include/Cuts.h"
 
 #include <vector>
 
@@ -12,16 +13,14 @@ void checkAccQuality(std::string target = "Fe", int binName = 0, std::string acc
 {
     std::vector<std::vector<double>> this_binning = DIS::Bin_List[binName];
 
-    if (acc_cuts!="")
-    {
-        acc_cuts = "_" + acc_cuts;
-    }
-    std::string acc_path = Form("../output/JLab_cluster/Acceptance%s",acc_cuts.c_str());
-    std::string out_path = Form("../output/JLab_cluster/QualityCheck%s",acc_cuts.c_str());
+    std::string these_cuts = cutExtension(acc_cuts, lookuptable_cutAcc);
+
+    std::string acc_path = Form("../output/JLab_cluster/Acceptance%s",these_cuts.c_str());
+    std::string out_path = Form("../output/JLab_cluster/QualityCheck%s",these_cuts.c_str());
     if (isLocal)
     {
-        acc_path = Form("../output/Acceptance%s",acc_cuts.c_str());
-        out_path = Form("../output/QualityCheck%s",acc_cuts.c_str());
+        acc_path = Form("../output/Acceptance%s",these_cuts.c_str());
+        out_path = Form("../output/QualityCheck%s",these_cuts.c_str());
     }
 
     CreateDir(out_path);
@@ -68,6 +67,10 @@ void checkAccQuality(std::string target = "Fe", int binName = 0, std::string acc
     TH1D *hAccErr_ReMtch_mc = new TH1D("hAccErr_ReMtch_mc", "hAccErr_ReMtch_mc", 300, 0.0, 0.3);
     TH1D *hAccErr_ReMtch_re = new TH1D("hAccErr_ReMtch_re", "hAccErr_ReMtch_re", 300, 0.0, 0.3);
 
+    TH1D *hAccPropErr_Reconstru = new TH1D("hAccPropErr_Reconstru", "Proportional Error Reconstru", 200, 0.0, 100.0);
+    TH1D *hAccPropErr_ReMtch_mc = new TH1D("hAccPropErr_ReMtch_mc", "Proportional Error ReMtch_mc", 200, 0.0, 100.0);
+    TH1D *hAccPropErr_ReMtch_re = new TH1D("hAccPropErr_ReMtch_re", "Proportional Error ReMtch_re", 200, 0.0, 100.0);
+
     // Get ratio  other method / Reconstructed
     TH1D *hAccRatio_ReMtch_mc = new TH1D("hAccRatio_ReMtch_mc", "hAccRatio_ReMtch_mc", 400, 0.0, 2.0);
     TH1D *hAccRatio_ReMtch_re = new TH1D("hAccRatio_ReMtch_re", "hAccRatio_ReMtch_re", 400, 0.0, 2.0);
@@ -112,11 +115,14 @@ void checkAccQuality(std::string target = "Fe", int binName = 0, std::string acc
                         }
                         else
                         {
-                            hAccErr_Reconstru->Fill(histAcc_Reconstru->GetBinError(bin_Reconstru));
+                            double err_Reconstru = histAcc_Reconstru->GetBinError(bin_Reconstru);
+                            hAccErr_Reconstru->Fill(err_Reconstru);
 
                             // Fill ratio plots
                             hAccRatio_ReMtch_mc->Fill(val_ReMtch_mc/val_Reconstru);
                             hAccRatio_ReMtch_re->Fill(val_ReMtch_re/val_Reconstru);
+
+                            hAccPropErr_Reconstru->Fill(100.*err_Reconstru/val_Reconstru);
                         }
 
                         // Fill ReMtch_mc
@@ -133,7 +139,10 @@ void checkAccQuality(std::string target = "Fe", int binName = 0, std::string acc
                         }
                         else
                         {
-                            hAccErr_ReMtch_mc->Fill(histAcc_ReMtch_mc->GetBinError(bin_ReMtch_mc));
+                            double err_ReMtch_mc = histAcc_ReMtch_mc->GetBinError(bin_ReMtch_mc);
+                            hAccErr_ReMtch_mc->Fill(err_ReMtch_mc);
+
+                            hAccPropErr_ReMtch_mc->Fill(100.*err_ReMtch_mc/val_ReMtch_mc);
                         }
 
                         // Fill ReMtch_re
@@ -150,7 +159,10 @@ void checkAccQuality(std::string target = "Fe", int binName = 0, std::string acc
                         }
                         else
                         {
-                            hAccErr_ReMtch_re->Fill(histAcc_ReMtch_re->GetBinError(bin_ReMtch_re));
+                            double err_ReMtch_re = histAcc_ReMtch_re->GetBinError(bin_ReMtch_re);
+                            hAccErr_ReMtch_re->Fill(err_ReMtch_re);
+
+                            hAccPropErr_ReMtch_re->Fill(100.*err_ReMtch_re/val_ReMtch_re);
                         }
                     }
                 }
