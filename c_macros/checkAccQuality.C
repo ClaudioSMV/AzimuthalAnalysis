@@ -79,6 +79,31 @@ void checkAccQuality(std::string target = "Fe", int binName = 0, std::string acc
     TH1D *hAccVal_ReMtch_mc_Reco0 = new TH1D("hAccVal_ReMtch_mc_Reco0", "hAccVal_ReMtch_mc_Reco0", 220, 0.0, 1.1);
     TH1D *hAccVal_ReMtch_re_Reco0 = new TH1D("hAccVal_ReMtch_re_Reco0", "hAccVal_ReMtch_re_Reco0", 220, 0.0, 1.1);
 
+    // Get empty bin projections with Acc restricted (err/value < 0.1)
+    TH1D *hQ2BadAccQuality_Reconstru = new TH1D("hQ2BadAccQuality_Reconstru", "hQ2BadAccQuality_Reconstru", this_binning[0].size()-1, &this_binning[0][0]);
+    TH1D *hQ2BadAccQuality_ReMtch_mc = new TH1D("hQ2BadAccQuality_ReMtch_mc", "hQ2BadAccQuality_ReMtch_mc", this_binning[0].size()-1, &this_binning[0][0]);
+    TH1D *hQ2BadAccQuality_ReMtch_re = new TH1D("hQ2BadAccQuality_ReMtch_re", "hQ2BadAccQuality_ReMtch_re", this_binning[0].size()-1, &this_binning[0][0]);
+
+    TH1D *hNuBadAccQuality_Reconstru = new TH1D("hNuBadAccQuality_Reconstru", "hNuBadAccQuality_Reconstru", this_binning[1].size()-1, &this_binning[1][0]);
+    TH1D *hNuBadAccQuality_ReMtch_mc = new TH1D("hNuBadAccQuality_ReMtch_mc", "hNuBadAccQuality_ReMtch_mc", this_binning[1].size()-1, &this_binning[1][0]);
+    TH1D *hNuBadAccQuality_ReMtch_re = new TH1D("hNuBadAccQuality_ReMtch_re", "hNuBadAccQuality_ReMtch_re", this_binning[1].size()-1, &this_binning[1][0]);
+
+    TH1D *hXbBadAccQuality_Reconstru = new TH1D("hXbBadAccQuality_Reconstru", "hXbBadAccQuality_Reconstru", this_binning[1].size()-1, &this_binning[1][0]);
+    TH1D *hXbBadAccQuality_ReMtch_mc = new TH1D("hXbBadAccQuality_ReMtch_mc", "hXbBadAccQuality_ReMtch_mc", this_binning[1].size()-1, &this_binning[1][0]);
+    TH1D *hXbBadAccQuality_ReMtch_re = new TH1D("hXbBadAccQuality_ReMtch_re", "hXbBadAccQuality_ReMtch_re", this_binning[1].size()-1, &this_binning[1][0]);
+
+    TH1D *hZhBadAccQuality_Reconstru = new TH1D("hZhBadAccQuality_Reconstru", "hZhBadAccQuality_Reconstru", this_binning[2].size()-1, &this_binning[2][0]);
+    TH1D *hZhBadAccQuality_ReMtch_mc = new TH1D("hZhBadAccQuality_ReMtch_mc", "hZhBadAccQuality_ReMtch_mc", this_binning[2].size()-1, &this_binning[2][0]);
+    TH1D *hZhBadAccQuality_ReMtch_re = new TH1D("hZhBadAccQuality_ReMtch_re", "hZhBadAccQuality_ReMtch_re", this_binning[2].size()-1, &this_binning[2][0]);
+
+    TH1D *hPtBadAccQuality_Reconstru = new TH1D("hPtBadAccQuality_Reconstru", "hPtBadAccQuality_Reconstru", this_binning[3].size()-1, &this_binning[3][0]);
+    TH1D *hPtBadAccQuality_ReMtch_mc = new TH1D("hPtBadAccQuality_ReMtch_mc", "hPtBadAccQuality_ReMtch_mc", this_binning[3].size()-1, &this_binning[3][0]);
+    TH1D *hPtBadAccQuality_ReMtch_re = new TH1D("hPtBadAccQuality_ReMtch_re", "hPtBadAccQuality_ReMtch_re", this_binning[3].size()-1, &this_binning[3][0]);
+
+    TH1D *hPQBadAccQuality_Reconstru = new TH1D("hPQBadAccQuality_Reconstru", "hPQBadAccQuality_Reconstru", this_binning[4].size()-1, &this_binning[4][0]);
+    TH1D *hPQBadAccQuality_ReMtch_mc = new TH1D("hPQBadAccQuality_ReMtch_mc", "hPQBadAccQuality_ReMtch_mc", this_binning[4].size()-1, &this_binning[4][0]);
+    TH1D *hPQBadAccQuality_ReMtch_re = new TH1D("hPQBadAccQuality_ReMtch_re", "hPQBadAccQuality_ReMtch_re", this_binning[4].size()-1, &this_binning[4][0]);
+
     for (int Qi=0; Qi<this_binning[0].size()-1; Qi++)
     {
         for (int Ni=0; Ni<this_binning[1].size()-1; Ni++)
@@ -122,7 +147,18 @@ void checkAccQuality(std::string target = "Fe", int binName = 0, std::string acc
                             hAccRatio_ReMtch_mc->Fill(val_ReMtch_mc/val_Reconstru);
                             hAccRatio_ReMtch_re->Fill(val_ReMtch_re/val_Reconstru);
 
-                            hAccPropErr_Reconstru->Fill(100.*err_Reconstru/val_Reconstru);
+                            double err_pc = 100.*err_Reconstru/val_Reconstru;
+
+                            hAccPropErr_Reconstru->Fill(err_pc);
+                            if (err_pc > 10.)
+                            {
+                                hQ2BadAccQuality_Reconstru->Fill(kinVars[0]);
+                                if (DIS::list_boolXb[binName]) hXbBadAccQuality_Reconstru->Fill(kinVars[1]);
+                                else hNuBadAccQuality_Reconstru->Fill(kinVars[1]);
+                                hZhBadAccQuality_Reconstru->Fill(kinVars[2]);
+                                hPtBadAccQuality_Reconstru->Fill(kinVars[3]);
+                                hPQBadAccQuality_Reconstru->Fill(kinVars[4]);
+                            }
                         }
 
                         // Fill ReMtch_mc
@@ -142,7 +178,18 @@ void checkAccQuality(std::string target = "Fe", int binName = 0, std::string acc
                             double err_ReMtch_mc = histAcc_ReMtch_mc->GetBinError(bin_ReMtch_mc);
                             hAccErr_ReMtch_mc->Fill(err_ReMtch_mc);
 
-                            hAccPropErr_ReMtch_mc->Fill(100.*err_ReMtch_mc/val_ReMtch_mc);
+                            double err_pc = 100.*err_ReMtch_mc/val_ReMtch_mc;
+
+                            hAccPropErr_ReMtch_mc->Fill(err_pc);
+                            if (err_pc > 10.)
+                            {
+                                hQ2BadAccQuality_ReMtch_mc->Fill(kinVars[0]);
+                                if (DIS::list_boolXb[binName]) hXbBadAccQuality_ReMtch_mc->Fill(kinVars[1]);
+                                else hNuBadAccQuality_ReMtch_mc->Fill(kinVars[1]);
+                                hZhBadAccQuality_ReMtch_mc->Fill(kinVars[2]);
+                                hPtBadAccQuality_ReMtch_mc->Fill(kinVars[3]);
+                                hPQBadAccQuality_ReMtch_mc->Fill(kinVars[4]);
+                            }
                         }
 
                         // Fill ReMtch_re
@@ -162,7 +209,18 @@ void checkAccQuality(std::string target = "Fe", int binName = 0, std::string acc
                             double err_ReMtch_re = histAcc_ReMtch_re->GetBinError(bin_ReMtch_re);
                             hAccErr_ReMtch_re->Fill(err_ReMtch_re);
 
-                            hAccPropErr_ReMtch_re->Fill(100.*err_ReMtch_re/val_ReMtch_re);
+                            double err_pc = 100.*err_ReMtch_re/val_ReMtch_re;
+
+                            hAccPropErr_ReMtch_re->Fill(err_pc);
+                            if (err_pc > 10.)
+                            {
+                                hQ2BadAccQuality_ReMtch_re->Fill(kinVars[0]);
+                                if (DIS::list_boolXb[binName]) hXbBadAccQuality_ReMtch_re->Fill(kinVars[1]);
+                                else hNuBadAccQuality_ReMtch_re->Fill(kinVars[1]);
+                                hZhBadAccQuality_ReMtch_re->Fill(kinVars[2]);
+                                hPtBadAccQuality_ReMtch_re->Fill(kinVars[3]);
+                                hPQBadAccQuality_ReMtch_re->Fill(kinVars[4]);
+                            }
                         }
                     }
                 }
@@ -174,11 +232,17 @@ void checkAccQuality(std::string target = "Fe", int binName = 0, std::string acc
         hNuEmpty_Reconstru->Delete();
         hNuEmpty_ReMtch_mc->Delete();
         hNuEmpty_ReMtch_re->Delete();
+        hNuBadAccQuality_Reconstru->Delete();
+        hNuBadAccQuality_ReMtch_mc->Delete();
+        hNuBadAccQuality_ReMtch_re->Delete();
     }
     else{
         hXbEmpty_Reconstru->Delete();
         hXbEmpty_ReMtch_mc->Delete();
         hXbEmpty_ReMtch_re->Delete();
+        hXbBadAccQuality_Reconstru->Delete();
+        hXbBadAccQuality_ReMtch_mc->Delete();
+        hXbBadAccQuality_ReMtch_re->Delete();
     }
 
     fout->Write();
