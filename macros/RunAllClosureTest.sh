@@ -12,7 +12,7 @@
 #  <cuts>    = Format "AA_BB_CC" (Empty is default)                     #
 #  "Xf": Use Xf from data; "DS": Delta Sector != 0; "BS": rm Bad Sect;  #
 #  "PF": Pi+ fiducial cut; "MM": Mirror Match;                          #
-#  "FE": Use FullError;                                                 #
+#  "FE": Use FullError; "AQ": Acc Quality < 10%;                        #
 #  "Zx": x-axis is Zh; "Px": x-axis is Pt2;                             #
 #  <fracAcc> = Fraction of stats used in calculation of Acc (50, 70...) #
 #                                                                       #
@@ -62,6 +62,10 @@ fi
 if [[ $CUTINFO == *"FE"* ]]; then
     PREV_CUT="${PREV_CUT}_FE"
     CORR_CUT="${CORR_CUT}_FE"
+fi
+if [[ $CUTINFO == *"AQ"* ]]; then
+    PREV_CUT="${PREV_CUT}_AQ"
+    CORR_CUT="${CORR_CUT}_AQ"
 fi
 
 ### From Corrected

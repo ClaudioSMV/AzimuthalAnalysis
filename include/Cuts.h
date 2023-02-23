@@ -144,6 +144,6 @@ bool pass_MirrorMatch(float momentum, float Nph)
 
 // Add cuts in pairs with short name first and folder name next {XX, XXXXX}
 std::string lookuptable_cutAcc[20][2] = {{"Xf","Xf"}, {"DS","DSect0"}, {"BS","NoBadSec"}, {"PF","PiFid"}, {"MM","MMtch"}};
-std::string lookuptable_cutCor[20][2] = {{"FE","FErr"}};
+std::string lookuptable_cutCor[20][2] = {{"FE","FErr"}, {"AQ","AccQlt"}};
 
 #endif // #ifdef Cuts_h

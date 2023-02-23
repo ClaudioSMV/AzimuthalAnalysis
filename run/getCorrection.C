@@ -7,7 +7,7 @@ void getCorrection(std::string target = "Fe", int binName = 0, int binNdim = 1, 
 // Target can be "Fe", "C", "Pb" or "DFe", "DC", "DPb", "DS"
 // Cuts:    "Xf": X Feynman; "DS": Delta Sector != 0; "BS": Remove bad sector (5); "PF": Pi+ fiducial cut;
 //          "MM": Mirror Matching;
-//          "FE": Full error;
+//          "FE": Full error; "AQ": Acc Quality (err/val < 0.1);
 {
     TChain ch("ntuple_data");
     if (FileExists("../../clas-data"))

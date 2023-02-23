@@ -13,7 +13,7 @@
 #  <cuts>    = Format "AA_BB_CC" (Empty is default)                        #
 #  "Xf": Use Xf from data; "DS": Delta Sector != 0; "BS": rm Bad Sect;     #
 #  "PF": Pi+ fiducial cut; "MM": Mirror Match;                             #
-#  "FE": Use FullError;                                                    #
+#  "FE": Use FullError; "AQ": Acc Quality < 10%;                           #
 #  "Zx": x-axis is Zh; "Px": x-axis is Pt2;                                #
 #  "Fs": Add Sin(x) term in fit;                                           #
 #  "Fd": Fit uses Fold; "LR": Fit uses both tails;                         #
@@ -94,6 +94,13 @@ if [[ $CUTINFO == *"FE"* ]]; then
     FITS_CUT="${FITS_CUT}_FE"
     PAR_NCUT="${PAR_NCUT}_FE"
     PAR_RCUT="${PAR_RCUT}_FE"
+fi
+if [[ $CUTINFO == *"AQ"* ]]; then
+    PREV_CUT="${PREV_CUT}_AQ"
+    CORR_CUT="${CORR_CUT}_AQ"
+    FITS_CUT="${FITS_CUT}_AQ"
+    PAR_NCUT="${PAR_NCUT}_AQ"
+    PAR_RCUT="${PAR_RCUT}_AQ"
 fi
 
 ### From Corrected

@@ -155,7 +155,7 @@ pair<double, double> GetCorrectValue(std::vector<double> this_bin, THnSparse *hi
     return this_pair;
 }
 
-void CorrectBin(std::vector<double> this_bin, THnSparse *histAcc, THnSparse *histCorr, bool useFErr)
+void CorrectBin(std::vector<double> this_bin, THnSparse *histAcc, THnSparse *histCorr, bool useFErr, bool useAccQlt)
 {
     int binAcc = histAcc->GetBin(&this_bin[0]);
     double valueAcc = histAcc->GetBinContent(binAcc);
@@ -163,6 +163,10 @@ void CorrectBin(std::vector<double> this_bin, THnSparse *histAcc, THnSparse *his
     if (valueAcc != 0)
     {
         double acc_error  = histAcc->GetBinError(binAcc);
+
+        // Skip bad behaved acc values
+        if (useAccQlt && ((acc_error/valueAcc)>0.1)) return;
+
         int binCorr = histCorr->GetBin(&this_bin[0]);
         double this_content = histCorr->GetBinContent(binCorr) + 1./valueAcc;
         histCorr->SetBinContent(binCorr, this_content);

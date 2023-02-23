@@ -518,13 +518,13 @@ void Acceptance::Correction()
             if (good_pion)
             {
                 // Reconstru
-                CorrectBin(binKinVars, histAcc_Reconstru, histCorr_Reconstru, _useFullError);
+                CorrectBin(binKinVars, histAcc_Reconstru, histCorr_Reconstru, _useFullError, _useAccQlt);
 
                 // ReMtch_mc
-                CorrectBin(binKinVars, histAcc_ReMtch_mc, histCorr_ReMtch_mc, _useFullError);
+                CorrectBin(binKinVars, histAcc_ReMtch_mc, histCorr_ReMtch_mc, _useFullError, _useAccQlt);
 
                 // ReMtch_re
-                CorrectBin(binKinVars, histAcc_ReMtch_re, histCorr_ReMtch_re, _useFullError);
+                CorrectBin(binKinVars, histAcc_ReMtch_re, histCorr_ReMtch_re, _useFullError, _useAccQlt);
 
                 histRaw->Fill(&binKinVars[0]);
             }
@@ -648,13 +648,13 @@ void Acceptance::ClosureTest()
             if (good_pion)
             {
                 // Reconstructed
-                CorrectBin(binKinVars, histAcc_Reconstru, histCorr_Reconstru, _useFullError);
+                CorrectBin(binKinVars, histAcc_Reconstru, histCorr_Reconstru, _useFullError, _useAccQlt);
 
                 // ReMtch_mc
-                CorrectBin(binKinVars, histAcc_ReMtch_mc, histCorr_ReMtch_mc, _useFullError);
+                CorrectBin(binKinVars, histAcc_ReMtch_mc, histCorr_ReMtch_mc, _useFullError, _useAccQlt);
 
                 // ReMtch_re
-                CorrectBin(binKinVars, histAcc_ReMtch_re, histCorr_ReMtch_re, _useFullError);
+                CorrectBin(binKinVars, histAcc_ReMtch_re, histCorr_ReMtch_re, _useFullError, _useAccQlt);
             }
 
             if (good_pion_mc && good_pion)

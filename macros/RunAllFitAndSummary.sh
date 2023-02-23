@@ -12,7 +12,7 @@
 #  <cuts>    = Format "AA_BB_CC" (Empty is default)                     #
 #  "Xf": Use Xf from data; "DS": Delta Sector != 0; "BS": rm Bad Sect;  #
 #  "PF": Pi+ fiducial cut; "MM": Mirror Match;                          #
-#  "FE": Use FullError;                                                 #
+#  "FE": Use FullError; "AQ": Acc Quality < 10%;                        #
 #  "Zx": x-axis is Zh; "Px": x-axis is Pt2; "Sh": Shift reco distrib    #
 #  "Fs": Add Sin(x) term in fit;                                        #
 #  "Fd": Fit uses Fold; "LR": Fit uses both tails;                      #

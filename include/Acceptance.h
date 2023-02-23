@@ -20,7 +20,6 @@ private:
     std::string _nameTarget;
     std::string _nameSolidTarget = "";
     std::string _cutList = "";
-    bool _useFullError = false;
     bool _isData = false;
     bool _isClosureTest = false;
     int _fracCT = 100;
@@ -28,29 +27,37 @@ private:
     int _binNdims = 0; // 2: Leptonic, 3: Leptonic+Zh
     int _useXb = false; // !_useNu
 
-    // Cut bools
+    // Cut Acc bools
     bool _cutXf = false;
     bool _cutDeltaSector0 = false;
     bool _cutBadSector = false;
     bool _cutPiFiducial = false;
     bool _cutMirrorMtch = false;
+
+    // Cut Corr bools
+    bool _useFullError = false;
+    bool _useAccQlt = false;
+
     int _count = 0; // Usefull for debug
 
 public: // Internal values
     void setTargTypeCut(size_t targTypeCut) { _targTypeCut = targTypeCut; }
     std::string getNameTarget() { return _nameTarget; }
-    void setFullError() { _useFullError = true; }
     void setDataType() { _isData = true; }
     void setBinningType(int binning_number) { _binIndex = binning_number; }
     void setBinNdims(int binningNdims) { _binNdims = binningNdims; }
     void setUseXb(bool boolXb) { _useXb = boolXb; }
 
-public: // Cuts
+public: // Acc cuts
     void useCut_Xf() { _cutXf = true; }
     void useCut_DeltaSector0() { _cutDeltaSector0 = true; }
     void useCut_rmBadSector() { _cutBadSector = true; }
     void useCut_PiFiducial() { _cutPiFiducial = true; }
     void useCut_MirrorMtch() { _cutMirrorMtch = true; }
+
+public: // Corr cuts
+    void setFullError() { _useFullError = true; }
+    void useAccQlt() { _useAccQlt = true; }
 
 public:
     TTree *fChain;  //! pointer to the analyzed TTree or TChain
@@ -623,6 +630,7 @@ void Acceptance::Show(Long64_t entry)
 
 void Acceptance::ActivateCuts(std::string str_cuts)
 {
+    // Acc cuts
     if (str_cuts.find("Xf")!=std::string::npos)
     {
         useCut_Xf();            _cutList+="_Xf";    std::cout << "Using Xf cut." << std::endl;
@@ -644,9 +652,14 @@ void Acceptance::ActivateCuts(std::string str_cuts)
         useCut_MirrorMtch();    _cutList+="_MM";    std::cout << "Using Mirror Match cut." << std::endl;
     }
 
+    // Corr cuts
     if (str_cuts.find("FE")!=std::string::npos)
     {
         setFullError();         _cutList+="_FE";    std::cout << "Using full error calculation." << std::endl;
+    }
+    if (str_cuts.find("AQ")!=std::string::npos)
+    {
+        useAccQlt();         _cutList+="_AQ";    std::cout << "Using Acc quality cut (err/acc < 10 %)." << std::endl;
     }
 }
 
