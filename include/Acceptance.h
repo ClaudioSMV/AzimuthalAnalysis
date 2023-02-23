@@ -2,6 +2,7 @@
 #define Acceptance_h
 
 #include "Cuts.h"
+#include "Utility.h"
 #include <TROOT.h>
 #include <TChain.h>
 #include <TFile.h>
@@ -328,14 +329,8 @@ void Acceptance::setNameFormat()
 std::string Acceptance::getAccFoldNameExt() //getNameAccFormat() // Only cuts
 {
     // _<extra cuts, ex. Xf>
-    std::string this_name = "";
-    for(const auto &cutpair : lookuptable_cutAcc)
-    {
-        if((_cutList.find(cutpair[0]))!=std::string::npos && (cutpair[0] != ""))
-        {
-            this_name+="_"+cutpair[1];
-        }
-    }
+    std::string this_name = cutExtension(_cutList, lookuptable_cutAcc);
+
     return this_name;
 }
 
@@ -343,13 +338,8 @@ std::string Acceptance::getFoldNameExt() //getNameAccFormat() // Cuts + other se
 {
     // _<extra cuts, ex. Xf>
     std::string this_name = getAccFoldNameExt();
-    for(const auto &cutpair : lookuptable_cutCor)
-    {
-        if((_cutList.find(cutpair[0]))!=std::string::npos && (cutpair[0] != ""))
-        {
-            this_name+="_"+cutpair[1];
-        }
-    }
+    this_name += cutExtension(_cutList, lookuptable_cutCor);
+
     return this_name;
 }
 

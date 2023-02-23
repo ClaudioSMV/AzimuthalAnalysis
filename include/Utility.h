@@ -22,6 +22,19 @@ void CreateDir(std::string path)
     system(Form("mkdir -p %s",path.c_str()));
 }
 
+std::string cutExtension(std::string str_list, std::string dict_name[][2])
+{
+    std::string this_name = "";
+    for(int i=0; i<20; i++)
+    {
+        if((str_list.find(dict_name[i][0]))!=std::string::npos && (dict_name[i][0] != ""))
+        {
+            this_name+="_"+dict_name[i][1];
+        }
+    }
+    return this_name;
+}
+
 // Branches and leaves
 int VarPosition(double var, std::vector<double> *var_limits)
 {
