@@ -59,12 +59,12 @@ input_cuts+="_"+fit_type # Add Fold or LR extension
 plots_cuts+="_"+fit_type
 
 ## Input
-inputPath = mS.getPlotsFolder("Fit", input_cuts, infoDict["Target"], isJLab, False) # "../output/"
+inputPath = mS.getPlotsFolder("Fit", input_cuts, mS.getBinNameFormatted(dataset) + "/" + infoDict["Target"], isJLab, False) # "../output/"
 inputROOT = mS.getPlotsFile("Fit", dataset, "root", fit_type)
 inputfile = TFile(inputPath+inputROOT,"READ")
 
 ## Output
-outputPath = mS.getPlotsFolder("ParametersCorrelation", plots_cuts, infoDict["Target"], isJLab)
+outputPath = mS.getPlotsFolder("CorrelationFit", plots_cuts, mS.getBinNameFormatted(dataset) + "/" + infoDict["Target"], isJLab)
 
 list_func_names = ["crossSectionR"]
 if not useFold:
@@ -94,7 +94,7 @@ print("Target %s"%infoDict["Target"])
 
 # index_h = 0
 for i_h,h in enumerate(inputfile.GetListOfKeys()): #list_of_hists):
-    if ((h.ReadObj().Class_Name() == "TH1D") and ("Corr_Reconstru" in h.GetName())):
+    if ((h.ReadObj().Class_Name() == "TH1D") and ("Corr_Reconstru" in h.GetName())): # Add support for other reco methods
         hist_targ = h.ReadObj()
         hist_name = h.GetName() # Corr_Reconstru_Q0N0Z0_type (type: Fd or LR)
 
@@ -103,9 +103,9 @@ for i_h,h in enumerate(inputfile.GetListOfKeys()): #list_of_hists):
 
         for i_f,f in enumerate(list_func_names):
             # Get correlation matrix
-            name_corr = "%s_corrM"%(bin_name)
+            name_corr = "corrM_%s_Reco"%(bin_name) # "corrM_Q0N0Z0_Reco"
             if "L" in f:
-                name_corr+="L"
+                name_corr = "corrML_%s_Reco"%(bin_name) # "corrML_Q0N0Z0_Reco"
             corr_matrix = inputfile.Get(name_corr)
 
             corrAB = GetMatrixElem(corr_matrix, 0, 1) # Get Corr AB
@@ -138,12 +138,12 @@ for e,elem in enumerate(list_func_names):
     if ("LR" in this_title_png):
         this_title_png = mS.addBeforeRootExt(this_title_png, "-%s"%(name_ext), "png")
 
-    this_title_pdf = outputPath + mS.getPlotsFile("CorrelationAB", dataset, "pdf")
-    if ("LR" in this_title_pdf):
-        this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "-%s"%(name_ext), "pdf")
+    # this_title_pdf = outputPath + mS.getPlotsFile("CorrelationAB", dataset, "pdf")
+    # if ("LR" in this_title_pdf):
+    #     this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "-%s"%(name_ext), "pdf")
 
     canvas.SaveAs(this_title_png)
-    canvas.SaveAs(this_title_pdf)
+    # canvas.SaveAs(this_title_pdf)
     canvas.Clear()
 
 
@@ -156,12 +156,12 @@ for e,elem in enumerate(list_func_names):
     if ("LR" in this_title_png):
         this_title_png = mS.addBeforeRootExt(this_title_png, "-%s"%(name_ext), "png")
 
-    this_title_pdf = outputPath + mS.getPlotsFile("CorrelationAC", dataset, "pdf")
-    if ("LR" in this_title_pdf):
-        this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "-%s"%(name_ext), "pdf")
+    # this_title_pdf = outputPath + mS.getPlotsFile("CorrelationAC", dataset, "pdf")
+    # if ("LR" in this_title_pdf):
+    #     this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "-%s"%(name_ext), "pdf")
 
     canvas.SaveAs(this_title_png)
-    canvas.SaveAs(this_title_pdf)
+    # canvas.SaveAs(this_title_pdf)
     canvas.Clear()
 
 
@@ -174,12 +174,12 @@ for e,elem in enumerate(list_func_names):
     if ("LR" in this_title_png):
         this_title_png = mS.addBeforeRootExt(this_title_png, "-%s"%(name_ext), "png")
 
-    this_title_pdf = outputPath + mS.getPlotsFile("CorrelationBC", dataset, "pdf")
-    if ("LR" in this_title_pdf):
-        this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "-%s"%(name_ext), "pdf")
+    # this_title_pdf = outputPath + mS.getPlotsFile("CorrelationBC", dataset, "pdf")
+    # if ("LR" in this_title_pdf):
+    #     this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "-%s"%(name_ext), "pdf")
 
     canvas.SaveAs(this_title_png)
-    canvas.SaveAs(this_title_pdf)
+    # canvas.SaveAs(this_title_pdf)
     canvas.Clear()
 
 print("Made it to the end!")
