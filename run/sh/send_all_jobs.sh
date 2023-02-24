@@ -34,36 +34,36 @@ UND=""
 
 ### Acceptance cuts
 if [[ $CUTLIST == *"Xf"* ]]; then
-    ACC_CUT="${PREV_CUT}${UND}Xf"
-    COR_CUT="${CORR_CUT}${UND}Xf"
+    ACC_CUT="${ACC_CUT}${UND}Xf"
+    COR_CUT="${COR_CUT}${UND}Xf"
 
     CUTLIST=${CUTLIST/${UND}Xf/}
     UND="_"
 fi
 if [[ $CUTLIST == *"DS"* ]]; then
-    ACC_CUT="${PREV_CUT}${UND}DS"
-    COR_CUT="${CORR_CUT}${UND}DS"
+    ACC_CUT="${ACC_CUT}${UND}DS"
+    COR_CUT="${COR_CUT}${UND}DS"
 
     CUTLIST=${CUTLIST/${UND}DS/}
     UND="_"
 fi
 if [[ $CUTLIST == *"BS"* ]]; then
-    ACC_CUT="${PREV_CUT}${UND}BS"
-    COR_CUT="${CORR_CUT}${UND}BS"
+    ACC_CUT="${ACC_CUT}${UND}BS"
+    COR_CUT="${COR_CUT}${UND}BS"
 
     CUTLIST=${CUTLIST/${UND}BS/}
     UND="_"
 fi
 if [[ $CUTLIST == *"PF"* ]]; then
-    ACC_CUT="${PREV_CUT}${UND}PF"
-    COR_CUT="${CORR_CUT}${UND}PF"
+    ACC_CUT="${ACC_CUT}${UND}PF"
+    COR_CUT="${COR_CUT}${UND}PF"
 
     CUTLIST=${CUTLIST/${UND}PF/}
     UND="_"
 fi
 if [[ $CUTLIST == *"MM"* ]]; then
-    ACC_CUT="${PREV_CUT}${UND}MM"
-    COR_CUT="${CORR_CUT}${UND}MM"
+    ACC_CUT="${ACC_CUT}${UND}MM"
+    COR_CUT="${COR_CUT}${UND}MM"
 
     CUTLIST=${CUTLIST/${UND}MM/}
     UND="_"
@@ -71,13 +71,13 @@ fi
 
 ### Correction cuts
 if [[ $CUTLIST == *"FE"* ]]; then
-    COR_CUT="${CORR_CUT}${UND}FE"
+    COR_CUT="${COR_CUT}${UND}FE"
 
     CUTLIST=${CUTLIST/${UND}FE/}
     UND="_"
 fi
 if [[ $CUTLIST == *"AQ"* ]]; then
-    COR_CUT="${CORR_CUT}${UND}AQ"
+    COR_CUT="${COR_CUT}${UND}AQ"
 
     CUTLIST=${CUTLIST/${UND}AQ/}
     UND="_"
