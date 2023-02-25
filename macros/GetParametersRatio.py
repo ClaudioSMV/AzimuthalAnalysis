@@ -208,10 +208,13 @@ for i_h,h in enumerate(inputfile_solid.GetListOfKeys()):
 
         for i_f,f in enumerate(list_func_names):
             # Get covariance matrix
-            name_cov = "covM" # "covM"
-            if "L" in f:
-                name_cov+="L" # "covML"
-            name_cov+="_%s_%s"%(bin_name, type_reco_short[type_index]) # "covML_Q0N0Z0_Reco"
+            # name_cov = "covM" # "covM"
+            # if "L" in f:
+            #     name_cov+="L" # "covML"
+
+            name_cov = "covM1" if "L" in f else "covM0"
+
+            name_cov+="_%s_%s"%(bin_name, type_reco_short[type_index]) # "covM0_Q0N0Z0_Reco" or "covM1_Q0N0Z0_Reco" (L)
 
             cov_matrix_X = inputfile_solid.Get(name_cov)
             cov_matrix_D = inputfile_D.Get(name_cov)

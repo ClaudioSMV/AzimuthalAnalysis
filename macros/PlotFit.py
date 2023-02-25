@@ -14,6 +14,168 @@ myStyle.ForceStyle()
 gStyle.SetStatX(1 - myStyle.GetMargin() - 0.005)
 gStyle.SetStatY(2*myStyle.GetMargin() + 0.205)
 
+
+## Define functions
+
+def Get_HistCorrected(h_input, h_name, this_fittype): # , opts):
+
+    ### Get binning
+    Nbins_in = h_input.GetXaxis().GetNbins()
+
+    bin_frst = 0
+    bin_last = Nbins_in
+    list_xbin_out = []
+
+    # if (this_fittype == "LR"):
+    if (this_fittype == "Fd"):
+        bin0 = h_input.FindBin(0.0)
+        bin_frst = bin0
+
+        list_xbin_out.append(0.0)
+    # elif (this_fittype == "Sh"):
+
+    ### Fill list with x-axis bin's limits
+    for bt in range(bin_frst, bin_last+1):
+        list_xbin_out.append(h_input.GetBinLowEdge(bt+1))
+
+    ### Create output histogram
+    phi_axis_title = myStyle.axis_label('I',"LatexUnit") # "#phi_{PQ} (deg)"
+    Nbins_out = len(list_xbin_out)-1
+    h_output = TH1D("%s_%s"%(h_name, this_fittype), ";%s;Counts"%(phi_axis_title), Nbins_out, array('d',list_xbin_out))
+
+    ### Fill output histogram
+    # Run over original hist
+    for b in range(1, Nbins_in+1):
+        value = h_input.GetBinContent(b)
+        error = h_input.GetBinError(b)
+
+        this_bin = b
+
+        # if (this_fittype == "LR"):
+        if (this_fittype == "Fd"):
+
+            x_center_in = h_input.GetBinCenter(b)
+
+            bin_out = h_output.FindBin(abs(x_center_in))
+            value_out = h_output.GetBinContent(bin_out)
+            error_out = h_output.GetBinError(bin_out)
+
+            # If bin is not empty, then you're running over the second tail and must add the new content
+            if (value_out > 1.0):
+            # if (value_out != 0.0):
+                value+=value_out
+                error = TMath.Sqrt(error_out*error_out + error*error)
+
+            this_bin = bin_out
+        # elif (this_fittype == "Sh"):
+
+        # Debug
+        # print(this_bin)
+
+        h_output.SetBinContent(this_bin, value)
+        h_output.SetBinError(this_bin, error)
+
+    return h_output
+
+def Get_FitFunctions(h_out, list_fname, this_fittype, opts):
+    ### Options:
+    ###     Skip0: Skip central peak
+    ###     Sin: Use sin(x) term in fit
+
+    # if (this_fittype == "LR"):
+    # elif (this_fittype == "Fd"):
+    # elif (this_fittype == "Sh"):
+
+    ### Define options
+    opt_sk0 = True if ("Skip0" in opts) else False
+    opt_sin = True if ("Sin" in opts) else False
+
+    ### Set limits
+    Nbins = h_out.GetXaxis().GetNbins()
+
+    ## Option: Skip peak's bin (Problematic)
+    peak_Lend, peak_Rend = 0.0, 0.0
+
+    if (opt_sk0):
+        if (this_fittype == "LR"):
+            bin_peak = h_out.FindBin(0.0)
+            # if Nbins odd then; else;
+            peak_Lend = h_out.GetBinLowEdge(bin_peak) if ((Nbins%2) == 1) else h_out.GetBinLowEdge(bin_peak-1)
+            peak_Rend = h_out.GetBinLowEdge(bin_peak+1) # if ((Nbins%2) == 1) else h_out.GetBinLowEdge(bin_peak+1)
+        elif (this_fittype == "Fd"):
+            # peak_Lend = 0.0 # useless
+            peak_Rend = h_out.GetBinLowEdge(2)
+        elif (this_fittype == "Sh"):
+            # if Nbins odd then; else;
+            peak_Lend = h_out.GetBinLowEdge(Nbins+1) if ((Nbins%2) == 1) else h_out.GetBinLowEdge(Nbins)
+            peak_Rend = h_out.GetBinLowEdge(2) # if ((Nbins%2) == 1) else h_out.GetBinLowEdge(2)
+
+
+    xmin_out = h_out.GetBinLowEdge(1)
+    xmax_out = h_out.GetBinLowEdge(Nbins+1)
+    list_limits = []
+
+    ## for [Right, Left*]
+    for i,func in enumerate(list_fname):
+
+        this_xmin, this_xmax = xmin_out, xmax_out
+
+        if (this_fittype == "LR"):
+            this_xmin = peak_Rend if (i==0) else  xmin_out
+            this_xmax =  xmax_out if (i==0) else peak_Lend
+        elif (this_fittype == "Fd"):
+            this_xmin = peak_Rend
+            this_xmax =  xmax_out
+        elif (this_fittype == "Sh"):
+            this_xmin = peak_Rend
+            this_xmax = peak_Lend if (peak_Lend != 0.0) else xmax_out
+
+        # print("  [Fit] Function %s limits: [%.2f, %.2f]"%(func, this_xmin, this_xmax))
+
+        these_limits = [this_xmin, this_xmax]
+        list_limits.append(these_limits)
+
+    ### Define function
+    the_func = "[0] + [1]*cos(TMath::Pi()*x/180.0) + [2]*cos(2*TMath::Pi()*x/180.0)"
+    if (opt_sin):
+        the_func+= "+ [3]*sin(TMath::Pi()*x/180.0)"
+
+    tf1_fit = []
+
+    ## for [Right, Left*]
+    for i,fname in enumerate(list_fname):
+        this_xmin = list_limits[i][0]
+        this_xmax = list_limits[i][1]
+
+        this_func = TF1(fname,the_func, this_xmin,this_xmax)
+        tf1_fit.append(this_func)
+
+    ### Return list with TF1 with the proper range
+    return tf1_fit
+
+
+def Get_Chi2ndf(fit_funct, x,y, position):
+    chisq = fit_funct.GetChisquare()
+    ndf = fit_funct.GetNDF()
+    if (ndf != 0):
+        str_Fit = TLatex(x,y, "#chi^{2} / ndf = %.2f / %i = %.2f"%(chisq, ndf, chisq/ndf))
+    else:
+        str_Fit = TLatex(x,y, "#chi^{2} / ndf = %.2f / %i"%(chisq, ndf))
+
+    # 23: use center as reference (default method)
+    text_orientation = 23
+    if ("LR" in position):
+        # 13: use left corner as reference (for R method); 33: use right corner as reference (for L method)
+        text_orientation = 13 if ("0" in position) else 33
+    # elif (this_fittype == "Fd"):
+    # elif (this_fittype == "Sh"):
+
+    str_Fit.SetTextAlign(text_orientation)
+    str_Fit.SetTextSize(myStyle.GetSize()-6)
+
+    return str_Fit
+
+
 # Construct the argument parser
 parser = optparse.OptionParser("usage: %prog [options]\n")
 parser.add_option('-D', dest='Dataset', default = "", help="Dataset in format <targ>_<binType>_<Ndims>")
@@ -49,7 +211,7 @@ use_Shift = False
 
 if (("Shift" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.outputCuts))) or ("Shift" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.inputCuts)))):
     use_Shift = True
-    print("  [Fit] Fit PhiPQ shifted, ranging in ~(0., 360.)")
+    # print("  [Fit] Fit PhiPQ shifted, ranging in ~(0., 360.)")
 
 
 ### Define type of fit used
@@ -97,8 +259,20 @@ if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
 
 list_of_hists = inputfile.GetListOfKeys()
 
+### Define list with reco methods
 type_reco = ["Reconstru", "ReMtch_mc", "ReMtch_re"] # Corr_
 type_reco_short = ["Reco", "RMmc", "RMre"]
+
+### Define list with fit names
+list_fitfname = ["crossSectionR"]
+if (fit_type == "LR"):
+    list_fitfname.append("crossSectionL")
+# elif (fit_type == "Fd"):
+# elif (fit_type == "Sh"):
+
+### UPDATE THIS!
+fit_opts = "" if not useSin else "Sin"
+fit_opts += "Skip0"
 
 canvas = TCanvas("cv","cv",1000,800)
 gStyle.SetOptStat(0)
@@ -114,7 +288,7 @@ for h in list_of_hists:
 
             # Name format is: Corr_Reconstru_Q0N0
             tmp_name = "_".join(hist_name.split("_")[1:-1]) # Reconstru
-            tmp_txt = hist_name.split("_")[-1] # Q0N0Z0
+            this_nbin = hist_name.split("_")[-1] # Q0N0Z0
 
             type_index = type_reco.index(tmp_name) # Index in ["Reconstru", "ReMtch_mc", "ReMtch_re"]
 
@@ -125,144 +299,58 @@ for h in list_of_hists:
             bin1 = hist.GetBinContent(1)
             bin2 = hist.GetBinContent(2)
 
+            ### Skip empty histograms
             # print("  GetEntries: %i;  GetNbins: %i ;  Value bin1: %i; bin2: %i"%(hist.GetEntries(),Nbins, bin1, bin2))
             if (hist.GetEntries() == 0): # Maybe require a minimum number of entries?
                 print("  [Fit] Histogram %s is empty! Fit is not possible."%hist_name)
                 continue
 
-            Nbins = hist.GetXaxis().GetNbins()
+            ### Get corrected histogram
+            hist_corr = Get_HistCorrected(hist, hist_name, fit_type)
 
-            # Define bin range of folded distribution [Fold]
-            bin_zero = hist.FindBin(0.0)
-            vect_limits = [0.0]
-            for bt in range(bin_zero, Nbins+1):
-                vect_limits.append(hist.GetBinLowEdge(bt+1))
+            hist_corr.SetMinimum(0.0001)
+            hist_corr.SetMaximum(hist_corr.GetMaximum()*1.4)
+            hist_corr.Draw("hist axis")
 
-            if use_Shift:
-                hist_tmp = hist.Clone("%s_Sh"%(hist_name))
-            else: # No shift PhiPQ
-                if use_Fold:
-                    ## Fold two tails in one
-                    hist_tmp = TH1D("%s_Fd"%(hist_name), ";%s;Counts"%phi_axis_title, len(vect_limits)-1, array('d',vect_limits))
-                    # hist_tmp.Sumw2()
-
-                    for b in range(1, Nbins+1):
-                        x_center = hist.GetBinCenter(b)
-                        value = hist.GetBinContent(b)
-                        error = hist.GetBinError(b)
-
-                        this_bin = hist_tmp.FindBin(abs(x_center))
-
-                        if (hist_tmp.GetBinContent(this_bin) > 1.0):
-                            value+=hist_tmp.GetBinContent(this_bin)
-                            error = TMath.Sqrt(hist_tmp.GetBinError(this_bin)*hist_tmp.GetBinError(this_bin) + error*error)
-
-                        hist_tmp.SetBinContent(this_bin, value)
-                        hist_tmp.SetBinError(this_bin, error)
-                else:
-                    hist_tmp = hist.Clone("%s_LR"%(hist_name))
-
-            ### Get limit of the fit just before the central peak
-            ## Left (Negative) [LR - Left]
-            if ((not use_Fold) and (not use_Shift)):
-                hist_tmp.GetXaxis().SetRangeUser(-45.0, 0.0)
-                limit_bin_L = hist_tmp.GetMinimumBin()
-                fit_max_limit_L = hist.GetBinLowEdge(limit_bin_L+1)
-                hist.GetXaxis().UnZoom()
-            else: # [Fold], [Shift]
-                fit_max_limit_L = 0.0
-
-            ## Right (Positive)
-            if (use_Shift): # [Shift]
-                # Set min of fit
-                fit_min_limit_R = hist_tmp.GetBinLowEdge(2)
-
-                # Set max of fit
-                fit_max_limit_R = hist_tmp.GetBinLowEdge(Nbins)
-
-            else: #  [LR - Right], [Fold]
-                # Set min of fit
-                hist_tmp.GetXaxis().SetRangeUser(0.0, 45.0)
-                limit_bin_R = hist_tmp.GetMinimumBin()
-                fit_min_limit_R = hist_tmp.GetBinLowEdge(limit_bin_R)
-                hist_tmp.GetXaxis().UnZoom()
-
-                # Set max of fit
-                fit_max_limit_R = 180.
-
-            # Odd binning
-            if (((Nbins%2)==1) and (not use_Shift)):
-                if (not use_Fold):
-                    fit_max_limit_L = hist.GetBinLowEdge(bin_zero)
-                fit_min_limit_R = hist.GetBinLowEdge(bin_zero+1)
-
-            #print("Fit limit: %.2f (Bin %i)"%(fit_min_limit, limit_bin))
-
-            hist_tmp.SetMinimum(0.0001)
-            ylim = hist_tmp.GetMaximum()*1.4
-            hist_tmp.SetMaximum(ylim)
-
-            hist_tmp.GetXaxis().SetTitle(phi_axis_title)
-            hist_tmp.GetYaxis().SetTitle("Counts")
-
-            hist_tmp.Draw("hist axis")
-
-            the_func = "[0] + [1]*cos(TMath::Pi()*x/180.0) + [2]*cos(2*TMath::Pi()*x/180.0)"
-            if useSin:
-                the_func+= "+ [3]*sin(TMath::Pi()*x/180.0)"
-
-            # fit_funct_fold  = TF1("crossSectionF","[0] + [1]*cos(TMath::Pi()*x/180.0) + [2]*cos(2*TMath::Pi()*x/180.0)",  fit_min_limit_R, 180.0)
-            fit_funct_left  = TF1("crossSectionL",the_func, -180.0,fit_max_limit_L)
-            fit_funct_right = TF1("crossSectionR",the_func,  fit_min_limit_R, fit_max_limit_R)
+            ### Return list of TF1 with the proper range
+            list_tf1 = Get_FitFunctions(hist_corr, list_fitfname, fit_type, fit_opts)
 
             ### Make fit and save covariance and correlation matrices
-            cov_matrix_R = hist_tmp.Fit("crossSectionR", "MSQ", "", fit_min_limit_R, fit_max_limit_R) # M: Uses IMPROVED TMinuit; S: Saves covariance matrix
-            # hist_tmp.Fit("crossSection", "WL MS", "", fit_min_limit, 180.0) # WL: Uses Weighted log likelihood method
+            list_this_chi2 = []
+            for i,fitfunc in enumerate(list_tf1):
+                this_fopts = "MSRQ" if (i==0) else "MSRQ+"
+                fit_matrix = hist_corr.Fit(list_fitfname[i], this_fopts, "")
 
-            name_ext_cov = "%s_%s"%(tmp_txt, type_reco_short[type_index]) # "Q0N0Z0_Reco"
+                name_cov  = "covM%i_%s_%s"%(i, this_nbin, type_reco_short[type_index]) # "covM0_Q0N0Z0_Reco" or "covM1_Q0N0Z0_Reco" (L)
+                fit_matrix.GetCovarianceMatrix().Write(name_cov)
 
-            cov_matrix_R.GetCorrelationMatrix().Write("corrM_%s"%(name_ext_cov)) # "corrM_Q0N0Z0_Reco"
-            cov_matrix_R.GetCovarianceMatrix().Write("covM_%s"%(name_ext_cov)) # "covM_Q0N0Z0_Reco"
+                name_corr = "corrM%i_%s_%s"%(i, this_nbin, type_reco_short[type_index]) # "corrM0_Q0N0Z0_Reco" or "corrM1_Q0N0Z0_Reco" (L)
+                fit_matrix.GetCorrelationMatrix().Write(name_corr)
 
-            # [LR - Left]
-            # Save Left fit only when using LR fit method
-            if ((not use_Fold) and (not use_Shift)):
-                cov_matrix_L = hist_tmp.Fit("crossSectionL", "MSQ+", "", -180.0,fit_max_limit_L) # M: Uses IMPROVED TMinuit; S: Saves covariance matrix
-                cov_matrix_L.GetCorrelationMatrix().Write("corrML_%s"%(name_ext_cov)) # "corrML_Q0N0Z0_Reco"
-                cov_matrix_L.GetCovarianceMatrix().Write("covML_%s"%(name_ext_cov)) # "corrML_Q0N0Z0_Reco"
+                ## Draw chi2 info
+                xpos_tex, ypos_tex = 0.0, 1.1*hist.GetMaximum()
+                if (fit_type == "LR"):
+                    xpos_tex = 15 if (i==0) else -15
+                elif (fit_type == "Fd"):
+                    xpos_tex = 90
+                elif (fit_type == "Sh"):
+                    xpos_tex = 180
 
-            hist_tmp.Draw("FUNC same")
+                this_chi2 = Get_Chi2ndf(fitfunc, xpos_tex,ypos_tex, "%s%i"%(fit_type,i))
+                list_this_chi2.append(this_chi2)
 
-            hist_tmp.Write()
+            for c in list_this_chi2:
+                c.Draw()
+
+            ### Draw and save
+            hist_corr.Draw("FUNC same")
+            hist_corr.Write()
 
             myStyle.DrawPreliminaryInfo("Correction fit")
             myStyle.DrawTargetInfo(nameFormatted, "Data")
-            myStyle.DrawBinInfo(tmp_txt, infoDict["BinningType"])
+            myStyle.DrawBinInfo(this_nbin, infoDict["BinningType"])
 
-            # [LR - Left]
-            # Write ChiSquare/ndf when making two fits
-            if ((not use_Fold) and (not use_Shift)):
-                chisq_L = fit_funct_left.GetChisquare()
-                ndf_L = fit_funct_left.GetNDF()
-                if (ndf_L != 0):
-                    str_FitL = TLatex(-15, 1.1*hist.GetMaximum(), "#chi^{2} / ndf = %.2f / %i = %.2f"%(chisq_L, ndf_L, chisq_L/ndf_L))
-                else:
-                    str_FitL = TLatex(-15, 1.1*hist.GetMaximum(), "#chi^{2} / ndf = %.2f / %i"%(chisq_L, ndf_L))
-                str_FitL.SetTextAlign(33)
-                str_FitL.SetTextSize(myStyle.GetSize()-6)
-                str_FitL.Draw()
-
-                chisq_R = fit_funct_right.GetChisquare()
-                ndf_R = fit_funct_right.GetNDF()
-                if (ndf_R != 0):
-                    str_FitR = TLatex(15, 1.1*hist.GetMaximum(), "#chi^{2} / ndf = %.2f / %i = %.2f"%(chisq_R, ndf_R, chisq_R/ndf_R))
-                else:
-                    str_FitR = TLatex(15, 1.1*hist.GetMaximum(), "#chi^{2} / ndf = %.2f / %i"%(chisq_R, ndf_R))
-                str_FitR.SetTextAlign(13)
-                str_FitR.SetTextSize(myStyle.GetSize()-6)
-                str_FitR.Draw()
-
-            outputName = myStyle.getPlotsFile("Fit_"+tmp_name, dataset, "png",tmp_txt)
+            outputName = myStyle.getPlotsFile("Fit_"+tmp_name, dataset, "png",this_nbin)
             canvas.SaveAs(outputPath+outputName)
             canvas.Clear()
 

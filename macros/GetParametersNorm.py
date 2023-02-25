@@ -164,10 +164,13 @@ for i_h,h in enumerate(inputfile.GetListOfKeys()): #list_of_hists):
 
         for i_f,f in enumerate(list_func_names):
             # Get covariance matrix
-            name_cov = "covM" # "covM"
-            if "L" in f:
-                name_cov+="L" # "covML"
-            name_cov+="_%s_%s"%(bin_name, type_reco_short[type_index]) # "covML_Q0N0Z0_Reco"
+            # name_cov = "covM" # "covM"
+            # if "L" in f:
+            #     name_cov+="L" # "covML"
+
+            name_cov = "covM1" if "L" in f else "covM0"
+
+            name_cov+="_%s_%s"%(bin_name, type_reco_short[type_index]) # "covM0_Q0N0Z0_Reco" or "covM1_Q0N0Z0_Reco" (L)
             cov_matrix = inputfile.Get(name_cov)
 
             fit_targ = hist_targ.GetFunction(f)

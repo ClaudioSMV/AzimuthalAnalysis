@@ -103,9 +103,9 @@ for i_h,h in enumerate(inputfile.GetListOfKeys()): #list_of_hists):
 
         for i_f,f in enumerate(list_func_names):
             # Get correlation matrix
-            name_corr = "corrM_%s_Reco"%(bin_name) # "corrM_Q0N0Z0_Reco"
+            name_corr = "corrM0_%s_Reco"%(bin_name) # "corrM0_Q0N0Z0_Reco"
             if "L" in f:
-                name_corr = "corrML_%s_Reco"%(bin_name) # "corrML_Q0N0Z0_Reco"
+                name_corr = "corrM1_%s_Reco"%(bin_name) # "corrM1_Q0N0Z0_Reco" (L)
             corr_matrix = inputfile.Get(name_corr)
 
             corrAB = GetMatrixElem(corr_matrix, 0, 1) # Get Corr AB
