@@ -87,7 +87,7 @@ def Get_FitFunctions(h_out, list_fname, this_fittype, opts):
     # elif (this_fittype == "Sh"):
 
     ### Define options
-    opt_sk0 = True if ("Skip0" in opts) else False
+    opt_sk0 = True if ("Sk0" in opts) else False
     opt_sin = True if ("Sin" in opts) else False
 
     ### Set limits
@@ -202,13 +202,11 @@ if "Fold" in myStyle.getCutStrFromStr(options.outputCuts):
     use_Fold = True
 
 useSin = options.useSin
-if "Sin" in myStyle.getCutStrFromStr(options.outputCuts):
+if (useSin or ("Sin" in myStyle.getCutStrFromStr(options.outputCuts))):
     useSin = True
+    options.outputCuts += "_Fs"
 
 use_Shift = False
-# if shift:
-#     plots_cuts+="_Sh"
-
 if (("Shift" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.outputCuts))) or ("Shift" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.inputCuts)))):
     use_Shift = True
     # print("  [Fit] Fit PhiPQ shifted, ranging in ~(0., 360.)")
@@ -270,9 +268,9 @@ if (fit_type == "LR"):
 # elif (fit_type == "Fd"):
 # elif (fit_type == "Sh"):
 
-### UPDATE THIS!
-fit_opts = "" if not useSin else "Sin"
-fit_opts += "Skip0"
+# ### UPDATE THIS!
+# fit_opts = "" if not useSin else "Sin"
+# fit_opts += "Skip0"
 
 canvas = TCanvas("cv","cv",1000,800)
 gStyle.SetOptStat(0)
@@ -313,7 +311,8 @@ for h in list_of_hists:
             hist_corr.Draw("hist axis")
 
             ### Return list of TF1 with the proper range
-            list_tf1 = Get_FitFunctions(hist_corr, list_fitfname, fit_type, fit_opts)
+            # Use plots_cuts to find special cuts/options
+            list_tf1 = Get_FitFunctions(hist_corr, list_fitfname, fit_type, myStyle.getCutStrFromStr(plots_cuts)) # fit_opts
 
             ### Make fit and save covariance and correlation matrices
             list_this_chi2 = []
