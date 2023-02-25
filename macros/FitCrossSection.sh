@@ -131,6 +131,12 @@ if [[ $CUTINFO == *"Fs"* ]]; then
     PAR_NCUT="${PAR_NCUT}_Fs"
     PAR_RCUT="${PAR_RCUT}_Fs"
 fi
+if [[ $CUTINFO == *"NP"* ]]; then
+    FITS_CUT="${FITS_CUT}_NP"
+    PAR_NCUT="${PAR_NCUT}_NP"
+    PAR_RCUT="${PAR_RCUT}_NP"
+fi
+# Fit methods
 if [[ $CUTINFO == *"Fd"* ]]; then
     FITS_CUT="${FITS_CUT}_Fd"
     PAR_NCUT="${PAR_NCUT}_Fd"
@@ -140,7 +146,7 @@ elif [[ $CUTINFO == *"LR"* ]]; then
     PAR_NCUT="${PAR_NCUT}_LR"
     PAR_RCUT="${PAR_RCUT}_LR"
 elif [[ $CUTINFO != *"Sh"* ]]; then
-    echo "Remember to choose Fold (Fd) or Both wings (LR) method for the fit!"
+    echo "Remember to choose Fold (Fd), Both wings (LR) or Shift (Sh) method for the fit!"
     exit
 fi
 

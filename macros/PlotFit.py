@@ -87,7 +87,7 @@ def Get_FitFunctions(h_out, list_fname, this_fittype, opts):
     # elif (this_fittype == "Sh"):
 
     ### Define options
-    opt_sk0 = True if ("Sk0" in opts) else False
+    opt_sk0 = True if ("NPeak" in opts) else False
     opt_sin = True if ("Sin" in opts) else False
 
     ### Set limits
