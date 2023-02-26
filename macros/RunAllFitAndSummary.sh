@@ -41,18 +41,32 @@ WHATRUN=${INPUTARRAY[3]}
 # Main
 ###
 
-if [[ $WHATRUN == *"F"* || $WHATRUN == "" ]]; then
-    ./FitCrossSection.sh DS ${BINNAME} ${BINNDIM} ${CUTINFO}
-    ./FitCrossSection.sh Fe ${BINNAME} ${BINNDIM} ${CUTINFO}
-    ./FitCrossSection.sh C  ${BINNAME} ${BINNDIM} ${CUTINFO}
-    ./FitCrossSection.sh Pb ${BINNAME} ${BINNDIM} ${CUTINFO}
+CORR_XAXIS=('')
+if [[ $CUTINFO == *"Zx"* ]]; then
+    echo "Using only Zh as x-axis"
+    # CORR_XAXIS=('Zx')
+elif [[ $CUTINFO == *"Px"* ]]; then
+    echo "Using only Pt2 as x-axis"
+    # CORR_XAXIS=('Px')
+else
+    echo "Using Zh and Pt2 as x-axis"
+    CORR_XAXIS=('_Zx' '_Px')
 fi
 
-if [[ $WHATRUN == *"S"* || $WHATRUN == "" ]]; then
-    # ${CUTINFO/XX/} removes "XX" so that summary plots work!
-    CUTINFO=${CUTINFO/-O/}
-    CUTINFO=${CUTINFO/-A/}
-    python Summary_ParametersNorm.py  -D ${BINNAME}_${BINNDIM} -i ${CUTINFO} -J -s
-    python Summary_ParametersNorm.py  -D ${BINNAME}_${BINNDIM} -i ${CUTINFO} -J -a
-    python Summary_ParametersRatio.py -D ${BINNAME}_${BINNDIM} -i ${CUTINFO} -J
-fi
+for x in "${CORR_XAXIS[@]}"; do
+    if [[ $WHATRUN == *"F"* || $WHATRUN == "" ]]; then
+        ./FitCrossSection.sh DS ${BINNAME} ${BINNDIM} ${CUTINFO}${x}
+        ./FitCrossSection.sh Fe ${BINNAME} ${BINNDIM} ${CUTINFO}${x}
+        ./FitCrossSection.sh C  ${BINNAME} ${BINNDIM} ${CUTINFO}${x}
+        ./FitCrossSection.sh Pb ${BINNAME} ${BINNDIM} ${CUTINFO}${x}
+    fi
+
+    if [[ $WHATRUN == *"S"* || $WHATRUN == "" ]]; then
+        # ${CUTINFO/XX/} removes "XX" so that summary plots work!
+        CUTINFO=${CUTINFO/-O/}
+        CUTINFO=${CUTINFO/-A/}
+        python Summary_ParametersNorm.py  -D ${BINNAME}_${BINNDIM} -i ${CUTINFO}${x} -J -s
+        python Summary_ParametersNorm.py  -D ${BINNAME}_${BINNDIM} -i ${CUTINFO}${x} -J -a
+        python Summary_ParametersRatio.py -D ${BINNAME}_${BINNDIM} -i ${CUTINFO}${x} -J
+    fi
+done
