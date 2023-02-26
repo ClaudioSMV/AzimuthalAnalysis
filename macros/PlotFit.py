@@ -299,8 +299,11 @@ for h in list_of_hists:
 
             ### Skip empty histograms
             # print("  GetEntries: %i;  GetNbins: %i ;  Value bin1: %i; bin2: %i"%(hist.GetEntries(),Nbins, bin1, bin2))
-            if (hist.GetEntries() == 0): # Maybe require a minimum number of entries?
+            if (hist.GetEntries() == 0):
                 print("  [Fit] Histogram %s is empty! Fit is not possible."%hist_name)
+                continue
+            elif (fit_type=="LR" and (hist.GetEntries() < Nbins/2.)):
+                print("  [Fit] Histogram %s has half or more empty bins! Fit LR is not feasible."%hist_name)
                 continue
 
             ### Get corrected histogram
