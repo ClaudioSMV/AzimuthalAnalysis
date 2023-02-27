@@ -61,23 +61,38 @@ dict_Cut2Code = {"XF": "Xf", "Xf": "Xf",
                 "AccQlt": "AQ", "AccQuality": "AQ", "AQ": "AQ",
                 "Z": "Zx", "Zx": "Zx",
                 "P": "Px", "Px": "Px",
-                "Shift": "Sh", "Sh": "Sh",
+                # "Shift": "Sh", "Sh": "Sh",
                 "useSin": "Fs", "FitSin": "Fs", "Fs": "Fs",
                 "NPeak": "NP", "NP": "NP",
-                "Fold": "Fd", "Fd": "Fd",
-                "LR": "LR",
+                # "Fold": "Fd", "Fd": "Fd",
+                # "LR": "LR",
+                # "Fullfit": "Ff", "FFit": "Ff", "Ff": "Ff",
                 # "Left": "Lf", "Lf": "Lf",
                 # "Right": "Rg", "Rg": "Rg",
                 "MixD": "MD", "MD": "MD",
                 }
+dict_FitMeth2Code = {   "Shift": "Sh", "Sh": "Sh",
+                        "Fold": "Fd", "Fd": "Fd",
+                        "LR": "LR",
+                        "Fullfit": "Ff", "FFit": "Ff", "Ff": "Ff",
+                    }
+
+dict_Cut2Code.update(dict_FitMeth2Code)
 
 dict_CutCode2Name = {   "Xf": "Xf", "DS": "DSect0", "BS": "NoBadSec", "PF": "PiFid", "MM": "MMtch",
                         "FE": "FErr", "AQ": "AccQlt",
-                        "Zx": "Z", "Px": "P", "Sh": "Shift",
+                        "Zx": "Z", "Px": "P", #"Sh": "Shift",
                         "Fs": "Sin", "NP": "NPeak",
-                        "Fd": "Fold", "LR": "LR", "MD": "MixD", #"Lf": "Left", "Rg": "Right",
+                        #"Fd": "Fold", "LR": "LR", "Ff": "Full",
+                        "MD": "MixD", #"Lf": "Left", "Rg": "Right",
                     }
-cutMasterKey = "Xf0DS0BS0PF0MM0FE0AQ0Zx0Px0Sh0Fs0NP0Fd0LR0MD0" # Yh0 ; Write options in order of applicability (Acc, Corr, Fit, Summary)
+dict_FitMeth2Name = {   "Fd": "Fold", "LR": "LR", "Ff": "Full", "Sh": "Shift",
+                    }
+
+dict_CutCode2Name.update(dict_FitMeth2Name)
+
+
+cutMasterKey = "Xf0DS0BS0PF0MM0FE0AQ0Zx0Px0Sh0Fs0NP0Fd0LR0Ff0MD0" # Yh0 ; Write options in order of applicability (Acc, Corr, Fit, Summary)
 
 def getCutStrFormat(list_cuts):
     cut_str = ""
@@ -130,6 +145,40 @@ def getCutsAsList(this_cut_str): # Intro should be output of getCutStrFormat()
     while ("" in this_list):
         this_list.remove("")
     return this_list
+
+### Fit method
+def GetFitMethod(output_str):
+
+    this_method = ""
+
+    for fm in dict_FitMeth2Name:
+        out_name = dict_FitMeth2Name[fm]
+
+        if out_name in getCutStrFromStr(output_str):
+            if (this_method != ""):
+                print("  [FitMethod] More than one fit method selected. Please, choose only one of the options!")
+                print("              Ff-Full (empty, default); LR; Fd-Fold; Sh-Shift;")
+                exit()
+            this_method = fm
+
+    ## Set default method
+    if (this_method == ""):
+        this_method = "Ff"
+
+    print("    [FitMethod] Using %s fit method"%dict_FitMeth2Name[this_method])
+    return this_method
+
+def GetFitExtension(this_method, fname):
+
+    this_ext = this_method[0]
+
+    if (this_method=="LR") and ("R" in fname):
+        this_ext = "R"
+    elif (this_method=="Ff"):
+        this_ext = "A"
+
+    return this_ext
+
 
 ### Paths and directories' functions
 ### /output/

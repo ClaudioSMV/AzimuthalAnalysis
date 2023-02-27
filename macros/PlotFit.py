@@ -33,6 +33,7 @@ def Get_HistCorrected(h_input, h_name, this_fittype): # , opts):
 
         list_xbin_out.append(0.0)
     # elif (this_fittype == "Sh"):
+    # elif (this_fittype == "Ff"):
 
     ### Fill list with x-axis bin's limits
     for bt in range(bin_frst, bin_last+1):
@@ -68,6 +69,7 @@ def Get_HistCorrected(h_input, h_name, this_fittype): # , opts):
 
             this_bin = bin_out
         # elif (this_fittype == "Sh"):
+        # elif (this_fittype == "Ff"):
 
         # Debug
         # print(this_bin)
@@ -85,6 +87,7 @@ def Get_FitFunctions(h_out, list_fname, this_fittype, opts):
     # if (this_fittype == "LR"):
     # elif (this_fittype == "Fd"):
     # elif (this_fittype == "Sh"):
+    # elif (this_fittype == "Ff"):
 
     ### Define options
     opt_sk0 = True if ("NPeak" in opts) else False
@@ -109,6 +112,9 @@ def Get_FitFunctions(h_out, list_fname, this_fittype, opts):
             # if Nbins odd then; else;
             peak_Lend = h_out.GetBinLowEdge(Nbins+1) if ((Nbins%2) == 1) else h_out.GetBinLowEdge(Nbins)
             peak_Rend = h_out.GetBinLowEdge(2) # if ((Nbins%2) == 1) else h_out.GetBinLowEdge(2)
+        # elif (this_fittype == "Ff"):
+        #     print("  [Fit] Full fit (Ff) method is incompatible with removing peak. Use LR instead!")
+        #     exit()
 
 
     xmin_out = h_out.GetBinLowEdge(1)
@@ -129,6 +135,7 @@ def Get_FitFunctions(h_out, list_fname, this_fittype, opts):
         elif (this_fittype == "Sh"):
             this_xmin = peak_Rend
             this_xmax = peak_Lend if (peak_Lend != 0.0) else xmax_out
+        # elif (this_fittype == "Ff"):
 
         # print("  [Fit] Function %s limits: [%.2f, %.2f]"%(func, this_xmin, this_xmax))
 
@@ -169,6 +176,7 @@ def Get_Chi2ndf(fit_funct, x,y, position):
         text_orientation = 13 if ("0" in position) else 33
     # elif (this_fittype == "Fd"):
     # elif (this_fittype == "Sh"):
+    # elif (this_fittype == "Ff"):
 
     str_Fit.SetTextAlign(text_orientation)
     str_Fit.SetTextSize(myStyle.GetSize()-6)
@@ -196,37 +204,31 @@ rootpath = options.rootpath
 dataset = options.Dataset
 isJLab = options.JLabCluster
 
-# Define use of Fold method
+# # Define bool of fit method [Full, LR, Fold, Shift]
+# use_LR = False
+# if ("LR" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.outputCuts))):
+#     use_LR = True
+
+# use_Fold = options.fold
+# if ("Fold" in myStyle.getCutStrFromStr(options.outputCuts)):
+#     use_Fold = True
+
+# use_Shift = False
+# if (("Shift" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.outputCuts))) or ("Shift" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.inputCuts)))):
+#     use_Shift = True
+#     # print("  [Fit] Fit PhiPQ shifted, ranging in ~(0., 360.)")
+
 use_Fold = options.fold
-if "Fold" in myStyle.getCutStrFromStr(options.outputCuts):
-    use_Fold = True
+if (use_Fold):
+    options.inputCuts+="_Fd"
 
 useSin = options.useSin
 if (useSin or ("Sin" in myStyle.getCutStrFromStr(options.outputCuts))):
     useSin = True
     options.outputCuts += "_Fs"
 
-use_Shift = False
-if (("Shift" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.outputCuts))) or ("Shift" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.inputCuts)))):
-    use_Shift = True
-    # print("  [Fit] Fit PhiPQ shifted, ranging in ~(0., 360.)")
-
-
 ### Define type of fit used
-# [LR] is default
-fit_type = "LR"
-
-if (use_Fold and use_Shift):
-    print("  [Fit] More than one fit method selected. Please, choose only one of the options!")
-    exit()
-# [Fold]
-elif (use_Fold):
-    fit_type = "Fd"
-# [Shift]
-elif (use_Shift):
-    fit_type = "Sh"
-# [LR]
-# else: fit_type = "LR" # Default
+fit_type = myStyle.GetFitMethod(options.inputCuts +"_"+ options.outputCuts)
 
 infoDict = myStyle.getDictNameFormat(dataset)
 nameFormatted = myStyle.getNameFormatted(dataset)
@@ -241,6 +243,11 @@ if useSin:
     plots_cuts+="_Fs"
 
 plots_cuts+="_"+fit_type # Add Fold or LR extension
+
+### Remove incompatible methods
+if ((fit_type == "Ff") and ("NPeak" in myStyle.getCutStrFromStr(plots_cuts))):
+    print("  [Fit] Full fit (Ff) method is incompatible with removing peak. Use LR or Fd instead!")
+    exit()
 
 
 ## Input
@@ -267,10 +274,7 @@ if (fit_type == "LR"):
     list_fitfname.append("crossSectionL")
 # elif (fit_type == "Fd"):
 # elif (fit_type == "Sh"):
-
-# ### UPDATE THIS!
-# fit_opts = "" if not useSin else "Sin"
-# fit_opts += "Skip0"
+# elif (fit_type == "Ff"):
 
 canvas = TCanvas("cv","cv",1000,800)
 gStyle.SetOptStat(0)
@@ -332,11 +336,13 @@ for h in list_of_hists:
                 ## Draw chi2 info
                 xpos_tex, ypos_tex = 0.0, 1.1*hist.GetMaximum()
                 if (fit_type == "LR"):
-                    xpos_tex = 15 if (i==0) else -15
+                    xpos_tex = 15.0 if (i==0) else -15.0
                 elif (fit_type == "Fd"):
-                    xpos_tex = 90
+                    xpos_tex = 90.0
                 elif (fit_type == "Sh"):
-                    xpos_tex = 180
+                    xpos_tex = 180.0
+                elif (fit_type == "Ff"):
+                    xpos_tex = 0.0
 
                 this_chi2 = Get_Chi2ndf(fitfunc, xpos_tex,ypos_tex, "%s%i"%(fit_type,i))
                 list_this_chi2.append(this_chi2)

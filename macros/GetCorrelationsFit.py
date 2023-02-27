@@ -40,10 +40,12 @@ rootpath = options.rootpath
 dataset = options.Dataset
 isJLab = options.JLabCluster
 
-useFold = options.fold
-if ("Fold" in mS.getCutStrFromStr(options.inputCuts) or "Fold" in mS.getCutStrFromStr(options.outputCuts)):
-    useFold = True
-fit_type = "Fd" if useFold else "LR"
+use_Fold = options.fold
+if (use_Fold):
+    options.inputCuts+="_Fd"
+
+### Define type of fit used
+fit_type = mS.GetFitMethod(options.inputCuts +"_"+ options.outputCuts)
 
 infoDict = mS.getDictNameFormat(dataset)
 nameFormatted = mS.getNameFormatted(dataset)
@@ -66,8 +68,9 @@ inputfile = TFile(inputPath+inputROOT,"READ")
 ## Output
 outputPath = mS.getPlotsFolder("CorrelationFit", plots_cuts, mS.getBinNameFormatted(dataset) + "/" + infoDict["Target"], isJLab)
 
+### Define list with fit names
 list_func_names = ["crossSectionR"]
-if not useFold:
+if (fit_type == "LR"):
     list_func_names.append("crossSectionL")
 
 list_of_hists = inputfile.GetListOfKeys().Clone()
@@ -125,9 +128,8 @@ canvas.SetGrid(0,1)
 
 # canvas.SetLogy(0)
 for e,elem in enumerate(list_func_names):
-    if ("L" in elem): name_ext = "L"
-    elif ("R" in elem): name_ext = "R"
-    if ("F" in fit_type): name_ext = "F"
+
+    name_ext = mS.GetFitExtension(fit_type, elem)
 
     th1_CorrAB_list[e].Draw()
 

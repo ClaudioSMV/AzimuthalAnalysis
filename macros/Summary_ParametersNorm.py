@@ -140,20 +140,11 @@ if ("LR" in mS.getCutStrFromStr(options.inputCuts) and (not "Left" in options.in
     print("  [SummaryNorm] Specify \"Left\" or \"Right\" in input when using \"LR\" method!")
     exit()
 
-if ("Fold" in mS.getCutStrFromStr(options.inputCuts)):
-    fit = "F"
-elif ("Shift" in mS.getCutStrFromStr(options.inputCuts)):
-    fit = "S"
-elif ("Left" in mS.getCutStrFromStr(options.inputCuts) or "Left" in options.inputCuts):
-    fit = "L"
-elif ("Right" in mS.getCutStrFromStr(options.inputCuts) or "Right" in options.inputCuts):
-    fit = "R"
+### Define type of fit used
+fit_type = mS.GetFitMethod(options.inputCuts +"_"+ options.outputCuts)
 
-fit_type = "LR"
-if ("F" in fit):
-    fit_type = "Fd"
-elif ("S" in fit):
-    fit_type = "Sh"
+fname = "R" if "Right" in options.inputCuts else ""
+fit = mS.GetFitExtension(fit_type, fname)
 
 fit_num = 0 if (fit != "L") else 1
 

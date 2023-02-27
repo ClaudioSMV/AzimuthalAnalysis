@@ -145,8 +145,12 @@ elif [[ $CUTINFO == *"LR"* ]]; then
     FITS_CUT="${FITS_CUT}_LR"
     PAR_NCUT="${PAR_NCUT}_LR"
     PAR_RCUT="${PAR_RCUT}_LR"
+elif [[ $CUTINFO == *"Ff"* ]]; then
+    FITS_CUT="${FITS_CUT}_Ff"
+    PAR_NCUT="${PAR_NCUT}_Ff"
+    PAR_RCUT="${PAR_RCUT}_Ff"
 elif [[ $CUTINFO != *"Sh"* ]]; then
-    echo "Remember to choose Fold (Fd), Both wings (LR) or Shift (Sh) method for the fit!"
+    echo "Remember to choose FullFit (Ff), Fold (Fd), Both wings (LR) or Shift (Sh) method for the fit!"
     exit
 fi
 

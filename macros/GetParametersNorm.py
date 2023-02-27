@@ -44,28 +44,11 @@ isJLab = options.JLabCluster
 verbose = options.verbose
 
 use_Fold = options.fold
-if "Fold" in myStyle.getCutStrFromStr(options.outputCuts):
-    use_Fold = True
-
-use_Shift = False
-if (("Shift" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.outputCuts))) or ("Shift" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.inputCuts)))):
-    use_Shift = True
+if (use_Fold):
+    options.inputCuts+="_Fd"
 
 ### Define type of fit used
-# [LR] is default
-fit_type = "LR"
-
-if (use_Fold and use_Shift):
-    print("  [ParNorm] Two fit methods selected. Please, choose only one of the options!")
-    exit()
-# [Fold]
-elif (use_Fold):
-    fit_type = "Fd"
-# [Shift]
-elif (use_Shift):
-    fit_type = "Sh"
-# [LR]
-# else: fit_type = "LR" # Default
+fit_type = myStyle.GetFitMethod(options.inputCuts +"_"+ options.outputCuts)
 
 infoDict = myStyle.getDictNameFormat(dataset)
 nameFormatted = myStyle.getNameFormatted(dataset)
@@ -93,10 +76,9 @@ if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
     print("  [ParNorm] Parameters normalized file already exists! Not overwriting it.")
     exit()
 
-# [Fold], [Shift]
+### Define list with fit names
 list_func_names = ["crossSectionR"]
-# [LR]
-if ((not use_Fold) and (not use_Shift)):
+if (fit_type == "LR"):
     list_func_names.append("crossSectionL")
 
 n_htypeReco = [0, 0, 0]
@@ -225,10 +207,7 @@ ymax =  1.2
 for e,elem in enumerate(list_func_names):
     for t,typeR in enumerate(type_reco_short):
 
-        if ("L" in elem): name_ext = "L"
-        elif ("R" in elem): name_ext = "R"
-        if ("Fd" in fit_type): name_ext = "F"
-        elif ("Sh" in fit_type): name_ext = "S"
+        name_ext = myStyle.GetFitExtension(fit_type, elem)
 
         ## Ratio b/a
         # legend_b = TLegend(1-myStyle.GetMargin()-0.35,1-myStyle.GetMargin()-0.12, 1-myStyle.GetMargin()-0.05,1-myStyle.GetMargin()-0.02)

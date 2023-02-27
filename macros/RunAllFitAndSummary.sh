@@ -15,7 +15,7 @@
 #  "FE": Use FullError; "AQ": Acc Quality < 10%;                        #
 #  "Zx": x-axis is Zh; "Px": x-axis is Pt2; "Sh": Shift reco distrib    #
 #  "Fs": Add Sin(x) term in fit;                                        #
-#  "Fd": Fit uses Fold; "LR": Fit uses both tails;                      #
+#  "Fd": Fit uses Fold; "LR": Fit uses both tails; "Ff": Full fit       #
 #  "Left" or "Right" if "LR" is under use;                              #
 #  "MD": Mix D info is ratios;                                          #
 #        Add option: -O: To Overwrite files if created                  #
