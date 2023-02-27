@@ -245,6 +245,9 @@ def getSummaryPath(nameMethod, fileExt = "pdf", cuts = "", JLab_cluster = True, 
     this_folder+="Summary/"
     if extra_path:
         this_folder+=extra_path+"/"
+    if cuts:
+        # Remember: getCutStrFromStr(cuts) has an underscore as first element
+        this_folder+= getCutStrFromStr(cuts)[1:] +"/"
 
     if not os.path.exists(this_folder):
         CreateFolder(this_folder, "", False, False)
