@@ -266,6 +266,6 @@ for e,elem in enumerate(list_func_names):
 outputFile.Write()
 outputFile.Close()
 
-print("  [ParNorm] Made it to the end!")
+print("  [ParNorm] Made it to the end!\n")
 
 inputfile.Close()

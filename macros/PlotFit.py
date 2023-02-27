@@ -306,6 +306,9 @@ for h in list_of_hists:
             if (hist.GetEntries() == 0):
                 print("  [Fit] Histogram %s is empty! Fit is not possible."%hist_name)
                 continue
+            elif (hist.GetEntries() < 4): # ndf cut
+                print("  [Fit] Histogram %s has not enough bins! Fit is not feasible."%hist_name)
+                continue
             elif (fit_type=="LR" and (hist.GetEntries() < Nbins/2.)):
                 print("  [Fit] Histogram %s has half or more empty bins! Fit LR is not feasible."%hist_name)
                 continue

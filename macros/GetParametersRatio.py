@@ -201,7 +201,18 @@ for i_h,h in enumerate(inputfile_solid.GetListOfKeys()):
             cov_matrix_X = inputfile_solid.Get(name_cov)
             cov_matrix_D = inputfile_D.Get(name_cov)
 
-            fit_solid = hist_solid.GetFunction(f)
+            try:
+                fit_solid = hist_solid.GetFunction(f)
+            except:
+                print("  [ParRatio] Solid fit not found! %s"%name_cov)
+                continue
+
+            try:
+                fit_D = hist_D.GetFunction(f)
+            except:
+                print("  [ParRatio] D fit not found! %s"%name_cov)
+                continue
+
             par0_X = fit_solid.GetParameter(0)
             par1_X = fit_solid.GetParameter(1)
             par2_X = fit_solid.GetParameter(2)
@@ -210,7 +221,6 @@ for i_h,h in enumerate(inputfile_solid.GetListOfKeys()):
             err1_X = fit_solid.GetParError(1)
             err2_X = fit_solid.GetParError(2)
 
-            fit_D = hist_D.GetFunction(f)
             par0_D = fit_D.GetParameter(0)
             par1_D = fit_D.GetParameter(1)
             par2_D = fit_D.GetParameter(2)
