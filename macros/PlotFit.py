@@ -133,7 +133,7 @@ def Get_FitFunctions(h_out, list_fname, this_fittype, opts):
             this_xmin = peak_Rend
             this_xmax =  xmax_out
         elif (this_fittype == "Sh"):
-            this_xmin = peak_Rend
+            this_xmin = peak_Rend if (peak_Rend != 0.0) else xmin_out
             this_xmax = peak_Lend if (peak_Lend != 0.0) else xmax_out
         # elif (this_fittype == "Ff"):
 
