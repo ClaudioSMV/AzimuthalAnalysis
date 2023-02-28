@@ -296,18 +296,28 @@ for r,typeR in enumerate(type_reco_short):
         mS.DrawSummaryInfo("%s ratio Solid/D%s %s"%(par,solid_mix,fit))
         mS.DrawTargetInfo("Solid_targets", "Data")
 
-        l_x1, l_x2 = 0.3, 0.7
-        l_y1, l_y2 = 0.6, 0.8
-        if par=="B":
-            l_y1 = 0.05
-            l_y2 = 0.25
+        ## Legend
+        legQ, legN = 2, 0
+        legend_pad = gROOT.FindObject("pad%s_%i_%i"%(par,legQ,legN))
+        legend_pad.cd()
+
+        l_x1, l_x2 = XtoPad(0.1), XtoPad(0.9)
+        l_y1, l_y2 = YtoPad(0.8), YtoPad(1.0)
+
+        if (key1=='X'):
+            l_x1, l_x2 = XtoPad(0.1), XtoPad(0.9)
+            l_y1, l_y2 = YtoPad(0.7), YtoPad(0.9)
+
         legend = TLegend(l_x1, l_y1, l_x2, l_y2)
         legend.SetBorderSize(0)
         legend.SetTextFont(mS.GetFont())
         legend.SetTextSize(mS.GetSize()-14)
         legend.SetFillStyle(0)
-        legend.SetNColumns(2)
+        legend.SetTextAlign(22)
+        legend.SetNColumns(3)
+        this_canvas.cd(0)
 
+        ## Get line at 1.0
         ratio1L = ROOT.TLine(0.0,1.0, 1.0,1.0)
         ratio1L.SetLineColor(ROOT.kRed)
         ratio1L.SetLineWidth(1)
@@ -319,15 +329,15 @@ for r,typeR in enumerate(type_reco_short):
             this_canvas.cd(0)
             for iQ in range(nBinsQ):
                 for iN in range(nBinsN): # iQ,iN = 0,0 (B)
-                    this_pad = gROOT.FindObject("pad%s_%i_%i"%(par,iQ,nBinsN-iN-1)) # -> 0,2 (A)
+                    this_pad = gROOT.FindObject("pad%s_%i_%i"%(par,iQ,iN)) # -> 0,0 (A)
                     this_pad.SetGrid(0,1)
 
                     ## This selection labels xy such as:
                     ##       (A)              (B)
                     ##  ------------     ------------
-                    ##  - 02 12 22 -     - 00 10 20 -
-                    ##  - 01 11 21 - --> - 01 11 21 -
-                    ##  - 00 10 20 -     - 02 12 22 -
+                    ##  - 02 12 22 -     - 02 12 22 -
+                    ##  - 01 11 21 - <-> - 01 11 21 -
+                    ##  - 00 10 20 -     - 00 10 20 -
                     ##  ------------     ------------
 
                     # this_pad.Draw()
@@ -362,7 +372,7 @@ for r,typeR in enumerate(type_reco_short):
                     # Draw hist in last layer
                     this_hist.Draw("e same")
 
-                    if (iN==2):
+                    if (iN==0):
                         text = ROOT.TLatex()
                         text.SetTextSize(tsize-14)
                         text.SetTextAlign(23)
@@ -377,7 +387,7 @@ for r,typeR in enumerate(type_reco_short):
                         title = mS.GetBinInfo("%s%i"%(key1,iN), this_binning_type) # "Q%iN%i" or "Q%iX%i"
                         text.DrawLatexNDC(XtoPad(1.05),YtoPad(0.5),title)
 
-                    if (iQ==2 and iN==0):
+                    if (iQ==legQ and iN==legN):
                         legend.AddEntry(this_hist,targ)
                         if (legend.GetListOfPrimitives().GetEntries()==len(list_targets)):
                             legend.Draw()

@@ -91,11 +91,12 @@ def CanvasPartition(canvas, nx, ny, lMarg, rMarg, bMarg, tMarg, extra_name=""):
 def XtoPad(x):
     xl, yd, xr, yu = ctypes.c_double(0.0), ctypes.c_double(0.0), ctypes.c_double(0.0), ctypes.c_double(0.0)
     gPad.GetPadPar(xl, yd, xr, yu)
+    # print("xl: %.2f; yd: %.2f; xr: %.2f; yu: %.2f;"%(xl.value, yd.value, xr.value, yu.value))
     pw = xr.value-xl.value
     lm = gPad.GetLeftMargin()
     rm = gPad.GetRightMargin()
     fw = pw-pw*lm-pw*rm
-    # print((x*fw+pw*lm)/pw)
+    # print("pw: %.2f; lm: %.2f; rm: %.2f; fw: %.2f; x2pad: %.2f"%(pw, lm, rm, fw, (x*fw+pw*lm)/pw))
     return (x*fw+pw*lm)/pw
 
 def YtoPad(y):
@@ -105,6 +106,7 @@ def YtoPad(y):
     tm = gPad.GetTopMargin()
     bm = gPad.GetBottomMargin()
     fh = ph-ph*bm-ph*tm
+    # print("ph: %.2f; tm: %.2f; bm: %.2f; fh: %.2f; y2pad: %.2f"%(ph, tm, bm, fh, (y*fh+bm*ph)/ph))
     return (y*fh+bm*ph)/ph
 
 
@@ -307,17 +309,26 @@ for r,typeR in enumerate(type_reco_short):
             targs_drawn = "Deuterium"
         mS.DrawTargetInfo(targs_drawn, "Data")
 
-        l_x1, l_x2 = 0.3, 0.7
-        l_y1, l_y2 = 0.5, 0.7
-        if not use_ysym and not usePt2:
-            l_y1 = 0.1
-            l_y2 = 0.3
+        ## Legend
+        legQ, legN = 2, 0
+        legend_pad = gROOT.FindObject("pad%s_%i_%i"%(par,legQ,legN))
+        legend_pad.cd()
+
+        l_x1, l_x2 = XtoPad(0.1), XtoPad(0.9)
+        l_y1, l_y2 = YtoPad(0.8), YtoPad(1.0)
+
+        if (key1=='X'):
+            l_x1, l_x2 = XtoPad(0.1), XtoPad(0.9)
+            l_y1, l_y2 = YtoPad(0.7), YtoPad(0.9)
+
         legend = TLegend(l_x1, l_y1, l_x2, l_y2)
         legend.SetBorderSize(0)
         legend.SetTextFont(mS.GetFont())
         legend.SetTextSize(mS.GetSize()-14)
         legend.SetFillStyle(0)
-        legend.SetNColumns(2)
+        legend.SetTextAlign(22)
+        legend.SetNColumns(3)
+        this_canvas.cd(0)
 
         new_pad = True
 
@@ -325,15 +336,15 @@ for r,typeR in enumerate(type_reco_short):
             this_canvas.cd(0)
             for iQ in range(nBinsQ):
                 for iN in range(nBinsN): # iQ,iN = 0,0 (B)
-                    this_pad = gROOT.FindObject("pad%s_%i_%i"%(par,iQ,nBinsN-iN-1)) # -> 0,2 (A)
+                    this_pad = gROOT.FindObject("pad%s_%i_%i"%(par,iQ,iN)) # -> 0,0 (A)
                     this_pad.SetGrid(0,1)
 
                     ## This selection labels xy such as:
                     ##       (A)              (B)
                     ##  ------------     ------------
-                    ##  - 02 12 22 -     - 00 10 20 -
-                    ##  - 01 11 21 - --> - 01 11 21 -
-                    ##  - 00 10 20 -     - 02 12 22 -
+                    ##  - 02 12 22 -     - 02 12 22 -
+                    ##  - 01 11 21 - <-> - 01 11 21 -
+                    ##  - 00 10 20 -     - 00 10 20 -
                     ##  ------------     ------------
 
                     # this_pad.Draw()
@@ -365,7 +376,7 @@ for r,typeR in enumerate(type_reco_short):
                     else:
                         this_hist.Draw("e same")
 
-                    if (iN==2):
+                    if (iN==0):
                         text = ROOT.TLatex()
                         text.SetTextSize(tsize-14)
                         text.SetTextAlign(23)
@@ -380,7 +391,7 @@ for r,typeR in enumerate(type_reco_short):
                         title = mS.GetBinInfo("%s%i"%(key1,iN), this_binning_type) # "Q%iN%i" or "Q%iX%i"
                         text.DrawLatexNDC(XtoPad(1.05),YtoPad(0.5),title)
 
-                    if (iQ==2 and iN==0):
+                    if (iQ==legQ and iN==legN):
                         legend.AddEntry(this_hist,targ)
                         if (legend.GetListOfPrimitives().GetEntries()==len(list_targets)):
                             legend.Draw()
