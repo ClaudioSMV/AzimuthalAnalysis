@@ -48,6 +48,9 @@ jobname="Hist2D_${VARNAME}"
 if [[ -n $CUTLIST ]]; then
     jobname="Hist2D_${VARNAME}_${CUTLIST}"
 fi
+if [[ $NBINACC != *"-1"* ]]; then
+    jobname="${jobname}_${NBINACC}B"
+fi
 jobfile="${TMPDIR}/${jobname}.sh"
 
 echo ${jobname}
@@ -73,7 +76,7 @@ echo "root -l -b 'getHist2D.C(\"DFe\",true, \"$VARNAME\", \"$CUTLIST\", $NBINACC
 echo "root -l -b 'getHist2D.C(\"DC\", true, \"$VARNAME\", \"$CUTLIST\", $NBINACC)'" >> ${jobfile}
 echo "root -l -b 'getHist2D.C(\"DPb\",true, \"$VARNAME\", \"$CUTLIST\", $NBINACC)'" >> ${jobfile}
 
-echo "-- Simulations --"                                                   >> ${jobfile}
+echo "-- Simulations --"                                                            >> ${jobfile}
 echo "root -l -b 'getHist2D.C(\"Fe\",false, \"$VARNAME\", \"$CUTLIST\", $NBINACC)'" >> ${jobfile}
 echo "root -l -b 'getHist2D.C(\"C\", false, \"$VARNAME\", \"$CUTLIST\", $NBINACC)'" >> ${jobfile}
 echo "root -l -b 'getHist2D.C(\"Pb\",false, \"$VARNAME\", \"$CUTLIST\", $NBINACC)'" >> ${jobfile}
