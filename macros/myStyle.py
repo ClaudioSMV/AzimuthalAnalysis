@@ -216,7 +216,7 @@ def getPlotsFolder(nameMethod, extraCuts = "", extraPath = "", JLab_cluster = Tr
     if JLab_cluster: this_folder+="JLab_cluster/"
 
     these_cuts = getCutStrFromStr(extraCuts)
-    this_folder+=nameMethod+these_cuts+"/"
+    this_folder+=nameMethod+"/"+these_cuts[1:]+"/"
     if extraPath:
         this_folder+=extraPath+"/" # <target>/
     if isOutput:
@@ -394,6 +394,14 @@ def GetColors(color_blind = False):
             colors_list[i] = ROOT.TColor.GetColor(color_RGB[i][0],color_RGB[i][1],color_RGB[i][2])
 
     return colors_list
+
+def GetMarkers(filled = False):
+    ## [circle, square, triangle, diamond, star-inverse, inverse-triangle]
+    marker_list = [24, 25, 26, 27, 30, 32] # Hollow option
+    if filled:
+        marker_list = [20, 21, 22, 33, 29, 23] # Filled option
+
+    return marker_list
 
 color_target = {'C': GetColors(True)[0], 'Fe': GetColors(True)[2], 'Pb': GetColors(True)[3], 'D': GetColors(True)[4],
                 'DC': GetColors(True)[1], 'DFe': GetColors(True)[5], 'DPb': GetColors(True)[6]}
