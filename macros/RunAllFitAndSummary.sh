@@ -10,6 +10,8 @@
 #               2: Regular bins in Zh, Pt2, and PhiPQ;                  #
 #               3: Regular bins in Pt2, and PhiPQ;)                     #
 #  <cuts>    = Format "AA_BB_CC" (Empty is default)                     #
+#  ** AllFit runs over all 4 fit methods                                #
+#                                                                       #
 #  "Xf": Use Xf from data; "DS": Delta Sector != 0; "BS": rm Bad Sect;  #
 #  "PF": Pi+ fiducial cut; "MM": Mirror Match;                          #
 #  "FE": Use FullError; "AQ": Acc Quality < 10%;                        #
@@ -41,6 +43,7 @@ WHATRUN=${INPUTARRAY[3]}
 # Main
 ###
 
+## X-axis dependency
 CORR_XAXIS=('')
 if [[ $CUTINFO == *"Zx"* ]]; then
     echo "Using only Zh as x-axis"
@@ -53,20 +56,36 @@ else
     CORR_XAXIS=('_Zx' '_Px')
 fi
 
-for x in "${CORR_XAXIS[@]}"; do
-    if [[ $WHATRUN == *"F"* || $WHATRUN == "" ]]; then
-        ./FitCrossSection.sh DS ${BINNAME} ${BINNDIM} ${CUTINFO}${x}
-        ./FitCrossSection.sh Fe ${BINNAME} ${BINNDIM} ${CUTINFO}${x}
-        ./FitCrossSection.sh C  ${BINNAME} ${BINNDIM} ${CUTINFO}${x}
-        ./FitCrossSection.sh Pb ${BINNAME} ${BINNDIM} ${CUTINFO}${x}
-    fi
+FITMETH=('')
+if [[ $CUTINFO == *"AllFit"* ]]; then
+    echo "Running over all fit methods (Full, Fold, LR, Shift)"
+    FITMETH=('_Ff' '_Fd' '_LR_Right' '_LR_Left' '_Sh')
+    CUTINFO=${CUTINFO/AllFit/}
+elif [[ $CUTINFO != *"Ff"* && $CUTINFO != *"Fd"* && $CUTINFO != *"LR"* && $CUTINFO != *"Sh"* ]]; then
+    echo "No fit method defined. Use: Ff, Fd, LR_Right, LR_Left, Sh or AllFit."
+    exit
+fi
 
-    if [[ $WHATRUN == *"S"* || $WHATRUN == "" ]]; then
-        # ${CUTINFO/XX/} removes "XX" so that summary plots work!
-        CUTINFO=${CUTINFO/-O/}
-        CUTINFO=${CUTINFO/-A/}
-        python Summary_ParametersNorm.py  -D ${BINNAME}_${BINNDIM} -i ${CUTINFO}${x} -J -s
-        python Summary_ParametersNorm.py  -D ${BINNAME}_${BINNDIM} -i ${CUTINFO}${x} -J -a
-        python Summary_ParametersRatio.py -D ${BINNAME}_${BINNDIM} -i ${CUTINFO}${x} -J
-    fi
+for m in "${FITMETH[@]}"; do
+    for x in "${CORR_XAXIS[@]}"; do
+        THIS_CUT="${CUTINFO}${x}${m}"
+
+        echo "" ; echo "Running ${THIS_CUT}" ; echo "" ; echo ""
+
+        if [[ $WHATRUN == *"F"* || $WHATRUN == "" ]]; then
+            ./FitCrossSection.sh DS ${BINNAME} ${BINNDIM} ${THIS_CUT}
+            ./FitCrossSection.sh Fe ${BINNAME} ${BINNDIM} ${THIS_CUT}
+            ./FitCrossSection.sh C  ${BINNAME} ${BINNDIM} ${THIS_CUT}
+            ./FitCrossSection.sh Pb ${BINNAME} ${BINNDIM} ${THIS_CUT}
+        fi
+
+        if [[ $WHATRUN == *"S"* || $WHATRUN == "" ]]; then
+            # ${CUTINFO/XX/} removes "XX" so that summary plots work!
+            THIS_CUT=${THIS_CUT/-O/}
+            THIS_CUT=${THIS_CUT/-A/}
+            python Summary_ParametersNorm.py  -D ${BINNAME}_${BINNDIM} -i ${THIS_CUT} -J -s
+            python Summary_ParametersNorm.py  -D ${BINNAME}_${BINNDIM} -i ${THIS_CUT} -J -a
+            python Summary_ParametersRatio.py -D ${BINNAME}_${BINNDIM} -i ${THIS_CUT} -J
+        fi
+    done
 done
