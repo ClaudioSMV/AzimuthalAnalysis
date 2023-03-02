@@ -247,7 +247,8 @@ plots_cuts+="_"+fit_type # Add Fold or LR extension
 ### Remove incompatible methods
 if ((fit_type == "Ff") and ("NPeak" in myStyle.getCutStrFromStr(plots_cuts))):
     print("  [Fit] Full fit (Ff) method is incompatible with removing peak. Use LR or Fd instead!")
-    exit()
+    # exit()
+    print("  [Fit] This time Full fit (Ff) method will run without removing peak")
 
 
 ## Input

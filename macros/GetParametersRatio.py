@@ -116,7 +116,7 @@ inputfile_solid = TFile(inputPath_solid+inputROOT_solid,"READ")
 outputPath = myStyle.getPlotsFolder("ParametersRatio", plots_cuts, myStyle.getBinNameFormatted(dataset) + "/" + infoDict["Target"], isJLab)
 outputROOT = myStyle.getPlotsFile("ParametersRatio", dataset, "root", fit_type)
 if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
-    print("Parameters ratio file already exists! Not overwriting it.")
+    print("  [ParRatio] Parameters ratio file already exists! Not overwriting it.")
     exit()
 
 ### Define list with fit names
