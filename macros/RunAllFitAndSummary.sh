@@ -22,7 +22,7 @@
 #  "MD": Mix D info is ratios;                                          #
 #        Add option: -O: To Overwrite files if created                  #
 #  <run>     = "" (empty): Both Fit and Summary; "F": Get Fits;         #
-#              "S": Only get Summary;                                   #
+#              "S": Only get Summary; "D": Get Diff summary;            #
 #                                                                       #
 #  EG: ./FitCrossSection.sh 0 2 Zx_FE_Fd                                #
 #      ./FitCrossSection.sh 1 3 Zx_LR                                   #
@@ -89,3 +89,11 @@ for m in "${FITMETH[@]}"; do
         fi
     done
 done
+
+if [[ ${#FITMETH[@]} -eq 5 || $WHATRUN == *"D"* ]]; then
+    echo "" ; echo "Running summary with different fit methods" ; echo "" ; echo ""
+    for x in "${CORR_XAXIS[@]}"; do
+        python Summary_ParNorm_DiffFit.py -D Fe_${BINNAME}_${BINNDIM} -i ${CUTINFO}${x} -J
+        python Summary_ParRatio_DiffFit.py -D Fe_${BINNAME}_${BINNDIM} -i ${CUTINFO}${x} -J
+    done
+fi
