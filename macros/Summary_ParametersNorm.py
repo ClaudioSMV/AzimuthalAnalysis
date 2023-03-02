@@ -248,6 +248,11 @@ type_reco_short = ["Reco", "RMmc", "RMre"]
 
 list_type_reco = []
 
+# fancy_par = ["A^{UU}_{cos#phi}", "A^{UU}_{cos(2#phi)}"]
+# wt = 1.
+fancy_par = ["#LTcos#phi#GT_{eA}", "#LTcos2#phi#GT_{eA}"] if whatsPlot is not "D" else ["#LTcos#phi#GT_{eD}", "#LTcos2#phi#GT_{eD}"]
+wt = 2.
+
 ## Create histograms
 for r,typeR in enumerate(type_reco_short):
     list_hists = []
@@ -269,14 +274,14 @@ for r,typeR in enumerate(type_reco_short):
                 for iN in range(nBinsN): #nN
                     bin_label = "Q%i%s%i"%(iQ,key1,iN) # "Q%iN%i" or "Q%iX%i"
 
-                    hist_tmp = TH1D("%s_%s_%s-%s"%(typeR,par,targ,bin_label),";%s;%s/A"%(x_axis_title,par),this_n,array('d',this_bin_dict[keyX]))
+                    hist_tmp = TH1D("%s_%s_%s-%s"%(typeR,par,targ,bin_label),";%s;%s"%(x_axis_title,fancy_par[p]),this_n,array('d',this_bin_dict[keyX]))
                     for i_n in range(1,this_n+1):
                         this_label = "%s%s%i"%(bin_label, keyX, i_n-1) # "Q0N0Z0" or "Q0X0P0"
                         this_bin = hist_par.GetXaxis().FindBin(this_label)
                         bin_value = hist_par.GetBinContent(this_bin)
                         bin_error = hist_par.GetBinError(this_bin)
 
-                        hist_tmp.SetBinContent(i_n, bin_value)
+                        hist_tmp.SetBinContent(i_n, bin_value/wt)
                         hist_tmp.SetBinError(i_n, bin_error)
 
                     list_this_Q.append(hist_tmp)
@@ -293,6 +298,8 @@ if usePt2:
     par_y_lmts = [[-0.399,0.399], [-0.149,0.149]] if use_ysym else [[-0.399,0.199], [-0.149,0.149]]
     Q2_bin_info_Ypos = -0.22
 
+fancy_uptitle = ["First asymmetry", "Second asymmetry"]
+
 for r,typeR in enumerate(type_reco_short):
     if typeR==0: # Skip reco method when does not exist!
         continue
@@ -300,13 +307,14 @@ for r,typeR in enumerate(type_reco_short):
     for p,par in enumerate(["B", "C"]):
         this_canvas = list_canvas[p]
         this_canvas.cd(0)
-        mS.DrawSummaryInfo("Norm %s/A %s"%(par,fit))
+        # mS.DrawSummaryInfo("Norm %s/A %s"%(par,fit))
+        mS.DrawSummaryInfo("%s %s"%(fancy_uptitle[p], fit))
         if (whatsPlot=="All"):
-            targs_drawn = "All_targets"
+            targs_drawn = "All targets"
         elif (whatsPlot=="Solid"):
-            targs_drawn = "Solid_targets"
+            targs_drawn = "Solid targets"
         elif (whatsPlot=="D"):
-            targs_drawn = "Deuterium"
+            targs_drawn = "Liquid target"
         mS.DrawTargetInfo(targs_drawn, "Data")
 
         ## Legend

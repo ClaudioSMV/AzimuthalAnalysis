@@ -193,9 +193,6 @@ list_canvas = [canvas_B, canvas_C]
 list_fitmethods = ["Full", "Right", "Left", "Fold", "Shift"]
 list_fitmethodsKey = ["Ff", "LR_Right", "LR_Left", "Fd", "Sh"]
 
-# list_fitmethods = ["Full", "Fold", "Shift"]
-# list_fitmethodsKey = ["Ff", "Fd", "Sh"]
-
 list_infiles = []
 
 # Open files
@@ -210,10 +207,6 @@ for fm in list_fitmethodsKey:
         meth_detail = tmp_methods_list[1]
     except:
         meth_detail = ""
-
-    print("Detail: %s"%meth_detail)
-
-    # fit_ext = mS.GetFitExtension(this_meth) #, meth_detail)
 
     inputPath = mS.getPlotsFolder("ParametersNorm", this_input_cuts, mS.getBinNameFormatted(dataset) + "/" + this_targ, isJLab, False) # "../output/"
     inputROOT = mS.getPlotsFile("Parameters", dataset, "root", this_meth) # fit_ext)
@@ -230,6 +223,11 @@ this_n = nBinsZ if useZh else nBinsP
 type_reco_short = ["Reco", "RMmc", "RMre"]
 
 list_type_reco = []
+
+# fancy_par = ["A^{UU}_{cos#phi}", "A^{UU}_{cos(2#phi)}"]
+# wt = 1.
+fancy_par = ["#LTcos#phi#GT_{eA}", "#LTcos2#phi#GT_{eA}"] if "D" not in this_targ else ["#LTcos#phi#GT_{eD}", "#LTcos2#phi#GT_{eD}"]
+wt = 2.
 
 ## Create histograms
 for r,typeR in enumerate(type_reco_short):
@@ -253,14 +251,14 @@ for r,typeR in enumerate(type_reco_short):
                 for iN in range(nBinsN): #nN
                     bin_label = "Q%i%s%i"%(iQ,key1,iN) # "Q%iN%i" or "Q%iX%i"
 
-                    hist_tmp = TH1D("%s_%s_%s-%s"%(typeR,par,this_targ,bin_label),";%s;%s/A"%(x_axis_title,par),this_n,array('d',this_bin_dict[keyX]))
+                    hist_tmp = TH1D("%s_%s_%s-%s"%(typeR,par,this_targ,bin_label),";%s;%s"%(x_axis_title,fancy_par[p]),this_n,array('d',this_bin_dict[keyX]))
                     for i_n in range(1,this_n+1):
                         this_label = "%s%s%i"%(bin_label, keyX, i_n-1) # "Q0N0Z0" or "Q0X0P0"
                         this_bin = hist_par.GetXaxis().FindBin(this_label)
                         bin_value = hist_par.GetBinContent(this_bin)
                         bin_error = hist_par.GetBinError(this_bin)
 
-                        hist_tmp.SetBinContent(i_n, bin_value)
+                        hist_tmp.SetBinContent(i_n, bin_value/wt)
                         hist_tmp.SetBinError(i_n, bin_error)
 
                     list_this_Q.append(hist_tmp)
@@ -279,7 +277,7 @@ if usePt2:
     par_y_lmts = [[-0.399,0.199], [-0.149,0.149]]
     Q2_bin_info_Ypos = -0.22
 
-
+fancy_uptitle = ["First asymmetry", "Second asymmetry"]
 
 ## Style
 l_color = mS.GetColors(True)
@@ -292,7 +290,8 @@ for r,typeR in enumerate(type_reco_short):
     for p,par in enumerate(["B", "C"]):
         this_canvas = list_canvas[p]
         this_canvas.cd(0)
-        mS.DrawSummaryInfo("Norm %s/A Diff methods"%(par))
+        # mS.DrawSummaryInfo("Norm %s/A Diff methods"%(par))
+        mS.DrawSummaryInfo("%s multi fit"%(fancy_uptitle[p]))
         mS.DrawTargetInfo(this_targ, "Data")
 
         ## Legend
@@ -387,13 +386,9 @@ for r,typeR in enumerate(type_reco_short):
 
         this_title_png = mS.getSummaryPath("%s_%s"%(this_bininfo,typeR), "png", plots_cuts, isJLab, this_bininfo, "Summary_DiffMethods")
         this_title_png = mS.addBeforeRootExt(this_title_png, "-DiffFitNorm%s_%s"%(par,this_targ), "png")
-        # if ("LR" in this_title_png):
-        #     this_title_png = mS.addBeforeRootExt(this_title_png, "-%s"%(fit), "png")
 
         this_title_pdf = mS.getSummaryPath("%s_%s"%(this_bininfo,typeR), "pdf", plots_cuts, isJLab, this_bininfo, "Summary_DiffMethods")
         this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "-DiffFitNorm%s_%s"%(par,this_targ), "pdf")
-        # if ("LR" in this_title_pdf):
-        #     this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "-%s"%(fit), "pdf")
 
         this_canvas.SaveAs(this_title_png)
         # this_canvas.SaveAs(this_title_pdf)

@@ -240,6 +240,12 @@ type_reco_short = ["Reco", "RMmc", "RMre"]
 
 list_type_reco = []
 
+# fancy_par = ["A^{UU}_{cos#phi}", "A^{UU}_{cos(2#phi)}"]
+# wt = 1.
+fancy_par  = ["#LTcos#phi#GT_{eA}", "#LTcos2#phi#GT_{eA}"]
+fancy_parD = ["#LTcos#phi#GT_{eD}", "#LTcos2#phi#GT_{eD}"]
+# wt = 2. # Removed in ratio :9
+
 ## Create histograms
 for r,typeR in enumerate(type_reco_short):
     list_hists = []
@@ -260,7 +266,7 @@ for r,typeR in enumerate(type_reco_short):
                 for iN in range(nBinsN): #nN
                     bin_label = "Q%i%s%i"%(iQ,key1,iN) # "Q0N0" or "Q0X0"
 
-                    hist_tmp = TH1D("%s_%s_%s-%s"%(typeR,par,targ,bin_label),";%s;(%s/A)_{Solid}/(%s/A)_{D}"%(x_axis_title,par,par),this_n,array('d',this_bin_dict[keyX]))
+                    hist_tmp = TH1D("%s_%s_%s-%s"%(typeR,par,targ,bin_label),";%s;%s/%s"%(x_axis_title,fancy_par[p],fancy_parD[p]),this_n,array('d',this_bin_dict[keyX]))
                     for i_n in range(1,this_n+1):
                         this_label = "%s%s%i"%(bin_label, keyX, i_n-1) # "Q0N0Z0" or "Q0X0P0"
                         this_bin = hist_par.GetXaxis().FindBin(this_label)
@@ -284,6 +290,8 @@ if usePt2:
     par_y_lmts = [[0.0,2.0], [-2.0,4.0]]
     Q2_bin_info_Ypos = -0.22
 
+fancy_uptitle = ["First asymmetry", "Second asymmetry"]
+
 for r,typeR in enumerate(type_reco_short):
     if typeR==0: # Skip reco method when does not exist!
         continue
@@ -292,9 +300,11 @@ for r,typeR in enumerate(type_reco_short):
         this_canvas = list_canvas[p]
         this_canvas.cd(0)
 
-        solid_mix = "_All" if mixD else "_Solid"
-        mS.DrawSummaryInfo("%s ratio Solid/D%s %s"%(par,solid_mix,fit))
-        mS.DrawTargetInfo("Solid_targets", "Data")
+        # solid_mix = "_All" if mixD else "_Solid"
+        # mS.DrawSummaryInfo("%s ratio Solid/D%s %s"%(par,solid_mix,fit))
+        solid_mix = " mixed D" if mixD else ""
+        mS.DrawSummaryInfo("%s ratio%s %s"%(fancy_uptitle[p],solid_mix,fit))
+        mS.DrawTargetInfo("Solid targets", "Data")
 
         ## Legend
         legQ, legN = 2, 0
