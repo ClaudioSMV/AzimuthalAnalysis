@@ -239,10 +239,10 @@ def getPlotsFile(nameMethod, nameFileExt, fileExt = "root", plotBin = ""):
     return this_file
 
 ### /plots/Summary
-def getSummaryPath(nameMethod, fileExt = "pdf", cuts = "", JLab_cluster = True, extra_path = ""):
+def getSummaryPath(nameMethod, fileExt = "pdf", cuts = "", JLab_cluster = True, extra_path = "", name_folder = "Summary"):
     this_folder = "../macros/plots/"
     if JLab_cluster: this_folder+="JLab_cluster/"
-    this_folder+="Summary/"
+    this_folder+="%s/"%(name_folder) ## +="Summary/"
     if extra_path:
         this_folder+=extra_path+"/"
     if cuts:
