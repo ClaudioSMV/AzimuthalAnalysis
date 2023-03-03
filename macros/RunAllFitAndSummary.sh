@@ -93,7 +93,17 @@ done
 if [[ ${#FITMETH[@]} -eq 5 || $WHATRUN == *"D"* ]]; then
     echo "" ; echo "Running summary with different fit methods" ; echo "" ; echo ""
     for x in "${CORR_XAXIS[@]}"; do
-        python Summary_ParNorm_DiffFit.py -D Fe_${BINNAME}_${BINNDIM} -i ${CUTINFO}${x} -J
+        python Summary_ParNorm_DiffFit.py  -D DFe_${BINNAME}_${BINNDIM} -i ${CUTINFO}${x} -J
+        python Summary_ParNorm_DiffFit.py  -D DC_${BINNAME}_${BINNDIM} -i ${CUTINFO}${x} -J
+        python Summary_ParNorm_DiffFit.py  -D DPb_${BINNAME}_${BINNDIM} -i ${CUTINFO}${x} -J
+
+        python Summary_ParNorm_DiffFit.py  -D Fe_${BINNAME}_${BINNDIM} -i ${CUTINFO}${x} -J
         python Summary_ParRatio_DiffFit.py -D Fe_${BINNAME}_${BINNDIM} -i ${CUTINFO}${x} -J
+
+        python Summary_ParNorm_DiffFit.py  -D C_${BINNAME}_${BINNDIM} -i ${CUTINFO}${x} -J
+        python Summary_ParRatio_DiffFit.py -D C_${BINNAME}_${BINNDIM} -i ${CUTINFO}${x} -J
+
+        python Summary_ParNorm_DiffFit.py  -D Pb_${BINNAME}_${BINNDIM} -i ${CUTINFO}${x} -J
+        python Summary_ParRatio_DiffFit.py -D Pb_${BINNAME}_${BINNDIM} -i ${CUTINFO}${x} -J
     done
 fi

@@ -435,10 +435,10 @@ for r,typeR in enumerate(type_reco_short):
 
         this_bininfo = mS.getBinNameFormatted(dataset)
 
-        this_title_png = mS.getSummaryPath("%s_%s"%(this_bininfo,typeR), "png", plots_cuts, isJLab, this_bininfo, "Summary_DiffMethods")
+        this_title_png = mS.getSummaryPath("%s_%s"%(this_bininfo,typeR), "png", plots_cuts, isJLab, this_bininfo +"/"+this_targ, "Summary_DiffMethods")
         this_title_png = mS.addBeforeRootExt(this_title_png, "-DiffFitRatio%s_%s"%(par,this_targ), "png")
 
-        this_title_pdf = mS.getSummaryPath("%s_%s"%(this_bininfo,typeR), "pdf", plots_cuts, isJLab, this_bininfo, "Summary_DiffMethods")
+        this_title_pdf = mS.getSummaryPath("%s_%s"%(this_bininfo,typeR), "pdf", plots_cuts, isJLab, this_bininfo +"/"+this_targ, "Summary_DiffMethods")
         this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "-DiffFitRatio%s_%s"%(par,this_targ), "pdf")
 
         this_canvas.SaveAs(this_title_png)
