@@ -66,29 +66,31 @@ elif [[ $CUTINFO != *"Ff"* && $CUTINFO != *"Fd"* && $CUTINFO != *"LR"* && $CUTIN
     exit
 fi
 
-for m in "${FITMETH[@]}"; do
-    for x in "${CORR_XAXIS[@]}"; do
-        THIS_CUT="${CUTINFO}${x}${m}"
+if [[ $WHATRUN != *"D"* ]]; then
+    for m in "${FITMETH[@]}"; do
+        for x in "${CORR_XAXIS[@]}"; do
+            THIS_CUT="${CUTINFO}${x}${m}"
 
-        echo "" ; echo "Running ${THIS_CUT}" ; echo "" ; echo ""
+            echo "" ; echo "Running ${THIS_CUT}" ; echo "" ; echo ""
 
-        if [[ $WHATRUN == *"F"* || $WHATRUN == "" ]]; then
-            ./FitCrossSection.sh DS ${BINNAME} ${BINNDIM} ${THIS_CUT}
-            ./FitCrossSection.sh Fe ${BINNAME} ${BINNDIM} ${THIS_CUT}
-            ./FitCrossSection.sh C  ${BINNAME} ${BINNDIM} ${THIS_CUT}
-            ./FitCrossSection.sh Pb ${BINNAME} ${BINNDIM} ${THIS_CUT}
-        fi
+            if [[ $WHATRUN == *"F"* || $WHATRUN == "" ]]; then
+                ./FitCrossSection.sh DS ${BINNAME} ${BINNDIM} ${THIS_CUT}
+                ./FitCrossSection.sh Fe ${BINNAME} ${BINNDIM} ${THIS_CUT}
+                ./FitCrossSection.sh C  ${BINNAME} ${BINNDIM} ${THIS_CUT}
+                ./FitCrossSection.sh Pb ${BINNAME} ${BINNDIM} ${THIS_CUT}
+            fi
 
-        if [[ $WHATRUN == *"S"* || $WHATRUN == "" ]]; then
-            # ${CUTINFO/XX/} removes "XX" so that summary plots work!
-            THIS_CUT=${THIS_CUT/-O/}
-            THIS_CUT=${THIS_CUT/-A/}
-            python Summary_ParametersNorm.py  -D ${BINNAME}_${BINNDIM} -i ${THIS_CUT} -J -s
-            python Summary_ParametersNorm.py  -D ${BINNAME}_${BINNDIM} -i ${THIS_CUT} -J -a
-            python Summary_ParametersRatio.py -D ${BINNAME}_${BINNDIM} -i ${THIS_CUT} -J
-        fi
+            if [[ $WHATRUN == *"S"* || $WHATRUN == "" ]]; then
+                # ${CUTINFO/XX/} removes "XX" so that summary plots work!
+                THIS_CUT=${THIS_CUT/-O/}
+                THIS_CUT=${THIS_CUT/-A/}
+                python Summary_ParametersNorm.py  -D ${BINNAME}_${BINNDIM} -i ${THIS_CUT} -J -s
+                python Summary_ParametersNorm.py  -D ${BINNAME}_${BINNDIM} -i ${THIS_CUT} -J -a
+                python Summary_ParametersRatio.py -D ${BINNAME}_${BINNDIM} -i ${THIS_CUT} -J
+            fi
+        done
     done
-done
+fi
 
 if [[ ${#FITMETH[@]} -eq 5 || $WHATRUN == *"D"* ]]; then
     echo "" ; echo "Running summary with different fit methods" ; echo "" ; echo ""
