@@ -268,16 +268,20 @@ for r,typeR in enumerate(type_reco_short):
         list_hists.append(list_this_par) #  npar*nTarg*nQ*nN = 2*4*nQ*nN hists
     list_type_reco.append(list_hists)
 
-# par_y_lmts = [[-1.199,1.199], [-0.599,0.599]] if use_ysym else [[-1.199,0.299], [-0.499,0.199]]
-par_y_lmts = [[-1.199,0.299], [-0.499,0.199]]
-Q2_bin_info_Ypos = -0.15
-
-if usePt2:
-    # par_y_lmts = [[-0.399,0.399], [-0.149,0.149]] if use_ysym else [[-0.399,0.199], [-0.149,0.149]]
-    par_y_lmts = [[-0.399,0.199], [-0.149,0.149]]
-    Q2_bin_info_Ypos = -0.22
+# par_y_lmts = [[-1.199,0.299], [-0.499,0.199]] if not usePt2 else [[-0.399,0.199], [-0.149,0.149]]
+par_y_lmts = [[-0.599,0.099], [-0.299,0.099]] if not usePt2 else [[-0.299,0.049], [-0.049,0.099]]
+Q2_bin_info_Ypos = -0.15 if not usePt2 else -0.22
 
 fancy_uptitle = ["First asymmetry", "Second asymmetry"]
+
+frst_binmiddle = (this_bin_dict[keyX][1] + this_bin_dict[keyX][0])/2.
+last_binmiddle = (this_bin_dict[keyX][-1] + this_bin_dict[keyX][-2])/2.
+axis_hist = TH1D("axis_hist","",1, frst_binmiddle-0.05,last_binmiddle+0.05) #this_bin_dict[keyX][0] - last_binhalfwidth, this_bin_dict[keyX][-1] + frst_binhalfwidth)
+
+axis_hist.SetLabelSize(tsize-20,"xy")
+axis_hist.SetTitleSize(tsize-16,"xy")
+axis_hist.SetTitleOffset(1.0,"x")
+axis_hist.SetTitleOffset(1.8,"y")
 
 ## Style
 l_color = mS.GetColors(True)
@@ -316,6 +320,8 @@ for r,typeR in enumerate(type_reco_short):
         this_canvas.cd(0)
 
         new_pad = True
+        axis_hist.SetMinimum(par_y_lmts[p][0])
+        axis_hist.SetMaximum(par_y_lmts[p][1])
 
         for m,meth in enumerate(list_fitmethodsKey):
             this_canvas.cd(0)
@@ -351,15 +357,26 @@ for r,typeR in enumerate(type_reco_short):
                     this_hist.SetTitleOffset(1.0,"x")
                     this_hist.SetTitleOffset(1.8,"y")
 
+                    this_hist.SetLineWidth(2)
                     this_hist.SetLineColor(l_color[m])
-                    this_hist.SetLineWidth(3)
                     this_hist.SetMarkerStyle(list_marker[m])
                     this_hist.SetMarkerColor(l_color[m])
 
                     if new_pad:
-                        this_hist.Draw("e")
+                        axis_hist.GetXaxis().SetTitle(this_hist.GetXaxis().GetTitle())
+                        axis_hist.GetYaxis().SetTitle(this_hist.GetYaxis().GetTitle())
+                        axis_hist.Draw("AXIS")
+                        gPad.RedrawAxis("g")
+
+                        # this_hist.Draw("e")
+                        this_hist.Draw("hist L X0 same")
+                        # this_hist.Draw("e X0")
                     else:
-                        this_hist.Draw("e same")
+                        # this_hist.Draw("e same")
+                        this_hist.Draw("hist L X0 same")
+                        # this_hist.Draw("e X0 same")
+
+                    this_hist.Draw("e X0 same")
 
                     if (iN==0):
                         text = ROOT.TLatex()
@@ -391,7 +408,7 @@ for r,typeR in enumerate(type_reco_short):
         this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "-DiffFitNorm%s_%s"%(par,this_targ), "pdf")
 
         this_canvas.SaveAs(this_title_png)
-        # this_canvas.SaveAs(this_title_pdf)
+        this_canvas.SaveAs(this_title_pdf)
 
 for m,meth in enumerate(list_fitmethodsKey):
     list_infiles[m].Close()

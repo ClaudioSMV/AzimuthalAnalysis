@@ -395,6 +395,7 @@ for r,typeR in enumerate(type_reco_short):
                         axis_hist.GetYaxis().SetTitle(this_hist.GetYaxis().GetTitle())
                         axis_hist.Draw("AXIS")
                         gPad.RedrawAxis("g")
+
                         # this_hist.Draw("e")
                         this_hist.Draw("hist L X0 same")
                         # this_hist.Draw("e X0")
