@@ -283,14 +283,20 @@ for r,typeR in enumerate(type_reco_short):
         list_hists.append(list_this_par) #  npar*nTarg*nQ*nN = 2*4*nQ*nN hists
     list_type_reco.append(list_hists)
 
-par_y_lmts = [[0.0,2.0], [-1.0,3.0]]
-Q2_bin_info_Ypos = -0.15
-
-if usePt2:
-    par_y_lmts = [[0.0,2.0], [-2.0,4.0]]
-    Q2_bin_info_Ypos = -0.22
+# par_y_lmts = [[0.0,2.0], [-1.0,3.0]] if not usePt2 else [[0.0,2.0], [-2.0,4.0]]
+par_y_lmts = [[0.201,1.799], [0.001,1.999]] if not usePt2 else [[0.301, 1.299], [0.001,1.999]]
+Q2_bin_info_Ypos = -0.15 if not usePt2 else -0.22
 
 fancy_uptitle = ["First asymmetry", "Second asymmetry"]
+
+frst_binmiddle = (this_bin_dict[keyX][1] + this_bin_dict[keyX][0])/2.
+last_binmiddle = (this_bin_dict[keyX][-1] + this_bin_dict[keyX][-2])/2.
+axis_hist = TH1D("axis_hist","",1, frst_binmiddle-0.05,last_binmiddle+0.05) #this_bin_dict[keyX][0] - last_binhalfwidth, this_bin_dict[keyX][-1] + frst_binhalfwidth)
+
+axis_hist.SetLabelSize(tsize-20,"xy")
+axis_hist.SetTitleSize(tsize-16,"xy")
+axis_hist.SetTitleOffset(1.0,"x")
+axis_hist.SetTitleOffset(1.8,"y")
 
 for r,typeR in enumerate(type_reco_short):
     if typeR==0: # Skip reco method when does not exist!
@@ -329,11 +335,13 @@ for r,typeR in enumerate(type_reco_short):
 
         ## Get line at 1.0
         ratio1L = ROOT.TLine(0.0,1.0, 1.0,1.0)
-        ratio1L.SetLineColor(ROOT.kRed)
+        ratio1L.SetLineColorAlpha(ROOT.kRed, 0.5)
         ratio1L.SetLineWidth(1)
         ratio1L.SetLineStyle(9)
 
         new_pad = True
+        axis_hist.SetMinimum(par_y_lmts[p][0])
+        axis_hist.SetMaximum(par_y_lmts[p][1])
 
         for t,targ in enumerate(list_targets):
             this_canvas.cd(0)
@@ -366,21 +374,30 @@ for r,typeR in enumerate(type_reco_short):
                     this_hist.SetTitleOffset(1.0,"x")
                     this_hist.SetTitleOffset(1.8,"y")
 
-                    this_hist.SetLineWidth(3)
+                    this_hist.SetLineWidth(2)
                     this_hist.SetLineColor(mS.color_target[targ])
                     this_hist.SetMarkerStyle(4)
                     this_hist.SetMarkerColor(mS.color_target[targ])
 
                     if new_pad:
-                        this_hist.Draw("e")
-                    else:
-                        this_hist.Draw("e same")
+                        axis_hist.GetXaxis().SetTitle(this_hist.GetXaxis().GetTitle())
+                        axis_hist.GetYaxis().SetTitle(this_hist.GetYaxis().GetTitle())
+                        axis_hist.Draw("AXIS")
+                        gPad.RedrawAxis("g")
 
-                    # Draw line at ratio = 1.0
-                    ratio1L.DrawLine(this_hist.GetXaxis().GetXmin(),1.0, this_hist.GetXaxis().GetXmax(),1.0)
+                        # Draw line at ratio = 1.0
+                        ratio1L.DrawLine(axis_hist.GetXaxis().GetXmin(),1.0, axis_hist.GetXaxis().GetXmax(),1.0)
+                        # this_hist.Draw("e")
+                        this_hist.Draw("hist L X0 same")
+                        # this_hist.Draw("e X0")
+                    else:
+                        # this_hist.Draw("e same")
+                        this_hist.Draw("hist L X0 same")
+                        # this_hist.Draw("e X0 same")
 
                     # Draw hist in last layer
-                    this_hist.Draw("e same")
+                    # this_hist.Draw("e same")
+                    this_hist.Draw("e X0 same")
 
                     if (iN==0):
                         text = ROOT.TLatex()
@@ -417,7 +434,7 @@ for r,typeR in enumerate(type_reco_short):
             this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "-%s"%(fit), "pdf")
 
         this_canvas.SaveAs(this_title_png)
-        # this_canvas.SaveAs(this_title_pdf)
+        this_canvas.SaveAs(this_title_pdf)
 
 for t,targ in enumerate(list_targets):
     list_infiles[t].Close()
