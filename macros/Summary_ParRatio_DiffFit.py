@@ -116,7 +116,6 @@ parser.add_option('-J', dest='JLabCluster', action='store_true', default = False
 parser.add_option('-i', dest='inputCuts', default = "", help="Add input cuts Xf_Yb_Z/P...")
 parser.add_option('-o', dest='outputCuts', default = "", help="Add output cuts FE_...")
 
-# parser.add_option('-f', dest='fit',  default = "R", help="Use Fold (F), Left (L) or Right (R) fit")
 parser.add_option('-e', dest='errorFull', action='store_true', default = False, help="Use FullError")
 
 parser.add_option('-m', dest='mixD', action='store_true', default = False, help="Mix deuterium data from all solid targets")
@@ -129,21 +128,6 @@ options, args = parser.parse_args()
 rootpath = options.rootpath
 dataset = options.Dataset
 isJLab = options.JLabCluster
-
-# ### Set Fit method under use
-# fit = options.fit
-
-# if ("LR" in mS.getCutStrFromStr(options.inputCuts) and (not "Left" in options.inputCuts) and (not "Right" in options.inputCuts)):
-#     print("  [SummaryRatio] Specify \"Left\" or \"Right\" in input when using \"LR\" method!")
-#     exit()
-
-# ### Define type of fit used
-# fit_type = mS.GetFitMethod(options.inputCuts +"_"+ options.outputCuts)
-
-# fname = "R" if "Right" in options.inputCuts else ""
-# fit = mS.GetFitExtension(fit_type, fname)
-
-# fit_num = 0 if (fit != "L") else 1
 
 ### Set mixing of D info in one
 mixD = options.mixD
@@ -159,9 +143,6 @@ if options.errorFull:
 if mixD:
     input_cuts+="_MD"
     plots_cuts+="_MD"
-
-# input_cuts+="_"+fit_type # Add Fold or LR extension
-# plots_cuts+="_"+fit_type
 
 useZh = options.useZh
 usePt2 = options.usePt2
@@ -185,19 +166,6 @@ else:
     plots_cuts+="_Zx"
 
 keyX = 'Z' if useZh else 'P'
-
-# dataset_elemts = dataset.split("_")
-# try:
-#     if (int(dataset_elemts[0])):
-#         print("")
-# except:
-#     dataset = "%s_%s"%(dataset_elemts[1],dataset_elemts[2])
-#     dataset_elemts = dataset.split("_")
-#     print("")
-
-# this_binning_type = int(dataset_elemts[0])
-# dataset_title = mS.getNameFormatted("_"+dataset)
-# this_bin_dict = mS.all_dicts[this_binning_type]
 
 ## Define target and binning
 infoDict = mS.getDictNameFormat(dataset)
@@ -224,8 +192,6 @@ canvas_C.SetGrid(0,1)
 
 list_canvas = [canvas_B, canvas_C]
 
-# list_targets = ["C", "Fe", "Pb"]
-
 list_fitmethods = ["Full", "Right", "Left", "Fold", "Shift"]
 list_fitmethodsKey = ["Ff", "LR_Right", "LR_Left", "Fd", "Sh"]
 
@@ -245,7 +211,7 @@ for fm in list_fitmethodsKey:
     print("Detail: %s"%meth_detail)
 
     inputPath = mS.getPlotsFolder("ParametersRatio", this_input_cuts, mS.getBinNameFormatted(dataset) + "/" + this_targ, isJLab, False) # "../output/"
-    inputROOT = mS.getPlotsFile("ParametersRatio", dataset, "root", this_meth) # fit_ext)
+    inputROOT = mS.getPlotsFile("ParametersRatio", dataset, "root", this_meth)
 
     inputfile = TFile(inputPath+inputROOT,"READ")
     list_infiles.append(inputfile)
