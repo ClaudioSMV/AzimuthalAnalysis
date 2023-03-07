@@ -231,6 +231,7 @@ public:
     virtual void Hist2D_PQVsSector();
     virtual void Hist2D_PQVsDeltaSector();
     virtual void Hist2D_VarsVsXb();
+    virtual void Hist2D_PiCherenkovCounter();
     virtual void Correction();
     virtual void ClosureTest();
     virtual Bool_t Notify();

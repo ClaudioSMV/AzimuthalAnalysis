@@ -2312,3 +2312,113 @@ void Acceptance::Hist2D_VarsVsXb()
     fout->Write();
     fout->Close();
 }
+
+void Acceptance::Hist2D_PiCherenkovCounter()
+{
+    ActivateBranches();
+    fChain->SetBranchStatus("Nphe", 1);
+    fChain->SetBranchStatus("P", 1);
+
+    std::vector<std::vector<double>> all_space = {{DISLimits[0][0], DISLimits[1][0]}, {DISLimits[0][1], DISLimits[1][1]}, {0.0, 1.0}, {0.0, 5.0}, {-180., 180.}};
+    UpdateDISLimits(DISLimits, all_space);
+
+    TFile *fout;
+    std::string h2d_folder = "../output/Hist2D" + getFoldNameExt();
+    CreateDir(h2d_folder);
+
+    if (_isData) fout = TFile::Open(Form("%s/CC_NpheVsP_%s_data.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
+    else         fout = TFile::Open(Form("%s/CC_NpheVsP_%s_hsim.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
+
+    //// Define Histograms
+    // Reconstructed or data
+    TH2D* hist2D_Nphe_P_Pi = new TH2D("hist2D_Nphe_P_Pi", "P_{#pi^{+}} vs Nphe;P_{#pi^{+}} [GeV];10 #times Nphe ", 150, 0.0, 5.0, 150, 0.0, 300.0);
+
+    if (fChain == 0)
+        return;
+    Long64_t nentries = fChain->GetEntries();
+    Long64_t nbytes = 0, nb = 0;
+    unsigned int entries_to_process = nentries;
+    int n_pions = 0, n_pions_match = 0;
+    bool good_electron_mc = false, good_electron = false;
+    bool good_pion_mc = false, good_pion = false;
+    bool at_least_one_mcPion = false, at_least_one_Pion = false, at_least_one_Pion_mtch = false;
+
+    for (unsigned int jentry = 0; jentry < entries_to_process; jentry++)
+    {
+        if (jentry % 1000000 == 0)
+            printf("Processing entry %9u, progress at %6.2f%%\n",jentry,100.*(double)jentry/(entries_to_process));
+
+        // std::cout << "Processing entry " << jentry << ", progress at " << 100.*(double) jentry / (entries_to_process) << "%" << std::endl;
+        Long64_t ientry = LoadTree(jentry);
+        if (ientry < 0)
+            break;
+        nb = fChain->GetEntry(jentry);
+        nbytes += nb;
+        // if (Cut(ientry) < 0) continue;
+        good_electron_mc = false, good_electron = false;
+        at_least_one_mcPion = false, at_least_one_Pion = false, at_least_one_Pion_mtch = false;
+
+        if (GoodElectron(ientry, DISLimits))
+        {
+            good_electron = true;
+        }
+
+        if (!_isData && GoodElectron_MC(ientry, DISLimits))
+        {
+            good_electron_mc = true;
+        }
+
+        // if (good_electron && good_electron_mc)
+        // {
+        // }
+
+        int vec_entries = PhiPQ->size();
+
+		for (int i=0; i<vec_entries; i++)
+        {
+            good_pion_mc = false, good_pion = false;
+            if (good_electron && GoodPiPlus(ientry, i, DISLimits))
+            {
+                n_pions++;
+                good_pion = true;
+                hist2D_Nphe_P_Pi->Fill(P->at(i), Nphe->at(i));
+
+                at_least_one_Pion = true;
+            }
+
+            // if (!_isData && good_electron_mc && GoodPiPlus_MC(ientry, i, DISLimits))
+            // {
+            //     good_pion_mc = true;
+
+            //     at_least_one_mcPion = true;
+            // }
+
+            // if (good_pion && good_pion_mc)
+            // {
+            //     n_pions_match++;
+
+            //     at_least_one_Pion_mtch = true;
+            // }
+        }   // loop over tracks
+
+        // if (at_least_one_Pion)
+        // {
+        // }
+
+        // if (at_least_one_mcPion)
+        // {
+        // }
+
+        // if (at_least_one_Pion_mtch)
+        // {
+        // }
+    }       // loop over entries
+
+    std::cout << "There are " << n_pions << " final state Pions." << std::endl;
+    // if (!_isData) std::cout << "There are " << n_pions_match << " final state Pions matching generated." << std::endl;
+
+    std::cout << "Made it to the end. Saving..." << std::endl;
+
+    fout->Write();
+    fout->Close();
+}
