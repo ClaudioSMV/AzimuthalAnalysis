@@ -2,32 +2,41 @@ import ROOT
 import os
 import Bins as bn
 
-## Define global variables
+
+###############################
+##  Define global variables  ##
+###############################
+
 marg=0.05
 font=43 # Helvetica
-# tsize=32
-tsize=38 #35
+tsize=38
 
-### Names' formats
 
+####################
+##      Info      ##
+##  Names format  ##
+####################
+
+####
 # Acceptance_%s_B%i.root      ; <Target>,<_binIndex>
 # Corrected_%s_B%i_%iD.root   ; <Target>,<_binIndex>,<_binNdims (non-integrated dims)>
 # ClosureTest_%s_B%i_%iD.root ; <Target>,<_binIndex>,<_binNdims (non-integrated dims)>
+####
+
+
+############################
+##  File name and format  ##
+############################
 
 def getDictNameFormat(nameFormat):                  #input: <targ>_<nBin>_<nDim>   --->   <targ>_<nBin>B<nDim>
     targetDict = {}
     targetList = nameFormat.split("_")              # [ <targ> , <nBin>, <nDim> ]
     targetDict["Target"] = targetList[0]            # <targ>
-    # binList = targetList[1].split("B")            # { <nBin> , <nDim> }
     targetDict["BinningType"] = int(targetList[1])  # <nBin>
     if (len(targetList)==2):
         targetList.append(0)
     targetDict["NDims"] = int(targetList[2])        # <nDim>
-    # targetDict["Cuts"] = []
-    # if len(targetList)>3:
-    #     numElem = len(targetList)
-    #     for i in range(len(targetDict)-1,numElem):
-    #         targetDict["Cuts"].append(targetList[i])
+
     return targetDict                               # <targ>_<nBin>B<nDim>
 
 def getNameFormatted(nameFormat, isAcc = False): #input: Fe_0_1 ; <targ>_<nBin>_<nDim>
@@ -35,64 +44,110 @@ def getNameFormatted(nameFormat, isAcc = False): #input: Fe_0_1 ; <targ>_<nBin>_
     fileName = "%s_%iB"%(formDict["Target"],formDict["BinningType"])
     if (not isAcc) and formDict["NDims"]:
         fileName+="%i"%(formDict["NDims"])
-    # if formDict["Cuts"]:
-    #     for e in formDict["Cuts"]:
-    #         fileName+="_"+e
 
     return fileName #output: Fe_0B1 ; <target>_<binningType number>B<non-integrated dimensions>
 
 def getBinNameFormatted(nameFormat): #input: Fe_0_1 ; <targ>_<nBin>_<nDim>
     nameFull = getNameFormatted(nameFormat) # Fe_0B1 ; <targ>_<nBin>B<nDim>
-    return nameFull.split('_')[1] # 0B1 ; <nBin>B<nDim>
 
+    return nameFull.split('_')[1] # 0B1 ; <nBin>B<nDim>
 
 def addBeforeRootExt(path, before_dot, other_extension = "root"):
     new_path = path.split(".%s"%other_extension)[0]
+
     return new_path + before_dot + "." + other_extension
 
-### Cuts
-dict_Cut2Code = {"XF": "Xf", "Xf": "Xf",
-                "DeltaSector": "DS", "DSect": "DS", "DSctr": "DS", "DS": "DS",
-                "BadSector": "BS", "rmBadSector": "BS", "BS": "BS",
-                "PionFiducial": "PF", "PiFiducial": "PF", "Pf": "PF", "PF": "PF",
-                "MirrorMatch": "MM", "MMtch": "MM", "MM": "MM",
-                # "Sector": "Se", "Sctr": "Se", "Sect": "Se", "Se": "Se",
-                "FErr": "FE", "FullError": "FE", "Fe": "FE", "FE": "FE",
-                "AccQlt": "AQ", "AccQuality": "AQ", "AQ": "AQ",
-                "Z": "Zx", "Zx": "Zx",
-                "P": "Px", "Px": "Px",
-                # "Shift": "Sh", "Sh": "Sh",
-                "useSin": "Fs", "FitSin": "Fs", "Fs": "Fs",
-                "NPeak": "NP", "NP": "NP",
-                # "Fold": "Fd", "Fd": "Fd",
-                # "LR": "LR",
-                # "Fullfit": "Ff", "FFit": "Ff", "Ff": "Ff",
-                # "Left": "Lf", "Lf": "Lf",
-                # "Right": "Rg", "Rg": "Rg",
-                "MixD": "MD", "MD": "MD",
-                }
-dict_FitMeth2Code = {   "Shift": "Sh", "Sh": "Sh",
-                        "Fold": "Fd", "Fd": "Fd",
-                        "LR": "LR",
-                        "Fullfit": "Ff", "FFit": "Ff", "Ff": "Ff",
-                    }
+
+#############################
+##  Cuts and dictionaries  ##
+#############################
+
+### Input name
+########
+## From python macro input to internal/input code
+dict_Cut2Code = {
+    "XF": "Xf", "Xf": "Xf",
+    "DeltaSector": "DS", "DSect": "DS", "DSctr": "DS", "DS": "DS",
+    "BadSector": "BS", "rmBadSector": "BS", "BS": "BS",
+    "PionFiducial": "PF", "PiFiducial": "PF", "Pf": "PF", "PF": "PF",
+    "MirrorMatch": "MM", "MMtch": "MM", "MM": "MM",
+    # "Sector": "Se", "Sctr": "Se", "Sect": "Se", "Se": "Se",
+    "FErr": "FE", "FullError": "FE", "Fe": "FE", "FE": "FE",
+    "AccQlt": "AQ", "AccQuality": "AQ", "AQ": "AQ",
+    "Z": "Zx", "Zx": "Zx",
+    "P": "Px", "Px": "Px",
+    # "Shift": "Sh", "Sh": "Sh",
+    "useSin": "Fs", "FitSin": "Fs", "Fs": "Fs",
+    "NPeak": "NP", "NP": "NP",
+    # "Fold": "Fd", "Fd": "Fd",
+    # "LR": "LR",
+    # "Fullfit": "Ff", "FFit": "Ff", "Ff": "Ff",
+    # "Left": "Lf", "Lf": "Lf",
+    # "Right": "Rg", "Rg": "Rg",
+    "MixD": "MD", "MD": "MD",
+}
+dict_FitMeth2Code = {
+    "Shift": "Sh", "Sh": "Sh",
+    "Fold": "Fd", "Fd": "Fd",
+    "LR": "LR",
+    "Fullfit": "Ff", "FFit": "Ff", "Ff": "Ff",
+}
 
 dict_Cut2Code.update(dict_FitMeth2Code)
 
-dict_CutCode2Name = {   "Xf": "Xf", "DS": "DSect0", "BS": "NoBadSec", "PF": "PiFid", "MM": "MMtch",
-                        "FE": "FErr", "AQ": "AccQlt",
-                        "Zx": "Z", "Px": "P", #"Sh": "Shift",
-                        "Fs": "Sin", "NP": "NPeak",
-                        #"Fd": "Fold", "LR": "LR", "Ff": "Full",
-                        "MD": "MixD", #"Lf": "Left", "Rg": "Right",
-                    }
-dict_FitMeth2Name = {   "Fd": "Fold", "LR": "LR", "Ff": "Full", "Sh": "Shift",
-                    }
+### Output name
+########
+## From internal/input code to folder-name format
+dict_CutCode2Name = {
+    "Xf": "Xf", "DS": "DSect0", "BS": "NoBadSec", "PF": "PiFid", "MM": "MMtch",
+    "FE": "FErr", "AQ": "AccQlt",
+    "Zx": "Z", "Px": "P", #"Sh": "Shift",
+    "Fs": "Sin", "NP": "NPeak",
+    #"Fd": "Fold", "LR": "LR", "Ff": "Full",
+    "MD": "MixD", #"Lf": "Left", "Rg": "Right",
+}
+dict_FitMeth2Name = {
+    "Fd": "Fold", "LR": "LR", "Ff": "Full", "Sh": "Shift",
+}
 
 dict_CutCode2Name.update(dict_FitMeth2Name)
 
+### Legend name
+########
+## From internal/input code to Legend's text (Latex format)
+dict_CutCode2Leg = {
+    "Xf": "#X_f", "DS": "#Delta Sect #neq 0", "BS": "No bad Sect", "PF": "Fidual cut #pi", "MM": "Mirror Match",
+    "FE": "", "AQ": "",
+    "Zx": "", "Px": "",
+    "Fs": "", "NP": "",
+    "MD": "",
+}
+dict_FitMeth2Leg = {
+    "Fd": "Fold", "LR": "LR", "Ff": "Full", "Sh": "Shift", # "LR_Left": "Left", "LR_Right": "Right"
+}
 
-cutMasterKey = "Xf0DS0BS0PF0MM0FE0AQ0Zx0Px0Sh0Fs0NP0Fd0LR0Ff0MD0" # Yh0 ; Write options in order of applicability (Acc, Corr, Fit, Summary)
+dict_CutCode2Leg.update(dict_FitMeth2Leg)
+
+### Define key with cuts in order of applicability (Acc, Corr, Fit, Summary)
+########
+cutMasterKey = ""
+
+## Acceptance
+cutMasterKey+= "Xf0DS0BS0PF0MM0" # Yh0
+
+## Correction
+cutMasterKey+= "FE0AQ0Zx0Px0"
+
+## Fit
+cutMasterKey+= "Sh0Fs0NP0Fd0LR0Ff0"
+
+## Summary
+cutMasterKey+= "MD0"
+
+
+########################
+##  Format cut names  ##
+########################
 
 def getCutStrFormat(list_cuts):
     cut_str = ""
@@ -103,9 +158,28 @@ def getCutStrFormat(list_cuts):
         if (len(c) == 3):
             this_cut = c[0:2]
         cut_str+="_"+dict_CutCode2Name[this_cut]
+
     return cut_str
 
-def getCutStrFromStr(cut_str = ""): # Aaaa_Bbb_ccc_Ddd
+def getLegendFromList(list_cuts):
+    cut_str = ""
+    for c in list_cuts:
+        if (c[-1] == "0" or c == ""):
+            continue
+        this_cut = c
+        if (len(c) == 3):
+            this_cut = c[0:2]
+
+        if cut_str and dict_CutCode2Leg[this_cut]:
+            cut_str+=" "
+        cut_str+=dict_CutCode2Leg[this_cut]
+
+        print(cut_str)
+
+    print("    Final legend: %s"%cut_str)
+    return cut_str
+
+def getCutStrFromStr(cut_str = "", isLegend = False): # Aaaa_Bbb_ccc_Ddd
     # Format: AA0BB1CC0EE1
     #           AA: First two letters of the cut name
     #           0 or 1: Do (1) or don't (0) apply cut
@@ -128,48 +202,59 @@ def getCutStrFromStr(cut_str = ""): # Aaaa_Bbb_ccc_Ddd
             if (("Left" in elem) or ("Right" in elem)):
                 continue
             else:
-                print("Cut not found! : %s"%(elem))
+                print("  [CutStr] Cut not found! : %s"%(elem))
                 exit()
 
     for elem in this_list:
         if (elem[-1] != "1"):
             this_index = ref_list.index(elem)
             this_list[this_index] = elem+"0"
-    # print(this_list)
-    this_str = getCutStrFormat(this_list)
-    # print(this_str)
+
+    this_str = getCutStrFormat(this_list) if not isLegend else getLegendFromList(this_list)
+
     return this_str
 
 def getCutsAsList(this_cut_str): # Intro should be output of getCutStrFormat()
     this_list = this_cut_str.split("_")
     while ("" in this_list):
         this_list.remove("")
+
     return this_list
 
-### Fit method
-def GetFitMethod(output_str):
 
+###########################
+##  Get fit information  ##
+###########################
+
+def GetFitMethod(output_str, use_def = True):
     this_method = ""
 
     for fm in dict_FitMeth2Name:
         out_name = dict_FitMeth2Name[fm]
 
         if out_name in getCutStrFromStr(output_str):
-            if (this_method != ""):
+            if (this_method != ""): # and not accept_more
                 print("  [FitMethod] More than one fit method selected. Please, choose only one of the options!")
                 print("              Ff-Full (empty, default); LR; Fd-Fold; Sh-Shift;")
                 exit()
+            # elif (this_method != "" ):
+            #     this_method +="_"
             this_method = fm
 
     ## Set default method
-    if (this_method == ""):
+    if (use_def and not this_method):
         this_method = "Ff"
 
-    print("    [FitMethod] Using %s fit method"%dict_FitMeth2Name[this_method])
+    # if (this_method):
+    #     str_meth = this_method.replace("_", ", ")
+    #     if not accept_more:
+    #         print("    [FitMethod] Using %s fit method"%dict_FitMeth2Name[str_meth])
+    #     else:
+    #         print("    [FitMethod] Using %s fit method/s"%str_meth)
+
     return this_method
 
 def GetFitExtension(this_method, fname):
-
     this_ext = this_method[0]
 
     if (this_method=="LR") and ("R" in fname):
@@ -179,9 +264,34 @@ def GetFitExtension(this_method, fname):
 
     return this_ext
 
+#############################
+##  Paths and directories  ##
+#############################
 
-### Paths and directories' functions
+def CreateFolder(outdir, title, overwrite = False, enumerate = True):
+    outdir2 = os.path.join(outdir,title)
+
+    if overwrite:
+        os.makedirs(outdir2)
+        print("  [myStyle] %s created."%outdir2)
+    else:
+        if not os.path.exists(outdir2):
+            os.makedirs(outdir2)
+            print("  [myStyle] %s created."%outdir2)
+        elif enumerate:
+            i = 1
+            while(os.path.exists(outdir2)):
+                    outdir2 = outdir2[0:-2] + str(i) + outdir2[-1]
+                    i+=1
+            os.mkdir(outdir2)
+            print("  [myStyle] %s created."%outdir2)
+        else:
+            print("  [myStyle] %s already exists!."%outdir2)
+
+    return outdir2
+
 ### /output/
+########
 def getOutputFolder(nameMethod, extraCuts = "", JLab_cluster = True, isOutput = True):
     this_folder = "../output/"
     if JLab_cluster: this_folder+="JLab_cluster/"
@@ -190,6 +300,7 @@ def getOutputFolder(nameMethod, extraCuts = "", JLab_cluster = True, isOutput = 
     this_folder+=nameMethod+these_cuts+"/"
     if isOutput:
         CreateFolder(this_folder, "", False, False)
+
     return this_folder
 
 def getOutputFile(nameMethod, nameFileExt):
@@ -211,6 +322,7 @@ def getOutputFileWithPath(nameMethod, nameFileExt, extraCuts = "", JLab_cluster 
     return this_path+this_file
 
 ### /plots/
+########
 def getPlotsFolder(nameMethod, extraCuts = "", extraPath = "", JLab_cluster = True, isOutput = True):
     this_folder = "../macros/plots/"
     if JLab_cluster: this_folder+="JLab_cluster/"
@@ -221,6 +333,7 @@ def getPlotsFolder(nameMethod, extraCuts = "", extraPath = "", JLab_cluster = Tr
         this_folder+=extraPath+"/" # <target>/
     if isOutput:
         CreateFolder(this_folder, "", False, False)
+
     return this_folder
 
 def getPlotsFile(nameMethod, nameFileExt, fileExt = "root", plotBin = ""):
@@ -239,6 +352,7 @@ def getPlotsFile(nameMethod, nameFileExt, fileExt = "root", plotBin = ""):
     return this_file
 
 ### /plots/Summary
+########
 def getSummaryPath(nameMethod, fileExt = "pdf", cuts = "", JLab_cluster = True, extra_path = "", name_folder = "Summary"):
     this_folder = "../macros/plots/"
     if JLab_cluster: this_folder+="JLab_cluster/"
@@ -258,31 +372,14 @@ def getSummaryPath(nameMethod, fileExt = "pdf", cuts = "", JLab_cluster = True, 
         this_file+=these_cuts
 
     this_file+="."+fileExt
+
     return this_folder+this_file
 
-###
-def CreateFolder(outdir, title, overwrite = False, enumerate = True):
-    outdir2 = os.path.join(outdir,title)
 
-    if overwrite:
-        os.makedirs(outdir2)
-        print("  [myStyle] %s created."%outdir2)
-    else:
-        if not os.path.exists(outdir2):
-            os.makedirs(outdir2)
-            print("  [myStyle] %s created."%outdir2)
-        elif enumerate:
-            i = 1
-            while(os.path.exists(outdir2)):
-                    outdir2 = outdir2[0:-2] + str(i) + outdir2[-1]
-                    i+=1
-            os.mkdir(outdir2)
-            print("  [myStyle] %s created."%outdir2)
-        else:
-            print("  [myStyle] %s already exists!."%outdir2)
-    return outdir2
+#######################################
+##  Define style and pad parameters  ##
+#######################################
 
-### Style functions
 def ForceStyle():
     ## Defining Style
     ROOT.gStyle.SetPadTopMargin(marg)    #0.05
@@ -326,15 +423,27 @@ def ForceStyle():
 
     ROOT.gROOT.ForceStyle()
 
+def GetMargin():
+    return marg
+
+def GetFont():
+    return font
+
+def GetSize():
+    return tsize
+
+def GetPadCenter():
+    return (1 + marg)/2
+
+
+#############################
+##  Draw top text/summary  ##
+#############################
 
 def DrawPreliminaryInfo(text = "", xl=0.0, yb=0.0):
     upLeft_text = ROOT.TLatex()
     upLeft_text.SetTextSize(tsize-4)
     upLeft_text.DrawLatexNDC(2*marg+0.005+xl,1-marg+0.01+yb,"#bf{%s} Preliminary"%(text))
-
-    # prelimilar = ROOT.TLatex()
-    # prelimilar.SetTextSize(tsize-4)
-    # prelimilar.DrawLatexNDC(2*marg+0.005,1-marg+0.01,"#bf{Preliminary}")
 
 def DrawSummaryInfo(text = ""):
     upLeft_text = ROOT.TLatex()
@@ -346,17 +455,21 @@ def DrawTargetInfo(target="X", fileType="SimOrData"):
     text.SetTextSize(tsize-4)
     text.SetTextAlign(31)
     nameCode = target.split("_")
-    if "targ" not in target: text.DrawLatexNDC(1-marg-0.005,1-marg+0.01,"#bf{"+str(target) + " target, "+str(fileType)+"}")
-    else:                text.DrawLatexNDC(1-marg-0.005,1-marg+0.01,"#bf{"+str(target) + ", "+str(fileType)+"}")
+    if "targ" not in target:
+        text.DrawLatexNDC(1-marg-0.005,1-marg+0.01,"#bf{"+str(target) + " target, "+str(fileType)+"}")
+    else:
+        text.DrawLatexNDC(1-marg-0.005,1-marg+0.01,"#bf{"+str(target) + ", "+str(fileType)+"}")
 
 def DrawBinInfo(bin_name="X0X0", bin_type=0, xR=0, yT=0):
+    # Draw w.r.t. TopRight point (xR, yT)
     text = ROOT.TLatex()
     text.SetTextSize(tsize-4)
     text.SetTextAlign(33)
     title = GetBinInfo(bin_name, bin_type)
-    # text.DrawLatexNDC(1-marg-0.005,1-marg-0.01,"#bf{"+title+"}")
-    if (xR==0 and yT==0): text.DrawLatexNDC(1-marg-0.005,1-marg-0.01,title)
-    else: text.DrawLatexNDC(xR,yT,title)
+    if (xR==0 and yT==0):
+        text.DrawLatexNDC(1-marg-0.005,1-marg-0.01,title)
+    else:
+        text.DrawLatexNDC(xR,yT,title)
 
 def GetBinInfo(bin_name="X0X0", bin_type=0):
     tmp_txt = ""
@@ -369,19 +482,13 @@ def GetBinInfo(bin_name="X0X0", bin_type=0):
             vmax = this_dict[c][num_index+1] # 1 , 2
             tmp_txt+="%.2f < %s < %.2f"%(vmin, axis_label(c,'Latex'), vmax)
             if i<(len(bin_name)-2): tmp_txt+="; "
+
     return tmp_txt
 
-def GetMargin():
-    return marg
 
-def GetFont():
-    return font
-
-def GetSize():
-    return tsize
-
-def GetPadCenter():
-    return (1 + marg)/2
+###############################
+##  Plot markers and colors  ##
+###############################
 
 def GetColors(color_blind = False):
     colors_list = [416+2, 432+2, 600, 880, 632, 400+2, 600-3]
@@ -406,19 +513,29 @@ def GetMarkers(filled = False):
 color_target = {'C': GetColors(True)[0], 'Fe': GetColors(True)[2], 'Pb': GetColors(True)[3], 'D': GetColors(True)[4],
                 'DC': GetColors(True)[1], 'DFe': GetColors(True)[5], 'DPb': GetColors(True)[6]}
 
+
+################################
+##  Binning and dictionaries  ##
+################################
+
 # Copy dictionaries of bins from Bins.py
 all_dicts = list(bn.Bin_List)
 
-varname2key = { "Q2":'Q', "Nu":'N', "Zh":'Z', "Pt2":'P', "PhiPQ":'I', "Xb":'X',
-                "Pt":'P', "PQ":'I'} # Short name
+# Short name
+varname2key = {
+    "Q2":'Q', "Nu":'N', "Zh":'Z', "Pt2":'P', "PhiPQ":'I', "Xb":'X',
+    "Pt":'P', "PQ":'I'
+}
 
-#        <initial> : [<name>,   <axis_name_latex>, <units>  ]
-var_label = {   'Q': ["Q2",     "Q^{2}",        "(GeV^{2})" ],
-                'N': ["Nu",     "#nu",          "(GeV)"     ],
-                'Z': ["Zh",     "Z_{h}",        ""          ],
-                'P': ["Pt2",    "P_{t}^{2}",    "(GeV^{2})" ],
-                'I': ["PhiPQ",  "#phi_{PQ}",    "(deg)"     ],
-                'X': ["Xb",     "X_{b}",        ""          ],}
+#   <initial> : [<name>,    <axis_name_latex>,  <units>  ]
+var_label = {
+    'Q': ["Q2",     "Q^{2}",        "(GeV^{2})" ],
+    'N': ["Nu",     "#nu",          "(GeV)"     ],
+    'Z': ["Zh",     "Z_{h}",        ""          ],
+    'P': ["Pt2",    "P_{t}^{2}",    "(GeV^{2})" ],
+    'I': ["PhiPQ",  "#phi_{PQ}",    "(deg)"     ],
+    'X': ["Xb",     "X_{b}",        ""          ],
+}
 
 def axis_label(var, text):
     this_output = ""
