@@ -140,10 +140,16 @@ bool pass_MirrorMatch(float momentum, float Nph)
     return ((momentum < 2.7 && Nph < 25) || (momentum > 2.7));
 }
 
+bool pass_MirrorMatch2(float momentum, float Nph)
+{
+    // return ((momentum < 2.7 && Nph < 25) || (momentum > 2.7));
+    return (momentum > 0.41 && 0.0 < Nph && Nph < 300);
+}
+
 /*** Cut name info ***/
 
 // Add cuts in pairs with short name first and folder name next {XX, XXXXX}
-std::string lookuptable_cutAcc[20][2] = {{"Xf","Xf"}, {"DS","DSect0"}, {"BS","NoBadSec"}, {"PF","PiFid"}, {"MM","MMtch"}};
+std::string lookuptable_cutAcc[20][2] = {{"Xf","Xf"}, {"DS","DSect0"}, {"BS","NoBadSec"}, {"PF","PiFid"}, {"MM","MMtch"}, {"M2","MMtch2"}};
 std::string lookuptable_cutCor[20][2] = {{"FE","FErr"}, {"AQ","AccQlt"}};
 
 #endif // #ifdef Cuts_h

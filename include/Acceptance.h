@@ -33,6 +33,7 @@ private:
     bool _cutBadSector = false;
     bool _cutPiFiducial = false;
     bool _cutMirrorMtch = false;
+    bool _cutMirrorMtch2 = false;
 
     // Cut Corr bools
     bool _useFullError = false;
@@ -54,6 +55,7 @@ public: // Acc cuts
     void useCut_rmBadSector() { _cutBadSector = true; }
     void useCut_PiFiducial() { _cutPiFiducial = true; }
     void useCut_MirrorMtch() { _cutMirrorMtch = true; }
+    void useCut_MirrorMtch2() { _cutMirrorMtch2 = true; }
 
 public: // Corr cuts
     void setFullError() { _useFullError = true; }
@@ -652,6 +654,10 @@ void Acceptance::ActivateCuts(std::string str_cuts)
     {
         useCut_MirrorMtch();    _cutList+="_MM";    std::cout << "Using Mirror Match cut." << std::endl;
     }
+    if (str_cuts.find("M2")!=std::string::npos)
+    {
+        useCut_MirrorMtch2();    _cutList+="_M2";    std::cout << "Using Mirror Match 2 cut." << std::endl;
+    }
 
     // Corr cuts
     if (str_cuts.find("FE")!=std::string::npos)
@@ -744,6 +750,10 @@ Bool_t Acceptance::GoodPiPlus(Long64_t entry, int ivec, vector<vector<double>> t
     if (_cutMirrorMtch)
     {
         pass_DIS = pass_DIS && pass_MirrorMatch(P->at(ivec), Nphe->at(ivec));
+    }
+    if (_cutMirrorMtch2)
+    {
+        pass_DIS = pass_DIS && pass_MirrorMatch2(P->at(ivec), Nphe->at(ivec));
     }
 
     return pass_DIS;
