@@ -68,6 +68,13 @@ if [[ $CUTLIST == *"MM"* ]]; then
     CUTLIST=${CUTLIST/${UND}MM/}
     UND="_"
 fi
+if [[ $CUTLIST == *"M2"* ]]; then
+    ACC_CUT="${ACC_CUT}${UND}M2"
+    COR_CUT="${COR_CUT}${UND}M2"
+
+    CUTLIST=${CUTLIST/${UND}M2/}
+    UND="_"
+fi
 
 ### Correction cuts
 if [[ $CUTLIST == *"FE"* ]]; then
