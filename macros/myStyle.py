@@ -336,8 +336,11 @@ def getPlotsFolder(nameMethod, extraCuts = "", extraPath = "", JLab_cluster = Tr
 
     return this_folder
 
-def getPlotsFile(nameMethod, nameFileExt, fileExt = "root", plotBin = ""):
-    this_file = nameMethod+"_"+getNameFormatted(nameFileExt, False)
+def getPlotsFile(nameMethod, nameFileExt = "", fileExt = "root", plotBin = ""):
+    this_file = nameMethod
+    if nameFileExt:
+        this_file+= "_"+getNameFormatted(nameFileExt, False)
+
     if (fileExt == "root"):
         if plotBin:
             this_file+="-"+plotBin+"."+fileExt  # Corr_Reconstructed_Fe_0B1-Fd.root

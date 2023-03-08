@@ -50,7 +50,7 @@ inputPath += "data.root" if isData else "hsim.root"
 inputfile = TFile(inputPath,"READ")
 
 ## Output
-outputPath = mS.getPlotsFolder("Hist2D", input_cuts, mS.getBinNameFormatted(dataset) +"/"+ infoDict["Target"], isJLab)
+outputPath = mS.getPlotsFolder("Hist2D/DeltaSector", input_cuts, mS.getBinNameFormatted(dataset) +"/"+ infoDict["Target"], isJLab)
 
 correct_prefix = {"reco": "Reconstructed", "recoAcc": "Acc corrected", "gene": "Generated"}
 # short_prefix = {"reco": "Rec", "mtch": "Rec", "gene": "Gen"}
