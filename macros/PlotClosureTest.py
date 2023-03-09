@@ -121,7 +121,7 @@ for i,i_bool in enumerate(this_conf):
     else:
         bins_list.append(1)
 
-names_list = []
+list_binName = []
 Proj1DTHnSparse_list = [[],[],[],[],[]]
 symbol_list = ["Q","N","Z","P"]
 
@@ -153,7 +153,22 @@ for i in range(totalsize):
 
         Proj1DTHnSparse_list[n].append(proj_tmp)
 
-    names_list.append(txt_tmp)
+    list_binName.append(txt_tmp)
+
+## Create TH1 summary ClosureTest
+
+list_th1_CT = []
+list_th1_CT_err = []
+list_th1_CT_err100 = []
+for reco_meth in type_reco_short:
+    tmp_h1d_CT = TH1D("CT%ip_%s-Summary"%(fracAcc, reco_meth), ";Closureness;Counts", 100,0.21,1.79)
+    list_th1_CT.append(tmp_h1d_CT)
+
+    tmp_h1d_CT_err = TH1D("CT%ip_%s-SummaryErr"%(fracAcc, reco_meth), ";Closureness error;Counts", 100,0.01,0.79)
+    list_th1_CT_err.append(tmp_h1d_CT_err)
+
+    tmp_h1d_CT_err100 = TH1D("CT%ip_%s-SummaryErr100"%(fracAcc, reco_meth), ";Closureness error %;Counts", 100,0.0,100.0)
+    list_th1_CT_err100.append(tmp_h1d_CT_err100)
 
 
 canvas = TCanvas("cv","cv",1000,800)
@@ -167,85 +182,142 @@ gStyle.SetOptStat(0)
 outputfile = TFile(outputPath+outputROOT,"RECREATE")
 phi_axis_title = myStyle.axis_label('I',"LatexUnit") # "#phi_{PQ} (deg)"
 
-for pt,pref in enumerate(prefixType):
-    for i,info in enumerate(names_list):
-        if saveAll:
-            for p,proj in enumerate(Proj1DTHnSparse_list):
-                this_proj = proj[i]
-                htemp = TH1F("htemp","",1,-180.,180.)
-                htemp.SetStats(0)
-                htemp.SetMinimum(0.0001)
-                # ylim = 30000
-                ylim = this_proj.GetMaximum()*1.2
-                htemp.SetMaximum(ylim)
-                # htemp.SetLineColor(kBlack)
-                htemp.GetXaxis().SetTitle(phi_axis_title)
-                htemp.GetYaxis().SetTitle("Counts")
-                htemp.Draw("AXIS")
+# for pt,pref in enumerate(prefixType):
+for pt,pref in enumerate(type_reco_short):
+    canvas.Clear()
+    th1_ct = list_th1_CT[pt]
+    th1_ct_err = list_th1_CT_err[pt]
+    th1_ct_err100 = list_th1_CT_err100[pt]
+    for i,info in enumerate(list_binName):
+        # if saveAll:
+        #     for p,proj in enumerate(Proj1DTHnSparse_list):
+        #         this_proj = proj[i]
+        #         htemp = TH1F("htemp","",1,-180.,180.)
+        #         htemp.SetStats(0)
+        #         htemp.SetMinimum(0.0001)
+        #         # ylim = 30000
+        #         ylim = this_proj.GetMaximum()*1.2
+        #         htemp.SetMaximum(ylim)
+        #         # htemp.SetLineColor(kBlack)
+        #         htemp.GetXaxis().SetTitle(phi_axis_title)
+        #         htemp.GetYaxis().SetTitle("Counts")
+        #         htemp.Draw("AXIS")
 
-                this_proj.SetLineColor(kBlack)
-                # list_Corr_Reconstru[i].SetTitle(info.title)
-                # list_Corr_Reconstru[i].GetXaxis().SetTitle(info.xlabel)
-                # list_Corr_Reconstru[i].GetXaxis().SetRangeUser(-0.32, 0.32)
-                # list_Corr_Reconstru[i].GetYaxis().SetTitle(info.ylabel)
+        #         this_proj.SetLineColor(kBlack)
+        #         # list_Corr_Reconstru[i].SetTitle(info.title)
+        #         # list_Corr_Reconstru[i].GetXaxis().SetTitle(info.xlabel)
+        #         # list_Corr_Reconstru[i].GetXaxis().SetRangeUser(-0.32, 0.32)
+        #         # list_Corr_Reconstru[i].GetYaxis().SetTitle(info.ylabel)
 
-                # gPad.RedrawAxis("g")
+        #         # gPad.RedrawAxis("g")
 
-                # htemp.Draw("AXIS same")
-                # list_Corr_Reconstru[i].Draw("AXIS same")
-                this_proj.Draw("hist e same")
+        #         # htemp.Draw("AXIS same")
+        #         # list_Corr_Reconstru[i].Draw("AXIS same")
+        #         this_proj.Draw("hist e same")
 
-                # legend.Draw();
-                myStyle.DrawPreliminaryInfo(prefixType[p])
-                myStyle.DrawTargetInfo(nameFormatted, "Simulation")
-                myStyle.DrawBinInfo(info, infoDict["BinningType"])
+        #         # legend.Draw();
+        #         myStyle.DrawPreliminaryInfo(prefixType[p])
+        #         myStyle.DrawTargetInfo(nameFormatted, "Simulation")
+        #         myStyle.DrawBinInfo(info, infoDict["BinningType"])
 
-                histName = "_".join(this_proj.GetName().split("_")[0:-1]) # Corr_A_B_Q1N2 -> Corr_A_B
-                outputName = myStyle.getPlotsFile(histName, dataset, "png", info)
-                canvas.SaveAs(outputPath+outputName)
-                # canvas.SaveAs(outputPath+nameFormatted+"-"+this_proj.GetName()+".png")
-                this_proj.Write()
-                htemp.Delete()
+        #         histName = "_".join(this_proj.GetName().split("_")[0:-1]) # Corr_A_B_Q1N2 -> Corr_A_B
+        #         outputName = myStyle.getPlotsFile(histName, dataset, "png", info)
+        #         canvas.SaveAs(outputPath+outputName)
+        #         # canvas.SaveAs(outputPath+nameFormatted+"-"+this_proj.GetName()+".png")
+        #         this_proj.Write()
+        #         htemp.Delete()
 
-        if ("Corr" in pref):
-            # Get ClosureTest
-            htemp = TH1F("htemp","",1,-180.,180.)
-            htemp.SetStats(0)
-            htemp.SetMinimum(0.3)
-            htemp.SetMaximum(1.7)
-            # htemp.SetLineColor(kBlack)
-            htemp.GetXaxis().SetTitle(phi_axis_title)
-            htemp.GetYaxis().SetTitle("Corr / True")
-            htemp.Draw("AXIS")
+        # if ("Corr" in pref):
 
-            this_name = "CT%ip_%s"%(int(fracAcc),type_reco_short[pt])
+        # Get ClosureTest
+        htemp = TH1F("htemp","",1,-180.,180.)
+        htemp.SetStats(0)
+        htemp.SetMinimum(0.3)
+        htemp.SetMaximum(1.7)
+        # htemp.SetLineColor(kBlack)
+        htemp.GetXaxis().SetTitle(phi_axis_title)
+        htemp.GetYaxis().SetTitle("Corr / True")
+        htemp.Draw("AXIS")
 
-            hCT = Proj1DTHnSparse_list[pt][i].Clone(this_name+"-%s"%info) # pt=0 -> Correction
-            hCT.Divide(Proj1DTHnSparse_list[pt][i],Proj1DTHnSparse_list[3][i],1,1,"B") # RE DO THIS WITH THE OTHER RAW ONE
+        this_name = "CT%ip_%s"%(int(fracAcc),pref)
 
-            hCT.SetLineColor(kBlack)
-            # hCT.GetXaxis().SetTitle(info.xlabel)
-            # hCT.GetXaxis().SetRangeUser(-0.32, 0.32)
-            # hCT.GetYaxis().SetTitle(info.ylabel)
+        hCT = Proj1DTHnSparse_list[pt][i].Clone(this_name+"-%s"%info) # pt=0 -> Correction
+        hCT.Divide(Proj1DTHnSparse_list[pt][i],Proj1DTHnSparse_list[3][i],1,1,"B") # RE DO THIS WITH THE OTHER RAW ONE
 
-            # gPad.RedrawAxis("g")
+        hCT.SetLineColor(kBlack)
+        # hCT.GetXaxis().SetTitle(info.xlabel)
+        # hCT.GetXaxis().SetRangeUser(-0.32, 0.32)
+        # hCT.GetYaxis().SetTitle(info.ylabel)
 
-            # htemp.Draw("AXIS same")
-            # list_Corr_Reconstru[i].Draw("AXIS same")
-            hCT.Draw("hist e same")
+        # gPad.RedrawAxis("g")
 
-            # legend.Draw();
-            myStyle.DrawPreliminaryInfo("ClosureTest %s"%type_reco_short[pt])
-            myStyle.DrawTargetInfo(nameFormatted, "Simulation")
-            myStyle.DrawBinInfo(info, infoDict["BinningType"])
+        hCT.Draw("hist e same")
 
-            gPad.RedrawAxis("g")
+        myStyle.DrawPreliminaryInfo("ClosureTest %s"%pref)
+        myStyle.DrawTargetInfo(nameFormatted, "Simulation")
+        myStyle.DrawBinInfo(info, infoDict["BinningType"])
 
-            outputName = myStyle.getPlotsFile(this_name, dataset, "png", info)
-            canvas.SaveAs(outputPath+outputName)
-            # canvas.SaveAs(outputPath+nameFormatted+"-ClosureTest_"+info+ext_error+".png")
-            hCT.Write()
-            htemp.Delete()
+        gPad.RedrawAxis("g")
+
+        outputName = myStyle.getPlotsFile(this_name, dataset, "png", info)
+        canvas.SaveAs(outputPath+outputName)
+        # canvas.SaveAs(outputPath+nameFormatted+"-ClosureTest_"+info+ext_error+".png")
+        hCT.Write()
+
+        ### Fill CT projection
+        for b in range(1, hCT.GetXaxis().GetNbins()+1):
+            value = hCT.GetBinContent(b)
+            error = hCT.GetBinError(b)
+
+            th1_ct.Fill(value)
+            th1_ct_err.Fill(error)
+            if (value!=0):
+                th1_ct_err100.Fill(100.*error/value)
+            else:
+                print("%s - Bin %i is empty :c"%(pref,b))
+
+        htemp.Delete()
+
+    ## Draw and save summary Closure values
+    canvas.Clear()
+    th1_ct.SetLineColor(kBlack)
+    th1_ct.SetTitleOffset(1.3,"y")
+    th1_ct.Draw()
+    top_label = "Z_{h}" if useZh else "P_{t}^{2}"
+    if (pref != "Reco"):
+        top_label+=" %s"%pref
+    myStyle.DrawSummaryInfo("Closure value %s"%(top_label))
+    myStyle.DrawTargetInfo(nameFormatted, "Simulation")
+
+    outputName_png = myStyle.getPlotsFile(th1_ct.GetName(), dataset, "png")
+    canvas.SaveAs(outputPath+outputName_png)
+    outputName_pdf = myStyle.getPlotsFile(th1_ct.GetName(), dataset, "pdf")
+    canvas.SaveAs(outputPath+outputName_pdf)
+    th1_ct.Write()
+
+    ## Draw and save summary Closure errors
+    canvas.Clear()
+    th1_ct_err.SetLineColor(kBlack)
+    th1_ct_err.SetTitleOffset(1.3,"y")
+    th1_ct_err.Draw()
+    myStyle.DrawSummaryInfo("Closure error %s"%pref)
+    myStyle.DrawTargetInfo(nameFormatted, "Simulation")
+
+    outputName = myStyle.getPlotsFile(th1_ct_err.GetName(), dataset, "png")
+    canvas.SaveAs(outputPath+outputName)
+    th1_ct_err.Write()
+
+    ## Draw and save summary Closure errors in 100 base
+    canvas.Clear()
+    th1_ct_err100.SetLineColor(kBlack)
+    th1_ct_err100.SetTitleOffset(1.3,"y")
+    th1_ct_err100.Draw()
+    myStyle.DrawSummaryInfo("Closure error %% %s"%pref)
+    myStyle.DrawTargetInfo(nameFormatted, "Simulation")
+
+    outputName = myStyle.getPlotsFile(th1_ct_err100.GetName(), dataset, "png")
+    canvas.SaveAs(outputPath+outputName)
+    th1_ct_err100.Write()
 
 print("  [ClosureTest] Closure Test finished and saved!")
 outputfile.Close()

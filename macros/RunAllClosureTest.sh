@@ -84,7 +84,7 @@ fi
 ###
 
 python PlotClosureTest.py -D Fe_${BINNAME}_${BINNDIM} -i ${PREV_CUT} -o ${CORR_CUT} -f ${FRACACC} -J
-python PlotClosureTest.py -D C_${BINNAME}_${BINNDIM} -i ${PREV_CUT} -o ${CORR_CUT} -f ${FRACACC} -J
+python PlotClosureTest.py -D C_${BINNAME}_${BINNDIM}  -i ${PREV_CUT} -o ${CORR_CUT} -f ${FRACACC} -J
 python PlotClosureTest.py -D Pb_${BINNAME}_${BINNDIM} -i ${PREV_CUT} -o ${CORR_CUT} -f ${FRACACC} -J
-python PlotClosureTest.py -D D_${BINNAME}_${BINNDIM} -i ${PREV_CUT} -o ${CORR_CUT} -f ${FRACACC} -J
+python PlotClosureTest.py -D D_${BINNAME}_${BINNDIM}  -i ${PREV_CUT} -o ${CORR_CUT} -f ${FRACACC} -J
 
