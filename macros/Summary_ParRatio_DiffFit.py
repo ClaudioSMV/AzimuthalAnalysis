@@ -208,7 +208,7 @@ for fm in list_fitmethodsKey:
     except:
         meth_detail = ""
 
-    print("Detail: %s"%meth_detail)
+    # print("Detail: %s"%meth_detail)
 
     inputPath = mS.getPlotsFolder("ParametersRatio", this_input_cuts, mS.getBinNameFormatted(dataset) + "/" + this_targ, isJLab, False) # "../output/"
     inputROOT = mS.getPlotsFile("ParametersRatio", dataset, "root", this_meth)

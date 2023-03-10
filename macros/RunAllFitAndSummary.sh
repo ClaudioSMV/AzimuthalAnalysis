@@ -60,7 +60,12 @@ FITMETH=('')
 if [[ $CUTINFO == *"AllFit"* ]]; then
     echo "Running over all fit methods (Full, Fold, LR, Shift)"
     FITMETH=('_Ff' '_Fd' '_LR_Right' '_LR_Left' '_Sh')
-    CUTINFO=${CUTINFO/AllFit/}
+
+    if [[ $CUTINFO == *"_AllFit"* ]]; then
+        CUTINFO=${CUTINFO/_AllFit/}
+    else
+        CUTINFO=${CUTINFO/AllFit/}
+    fi
 elif [[ $CUTINFO != *"Ff"* && $CUTINFO != *"Fd"* && $CUTINFO != *"LR"* && $CUTINFO != *"Sh"* ]]; then
     echo "No fit method defined. Use: Ff, Fd, LR_Right, LR_Left, Sh or AllFit."
     exit
@@ -94,6 +99,8 @@ fi
 
 if [[ ${#FITMETH[@]} -eq 5 || $WHATRUN == *"D"* ]]; then
     echo "" ; echo "Running summary with different fit methods" ; echo "" ; echo ""
+    CUTINFO=${CUTINFO/-O/}
+    CUTINFO=${CUTINFO/-A/}
     for x in "${CORR_XAXIS[@]}"; do
         python Summary_ParNorm_DiffFit.py  -D DFe_${BINNAME}_${BINNDIM} -i ${CUTINFO}${x} -J
         python Summary_ParNorm_DiffFit.py  -D DC_${BINNAME}_${BINNDIM} -i ${CUTINFO}${x} -J

@@ -52,6 +52,8 @@ FITS_CUT="_"
 PAR_NCUT="_"
 PAR_RCUT="_"
 
+UND=""
+
 ### Before Corrected
 if [[ $CUTINFO == *"Xf"* ]]; then
     PREV_CUT="${PREV_CUT}_Xf"
@@ -59,6 +61,9 @@ if [[ $CUTINFO == *"Xf"* ]]; then
     FITS_CUT="${FITS_CUT}_Xf"
     PAR_NCUT="${PAR_NCUT}_Xf"
     PAR_RCUT="${PAR_RCUT}_Xf"
+
+    CUTINFO=${CUTINFO/${UND}Xf/}
+    UND="_"
 fi
 if [[ $CUTINFO == *"DS"* ]]; then
     PREV_CUT="${PREV_CUT}_DS"
@@ -66,6 +71,9 @@ if [[ $CUTINFO == *"DS"* ]]; then
     FITS_CUT="${FITS_CUT}_DS"
     PAR_NCUT="${PAR_NCUT}_DS"
     PAR_RCUT="${PAR_RCUT}_DS"
+
+    CUTINFO=${CUTINFO/${UND}DS/}
+    UND="_"
 fi
 if [[ $CUTINFO == *"BS"* ]]; then
     PREV_CUT="${PREV_CUT}_BS"
@@ -73,6 +81,9 @@ if [[ $CUTINFO == *"BS"* ]]; then
     FITS_CUT="${FITS_CUT}_BS"
     PAR_NCUT="${PAR_NCUT}_BS"
     PAR_RCUT="${PAR_RCUT}_BS"
+
+    CUTINFO=${CUTINFO/${UND}BS/}
+    UND="_"
 fi
 if [[ $CUTINFO == *"PF"* ]]; then
     PREV_CUT="${PREV_CUT}_PF"
@@ -80,6 +91,9 @@ if [[ $CUTINFO == *"PF"* ]]; then
     FITS_CUT="${FITS_CUT}_PF"
     PAR_NCUT="${PAR_NCUT}_PF"
     PAR_RCUT="${PAR_RCUT}_PF"
+
+    CUTINFO=${CUTINFO/${UND}PF/}
+    UND="_"
 fi
 if [[ $CUTINFO == *"MM"* ]]; then
     PREV_CUT="${PREV_CUT}_MM"
@@ -87,6 +101,19 @@ if [[ $CUTINFO == *"MM"* ]]; then
     FITS_CUT="${FITS_CUT}_MM"
     PAR_NCUT="${PAR_NCUT}_MM"
     PAR_RCUT="${PAR_RCUT}_MM"
+
+    CUTINFO=${CUTINFO/${UND}MM/}
+    UND="_"
+fi
+if [[ $CUTINFO == *"M2"* ]]; then
+    PREV_CUT="${PREV_CUT}_M2"
+    CORR_CUT="${CORR_CUT}_M2"
+    FITS_CUT="${FITS_CUT}_M2"
+    PAR_NCUT="${PAR_NCUT}_M2"
+    PAR_RCUT="${PAR_RCUT}_M2"
+
+    CUTINFO=${CUTINFO/${UND}M2/}
+    UND="_"
 fi
 if [[ $CUTINFO == *"FE"* ]]; then
     PREV_CUT="${PREV_CUT}_FE"
@@ -94,6 +121,9 @@ if [[ $CUTINFO == *"FE"* ]]; then
     FITS_CUT="${FITS_CUT}_FE"
     PAR_NCUT="${PAR_NCUT}_FE"
     PAR_RCUT="${PAR_RCUT}_FE"
+
+    CUTINFO=${CUTINFO/${UND}FE/}
+    UND="_"
 fi
 if [[ $CUTINFO == *"AQ"* ]]; then
     PREV_CUT="${PREV_CUT}_AQ"
@@ -101,6 +131,9 @@ if [[ $CUTINFO == *"AQ"* ]]; then
     FITS_CUT="${FITS_CUT}_AQ"
     PAR_NCUT="${PAR_NCUT}_AQ"
     PAR_RCUT="${PAR_RCUT}_AQ"
+
+    CUTINFO=${CUTINFO/${UND}AQ/}
+    UND="_"
 fi
 
 ### From Corrected
@@ -109,20 +142,30 @@ if [[ $CUTINFO == *"Zx"* ]]; then
     FITS_CUT="${FITS_CUT}_Zx"
     PAR_NCUT="${PAR_NCUT}_Zx"
     PAR_RCUT="${PAR_RCUT}_Zx"
+
+    CUTINFO=${CUTINFO/${UND}Zx/}
+    UND="_"
 elif [[ $CUTINFO == *"Px"* ]]; then
     CORR_CUT="${CORR_CUT}_Px"
     FITS_CUT="${FITS_CUT}_Px"
     PAR_NCUT="${PAR_NCUT}_Px"
     PAR_RCUT="${PAR_RCUT}_Px"
+
+    CUTINFO=${CUTINFO/${UND}Px/}
+    UND="_"
 else
-    echo "Remember to select a dependence as x-axis (Zh or Pt2)"
+    echo "  Remember to select a dependence as x-axis (Zh or Pt2)"
     exit
 fi
+
 if [[ $CUTINFO == *"Sh"* ]]; then
     CORR_CUT="${CORR_CUT}_Sh"
     FITS_CUT="${FITS_CUT}_Sh"
     PAR_NCUT="${PAR_NCUT}_Sh"
     PAR_RCUT="${PAR_RCUT}_Sh"
+
+    CUTINFO=${CUTINFO/${UND}Sh/}
+    UND="_"
 fi
 
 ### From Fit
@@ -130,45 +173,92 @@ if [[ $CUTINFO == *"Fs"* ]]; then
     FITS_CUT="${FITS_CUT}_Fs"
     PAR_NCUT="${PAR_NCUT}_Fs"
     PAR_RCUT="${PAR_RCUT}_Fs"
+
+    CUTINFO=${CUTINFO/${UND}Fs/}
+    UND="_"
 fi
 if [[ $CUTINFO == *"NP"* ]]; then
     FITS_CUT="${FITS_CUT}_NP"
     PAR_NCUT="${PAR_NCUT}_NP"
     PAR_RCUT="${PAR_RCUT}_NP"
+
+    CUTINFO=${CUTINFO/${UND}NP/}
+    UND="_"
 fi
 # Fit methods
 if [[ $CUTINFO == *"Fd"* ]]; then
     FITS_CUT="${FITS_CUT}_Fd"
     PAR_NCUT="${PAR_NCUT}_Fd"
     PAR_RCUT="${PAR_RCUT}_Fd"
+
+    CUTINFO=${CUTINFO/${UND}Fd/}
+    UND="_"
 elif [[ $CUTINFO == *"LR"* ]]; then
     FITS_CUT="${FITS_CUT}_LR"
     PAR_NCUT="${PAR_NCUT}_LR"
     PAR_RCUT="${PAR_RCUT}_LR"
+
+    CUTINFO=${CUTINFO/${UND}LR/}
+    UND="_"
+
+    if [[ $CUTINFO == *"Left"* ]]; then
+        FITS_CUT="${FITS_CUT}_Left"
+        PAR_NCUT="${PAR_NCUT}_Left"
+        PAR_RCUT="${PAR_RCUT}_Left"
+
+        CUTINFO=${CUTINFO/${UND}Left/}
+        UND="_"
+    elif [[ $CUTINFO == *"Right"* ]]; then
+        FITS_CUT="${FITS_CUT}_Right"
+        PAR_NCUT="${PAR_NCUT}_Right"
+        PAR_RCUT="${PAR_RCUT}_Right"
+
+        CUTINFO=${CUTINFO/${UND}Right/}
+        UND="_"
+    else
+        echo "  Specify Left or Right when using LR method!"
+        exit
+    fi
+
 elif [[ $CUTINFO == *"Ff"* ]]; then
     FITS_CUT="${FITS_CUT}_Ff"
     PAR_NCUT="${PAR_NCUT}_Ff"
     PAR_RCUT="${PAR_RCUT}_Ff"
-elif [[ $CUTINFO != *"Sh"* ]]; then
-    echo "Remember to choose FullFit (Ff), Fold (Fd), Both wings (LR) or Shift (Sh) method for the fit!"
+
+    CUTINFO=${CUTINFO/${UND}Ff/}
+    UND="_"
+elif [[ $CORR_CUT != *"Sh"* ]]; then
+    echo "  Remember to choose FullFit (Ff), Fold (Fd), Both wings (LR) or Shift (Sh) method for the fit!"
     exit
 fi
 
 ### From ParameterRatio
 if [[ $CUTINFO == *"MD"* ]]; then
     PAR_RCUT="${PAR_RCUT}_MD"
+
+    CUTINFO=${CUTINFO/${UND}MD/}
+    UND="_"
 fi
 
 # Overwrite
 OW=""
 if [[ $CUTINFO == *"-O"* ]]; then
     OW="-O"
+
+    CUTINFO=${CUTINFO/-O/}
 fi
 
 # Draw ALL acceptance types (Reco, RecoMtch_mc, RecoMtch_re)
 DA=""
 if [[ $CUTINFO == *"-A"* ]]; then
     DA="-A"
+
+    CUTINFO=${CUTINFO/-A/}
+fi
+
+if [[ -n $CUTINFO ]]; then
+    echo "  There are cuts not defined: ${CUTINFO}"
+    exit
 fi
 
 # echo $PREV_CUT
