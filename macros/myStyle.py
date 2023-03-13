@@ -67,6 +67,7 @@ def addBeforeRootExt(path, before_dot, other_extension = "root"):
 ## From python macro input to internal/input code
 dict_Cut2Code = {
     "XF": "Xf", "Xf": "Xf",
+    "XT_TFR": "XT", "XTFR": "XT", "Xt": "XT", "XT": "XT",
     "DeltaSector": "DS", "DSect": "DS", "DSctr": "DS", "DS": "DS",
     "BadSector": "BS", "rmBadSector": "BS", "BS": "BS",
     "PionFiducial": "PF", "PiFiducial": "PF", "Pf": "PF", "PF": "PF",
@@ -100,7 +101,7 @@ dict_Cut2Code.update(dict_FitMeth2Code)
 ########
 ## From internal/input code to folder-name format
 dict_CutCode2Name = {
-    "Xf": "Xf", "DS": "DSect0", "BS": "NoBadSec", "PF": "PiFid", "MM": "MMtch", "M2": "MMtch2",
+    "Xf": "Xf", "XT": "XTFR", "DS": "DSect0", "BS": "NoBadSec", "PF": "PiFid", "MM": "MMtch", "M2": "MMtch2",
     "FE": "FErr", "AQ": "AccQlt",
     "Zx": "Z", "Px": "P", #"Sh": "Shift",
     "Fs": "Sin", "NP": "NPeak",
@@ -117,7 +118,7 @@ dict_CutCode2Name.update(dict_FitMeth2Name)
 ########
 ## From internal/input code to Legend's text (Latex format)
 dict_CutCode2Leg = {
-    "Xf": "#X_f", "DS": "#Delta Sect #neq 0", "BS": "No bad Sect", "PF": "Fidual cut #pi", "MM": "Mirror Match", "M2": "Mirror Match 2",
+    "Xf": "#X_f CFR", "XT": "#X_f TFR", "DS": "#Delta Sect #neq 0", "BS": "No bad Sect", "PF": "Fidual cut #pi", "MM": "Mirror Match", "M2": "Mirror Match 2",
     "FE": "", "AQ": "",
     "Zx": "", "Px": "",
     "Fs": "", "NP": "",
@@ -134,7 +135,7 @@ dict_CutCode2Leg.update(dict_FitMeth2Leg)
 cutMasterKey = ""
 
 ## Acceptance
-cutMasterKey+= "Xf0DS0BS0PF0MM0M20" # Yh0
+cutMasterKey+= "Xf0XT0DS0BS0PF0MM0M20" # Yh0
 
 ## Correction
 cutMasterKey+= "FE0AQ0Zx0Px0"

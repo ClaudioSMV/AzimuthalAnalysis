@@ -120,6 +120,11 @@ bool pass_Xf(float this_Xf)
     return this_Xf > 0;
 }
 
+bool pass_Xf_TFR(float this_Xf)
+{
+    return this_Xf < 0;
+}
+
 bool pass_DeltaSect0(float this_SectorEl, float this_SectorPi)
 {
     return abs(this_SectorEl - this_SectorPi)>0;
@@ -143,13 +148,13 @@ bool pass_MirrorMatch(float momentum, float Nph)
 bool pass_MirrorMatch2(float momentum, float Nph)
 {
     // return ((momentum < 2.7 && Nph < 25) || (momentum > 2.7));
-    return (momentum > 0.41 && 0.0 < Nph && Nph < 300);
+    return (momentum > 0.41); // REMOVE NPHE MINIMUM! // && 0.0 < Nph && Nph < 300);
 }
 
 /*** Cut name info ***/
 
 // Add cuts in pairs with short name first and folder name next {XX, XXXXX}
-std::string lookuptable_cutAcc[20][2] = {{"Xf","Xf"}, {"DS","DSect0"}, {"BS","NoBadSec"}, {"PF","PiFid"}, {"MM","MMtch"}, {"M2","MMtch2"}};
+std::string lookuptable_cutAcc[20][2] = {{"Xf","Xf"}, {"XT","XTFR"}, {"DS","DSect0"}, {"BS","NoBadSec"}, {"PF","PiFid"}, {"MM","MMtch"}, {"M2","MMtch2"}};
 std::string lookuptable_cutCor[20][2] = {{"FE","FErr"}, {"AQ","AccQlt"}};
 
 #endif // #ifdef Cuts_h

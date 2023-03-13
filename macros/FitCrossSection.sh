@@ -65,6 +65,16 @@ if [[ $CUTINFO == *"Xf"* ]]; then
     CUTINFO=${CUTINFO/${UND}Xf/}
     UND="_"
 fi
+if [[ $CUTINFO == *"XT"* ]]; then
+    PREV_CUT="${PREV_CUT}_XT"
+    CORR_CUT="${CORR_CUT}_XT"
+    FITS_CUT="${FITS_CUT}_XT"
+    PAR_NCUT="${PAR_NCUT}_XT"
+    PAR_RCUT="${PAR_RCUT}_XT"
+
+    CUTINFO=${CUTINFO/${UND}XT/}
+    UND="_"
+fi
 if [[ $CUTINFO == *"DS"* ]]; then
     PREV_CUT="${PREV_CUT}_DS"
     CORR_CUT="${CORR_CUT}_DS"

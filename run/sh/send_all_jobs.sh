@@ -40,6 +40,13 @@ if [[ $CUTLIST == *"Xf"* ]]; then
     CUTLIST=${CUTLIST/${UND}Xf/}
     UND="_"
 fi
+if [[ $CUTLIST == *"XT"* ]]; then
+    ACC_CUT="${ACC_CUT}${UND}XT"
+    COR_CUT="${COR_CUT}${UND}XT"
+
+    CUTLIST=${CUTLIST/${UND}XT/}
+    UND="_"
+fi
 if [[ $CUTLIST == *"DS"* ]]; then
     ACC_CUT="${ACC_CUT}${UND}DS"
     COR_CUT="${COR_CUT}${UND}DS"
@@ -92,26 +99,26 @@ fi
 
 if [[ -n $CUTLIST ]]; then
     echo "There are cuts not defined: ${CUTLIST}"
-else
-    ### Send jobs!
-    if [[ $USEMTHD == *"Acc"* ]]; then
-        ./send_job_Acceptance.sh C  ${BINNAME} ${ACC_CUT}
-        ./send_job_Acceptance.sh Fe ${BINNAME} ${ACC_CUT}
-        ./send_job_Acceptance.sh Pb ${BINNAME} ${ACC_CUT}
-        ./send_job_Acceptance.sh D  ${BINNAME} ${ACC_CUT}
-    elif [[ $USEMTHD == *"Corr"* ]]; then
-        ./send_job_Correction.sh C  ${BINNAME} 1 ${COR_CUT}
-        ./send_job_Correction.sh Fe ${BINNAME} 1 ${COR_CUT}
-        ./send_job_Correction.sh Pb ${BINNAME} 1 ${COR_CUT}
-        ./send_job_Correction.sh D  ${BINNAME} 1 ${COR_CUT}
-    elif [[ $USEMTHD == *"Closure"* ]]; then
-        ./send_job_ClosureTest.sh C  ${BINNAME} 1 50 ${COR_CUT}
-        ./send_job_ClosureTest.sh Fe ${BINNAME} 1 50 ${COR_CUT}
-        ./send_job_ClosureTest.sh Pb ${BINNAME} 1 50 ${COR_CUT}
-        ./send_job_ClosureTest.sh D  ${BINNAME} 1 50 ${COR_CUT}
-    else
-        echo "No correct method found! Write it correctly!"
-        exit
-    fi
+    exit
 fi
 
+### Send jobs!
+if [[ $USEMTHD == *"Acc"* ]]; then
+    ./send_job_Acceptance.sh C  ${BINNAME} ${ACC_CUT}
+    ./send_job_Acceptance.sh Fe ${BINNAME} ${ACC_CUT}
+    ./send_job_Acceptance.sh Pb ${BINNAME} ${ACC_CUT}
+    ./send_job_Acceptance.sh D  ${BINNAME} ${ACC_CUT}
+elif [[ $USEMTHD == *"Corr"* ]]; then
+    ./send_job_Correction.sh C  ${BINNAME} 1 ${COR_CUT}
+    ./send_job_Correction.sh Fe ${BINNAME} 1 ${COR_CUT}
+    ./send_job_Correction.sh Pb ${BINNAME} 1 ${COR_CUT}
+    ./send_job_Correction.sh D  ${BINNAME} 1 ${COR_CUT}
+elif [[ $USEMTHD == *"Closure"* ]]; then
+    ./send_job_ClosureTest.sh C  ${BINNAME} 1 50 ${COR_CUT}
+    ./send_job_ClosureTest.sh Fe ${BINNAME} 1 50 ${COR_CUT}
+    ./send_job_ClosureTest.sh Pb ${BINNAME} 1 50 ${COR_CUT}
+    ./send_job_ClosureTest.sh D  ${BINNAME} 1 50 ${COR_CUT}
+else
+    echo "No correct method found! Write it correctly!"
+    exit
+fi

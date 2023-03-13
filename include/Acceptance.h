@@ -28,7 +28,8 @@ private:
     int _useXb = false; // !_useNu
 
     // Cut Acc bools
-    bool _cutXf = false;
+    bool _cutXf = false; // Current Fragmentation Region
+    bool _cutXf_TFR = false; // Target Fragmentation Region
     bool _cutDeltaSector0 = false;
     bool _cutBadSector = false;
     bool _cutPiFiducial = false;
@@ -51,6 +52,7 @@ public: // Internal values
 
 public: // Acc cuts
     void useCut_Xf() { _cutXf = true; }
+    void useCut_Xf_TFR() { _cutXf_TFR = true; }
     void useCut_DeltaSector0() { _cutDeltaSector0 = true; }
     void useCut_rmBadSector() { _cutBadSector = true; }
     void useCut_PiFiducial() { _cutPiFiducial = true; }
@@ -638,6 +640,10 @@ void Acceptance::ActivateCuts(std::string str_cuts)
     {
         useCut_Xf();            _cutList+="_Xf";    std::cout << "Using Xf cut." << std::endl;
     }
+    if (str_cuts.find("XT")!=std::string::npos)
+    {
+        useCut_Xf_TFR();            _cutList+="_XT";    std::cout << "Using Xf TargetFrag Region cut." << std::endl;
+    }
     if (str_cuts.find("DS")!=std::string::npos)
     {
         useCut_DeltaSector0();  _cutList+="_DS";    std::cout << "Using Delta Sector != 0 cut." << std::endl;
@@ -694,6 +700,10 @@ Bool_t Acceptance::GoodPiPlus_MC(Long64_t entry, int ivec, vector<vector<double>
     {
         pass_DIS = pass_DIS && pass_Xf(mc_Xf->at(ivec));
     }
+    if (_cutXf_TFR)
+    {
+        pass_DIS = pass_DIS && pass_Xf_TFR(mc_Xf->at(ivec));
+    }
     if (_cutDeltaSector0)
     {
         pass_DIS = pass_DIS && pass_DeltaSect0(mc_SectorEl, mc_Sector->at(ivec));
@@ -734,6 +744,10 @@ Bool_t Acceptance::GoodPiPlus(Long64_t entry, int ivec, vector<vector<double>> t
     if (_cutXf)
     {
         pass_DIS = pass_DIS && pass_Xf(Xf->at(ivec));
+    }
+    if (_cutXf_TFR)
+    {
+        pass_DIS = pass_DIS && pass_Xf_TFR(Xf->at(ivec));
     }
     if (_cutDeltaSector0)
     {
