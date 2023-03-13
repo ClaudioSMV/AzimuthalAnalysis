@@ -2333,10 +2333,10 @@ void Acceptance::Hist2D_PiCherenkovCounter()
 
     //// Define Histograms
     // Reconstructed or data
-    TH1D* hist1D_NoNphe_P_Pi = new TH1D("hist2D_NoNphe_P_Pi", "P_{#pi^{+}} with NULL Nphe;P_{#pi^{+}} [GeV];Counts ", 150, 0.0, 5.0);
+    TH1D* hist1D_NoNphe_P_Pi = new TH1D("hist1D_NoNphe_P_Pi", "P_{#pi^{+}} with NULL Nphe;P_{#pi^{+}} [GeV];Counts ", 150, 0.0, 5.0);
     TH2D* hist2D_Nphe_P_Pi = new TH2D("hist2D_Nphe_P_Pi", "P_{#pi^{+}} vs Nphe;P_{#pi^{+}} [GeV];10 #times Nphe ", 150, 0.0, 5.0, 150, 0.0, 300.0);
 
-    TH1D* hist1D_NoNphe_P_Pi_MassCut = new TH1D("hist2D_NoNphe_P_Pi_MassCut", "P_{#pi^{+}} with NULL Nphe MassCut;P_{#pi^{+}} [GeV];Counts ", 150, 0.0, 5.0);
+    TH1D* hist1D_NoNphe_P_Pi_MassCut = new TH1D("hist1D_NoNphe_P_Pi_MassCut", "P_{#pi^{+}} with NULL Nphe MassCut;P_{#pi^{+}} [GeV];Counts ", 150, 0.0, 5.0);
     TH2D* hist2D_Nphe_P_Pi_MassCut = new TH2D("hist2D_Nphe_P_Pi_MassCut", "P_{#pi^{+}} vs Nphe MassCut;P_{#pi^{+}} [GeV];10 #times Nphe ", 150, 0.0, 5.0, 150, 0.0, 300.0);
 
     if (fChain == 0)

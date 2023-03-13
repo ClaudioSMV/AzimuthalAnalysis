@@ -56,7 +56,8 @@ outputPath = mS.getPlotsFolder("Hist2D/CherenkovCounter", input_cuts, "", isJLab
 
 
 ### Set input hists
-hist2D = inputfile.Get("hist2D_Nphe_P_Pi")
+list_names = ["hist2D_Nphe_P_Pi", "hist2D_Nphe_P_Pi_MassCut"]
+ext_name = ["", "MassCut"]
 
 # ### Set output hists
 # phi_axis_title = mS.axis_label('I',"LatexUnit")
@@ -64,21 +65,24 @@ hist2D = inputfile.Get("hist2D_Nphe_P_Pi")
 canvas = TCanvas("cv","cv",1000,800)
 gStyle.SetOptStat(0)
 
-# ROOT.TGaxis.SetExponentOffset(-0.06, 0.0, "y")
-hist2D.GetZaxis().SetMaxDigits(3)
+for n,nm in enumerate(list_names):
+    hist2D = inputfile.Get(nm)
 
-hist2D.Draw("colz")
+    # ROOT.TGaxis.SetExponentOffset(-0.06, 0.0, "y")
+    hist2D.GetZaxis().SetMaxDigits(3)
 
-mS.DrawPreliminaryInfo("P_{#pi^{+}} vs N_{phe} map")
-dataOrSim = "Data" if isData else "Simulation"
-out_DatOrSim = "Data" if isData else "HSim"
+    hist2D.Draw("colz")
 
-mS.DrawTargetInfo(this_targ, dataOrSim)
+    mS.DrawPreliminaryInfo("P_{#pi^{+}} vs N_{phe} map")
+    dataOrSim = "Data" if isData else "Simulation"
+    out_DatOrSim = "Data" if isData else "HSim"
 
-name_png = mS.getPlotsFile("PvsNphe_%s"%(this_targ),"","png",out_DatOrSim)
-canvas.SaveAs(outputPath+name_png)
+    mS.DrawTargetInfo(this_targ, dataOrSim)
 
-# name_pdf = mS.getPlotsFile("PvsNphe_%s"%(this_targ),"","pdf",out_DatOrSim)
-# canvas.SaveAs(outputPath+name_pdf)
+    name_png = mS.getPlotsFile("PvsNphe%s_%s"%(ext_name[n], this_targ),"","png",out_DatOrSim)
+    canvas.SaveAs(outputPath+name_png)
 
-canvas.Clear()
+    # name_pdf = mS.getPlotsFile("PvsNphe_%s"%(this_targ),"","pdf",out_DatOrSim)
+    # canvas.SaveAs(outputPath+name_pdf)
+
+    canvas.Clear()
