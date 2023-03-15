@@ -178,6 +178,16 @@ if [[ $CUTINFO == *"Sh"* ]]; then
     UND="_"
 fi
 
+if [[ $CUTINFO == *"Pe"* ]]; then
+    CORR_CUT="${CORR_CUT}_Pe"
+    FITS_CUT="${FITS_CUT}_Pe"
+    PAR_NCUT="${PAR_NCUT}_Pe"
+    PAR_RCUT="${PAR_RCUT}_Pe"
+
+    CUTINFO=${CUTINFO/${UND}Pe/}
+    UND="_"
+fi
+
 ### From Fit
 if [[ $CUTINFO == *"Fs"* ]]; then
     FITS_CUT="${FITS_CUT}_Fs"
