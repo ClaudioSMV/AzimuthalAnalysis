@@ -145,8 +145,18 @@ if [[ $CUTINFO == *"AQ"* ]]; then
     CUTINFO=${CUTINFO/${UND}AQ/}
     UND="_"
 fi
+if [[ $CUTINFO == *"Pe"* ]]; then
+    PREV_CUT="${PREV_CUT}_Pe"
+    CORR_CUT="${CORR_CUT}_Pe"
+    FITS_CUT="${FITS_CUT}_Pe"
+    PAR_NCUT="${PAR_NCUT}_Pe"
+    PAR_RCUT="${PAR_RCUT}_Pe"
 
-### From Corrected
+    CUTINFO=${CUTINFO/${UND}Pe/}
+    UND="_"
+fi
+
+### From out Corrected
 if [[ $CUTINFO == *"Zx"* ]]; then
     CORR_CUT="${CORR_CUT}_Zx"
     FITS_CUT="${FITS_CUT}_Zx"
@@ -178,17 +188,7 @@ if [[ $CUTINFO == *"Sh"* ]]; then
     UND="_"
 fi
 
-if [[ $CUTINFO == *"Pe"* ]]; then
-    CORR_CUT="${CORR_CUT}_Pe"
-    FITS_CUT="${FITS_CUT}_Pe"
-    PAR_NCUT="${PAR_NCUT}_Pe"
-    PAR_RCUT="${PAR_RCUT}_Pe"
-
-    CUTINFO=${CUTINFO/${UND}Pe/}
-    UND="_"
-fi
-
-### From Fit
+### From out Fit
 if [[ $CUTINFO == *"Fs"* ]]; then
     FITS_CUT="${FITS_CUT}_Fs"
     PAR_NCUT="${PAR_NCUT}_Fs"

@@ -73,10 +73,10 @@ dict_Cut2Code = {
     "PionFiducial": "PF", "PiFiducial": "PF", "Pf": "PF", "PF": "PF",
     "MirrorMatch": "MM", "MMtch": "MM", "MM": "MM",
     "MirrorMatch2": "M2", "MMtch2": "M2", "M2": "M2",
-    "rmNpheElH": "Pe", "PheElH": "Pe", "PE": "Pe", "Pe": "Pe",
     # "Sector": "Se", "Sctr": "Se", "Sect": "Se", "Se": "Se",
     "FErr": "FE", "FullError": "FE", "Fe": "FE", "FE": "FE",
     "AccQlt": "AQ", "AccQuality": "AQ", "AQ": "AQ",
+    "rmNpheElH": "Pe", "PheElH": "Pe", "PE": "Pe", "Pe": "Pe",
     "Z": "Zx", "Zx": "Zx",
     "P": "Px", "Px": "Px",
     # "Shift": "Sh", "Sh": "Sh",
@@ -102,8 +102,8 @@ dict_Cut2Code.update(dict_FitMeth2Code)
 ########
 ## From internal/input code to folder-name format
 dict_CutCode2Name = {
-    "Xf": "Xf", "XT": "XTFR", "DS": "DSect0", "BS": "NoBadSec", "PF": "PiFid", "MM": "MMtch", "M2": "MMtch2", "Pe": "dfNphe",
-    "FE": "FErr", "AQ": "AccQlt",
+    "Xf": "Xf", "XT": "XTFR", "DS": "DSect0", "BS": "NoBadSec", "PF": "PiFid", "MM": "MMtch", "M2": "MMtch2",
+    "FE": "FErr", "AQ": "AccQlt", "Pe": "dfNphe",
     "Zx": "Z", "Px": "P", #"Sh": "Shift",
     "Fs": "Sin", "NP": "NPeak",
     #"Fd": "Fold", "LR": "LR", "Ff": "Full",
@@ -120,8 +120,8 @@ dict_CutCode2Name.update(dict_FitMeth2Name)
 ## From internal/input code to Legend's text (Latex format)
 dict_CutCode2Leg = {
     "Xf": "#X_f CFR", "XT": "#X_f TFR", "DS": "#Delta Sect #neq 0", "BS": "No bad Sect", "PF": "Fidual cut #pi", "MM": "Mirror Match",
-    "M2": "Mirror Match 2", "Pe": "N_{phe}^{el} #neq N_{phe}^{h}",
-    "FE": "", "AQ": "",
+    "M2": "Mirror Match 2",
+    "FE": "", "AQ": "", "Pe": "N_{phe}^{el} #neq N_{phe}^{h}",
     "Zx": "", "Px": "",
     "Fs": "", "NP": "",
     "MD": "",
@@ -137,10 +137,10 @@ dict_CutCode2Leg.update(dict_FitMeth2Leg)
 cutMasterKey = ""
 
 ## Acceptance
-cutMasterKey+= "Xf0XT0DS0BS0PF0MM0M20Pe0" # Yh0
+cutMasterKey+= "Xf0XT0DS0BS0PF0MM0M20" # Yh0
 
 ## Correction
-cutMasterKey+= "FE0AQ0Zx0Px0"
+cutMasterKey+= "FE0AQ0Pe0Zx0Px0"
 
 ## Fit
 cutMasterKey+= "Sh0Fs0NP0Fd0LR0Ff0"
