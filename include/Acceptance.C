@@ -2342,10 +2342,10 @@ void Acceptance::Hist2D_PiCherenkovCounter()
     //// Define Histograms
     // Reconstructed or data
     TH1D* hist1D_NoNphe_P_Pi = new TH1D("hist1D_NoNphe_P_Pi", "P_{#pi^{+}} with NULL Nphe;P_{#pi^{+}} [GeV];Counts ", 150, 0.0, 5.0);
-    TH2D* hist2D_Nphe_P_Pi = new TH2D("hist2D_Nphe_P_Pi", "P_{#pi^{+}} vs Nphe;P_{#pi^{+}} [GeV];10 #times Nphe ", 150, 0.0, 5.0, 150, 0.0, 300.0);
+    TH2D* hist2D_Nphe_P_Pi = new TH2D("hist2D_Nphe_P_Pi", "P_{#pi^{+}} vs Nphe;P_{#pi^{+}} [GeV];Nphe ", 150, 0.0, 5.0, 150, 0.0, 300.0);
 
     TH1D* hist1D_NoNphe_P_Pi_MassCut = new TH1D("hist1D_NoNphe_P_Pi_MassCut", "P_{#pi^{+}} with NULL Nphe MassCut;P_{#pi^{+}} [GeV];Counts ", 150, 0.0, 5.0);
-    TH2D* hist2D_Nphe_P_Pi_MassCut = new TH2D("hist2D_Nphe_P_Pi_MassCut", "P_{#pi^{+}} vs Nphe MassCut;P_{#pi^{+}} [GeV];10 #times Nphe ", 150, 0.0, 5.0, 150, 0.0, 300.0);
+    TH2D* hist2D_Nphe_P_Pi_MassCut = new TH2D("hist2D_Nphe_P_Pi_MassCut", "P_{#pi^{+}} vs Nphe MassCut;P_{#pi^{+}} [GeV];Nphe ", 150, 0.0, 5.0, 150, 0.0, 300.0);
 
     if (fChain == 0)
         return;
@@ -2426,6 +2426,237 @@ void Acceptance::Hist2D_PiCherenkovCounter()
         // if (at_least_one_Pion)
         // {
         // }
+
+        // if (at_least_one_mcPion)
+        // {
+        // }
+
+        // if (at_least_one_Pion_mtch)
+        // {
+        // }
+    }       // loop over entries
+
+    std::cout << "There are " << n_pions << " final state Pions." << std::endl;
+    // if (!_isData) std::cout << "There are " << n_pions_match << " final state Pions matching generated." << std::endl;
+
+    std::cout << "Made it to the end. Saving..." << std::endl;
+
+    fout->Write();
+    fout->Close();
+}
+
+void Acceptance::Hist2D_NpheVs()
+{
+    ActivateBranches();
+    fChain->SetBranchStatus("Nphe", 1);
+    fChain->SetBranchStatus("NpheEl", 1);
+
+    fChain->SetBranchStatus("P", 1);
+    fChain->SetBranchStatus("Mass2", 1);
+    fChain->SetBranchStatus("PhiLabEl", 1);
+    fChain->SetBranchStatus("PhiLab", 1);
+    fChain->SetBranchStatus("ThetaLabEl", 1);
+    fChain->SetBranchStatus("ThetaLab", 1);
+    fChain->SetBranchStatus("ThetaPQ", 1);
+
+    std::vector<std::vector<double>> all_space = {{DISLimits[0][0], DISLimits[1][0]}, {DISLimits[0][1], DISLimits[1][1]}, {0.0, 1.0}, {0.0, 5.0}, {-180., 180.}};
+    UpdateDISLimits(DISLimits, all_space);
+
+    TFile *fout;
+    std::string h2d_folder = "../output/Hist2D" + getFoldNameExt();
+    CreateDir(h2d_folder);
+
+    if (_isData) fout = TFile::Open(Form("%s/NpheVs_%s_data.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
+    else         fout = TFile::Open(Form("%s/NpheVs_%s_hsim.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
+
+    //// Define Histograms
+    // Reconstructed or data
+
+    // Nphe
+    /////////
+    TH1D* hist1D_NoNphe_vsPHad = new TH1D("hist1D_NoNphe_vsPHad", "P^{had} with NULL Nphe;P^{had} [GeV];Counts", 150,0.0,5.0);
+    TH2D* hist2D_Nphe_vsPHad = new TH2D("hist2D_Nphe_vsPHad", "P^{had} vs Nphe;P^{had} [GeV];Nphe", 150,0.0,5.0, 300,0,300);
+
+    TH1D* hist1D_NoNphe_vsMass2 = new TH1D("hist1D_NoNphe_vsMass2", "Mass^{2} with NULL Nphe;Mass^{2} [GeV^{2}];Counts", 100,-0.02,0.08);
+    TH2D* hist2D_Nphe_vsMass2 = new TH2D("hist2D_Nphe_vsMass2", "Mass2 vs Nphe;Mass^{2} [GeV^{2}];Nphe", 100,-0.02,0.08, 300,0,300);
+
+    TH1D* hist1D_NoNphe_vsXf = new TH1D("hist1D_NoNphe_vsXf", "X_{f} with NULL Nphe;X_{f};Counts", 100,-1,1);
+    TH2D* hist2D_Nphe_vsXf = new TH2D("hist2D_Nphe_vsXf", "X_{f} vs Nphe;X_{f};Nphe", 100,-1,1, 300,0,300);
+
+    TH1D* hist1D_NoNphe_vsPhiLabEl = new TH1D("hist1D_NoNphe_vsPhiLabEl", "#phi_{lab}^{e} with NULL Nphe;#phi_{lab}^{e} [deg];Counts", 360,-30,330);
+    TH2D* hist2D_Nphe_vsPhiLabEl = new TH2D("hist2D_Nphe_vsPhiLabEl", "#phi_{lab}^{e} vs Nphe;#phi_{lab}^{e} [deg];Nphe", 360,-30,330, 300,0,300);
+
+    TH1D* hist1D_NoNphe_vsPhiLab = new TH1D("hist1D_NoNphe_vsPhiLab", "#phi_{lab}^{#pi} with NULL Nphe;#phi_{lab}^{#pi} [deg];Counts", 360,-30,330);
+    TH2D* hist2D_Nphe_vsPhiLab = new TH2D("hist2D_Nphe_vsPhiLab", "#phi_{lab}^{#pi} vs Nphe;#phi_{lab}^{#pi} [deg];Nphe", 360,-30,330, 300,0,300);
+
+    TH1D* hist1D_NoNphe_vsThetaLabEl = new TH1D("hist1D_NoNphe_vsThetaLabEl", "#theta_{lab}^{e} with NULL Nphe;#theta_{lab}^{e} [deg];Counts", 100,0,100);
+    TH2D* hist2D_Nphe_vsThetaLabEl = new TH2D("hist2D_Nphe_vsThetaLabEl", "#theta_{lab}^{e} vs Nphe;#theta_{lab}^{e} [deg];Nphe", 100,0,100, 300,0,300);
+
+    TH1D* hist1D_NoNphe_vsThetaLab = new TH1D("hist1D_NoNphe_vsThetaLab", "#theta_{lab}^{#pi} with NULL Nphe;#theta_{lab}^{#pi} [deg];Counts", 100,0,100);
+    TH2D* hist2D_Nphe_vsThetaLab = new TH2D("hist2D_Nphe_vsThetaLab", "#theta_{lab}^{#pi} vs Nphe;#theta_{lab}^{#pi} [deg];Nphe", 100,0,100, 300,0,300);
+
+    TH1D* hist1D_NoNphe_vsPhiPQ = new TH1D("hist1D_NoNphe_vsPhiPQ", "#phi_{PQ} with NULL Nphe;#phi_{PQ} [deg];Counts", 360,-180,180);
+    TH2D* hist2D_Nphe_vsPhiPQ = new TH2D("hist2D_Nphe_vsPhiPQ", "#phi_{PQ} vs Nphe;#phi_{PQ} [deg];Nphe", 360,-180,180, 300,0,300);
+
+    TH1D* hist1D_NoNphe_vsThetaPQ = new TH1D("hist1D_NoNphe_vsThetaPQ", "#theta_{PQ} with NULL Nphe;#theta_{PQ} [deg];Counts", 100,0,100);
+    TH2D* hist2D_Nphe_vsThetaPQ = new TH2D("hist2D_Nphe_vsThetaPQ", "#theta_{PQ} vs Nphe;#theta_{PQ} [deg];Nphe", 100,0,100, 300,0,300);
+
+    // NpheEl
+    ///////////
+    TH2D* hist2D_NpheEl_vsPHad = new TH2D("hist2D_NpheEl_vsPHad", "P^{had} vs NpheEl;P^{had} [GeV];NpheEl", 150,0.0,5.0, 300,0,300);
+
+    TH2D* hist2D_NpheEl_vsMass2 = new TH2D("hist2D_NpheEl_vsMass2", "Mass2 vs NpheEl;Mass^{2} [GeV^{2}];NpheEl", 100,-0.02,0.08, 300,0,300);
+
+    TH2D* hist2D_NpheEl_vsXf = new TH2D("hist2D_NpheEl_vsXf", "X_{f} vs NpheEl;X_{f};NpheEl", 100,-1,1, 300,0,300);
+
+    TH2D* hist2D_NpheEl_vsPhiLabEl_AllEvts = new TH2D("hist2D_NpheEl_vsPhiLabEl_AllEvts", "#phi_{lab}^{e} vs NpheEl;#phi_{lab}^{e} [deg];NpheEl", 360,-30,330, 300,0,300);
+    TH2D* hist2D_NpheEl_vsPhiLabEl = new TH2D("hist2D_NpheEl_vsPhiLabEl", "#phi_{lab}^{e} vs NpheEl;#phi_{lab}^{e} [deg];NpheEl", 360,-30,330, 300,0,300);
+
+    TH2D* hist2D_NpheEl_vsPhiLab = new TH2D("hist2D_NpheEl_vsPhiLab", "#phi_{lab}^{#pi} vs NpheEl;#phi_{lab}^{#pi} [deg];NpheEl", 360,-30,330, 300,0,300);
+
+    TH2D* hist2D_NpheEl_vsThetaLabEl_AllEvts = new TH2D("hist2D_NpheEl_vsThetaLabEl_AllEvts", "#theta_{lab}^{e} vs NpheEl;#theta_{lab}^{e} [deg];NpheEl", 100,0,100, 300,0,300);
+    TH2D* hist2D_NpheEl_vsThetaLabEl = new TH2D("hist2D_NpheEl_vsThetaLabEl", "#theta_{lab}^{e} vs NpheEl;#theta_{lab}^{e} [deg];NpheEl", 100,0,100, 300,0,300);
+
+    TH2D* hist2D_NpheEl_vsThetaLab = new TH2D("hist2D_NpheEl_vsThetaLab", "#theta_{lab}^{#pi} vs NpheEl;#theta_{lab}^{#pi} [deg];NpheEl", 100,0,100, 300,0,300);
+
+    TH2D* hist2D_NpheEl_vsPhiPQ = new TH2D("hist2D_NpheEl_vsPhiPQ", "#phi_{PQ} vs NpheEl;#phi_{PQ} [deg];NpheEl", 360,-180,180, 300,0,300);
+
+    TH2D* hist2D_NpheEl_vsThetaPQ = new TH2D("hist2D_NpheEl_vsThetaPQ", "#theta_{PQ} vs NpheEl;#theta_{PQ} [deg];NpheEl", 100,0,100, 300,0,300);
+
+    // Diff NpheEl - Nphe
+    ///////////////////////
+    TH2D* hist2D_DiffNphe_vsPHad = new TH2D("hist2D_DiffNphe_vsPHad", "P^{had} vs DiffNphe;P^{had} [GeV];NpheEl - Nphe", 150,0.0,5.0, 120,-20,100);
+
+    TH2D* hist2D_DiffNphe_vsMass2 = new TH2D("hist2D_DiffNphe_vsMass2", "Mass2 vs DiffNphe;Mass^{2} [GeV^{2}];NpheEl - Nphe", 100,-0.02,0.08, 120,-20,100);
+
+    TH2D* hist2D_DiffNphe_vsXf = new TH2D("hist2D_DiffNphe_vsXf", "X_{f} vs DiffNphe;X_{f};NpheEl - Nphe", 100,-1,1, 120,-20,100);
+
+    TH2D* hist2D_DiffNphe_vsPhiLabEl = new TH2D("hist2D_DiffNphe_vsPhiLabEl", "#phi_{lab}^{e} vs DiffNphe;#phi_{lab}^{e} [deg];NpheEl - Nphe", 360,-30,330, 120,-20,100);
+
+    TH2D* hist2D_DiffNphe_vsPhiLab = new TH2D("hist2D_DiffNphe_vsPhiLab", "#phi_{lab}^{#pi} vs DiffNphe;#phi_{lab}^{#pi} [deg];NpheEl - Nphe", 360,-30,330, 120,-20,100);
+
+    TH2D* hist2D_DiffNphe_vsThetaLabEl = new TH2D("hist2D_DiffNphe_vsThetaLabEl", "#theta_{lab}^{e} vs DiffNphe;#theta_{lab}^{e} [deg];NpheEl - Nphe", 100,0,100, 120,-20,100);
+
+    TH2D* hist2D_DiffNphe_vsThetaLab = new TH2D("hist2D_DiffNphe_vsThetaLab", "#theta_{lab}^{#pi} vs DiffNphe;#theta_{lab}^{#pi} [deg];NpheEl - Nphe", 100,0,100, 120,-20,100);
+
+    TH2D* hist2D_DiffNphe_vsPhiPQ = new TH2D("hist2D_DiffNphe_vsPhiPQ", "#phi_{PQ} vs DiffNphe;#phi_{PQ} [deg];NpheEl - Nphe", 360,-180,180, 120,-20,100);
+
+    TH2D* hist2D_DiffNphe_vsThetaPQ = new TH2D("hist2D_DiffNphe_vsThetaPQ", "#theta_{PQ} vs DiffNphe;#theta_{PQ} [deg];NpheEl - Nphe", 100,0,100, 120,-20,100);
+
+    if (fChain == 0)
+        return;
+    Long64_t nentries = fChain->GetEntries();
+    Long64_t nbytes = 0, nb = 0;
+    unsigned int entries_to_process = nentries;
+    int n_pions = 0, n_pions_match = 0;
+    bool good_electron_mc = false, good_electron = false;
+    bool good_pion_mc = false, good_pion = false;
+    bool at_least_one_mcPion = false, at_least_one_Pion = false, at_least_one_Pion_mtch = false;
+
+    for (unsigned int jentry = 0; jentry < entries_to_process; jentry++)
+    {
+        if (jentry % 1000000 == 0)
+            printf("Processing entry %9u, progress at %6.2f%%\n",jentry,100.*(double)jentry/(entries_to_process));
+
+        // std::cout << "Processing entry " << jentry << ", progress at " << 100.*(double) jentry / (entries_to_process) << "%" << std::endl;
+        Long64_t ientry = LoadTree(jentry);
+        if (ientry < 0)
+            break;
+        nb = fChain->GetEntry(jentry);
+        nbytes += nb;
+        // if (Cut(ientry) < 0) continue;
+        good_electron_mc = false, good_electron = false;
+        at_least_one_mcPion = false, at_least_one_Pion = false, at_least_one_Pion_mtch = false;
+
+        if (GoodElectron(ientry, DISLimits))
+        {
+            good_electron = true;
+
+            hist2D_NpheEl_vsPhiLabEl_AllEvts->Fill(PhiLabEl, NpheEl);
+            hist2D_NpheEl_vsThetaLabEl_AllEvts->Fill(ThetaLabEl, NpheEl);
+        }
+
+        if (!_isData && GoodElectron_MC(ientry, DISLimits))
+        {
+            good_electron_mc = true;
+        }
+
+        // if (good_electron && good_electron_mc)
+        // {
+        // }
+
+        int vec_entries = PhiPQ->size();
+
+		for (int i=0; i<vec_entries; i++)
+        {
+            good_pion_mc = false, good_pion = false;
+            if (good_electron && GoodPiPlus(ientry, i, DISLimits))
+            {
+                n_pions++;
+                good_pion = true;
+
+                if (Nphe->at(i) < 0){
+                    hist1D_NoNphe_vsPHad->Fill(P->at(i));
+                    hist1D_NoNphe_vsMass2->Fill(Mass2->at(i));
+                    hist1D_NoNphe_vsXf->Fill(Xf->at(i));
+                    hist1D_NoNphe_vsPhiLabEl->Fill(PhiLabEl);
+                    hist1D_NoNphe_vsPhiLab->Fill(PhiLab->at(i));
+                    hist1D_NoNphe_vsThetaLabEl->Fill(ThetaLabEl);
+                    hist1D_NoNphe_vsThetaLab->Fill(ThetaLab->at(i));
+                    hist1D_NoNphe_vsPhiPQ->Fill(PhiPQ->at(i));
+                    hist1D_NoNphe_vsThetaPQ->Fill(ThetaPQ->at(i));
+                }
+                hist2D_Nphe_vsPHad->Fill(P->at(i), Nphe->at(i));
+                hist2D_Nphe_vsMass2->Fill(Mass2->at(i), Nphe->at(i));
+                hist2D_Nphe_vsXf->Fill(Xf->at(i), Nphe->at(i));
+                hist2D_Nphe_vsPhiLabEl->Fill(PhiLabEl, Nphe->at(i));
+                hist2D_Nphe_vsPhiLab->Fill(PhiLab->at(i), Nphe->at(i));
+                hist2D_Nphe_vsThetaLabEl->Fill(ThetaLabEl, Nphe->at(i));
+                hist2D_Nphe_vsThetaLab->Fill(ThetaLab->at(i), Nphe->at(i));
+                hist2D_Nphe_vsPhiPQ->Fill(PhiPQ->at(i), Nphe->at(i));
+                hist2D_Nphe_vsThetaPQ->Fill(ThetaPQ->at(i), Nphe->at(i));
+
+                hist2D_NpheEl_vsPHad->Fill(P->at(i), NpheEl);
+                hist2D_NpheEl_vsMass2->Fill(Mass2->at(i), NpheEl);
+                hist2D_NpheEl_vsXf->Fill(Xf->at(i), NpheEl);
+                hist2D_NpheEl_vsPhiLab->Fill(PhiLab->at(i), NpheEl);
+                hist2D_NpheEl_vsThetaLab->Fill(ThetaLab->at(i), NpheEl);
+                hist2D_NpheEl_vsPhiPQ->Fill(PhiPQ->at(i), NpheEl);
+                hist2D_NpheEl_vsThetaPQ->Fill(ThetaPQ->at(i), NpheEl);
+
+                hist2D_DiffNphe_vsPHad->Fill(P->at(i), NpheEl - Nphe->at(i));
+                hist2D_DiffNphe_vsMass2->Fill(Mass2->at(i), NpheEl - Nphe->at(i));
+                hist2D_DiffNphe_vsXf->Fill(Xf->at(i), NpheEl - Nphe->at(i));
+                hist2D_DiffNphe_vsPhiLabEl->Fill(PhiLabEl, NpheEl - Nphe->at(i));
+                hist2D_DiffNphe_vsPhiLab->Fill(PhiLab->at(i), NpheEl - Nphe->at(i));
+                hist2D_DiffNphe_vsThetaLabEl->Fill(ThetaLabEl, NpheEl - Nphe->at(i));
+                hist2D_DiffNphe_vsThetaLab->Fill(ThetaLab->at(i), NpheEl - Nphe->at(i));
+                hist2D_DiffNphe_vsPhiPQ->Fill(PhiPQ->at(i), NpheEl - Nphe->at(i));
+                hist2D_DiffNphe_vsThetaPQ->Fill(ThetaPQ->at(i), NpheEl - Nphe->at(i));
+
+                at_least_one_Pion = true;
+            }
+
+            // if (!_isData && good_electron_mc && GoodPiPlus_MC(ientry, i, DISLimits))
+            // {
+            //     good_pion_mc = true;
+
+            //     at_least_one_mcPion = true;
+            // }
+
+            // if (good_pion && good_pion_mc)
+            // {
+            //     n_pions_match++;
+
+            //     at_least_one_Pion_mtch = true;
+            // }
+        }   // loop over tracks
+
+        if (at_least_one_Pion)
+        {
+            hist2D_NpheEl_vsPhiLabEl->Fill(PhiLabEl, NpheEl);
+            hist2D_NpheEl_vsThetaLabEl->Fill(ThetaLabEl, NpheEl);
+        }
 
         // if (at_least_one_mcPion)
         // {

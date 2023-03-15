@@ -186,11 +186,16 @@ void getHist2D(std::string target = "Fe", bool isData = true, std::string plot_n
         std::cout << "\n >> Running Hist2D_PiCherenkovCounter for " << target << " target [file type: " << this_type << "]\n" << std::endl;
         acc.Hist2D_PiCherenkovCounter();
     }
+    else if (plot_name == "NpheVs")
+    {
+        std::cout << "\n >> Running Hist2D_NpheVs for " << target << " target [file type: " << this_type << "]\n" << std::endl;
+        acc.Hist2D_NpheVs();
+    }
     else
     {
         std::cout << "\n >> Enter a valid third parameter for macro name. " << std::endl;
         std::cout << " >> Options: KinVars, XfVsYh, ThetaPQ, LabAngles, PQVsLab," << std::endl;
         std::cout << "             (PQ)VsSector, (PQ)VsDeltaSector, VarsVsXb," << std::endl;
-        std::cout << "             PiCherenkovCounter (CCounter).\n" << std::endl;
+        std::cout << "             PiCherenkovCounter (CCounter), NpheVs.\n" << std::endl;
     }
 }
