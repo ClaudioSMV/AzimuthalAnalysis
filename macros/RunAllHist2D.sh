@@ -11,8 +11,8 @@
 #  "PF": Pi+ fiducial cut; "MM": Mirror Match;          #
 #  "FE": Use FullError; "AQ": Acc Quality < 10%;        #
 #                                                       #
-#  EG: ./FitCrossSection.sh 0 2 Zx_FE_Fd                #
-#      ./FitCrossSection.sh 1 3 Zx_LR                   #
+#  EG: ./RunAllHist2D.sh DeltaSector Zx_FE_Fd 10        #
+#      ./RunAllHist2D.sh CherenkovCounter Zx_LR 10      #
 #########################################################
 
 #####
