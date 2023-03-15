@@ -151,10 +151,15 @@ bool pass_MirrorMatch2(float momentum, float Nph)
     return (momentum > 0.41); // REMOVE NPHE MINIMUM! // && 0.0 < Nph && Nph < 300);
 }
 
+bool pass_rmNpheElH(float NphEl, float NphH)
+{
+    return (NphEl != NphH);
+}
+
 /*** Cut name info ***/
 
 // Add cuts in pairs with short name first and folder name next {XX, XXXXX}
 std::string lookuptable_cutAcc[20][2] = {{"Xf","Xf"}, {"XT","XTFR"}, {"DS","DSect0"}, {"BS","NoBadSec"}, {"PF","PiFid"}, {"MM","MMtch"}, {"M2","MMtch2"}};
-std::string lookuptable_cutCor[20][2] = {{"FE","FErr"}, {"AQ","AccQlt"}};
+std::string lookuptable_cutCor[20][2] = {{"FE","FErr"}, {"AQ","AccQlt"}, {"Pe","dfNphe"}};
 
 #endif // #ifdef Cuts_h

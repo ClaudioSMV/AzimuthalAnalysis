@@ -30,6 +30,9 @@ void Acceptance::ActivateBranches()
     std::vector<string> activeBranches = {"TargType", "Q2", "Nu", "Xb", "Yb", "W", "vyec", "Zh", "Pt2", "PhiPQ", "pid", "Xf"}; // , "Nphe"};
     std::vector<string> activeBranches_mc = {"mc_TargType", "mc_Q2", "mc_Nu", "mc_Xb", "mc_Yb", "mc_W", "mc_Zh", "mc_Pt2", "mc_PhiPQ", "mc_pid", "mc_Xf"};
 
+    //  Enable branches per cut
+    /////////////////////////////
+
     if (_cutDeltaSector0 || _cutBadSector)
     {
         activeBranches.push_back("SectorEl");
@@ -51,6 +54,11 @@ void Acceptance::ActivateBranches()
     if (_cutMirrorMtch || _cutMirrorMtch2)
     {
         activeBranches.push_back("P");
+        activeBranches.push_back("Nphe");
+    }
+    if (_rmNpheElH)
+    {
+        activeBranches.push_back("NpheEl");
         activeBranches.push_back("Nphe");
     }
 

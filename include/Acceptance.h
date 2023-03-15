@@ -39,6 +39,7 @@ private:
     // Cut Corr bools
     bool _useFullError = false;
     bool _useAccQlt = false;
+    bool _rmNpheElH = false;
 
     int _count = 0; // Usefull for debug
 
@@ -62,6 +63,7 @@ public: // Acc cuts
 public: // Corr cuts
     void setFullError() { _useFullError = true; }
     void useAccQlt() { _useAccQlt = true; }
+    void rmNpheElH() { _rmNpheElH = true; }
 
 public:
     TTree *fChain;  //! pointer to the analyzed TTree or TChain
@@ -674,6 +676,10 @@ void Acceptance::ActivateCuts(std::string str_cuts)
     {
         useAccQlt();         _cutList+="_AQ";    std::cout << "Using Acc quality cut (err/acc < 10 %)." << std::endl;
     }
+    if (str_cuts.find("Pe")!=std::string::npos)
+    {
+        rmNpheElH();         _cutList+="_Pe";    std::cout << "Using NpheEl != Nphe cut." << std::endl;
+    }
 }
 
 /////////////////////////
@@ -768,6 +774,10 @@ Bool_t Acceptance::GoodPiPlus(Long64_t entry, int ivec, vector<vector<double>> t
     if (_cutMirrorMtch2)
     {
         pass_DIS = pass_DIS && pass_MirrorMatch2(P->at(ivec), Nphe->at(ivec));
+    }
+    if (_rmNpheElH)
+    {
+        pass_DIS = pass_DIS && pass_rmNpheElH(NpheEl, Nphe->at(ivec));
     }
 
     return pass_DIS;
