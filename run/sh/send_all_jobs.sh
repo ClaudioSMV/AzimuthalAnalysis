@@ -96,6 +96,12 @@ if [[ $CUTLIST == *"AQ"* ]]; then
     CUTLIST=${CUTLIST/${UND}AQ/}
     UND="_"
 fi
+if [[ $CUTLIST == *"Pe"* ]]; then
+    COR_CUT="${COR_CUT}${UND}Pe"
+
+    CUTLIST=${CUTLIST/${UND}Pe/}
+    UND="_"
+fi
 
 if [[ -n $CUTLIST ]]; then
     echo "There are cuts not defined: ${CUTLIST}"
