@@ -226,6 +226,120 @@ def getCutsAsList(this_cut_str): # Intro should be output of getCutStrFormat()
     return this_list
 
 
+################################
+##  Set study dimensionality  ##
+################################
+
+def getPhiHist(th1_input, name, do_shift):
+    this_xmin = th1_input.GetXaxis().GetXmin() # -180.
+    this_xmax = th1_input.GetXaxis().GetXmax() #  180.
+    this_nbin = th1_input.GetNbinsX()
+
+    if (do_shift):
+        # if (this_nbin%2 == 0): # Even (0. is in a bin edge) (default)
+        this_xmin =   0.
+        this_xmax = 360.
+        central_bin = int(this_nbin/2)+1 # Even: Right to the center; Odd: Central bin
+
+        if (this_nbin%2 == 1): # Odd (0. is in the middle of a bin)
+            bin_width = th1_input.GetBinWidth(central_bin)
+
+            # Slightly shift edges so that bins are correct
+            this_xmin -= bin_width/2.
+            this_xmax -= bin_width/2.
+
+    h_tmp = ROOT.TH1D(name,";%s;Counts"%(axis_label('I',"LatexUnit")), this_nbin, this_xmin, this_xmax)
+
+    for i in range(1,this_nbin+1):
+        this_value = th1_input.GetBinContent(i)
+        this_error = th1_input.GetBinError(i)
+        # if (this_value == 0):
+        #     print("    %s : Value: %i"%(name,this_value))
+        #     this_value = 0.0
+        #     this_error = 0.0
+        bin_L_edge = th1_input.GetBinLowEdge(i)
+        bin_center = th1_input.GetBinCenter(i)
+
+        the_bin = i
+        if (do_shift):
+            if (this_nbin%2 == 0): # Even   6 -> First right bin is 4
+                if (bin_L_edge < 0.0):
+                    the_bin = i + central_bin -1 # 4,5,6
+                else:
+                    the_bin = i - central_bin + 1 # 1,2,3
+
+            elif (this_nbin%2 == 1): # Odd   5 -> center is 3
+                if (bin_center < 0.0):
+                    the_bin = i + central_bin # 4,5
+                else:
+                    the_bin = i - central_bin + 1 # 1,2,3
+        # Skip bins that are empty (if not, they will count as an entry with zero value)
+        if (this_value != 0):
+            h_tmp.SetBinContent(the_bin, this_value)
+            h_tmp.SetBinError(the_bin, this_error)
+
+    return h_tmp
+
+def getListBinCode(bin_vars, this_binList):
+    # Say input is "QNZ" -> I want bins of QNZ, P integrated
+
+    this_outlist = []
+    template = ["Q","N","Z","P"] if ("X" not in bin_vars) else ["Q","X","Z","P"]
+    nbins = [1,1,1,1]
+
+    for v,var in enumerate(template):
+        if var not in bin_vars:
+            template[v] = ""
+        else:
+            this_bin = len(this_binList[var]) - 1
+            nbins[v] = this_bin
+
+    totalsize = nbins[0]*nbins[1]*nbins[2]*nbins[3]
+    for i in range(totalsize):
+        total_tmp = totalsize
+        i_tmp = i
+        txt_tmp = ""
+        for v,var in enumerate(template):
+            if (var==""):
+                continue
+            total_tmp /= nbins[v]
+            index = i_tmp/(total_tmp)
+            i_tmp -= index*total_tmp
+            txt_tmp += "%s%i"%(var, index)
+        this_outlist.append(txt_tmp)
+
+    # Output would be ["Q0N0Z0", "Q0N0Z1", ..., "Q3N3Z9"]
+    return this_outlist
+
+def getListTSparseProj1D(thnSparse, list_binstr, shift):
+    this_outlist = []
+    template = ["Q","N","Z","P"] if ("X" not in list_binstr[0]) else ["Q","X","Z","P"]
+
+    ## Runs over letters only
+    for l,letter in enumerate(template):
+        if letter not in list_binstr[0]:
+            template[l] = ""
+
+    ## Run over all n-dimensional bins
+    for bincode in list_binstr:
+
+        for l,letter in enumerate(template):
+            if not letter:
+                continue
+
+            ## Get letter location by its position in the string with index, then add 1 to get number location and save value as int
+            pos = int(bincode[bincode.index(letter)+1])
+            thnSparse.GetAxis(l).SetRange(pos+1, pos+1)
+
+        proj_tmp = thnSparse.Projection(4)
+        proj_tmp.SetName("proj_tmp")
+        this_hist = getPhiHist(proj_tmp, thnSparse.GetName()+"_"+bincode, shift)
+        this_outlist.append(this_hist)
+        proj_tmp.Delete()
+
+    return this_outlist
+
+
 ###########################
 ##  Get fit information  ##
 ###########################

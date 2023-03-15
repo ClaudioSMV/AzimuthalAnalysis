@@ -150,80 +150,52 @@ inputTHnSparse_list = [histCorr_Reconstru, histCorr_ReMtch_mc, histCorr_ReMtch_r
 prefixType = ["Correction", "Corr GoodGen_mc", "Corr GoodGen_rec", "Raw data"]
 
 
-bins_list = [] # [3, 3, 10, 1]
-default_conf = [1,1,0,0] # 2D bins -> Q2 and Nu, integrate Zh and Pt2
-this_conf = [1,1,0,0]
+# bins_list = [] # [3, 3, 10, 1]
+# default_conf = [1,1,0,0] # 2D bins -> Q2 and Nu, integrate Zh and Pt2
+# this_conf = [1,1,0,0]
 
-### REVISIT THIS!
-# Set default shown binning by BinningType
-if (infoDict["BinningType"] == 0): # 0: Small binning
-    default_conf[2] = 0
-    default_conf[3] = 0
-elif (infoDict["BinningType"] >= 1): # 1: SplitZh
-    default_conf[2] = 1
-    default_conf[3] = 0
-# elif (infoDict["BinningType"] == 2): # 2: ThinZh bin, so it is intended to shown results as function of Zh
+# ### REVISIT THIS!
+# # Set default shown binning by BinningType
+# if (infoDict["BinningType"] == 0): # 0: Small binning
+#     default_conf[2] = 0
+#     default_conf[3] = 0
+# elif (infoDict["BinningType"] >= 1): # 1: SplitZh
 #     default_conf[2] = 1
 #     default_conf[3] = 0
+# # elif (infoDict["BinningType"] == 2): # 2: ThinZh bin, so it is intended to shown results as function of Zh
+# #     default_conf[2] = 1
+# #     default_conf[3] = 0
+
+# # Change binning using input (or use default)
+# if (useZh):
+#     this_conf[2] = 1
+#     this_conf[3] = 0
+# elif (usePt2):
+#     this_conf[2] = 0
+#     this_conf[3] = 1
+# else:
+#     this_conf = default_conf # Plot Z
+
+this_binDict = myStyle.all_dicts[infoDict["BinningType"]]
+
+binstr = "QN" if "X" not in this_binDict else "QX"
 
 # Change binning using input (or use default)
 if (useZh):
-    this_conf[2] = 1
-    this_conf[3] = 0
+    binstr+="Z"
 elif (usePt2):
-    this_conf[2] = 0
-    this_conf[3] = 1
+    binstr+="P"
 else:
-    this_conf = default_conf # Plot Z
+    print("  [Correction] Use Zx or Px.")
+    exit
 
 
-# Retrieve 5d-hists, get projections and save them, along with a label to identify the bin
-totalsize = 1
-for i,i_bool in enumerate(this_conf):
-    if i_bool:
-        nbins = histCorr_Reconstru.GetAxis(i).GetNbins()
-        totalsize*=nbins
-        bins_list.append(nbins)
-    else:
-        bins_list.append(1)
+names_list = myStyle.getListBinCode(binstr, this_binDict)
+Proj1DTHnSparse_list = []
 
-names_list = []
-Proj1DTHnSparse_list = [[],[],[],[]]
-symbol_list = ["Q","N","Z","P"]
-
-if ('X' in myStyle.all_dicts[infoDict["BinningType"]]):
-    symbol_list[1] = "X"
-
-print("  [Correction] Using variables [%s]"%(', '.join(symbol_list)))
-
-for i in range(totalsize):
-    total_tmp = totalsize
-    i_tmp = i
-    txt_tmp = ""
-    # for j,nbin in enumerate(bins_list):
-    for j,j_bool in enumerate(this_conf):
-        if j_bool:
-            total_tmp /= bins_list[j]
-            index = i_tmp/(total_tmp)
-            i_tmp -= index*total_tmp
-            txt_tmp += (symbol_list[j]+str(index))
-
-            for t in inputTHnSparse_list:
-                t.GetAxis(j).SetRange(index+1, index+1)
-
-            # histCorr_Reconstru.GetAxis(j).SetRange(index+1, index+1)
-
-    for n,newRangeInput in enumerate(inputTHnSparse_list):
-        proj_tmp = newRangeInput.Projection(4)
-        proj_tmp.SetName("proj_tmp") # (newRangeInput.GetName()+"_"+txt_tmp)
-
-        this_hist = getPhiHist(proj_tmp, newRangeInput.GetName()+"_"+txt_tmp, shift)
-
-        Proj1DTHnSparse_list[n].append(this_hist)
-        proj_tmp.Delete() # Prevent possible memory leak
-
-    names_list.append(txt_tmp)
-
+for th in inputTHnSparse_list:
+    list_proj = myStyle.getListTSparseProj1D(th, names_list, shift)
+    Proj1DTHnSparse_list.append(list_proj)
 
 canvas = TCanvas("cv","cv",1000,800)
 canvas.SetGrid(0,1)
