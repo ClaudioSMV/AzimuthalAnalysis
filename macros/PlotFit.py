@@ -2,17 +2,17 @@ from ROOT import TFile,TTree,TCanvas,TH1D,TH1F,TH2D,TH2F,TLatex,TMath,TColor,TLe
 import ROOT
 import os
 import optparse
-import myStyle
+import myStyle as ms
 from array import array
 
 gROOT.SetBatch( True )
 gStyle.SetOptFit(1)
 
 ## Defining Style
-myStyle.ForceStyle()
+ms.ForceStyle()
 
-gStyle.SetStatX(1 - myStyle.GetMargin() - 0.005)
-gStyle.SetStatY(2*myStyle.GetMargin() + 0.205)
+gStyle.SetStatX(1 - ms.GetMargin() - 0.005)
+gStyle.SetStatY(2*ms.GetMargin() + 0.205)
 
 
 ## Define functions
@@ -40,7 +40,7 @@ def Get_HistCorrected(h_input, h_name, this_fittype): # , opts):
         list_xbin_out.append(h_input.GetBinLowEdge(bt+1))
 
     ### Create output histogram
-    phi_axis_title = myStyle.axis_label('I',"LatexUnit") # "#phi_{PQ} (deg)"
+    phi_axis_title = ms.axis_label('I',"LatexUnit") # "#phi_{PQ} (deg)"
     Nbins_out = len(list_xbin_out)-1
     h_output = TH1D("%s_%s"%(h_name, this_fittype), ";%s;Counts"%(phi_axis_title), Nbins_out, array('d',list_xbin_out))
 
@@ -90,8 +90,8 @@ def Get_FitFunctions(h_out, list_fname, this_fittype, opts):
     # elif (this_fittype == "Ff"):
 
     ### Define options
-    opt_sk0 = True if ("NPeak" in opts) else False
-    opt_sin = True if ("Sin" in opts) else False
+    opt_sk0 = True if ("NPeak" in ms.getListOfCuts(opts)) else False
+    opt_sin = True if ("Sin" in ms.getListOfCuts(opts)) else False
 
     ### Set limits
     Nbins = h_out.GetXaxis().GetNbins()
@@ -179,7 +179,7 @@ def Get_Chi2ndf(fit_funct, x,y, position):
     # elif (this_fittype == "Ff"):
 
     str_Fit.SetTextAlign(text_orientation)
-    str_Fit.SetTextSize(myStyle.GetSize()-6)
+    str_Fit.SetTextSize(ms.GetSize()-6)
 
     return str_Fit
 
@@ -192,73 +192,45 @@ parser.add_option('-J', dest='JLabCluster', action='store_true', default = False
 parser.add_option('-i', dest='inputCuts', default = "", help="Add input cuts Xf_Yb_...")
 parser.add_option('-o', dest='outputCuts', default = "", help="Add output cuts FE_...")
 
-parser.add_option('-F', dest='fold', action='store_true', default = False, help="Use fold tails (default fits both tails separated)")
-parser.add_option('-e', dest='errorFull', action='store_true', default = False, help="Use FullError")
 parser.add_option('-O', dest='Overwrite', action='store_true', default = False, help="Overwrite if file already exists")
-parser.add_option('-s', dest='useSin', action='store_true', default = False, help="Add a sin\phi term in the fit (expected to be negligible)")
 
 # input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
 
-rootpath = options.rootpath
 dataset = options.Dataset
+rootpath = options.rootpath
 isJLab = options.JLabCluster
 
-# # Define bool of fit method [Full, LR, Fold, Shift]
-# use_LR = False
-# if ("LR" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.outputCuts))):
-#     use_LR = True
-
-# use_Fold = options.fold
-# if ("Fold" in myStyle.getCutStrFromStr(options.outputCuts)):
-#     use_Fold = True
-
-# use_Shift = False
-# if (("Shift" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.outputCuts))) or ("Shift" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.inputCuts)))):
-#     use_Shift = True
-#     # print("  [Fit] Fit PhiPQ shifted, ranging in ~(0., 360.)")
-
-use_Fold = options.fold
-if (use_Fold):
-    options.inputCuts+="_Fd"
-
-useSin = options.useSin
-if (useSin or ("Sin" in myStyle.getCutStrFromStr(options.outputCuts))):
-    useSin = True
-    options.outputCuts += "_Fs"
+input_cuts = options.inputCuts
+plots_cuts = options.inputCuts +"_"+ options.outputCuts
 
 ### Define type of fit used
-fit_type = myStyle.GetFitMethod(options.inputCuts +"_"+ options.outputCuts)
+fit_type = ms.GetFitMethod(plots_cuts)
 
-infoDict = myStyle.getDictNameFormat(dataset)
-nameFormatted = myStyle.getNameFormatted(dataset)
+infoDict = ms.getDictNameFormat(dataset)
+nameFormatted = ms.getNameFormatted(dataset)
 
 ## Cuts
-input_cuts = options.inputCuts
-plots_cuts = options.inputCuts + "_" + options.outputCuts
-if options.errorFull:
-    input_cuts+="_FE"
-    plots_cuts+="_FE"
-if useSin:
-    plots_cuts+="_Fs"
-
-plots_cuts+="_"+fit_type # Add Fold or LR extension
+# plots_cuts+="_"+fit_type # Add Fold or LR extension
+useSin = False
+if ("Sin" in ms.getListOfCuts(plots_cuts)):
+    useSin = True
 
 ### Remove incompatible methods
-if ((fit_type == "Ff") and ("NPeak" in myStyle.getCutStrFromStr(plots_cuts))):
-    print("  [Fit] Full fit (Ff) method is incompatible with removing peak. Use LR or Fd instead!")
+if ((fit_type == "Ff") and ("NPeak" in ms.getListOfCuts(plots_cuts))):
+    # print("  [Fit] Full fit (Ff) method is incompatible with removing peak. Use LR or Fd instead!")
     # exit()
     print("  [Fit] This time Full fit (Ff) method will run without removing peak")
 
 
 ## Input
-inputPath = myStyle.getPlotsFolder("Correction", input_cuts, myStyle.getBinNameFormatted(dataset) + "/" + infoDict["Target"], isJLab, False) # "../output/"
-inputROOT = myStyle.getPlotsFile("Corrected", dataset, "root")
+inputPath = ms.getPlotsFolder("Correction", input_cuts, ms.getBinNameFormatted(dataset) +"/"+ infoDict["Target"], isJLab, False) # "../output/"
+inputROOT = ms.getPlotsFile("Corrected", dataset, "root")
 inputfile = TFile(inputPath+inputROOT,"READ")
 
 ## Output
-outputPath = myStyle.getPlotsFolder("Fit", plots_cuts, myStyle.getBinNameFormatted(dataset) + "/" + infoDict["Target"], isJLab)
-outputROOT = myStyle.getPlotsFile("Fit", dataset, "root", fit_type)
+outputPath = ms.getPlotsFolder("Fit", plots_cuts, ms.getBinNameFormatted(dataset) +"/"+ infoDict["Target"], isJLab)
+outputROOT = ms.getPlotsFile("Fit", dataset, "root", fit_type)
 if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
     print("  [Fit] Fit already exists! Not overwriting it.")
     exit()
@@ -282,7 +254,7 @@ gStyle.SetOptStat(0)
 
 outputfile = TFile(outputPath+outputROOT,"RECREATE")
 
-phi_axis_title = myStyle.axis_label('I',"LatexUnit") # "#phi_{PQ} (deg)"
+phi_axis_title = ms.axis_label('I',"LatexUnit") # "#phi_{PQ} (deg)"
 
 for h in list_of_hists:
     if (h.ReadObj().Class_Name() == "TH1D"):
@@ -323,7 +295,7 @@ for h in list_of_hists:
 
             ### Return list of TF1 with the proper range
             # Use plots_cuts to find special cuts/options
-            list_tf1 = Get_FitFunctions(hist_corr, list_fitfname, fit_type, myStyle.getCutStrFromStr(plots_cuts)) # fit_opts
+            list_tf1 = Get_FitFunctions(hist_corr, list_fitfname, fit_type, plots_cuts) # fit_opts
 
             ### Make fit and save covariance and correlation matrices
             list_this_chi2 = []
@@ -358,13 +330,13 @@ for h in list_of_hists:
             hist_corr.Draw("FUNC same")
             hist_corr.Write()
 
-            myStyle.DrawPreliminaryInfo("Correction fit")
-            myStyle.DrawTargetInfo(nameFormatted, "Data")
-            myStyle.DrawBinInfo(this_nbin, infoDict["BinningType"])
+            ms.DrawPreliminaryInfo("Correction fit")
+            ms.DrawTargetInfo(nameFormatted, "Data")
+            ms.DrawBinInfo(this_nbin, infoDict["BinningType"])
 
-            outputName = myStyle.getPlotsFile("Fit_"+tmp_name, dataset, "png",this_nbin)
+            outputName = ms.getPlotsFile("Fit_"+tmp_name, dataset, "png",this_nbin)
             canvas.SaveAs(outputPath+outputName)
             canvas.Clear()
 
-print("  [Fit] Fit parameters saved!")
+print("  [Fit] Fit parameters saved!\n")
 outputfile.Close()

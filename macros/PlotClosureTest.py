@@ -2,13 +2,13 @@ from ROOT import TFile,TTree,TCanvas,TH1D,TH1F,TH2D,TH2F,TLatex,TMath,TColor,TLe
 import ROOT
 import os
 import optparse
-import myStyle
+import myStyle as ms
 
 gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
 
 ## Defining Style
-myStyle.ForceStyle()
+ms.ForceStyle()
 
 # Construct the argument parser
 parser = optparse.OptionParser("usage: %prog [options]\n")
@@ -16,42 +16,35 @@ parser = optparse.OptionParser("usage: %prog [options]\n")
 # parser.add_option('-y','--ylength', dest='ylength', default = 200.0, help="Y axis upper limit")
 parser.add_option('-D', dest='Dataset', default = "", help="Dataset in format <targ>_<binType>_<Ndims>")
 parser.add_option('-p', dest='rootpath', default = "", help="Add path to files, if needed")
-parser.add_option('-a', dest='saveAll', action='store_true', default = False, help="Save All plots")
 parser.add_option('-J', dest='JLabCluster', action='store_true', default = False, help="Use folder from JLab_cluster")
 parser.add_option('-i', dest='inputCuts', default = "", help="Add input cuts Xf_Yb_...")
 parser.add_option('-o', dest='outputCuts', default = "", help="Add output cuts FE_...")
-parser.add_option('-f', dest='fracAcc', default = 50., help="Fraction of the stats used in Acc calculation (this/100.)")
 
-parser.add_option('-e', dest='errorFull', action='store_true', default = False, help="Use FullError")
+# parser.add_option('-a', dest='saveAll', action='store_true', default = False, help="Save All plots")
+parser.add_option('-f', dest='fracAcc', default = 50., help="Fraction of the stats used in Acc calculation (this/100.)")
 
 # input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
 
-saveAll = options.saveAll
-rootpath = options.rootpath
 dataset = options.Dataset
+rootpath = options.rootpath
 isJLab = options.JLabCluster
 
-fracAcc = options.fracAcc
+# saveAll = options.saveAll
+fracAcc = int(options.fracAcc)
 
-infoDict  = myStyle.getDictNameFormat(dataset)
-nameFormatted = myStyle.getNameFormatted(dataset)
+infoDict  = ms.getDictNameFormat(dataset)
+nameFormatted = ms.getNameFormatted(dataset)
 
 ## Cuts
 input_cuts = options.inputCuts
-plots_cuts = options.inputCuts + "_" + options.outputCuts
-if options.errorFull:
-    input_cuts+="_FE"
-    plots_cuts+="_FE"
+plots_cuts = options.inputCuts +"_"+ options.outputCuts
 
-# useZh = options.useZh
-# usePt2 = options.usePt2
 useZh = False
 usePt2 = False
-# print(myStyle.getCutStrFromStr(options.outputCuts))
-if ("Z" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.outputCuts))) or ("Z" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.inputCuts))):
+if ("Z" in ms.getListOfCuts(plots_cuts)):
     useZh = True
-if ("P" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.outputCuts))) or ("P" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.inputCuts))):
+if ("P" in ms.getListOfCuts(plots_cuts)):
     usePt2 = True
 
 if (useZh) and (usePt2):
@@ -66,13 +59,13 @@ else:
     exit()
 
 ## Input
-inputPath = myStyle.getOutputFolder("ClosureTest%ip"%int(fracAcc), input_cuts, isJLab, False) # "../output/"
-inputName = myStyle.getOutputFile("ClosureTest", dataset) # "../output/"
+inputPath = ms.getOutputFolder("ClosureTest%ip"%int(fracAcc), input_cuts, isJLab, False) # "../output/"
+inputName = ms.getOutputFile("ClosureTest", dataset) # "../output/"
 inputfile = TFile(inputPath+inputName,"READ")
 
 ## Output
-outputPath = myStyle.getPlotsFolder("ClosureTest%ip"%int(fracAcc), plots_cuts, myStyle.getBinNameFormatted(dataset) + "/" + infoDict["Target"], isJLab)
-outputROOT = myStyle.getPlotsFile("ClosureTest", dataset, "root")
+outputPath = ms.getPlotsFolder("ClosureTest%ip"%int(fracAcc), plots_cuts, ms.getBinNameFormatted(dataset) +"/"+ infoDict["Target"], isJLab)
+outputROOT = ms.getPlotsFile("ClosureTest", dataset, "root")
 
 histCorr_Reconstru = inputfile.Get("Corr_Reconstru")
 histCorr_ReMtch_mc = inputfile.Get("Corr_ReMtch_mc")
@@ -84,79 +77,53 @@ inputTHnSparse_list = [histCorr_Reconstru, histCorr_ReMtch_mc, histCorr_ReMtch_r
 prefixType = ["Correction", "Correct Match_mc", "Correct Match_rec", "True", "True GoodPionRec"]
 type_reco_short = ["Reco", "RMmc", "RMre"]
 
-bins_list = [] # [3, 3, 10, 1]
-default_conf = [1,1,0,0] # 2D bins -> Q2 and Nu, integrate Zh and Pt2
-this_conf = [1,1,0,0]
+# bins_list = [] # [3, 3, 10, 1]
+# default_conf = [1,1,0,0] # 2D bins -> Q2 and Nu, integrate Zh and Pt2
+# this_conf = [1,1,0,0]
 
-### REVISIT THIS!
-# Set default shown binning by BinningType
-if (infoDict["BinningType"] == 0): # 0: Small binning
-    default_conf[2] = 0
-    default_conf[3] = 0
-elif (infoDict["BinningType"] >= 1): # 1: SplitZh
-    default_conf[2] = 1
-    default_conf[3] = 0
-# elif (infoDict["BinningType"] == 2): # 2: ThinZh bin, so it is intended to shown results as function of Zh
+# ### REVISIT THIS!
+# # Set default shown binning by BinningType
+# if (infoDict["BinningType"] == 0): # 0: Small binning
+#     default_conf[2] = 0
+#     default_conf[3] = 0
+# elif (infoDict["BinningType"] >= 1): # 1: SplitZh
 #     default_conf[2] = 1
 #     default_conf[3] = 0
+# # elif (infoDict["BinningType"] == 2): # 2: ThinZh bin, so it is intended to shown results as function of Zh
+# #     default_conf[2] = 1
+# #     default_conf[3] = 0
 
-# Change binning using input (or use default)
+# # Change binning using input (or use default)
+# if (useZh):
+#     this_conf[2] = 1
+#     this_conf[3] = 0
+# elif (usePt2):
+#     this_conf[2] = 0
+#     this_conf[3] = 1
+# else:
+#     this_conf = default_conf # Plot Z
+
+this_binDict = ms.all_dicts[infoDict["BinningType"]]
+
+binstr = "QN" if "X" not in this_binDict else "QX"
+
 if (useZh):
-    this_conf[2] = 1
-    this_conf[3] = 0
+    binstr+="Z"
 elif (usePt2):
-    this_conf[2] = 0
-    this_conf[3] = 1
+    binstr+="P"
 else:
-    this_conf = default_conf # Plot Z
+    print("  [Correction] Use Zx or Px.")
+    exit()
 
+## Get projections
+names_list = ms.getListBinCode(binstr, this_binDict)
+Proj1DTHnSparse_list = []
 
-# Retrieve 5d-hists, get projections and save them, along with a label to identify the bin
-totalsize = 1
-for i,i_bool in enumerate(this_conf):
-    if i_bool:
-        nbins = histCorr_Reconstru.GetAxis(i).GetNbins()
-        totalsize*=nbins
-        bins_list.append(nbins)
-    else:
-        bins_list.append(1)
-
-list_binName = []
-Proj1DTHnSparse_list = [[],[],[],[],[]]
-symbol_list = ["Q","N","Z","P"]
-
-if ('X' in myStyle.all_dicts[infoDict["BinningType"]]):
-    symbol_list[1] = "X"
-
-print("  [ClosureTest] Using variables [%s]"%(', '.join(symbol_list)))
-
-for i in range(totalsize):
-    total_tmp = totalsize
-    i_tmp = i
-    txt_tmp = ""
-    # for j,nbin in enumerate(bins_list):
-    for j,j_bool in enumerate(this_conf):
-        if j_bool:
-            total_tmp /= bins_list[j]
-            index = i_tmp/(total_tmp)
-            i_tmp -= index*total_tmp
-            txt_tmp += (symbol_list[j]+str(index))
-
-            for t in inputTHnSparse_list:
-                t.GetAxis(j).SetRange(index+1, index+1)
-
-            # histCorr_Reconstru.GetAxis(j).SetRange(index+1, index+1)
-
-    for n,newRangeInput in enumerate(inputTHnSparse_list):
-        proj_tmp = newRangeInput.Projection(4)
-        proj_tmp.SetName(newRangeInput.GetName()+"_"+txt_tmp)
-
-        Proj1DTHnSparse_list[n].append(proj_tmp)
-
-    list_binName.append(txt_tmp)
+for th in inputTHnSparse_list:
+    list_proj = ms.getListTSparseProj1D(th, names_list, False)
+    Proj1DTHnSparse_list.append(list_proj)
 
 ## Create TH1 summary ClosureTest
-
 list_th1_CT = []
 list_th1_CT_err = []
 list_th1_CT_err100 = []
@@ -180,7 +147,7 @@ gStyle.SetOptStat(0)
 
 # Plot 2D histograms
 outputfile = TFile(outputPath+outputROOT,"RECREATE")
-phi_axis_title = myStyle.axis_label('I',"LatexUnit") # "#phi_{PQ} (deg)"
+phi_axis_title = ms.axis_label('I',"LatexUnit") # "#phi_{PQ} (deg)"
 
 # for pt,pref in enumerate(prefixType):
 for pt,pref in enumerate(type_reco_short):
@@ -188,7 +155,7 @@ for pt,pref in enumerate(type_reco_short):
     th1_ct = list_th1_CT[pt]
     th1_ct_err = list_th1_CT_err[pt]
     th1_ct_err100 = list_th1_CT_err100[pt]
-    for i,info in enumerate(list_binName):
+    for i,info in enumerate(names_list):
         # if saveAll:
         #     for p,proj in enumerate(Proj1DTHnSparse_list):
         #         this_proj = proj[i]
@@ -216,12 +183,12 @@ for pt,pref in enumerate(type_reco_short):
         #         this_proj.Draw("hist e same")
 
         #         # legend.Draw();
-        #         myStyle.DrawPreliminaryInfo(prefixType[p])
-        #         myStyle.DrawTargetInfo(nameFormatted, "Simulation")
-        #         myStyle.DrawBinInfo(info, infoDict["BinningType"])
+        #         ms.DrawPreliminaryInfo(prefixType[p])
+        #         ms.DrawTargetInfo(nameFormatted, "Simulation")
+        #         ms.DrawBinInfo(info, infoDict["BinningType"])
 
         #         histName = "_".join(this_proj.GetName().split("_")[0:-1]) # Corr_A_B_Q1N2 -> Corr_A_B
-        #         outputName = myStyle.getPlotsFile(histName, dataset, "png", info)
+        #         outputName = ms.getPlotsFile(histName, dataset, "png", info)
         #         canvas.SaveAs(outputPath+outputName)
         #         # canvas.SaveAs(outputPath+nameFormatted+"-"+this_proj.GetName()+".png")
         #         this_proj.Write()
@@ -253,13 +220,13 @@ for pt,pref in enumerate(type_reco_short):
 
         hCT.Draw("hist e same")
 
-        myStyle.DrawPreliminaryInfo("ClosureTest %s"%pref)
-        myStyle.DrawTargetInfo(nameFormatted, "Simulation")
-        myStyle.DrawBinInfo(info, infoDict["BinningType"])
+        ms.DrawPreliminaryInfo("ClosureTest %s"%pref)
+        ms.DrawTargetInfo(nameFormatted, "Simulation")
+        ms.DrawBinInfo(info, infoDict["BinningType"])
 
         gPad.RedrawAxis("g")
 
-        outputName = myStyle.getPlotsFile(this_name, dataset, "png", info)
+        outputName = ms.getPlotsFile(this_name, dataset, "png", info)
         canvas.SaveAs(outputPath+outputName)
         # canvas.SaveAs(outputPath+nameFormatted+"-ClosureTest_"+info+ext_error+".png")
         hCT.Write()
@@ -286,12 +253,12 @@ for pt,pref in enumerate(type_reco_short):
     top_label = "Z_{h}" if useZh else "P_{t}^{2}"
     if (pref != "Reco"):
         top_label+=" %s"%pref
-    myStyle.DrawSummaryInfo("Closure value %s"%(top_label))
-    myStyle.DrawTargetInfo(nameFormatted, "Simulation")
+    ms.DrawSummaryInfo("ClosureTest 3d (Q^{2},#nu,%s)"%(top_label))
+    ms.DrawTargetInfo(nameFormatted, "Simulation")
 
-    outputName_png = myStyle.getPlotsFile(th1_ct.GetName(), dataset, "png")
+    outputName_png = ms.getPlotsFile(th1_ct.GetName(), dataset, "png")
     canvas.SaveAs(outputPath+outputName_png)
-    outputName_pdf = myStyle.getPlotsFile(th1_ct.GetName(), dataset, "pdf")
+    outputName_pdf = ms.getPlotsFile(th1_ct.GetName(), dataset, "pdf")
     canvas.SaveAs(outputPath+outputName_pdf)
     th1_ct.Write()
 
@@ -300,10 +267,10 @@ for pt,pref in enumerate(type_reco_short):
     th1_ct_err.SetLineColor(kBlack)
     th1_ct_err.SetTitleOffset(1.3,"y")
     th1_ct_err.Draw()
-    myStyle.DrawSummaryInfo("Closure error %s"%pref)
-    myStyle.DrawTargetInfo(nameFormatted, "Simulation")
+    ms.DrawSummaryInfo("Closure error %s"%pref)
+    ms.DrawTargetInfo(nameFormatted, "Simulation")
 
-    outputName = myStyle.getPlotsFile(th1_ct_err.GetName(), dataset, "png")
+    outputName = ms.getPlotsFile(th1_ct_err.GetName(), dataset, "png")
     canvas.SaveAs(outputPath+outputName)
     th1_ct_err.Write()
 
@@ -312,13 +279,13 @@ for pt,pref in enumerate(type_reco_short):
     th1_ct_err100.SetLineColor(kBlack)
     th1_ct_err100.SetTitleOffset(1.3,"y")
     th1_ct_err100.Draw()
-    myStyle.DrawSummaryInfo("Closure error %% %s"%pref)
-    myStyle.DrawTargetInfo(nameFormatted, "Simulation")
+    ms.DrawSummaryInfo("Closure error %% %s"%pref)
+    ms.DrawTargetInfo(nameFormatted, "Simulation")
 
-    outputName = myStyle.getPlotsFile(th1_ct_err100.GetName(), dataset, "png")
+    outputName = ms.getPlotsFile(th1_ct_err100.GetName(), dataset, "png")
     canvas.SaveAs(outputPath+outputName)
     th1_ct_err100.Write()
 
-print("  [ClosureTest] Closure Test finished and saved!")
+print("  [ClosureTest] Closure Test finished and saved!\n")
 outputfile.Close()
 

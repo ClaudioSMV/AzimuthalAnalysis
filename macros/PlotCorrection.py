@@ -2,13 +2,13 @@ from ROOT import TFile,TTree,TCanvas,TH1D,TH1F,TH2D,TH2F,TLatex,TMath,TColor,TLe
 import ROOT
 import os
 import optparse
-import myStyle
+import myStyle as ms
 
 gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
 
 ## Defining Style
-myStyle.ForceStyle()
+ms.ForceStyle()
 
 
 def getPhiHist(th1_input, name, do_shift):
@@ -29,7 +29,7 @@ def getPhiHist(th1_input, name, do_shift):
             this_xmin -= bin_width/2.
             this_xmax -= bin_width/2.
 
-    h_tmp = TH1D(name,";%s;Counts"%(myStyle.axis_label('I',"LatexUnit")), this_nbin, this_xmin, this_xmax)
+    h_tmp = TH1D(name,";%s;Counts"%(ms.axis_label('I',"LatexUnit")), this_nbin, this_xmin, this_xmax)
 
     for i in range(1,this_nbin+1):
 
@@ -73,16 +73,11 @@ parser = optparse.OptionParser("usage: %prog [options]\n")
 # parser.add_option('-y','--ylength', dest='ylength', default = 200.0, help="Y axis upper limit")
 parser.add_option('-D', dest='Dataset', default = "", help="Dataset in format <targ>_<binType>_<Ndims>")
 parser.add_option('-p', dest='rootpath', default = "", help="Add path to files, if needed")
-parser.add_option('-A', dest='saveAll', action='store_true', default = False, help="Save All plots")
 parser.add_option('-J', dest='JLabCluster', action='store_true', default = False, help="Use folder from JLab_cluster")
 parser.add_option('-i', dest='inputCuts', default = "", help="Add input cuts Xf_Yb_...")
 parser.add_option('-o', dest='outputCuts', default = "", help="Add output cuts FE_Z_P_...")
 
-parser.add_option('-S', dest='shiftPhi', action='store_true', default = False, help="Move Phi to cover [0,2pi] instead of [-pi,pi] (default)")
-
-parser.add_option('-e', dest='errorFull', action='store_true', default = False, help="Use FullError")
-parser.add_option('-Z', dest='useZh',  action='store_true', default = False, help="Use bin in Zh, integrate Pt2")
-parser.add_option('-P', dest='usePt2', action='store_true', default = False, help="Use bin in Pt2, integrate Zh")
+parser.add_option('-A', dest='saveAll', action='store_true', default = False, help="Save All plots")
 parser.add_option('-O', dest='Overwrite', action='store_true', default = False, help="Overwrite if file already exists")
 
 # input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
@@ -90,33 +85,26 @@ options, args = parser.parse_args()
 
 dataset = options.Dataset
 rootpath = options.rootpath
-saveAll = options.saveAll
 isJLab = options.JLabCluster
+saveAll = options.saveAll
 
-infoDict = myStyle.getDictNameFormat(dataset)
-nameFormatted = myStyle.getNameFormatted(dataset)
+input_cuts = options.inputCuts
+plots_cuts = options.inputCuts +"_"+ options.outputCuts
+
+infoDict = ms.getDictNameFormat(dataset)
+nameFormatted = ms.getNameFormatted(dataset)
 
 ## Cuts
-input_cuts = options.inputCuts
-plots_cuts = options.inputCuts + "_" + options.outputCuts
-if options.errorFull:
-    input_cuts+="_FE"
-    plots_cuts+="_FE"
-
-shift = options.shiftPhi
-if shift:
-    plots_cuts+="_Sh"
-
-if ("Shift" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.outputCuts))):
+shift = False
+if ("Shift" in ms.getListOfCuts(plots_cuts)):
     shift = True
     print("  [Correction] Plot PhiPQ shifted, ranging in ~(0., 360.)")
 
-useZh = options.useZh
-usePt2 = options.usePt2
-# print(myStyle.getCutStrFromStr(options.outputCuts))
-if ("Z" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.outputCuts))) or ("Z" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.inputCuts))):
+useZh = False
+usePt2 = False
+if ("Z" in ms.getListOfCuts(plots_cuts)):
     useZh = True
-if ("P" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.outputCuts))) or ("P" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.inputCuts))):
+if ("P" in ms.getListOfCuts(plots_cuts)):
     usePt2 = True
 
 if (useZh) and (usePt2):
@@ -126,17 +114,17 @@ elif useZh:
     plots_cuts+="_Zx"
 elif usePt2:
     plots_cuts+="_Px"
-elif infoDict["BinningType"] != 0:
-    print("  [Correction] Using Zx as default x binning!")
-    plots_cuts+="_Zx"
+else:
+    print("  [Correction] Select Zx or Px as x binning!")
+    exit()
 
 ## Input
-inputPath = myStyle.getOutputFileWithPath("Correction", dataset, input_cuts, isJLab, False) # "../output/"
+inputPath = ms.getOutputFileWithPath("Correction", dataset, input_cuts, isJLab, False) # "../output/"
 inputfile = TFile(inputPath,"READ")
 
 ## Output
-outputPath = myStyle.getPlotsFolder("Correction", plots_cuts, myStyle.getBinNameFormatted(dataset) + "/" + infoDict["Target"], isJLab)
-outputROOT = myStyle.getPlotsFile("Corrected", dataset, "root")
+outputPath = ms.getPlotsFolder("Correction", plots_cuts, ms.getBinNameFormatted(dataset) +"/"+ infoDict["Target"], isJLab)
+outputROOT = ms.getPlotsFile("Corrected", dataset, "root")
 if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
     print("  [Correction] Correction already exists! Not overwriting it.")
     exit()
@@ -176,7 +164,7 @@ prefixType = ["Correction", "Corr GoodGen_mc", "Corr GoodGen_rec", "Raw data"]
 # else:
 #     this_conf = default_conf # Plot Z
 
-this_binDict = myStyle.all_dicts[infoDict["BinningType"]]
+this_binDict = ms.all_dicts[infoDict["BinningType"]]
 
 binstr = "QN" if "X" not in this_binDict else "QX"
 
@@ -187,14 +175,14 @@ elif (usePt2):
     binstr+="P"
 else:
     print("  [Correction] Use Zx or Px.")
-    exit
+    exit()
 
-
-names_list = myStyle.getListBinCode(binstr, this_binDict)
+## Get projections
+names_list = ms.getListBinCode(binstr, this_binDict)
 Proj1DTHnSparse_list = []
 
 for th in inputTHnSparse_list:
-    list_proj = myStyle.getListTSparseProj1D(th, names_list, shift)
+    list_proj = ms.getListTSparseProj1D(th, names_list, shift)
     Proj1DTHnSparse_list.append(list_proj)
 
 canvas = TCanvas("cv","cv",1000,800)
@@ -206,7 +194,7 @@ gStyle.SetOptStat(0)
 
 # Plot 2D histograms
 outputfile = TFile(outputPath+outputROOT,"RECREATE")
-phi_axis_title = myStyle.axis_label('I',"LatexUnit") # "#phi_{PQ} (deg)"
+phi_axis_title = ms.axis_label('I',"LatexUnit") # "#phi_{PQ} (deg)"
 
 for i,info in enumerate(names_list):
     for p,proj in enumerate(Proj1DTHnSparse_list):
@@ -237,17 +225,17 @@ for i,info in enumerate(names_list):
         this_proj.Draw("hist e same")
 
         # legend.Draw();
-        myStyle.DrawPreliminaryInfo(prefixType[p])
-        myStyle.DrawTargetInfo(nameFormatted, "Data")
-        myStyle.DrawBinInfo(info, infoDict["BinningType"])
+        ms.DrawPreliminaryInfo(prefixType[p])
+        ms.DrawTargetInfo(nameFormatted, "Data")
+        ms.DrawBinInfo(info, infoDict["BinningType"])
 
         histName = "_".join(this_proj.GetName().split("_")[0:-1]) # Corr_A_B_Q1N2 -> Corr_A_B
-        outputName = myStyle.getPlotsFile(histName, dataset, "png", info)
+        outputName = ms.getPlotsFile(histName, dataset, "png", info)
         canvas.SaveAs(outputPath+outputName)
         this_proj.Write()
         htemp.Delete()
         canvas.Clear()
 
-print("  [Correction] Correction plots saved!")
+print("  [Correction] Correction plots saved!\n")
 outputfile.Close()
 

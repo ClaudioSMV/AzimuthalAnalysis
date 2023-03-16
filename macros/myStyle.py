@@ -225,6 +225,14 @@ def getCutsAsList(this_cut_str): # Intro should be output of getCutStrFormat()
 
     return this_list
 
+def getListOfCuts(cut_str):
+    real_cut_str = getCutStrFromStr(cut_str)
+    this_list = real_cut_str.split("_")
+    while ("" in this_list):
+        this_list.remove("")
+
+    return this_list
+
 
 ################################
 ##  Set study dimensionality  ##
@@ -561,27 +569,30 @@ def GetPadCenter():
 ##  Draw top text/summary  ##
 #############################
 
-def DrawPreliminaryInfo(text = "", xl=0.0, yb=0.0):
+def DrawTopLeft(text_bold = "", text = "", xl=0.0, yb=0.0):
     upLeft_text = ROOT.TLatex()
     upLeft_text.SetTextSize(tsize-4)
-    upLeft_text.DrawLatexNDC(2*marg+0.005+xl,1-marg+0.01+yb,"#bf{%s} Preliminary"%(text))
+    upLeft_text.DrawLatexNDC(2*marg+0.005+xl,1-marg+0.01+yb,"#bf{%s} %s"%(text_bold,text))
 
-def DrawSummaryInfo(text = ""):
-    upLeft_text = ROOT.TLatex()
-    upLeft_text.SetTextSize(tsize-4)
-    upLeft_text.DrawLatexNDC(2*marg+0.005,1-marg+0.01,"#bf{%s} Summary"%(text))
+def DrawTopRight(text_bold = "", text = "", xr=0.0, yb=0.0):
+    upRight_text = ROOT.TLatex()
+    upRight_text.SetTextSize(tsize-4)
+    upRight_text.SetTextAlign(31)
+    upRight_text.DrawLatexNDC(1-marg-0.005-xr,1-marg+0.01+yb,"#bf{%s} %s"%(text_bold,text))
+
+def DrawPreliminaryInfo(text = "", xl=0.0, yb=0.0):
+    DrawTopLeft(text, "Preliminary", xl, yb)
+
+def DrawSummaryInfo(text = "", xl=0.0, yb=0.0):
+    DrawTopLeft(text, "Summary", xl, yb)
 
 def DrawTargetInfo(target="X", fileType="SimOrData"):
-    text = ROOT.TLatex()
-    text.SetTextSize(tsize-4)
-    text.SetTextAlign(31)
-    nameCode = target.split("_")
-    if "targ" not in target:
-        text.DrawLatexNDC(1-marg-0.005,1-marg+0.01,"#bf{"+str(target) + " target, "+str(fileType)+"}")
+    if "targ" in target:
+        DrawTopRight("%s, %s"%(target,fileType),"")
     else:
-        text.DrawLatexNDC(1-marg-0.005,1-marg+0.01,"#bf{"+str(target) + ", "+str(fileType)+"}")
+        DrawTopRight("%s target, %s"%(target,fileType),"")
 
-def DrawBinInfo(bin_name="X0X0", bin_type=0, xR=0, yT=0):
+def DrawBinInfo(bin_name="A0B1", bin_type=0, xR=0, yT=0):
     # Draw w.r.t. TopRight point (xR, yT)
     text = ROOT.TLatex()
     text.SetTextSize(tsize-4)
@@ -592,17 +603,20 @@ def DrawBinInfo(bin_name="X0X0", bin_type=0, xR=0, yT=0):
     else:
         text.DrawLatexNDC(xR,yT,title)
 
-def GetBinInfo(bin_name="X0X0", bin_type=0):
+def GetBinInfo(bin_name="A0B1", bin_type=0):
     tmp_txt = ""
 
     this_dict = all_dicts[bin_type]
-    for i,c in enumerate(bin_name): # "A0B1"
-        if i%2 == 0: # A , B
-            num_index = int(bin_name[i+1]) # 0 , 1
-            vmin = this_dict[c][num_index] # 0 , 1
-            vmax = this_dict[c][num_index+1] # 1 , 2
-            tmp_txt+="%.2f < %s < %.2f"%(vmin, axis_label(c,'Latex'), vmax)
-            if i<(len(bin_name)-2): tmp_txt+="; "
+    list_letters = bin_name[0::2]
+    list_numbers = bin_name[1::2]
+
+    for l,letter in enumerate(list_letters):
+        num_index = int(list_numbers[l]) # 0 , 1
+        vmin = this_dict[letter][num_index] # 0 , 1
+        vmax = this_dict[letter][num_index+1] # 1 , 2
+        tmp_txt+="%.2f < %s < %.2f"%(vmin, axis_label(letter,'Latex'), vmax)
+        if l<(len(list_letters)-1):
+            tmp_txt+="; "
 
     return tmp_txt
 

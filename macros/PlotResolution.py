@@ -2,16 +2,16 @@ from ROOT import TFile,TTree,TCanvas,TH1D,TH1F,TH2D,TH2F,TLatex,TMath,TColor,TLe
 import ROOT
 import os
 import optparse
-import myStyle
+import myStyle as ms
 import math
 
 gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
 
 ## Defining Style
-myStyle.ForceStyle()
-# gStyle.SetPadRightMargin(2*myStyle.GetMargin())
-# gStyle.SetLabelSize(myStyle.GetSize()-10,"z")
+ms.ForceStyle()
+# gStyle.SetPadRightMargin(2*ms.GetMargin())
+# gStyle.SetLabelSize(ms.GetSize()-10,"z")
 # gROOT.ForceStyle()
 
 # Construct the argument parser
@@ -30,23 +30,20 @@ rootpath = options.rootpath
 dataset = options.Dataset
 isJLab = options.JLabCluster
 
-infoDict = myStyle.getDictNameFormat(dataset)
-# nameFormatted = myStyle.getNameFormatted(dataset,True)
+infoDict = ms.getDictNameFormat(dataset)
+# nameFormatted = ms.getNameFormatted(dataset,True)
 
 ## Cuts
 input_cuts = options.inputCuts
-plots_cuts = options.inputCuts + "_" + options.outputCuts
-# if options.errorFull:
-#     input_cuts+="_FE"
-#     plots_cuts+="_FE"
+plots_cuts = options.inputCuts +"_"+ options.outputCuts
 
 ## Input
-inputPath = myStyle.getOutputFileWithPath("Acceptance", dataset, input_cuts, isJLab, False) # "../output/"
+inputPath = ms.getOutputFileWithPath("Acceptance", dataset, input_cuts, isJLab, False) # "../output/"
 inputfile = TFile(inputPath,"READ")
 
 ## Output
-outputPath = myStyle.getPlotsFolder("Resolution", plots_cuts, myStyle.getBinNameFormatted(dataset) + "/" + infoDict["Target"], isJLab)
-# outputROOT = myStyle.getPlotsFile("Resolution", dataset, "root")
+outputPath = ms.getPlotsFolder("Resolution", plots_cuts, ms.getBinNameFormatted(dataset) +"/"+ infoDict["Target"], isJLab)
+# outputROOT = ms.getPlotsFile("Resolution", dataset, "root")
 
 list_vars = ["Q2", "Nu", "Xb", "Zh", "Pt2", "PhiPQ"]
 
@@ -63,10 +60,10 @@ for this_var in list_vars:
     if (not inputfile.Get("res%s"%this_var)):
         continue
 
-    this_key = myStyle.varname2key[this_var]
-    this_axis = myStyle.axis_label(this_key, "LatexUnit")
-    this_ltex = myStyle.axis_label(this_key, "Latex")
-    this_unit = myStyle.axis_label(this_key, "Unit")
+    this_key = ms.varname2key[this_var]
+    this_axis = ms.axis_label(this_key, "LatexUnit")
+    this_ltex = ms.axis_label(this_key, "Latex")
+    this_unit = ms.axis_label(this_key, "Unit")
 
     # Hist 1D
     fmin = fit_limits[this_var][0]
@@ -83,10 +80,10 @@ for this_var in list_vars:
     this_res_hist.Draw("hist e")
     fit.Draw("same")
 
-    myStyle.DrawPreliminaryInfo("Resolution")
-    myStyle.DrawTargetInfo(infoDict["Target"], "Simulation")
+    ms.DrawPreliminaryInfo("Resolution")
+    ms.DrawTargetInfo(infoDict["Target"], "Simulation")
 
-    outputName = myStyle.getPlotsFile("Resolution1D", dataset, "png",this_var)
+    outputName = ms.getPlotsFile("Resolution1D", dataset, "png",this_var)
     canvas.SaveAs(outputPath+outputName)
     canvas.Clear()
 
@@ -136,10 +133,10 @@ for this_var in list_vars:
 
     res_vs_X.GetYaxis().SetRangeUser(0.0, 1.2*res_vs_X.GetMaximum())
     res_vs_X.Draw("hist e")
-    myStyle.DrawPreliminaryInfo("Resolution vs x")
-    myStyle.DrawTargetInfo(infoDict["Target"], "Simulation")
+    ms.DrawPreliminaryInfo("Resolution vs x")
+    ms.DrawTargetInfo(infoDict["Target"], "Simulation")
 
-    outputName = myStyle.getPlotsFile("ResolutionVsX", dataset, "png",this_var)
+    outputName = ms.getPlotsFile("ResolutionVsX", dataset, "png",this_var)
     canvas.SaveAs(outputPath+outputName)
     canvas.Clear()
 

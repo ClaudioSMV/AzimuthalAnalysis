@@ -2,16 +2,16 @@ from ROOT import TFile,TTree,TCanvas,TH1I,TH1D,TH1F,TH2D,TH2F,TLatex,TMath,TColo
 import ROOT
 import os
 import optparse
-import myStyle
+import myStyle as ms
 
 gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
 
 ## Defining Style
-myStyle.ForceStyle()
+ms.ForceStyle()
 
-gStyle.SetStatX(1 - myStyle.GetMargin() - 0.005)
-gStyle.SetStatY(2*myStyle.GetMargin() + 0.205)
+gStyle.SetStatX(1 - ms.GetMargin() - 0.005)
+gStyle.SetStatY(2*ms.GetMargin() + 0.205)
 
 def PropErrorDivision(v1, e1, v2, e2, cov=0):
     this_error = TMath.Abs(v1/v2)*TMath.Sqrt((e1/v1)*(e1/v1) + (e2/v2)*(e2/v2) - 2*cov/(v1*v2))
@@ -29,61 +29,47 @@ parser.add_option('-p', dest='rootpath', default = "", help="Add path to files, 
 parser.add_option('-J', dest='JLabCluster', action='store_true', default = False, help="Use folder from JLab_cluster")
 parser.add_option('-i', dest='inputCuts', default = "", help="Add input cuts Xf_Yb_Z/P...")
 parser.add_option('-o', dest='outputCuts', default = "", help="Add output cuts FE_...")
+
 parser.add_option('-v', dest='verbose', action='store_true', default = False, help="Print values")
-
-parser.add_option('-F', dest='fold', action='store_true', default = False, help="Use fold tails (default does not)")
-parser.add_option('-e', dest='errorFull', action='store_true', default = False, help="Use FullError")
-
 parser.add_option('-m', dest='mixD', action='store_true', default = False, help="Mix deuterium data from all solid targets")
-parser.add_option('-Z', dest='useZh',  action='store_true', default = False, help="Use bin in Zh, integrate Pt2")
-parser.add_option('-P', dest='usePt2', action='store_true', default = False, help="Use bin in Pt2, integrate Zh")
 parser.add_option('-O', dest='Overwrite', action='store_true', default = False, help="Overwrite if file already exists")
 
 # input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
 
 # saveAll = options.saveAll
-rootpath = options.rootpath
 dataset = options.Dataset
+rootpath = options.rootpath
 isJLab = options.JLabCluster
 verbose = options.verbose
 
-use_Fold = options.fold
-if (use_Fold):
-    options.inputCuts+="_Fd"
+input_cuts = options.inputCuts
+plots_cuts = options.inputCuts +"_"+ options.outputCuts
 
 ### Define type of fit used
-fit_type = myStyle.GetFitMethod(options.inputCuts +"_"+ options.outputCuts)
+fit_type = ms.GetFitMethod(plots_cuts)
 
-mixD = options.mixD
-if "MixD" in myStyle.getCutStrFromStr(options.outputCuts):
+mixD = False
+if "MixD" in ms.getListOfCuts(plots_cuts):
     mixD = True
 
-infoDict = myStyle.getDictNameFormat(dataset) # ["Target", "BinningType", "NDims"]
-nameFormatted = myStyle.getNameFormatted(dataset)
+infoDict = ms.getDictNameFormat(dataset) # ["Target", "BinningType", "NDims"]
+nameFormatted = ms.getNameFormatted(dataset)
 
 if ("D" in infoDict["Target"]):
     print("  [ParRatio] Trivial ratio with D. Try with a solid target.")
     exit()
 
 ## Cuts
-input_cuts = options.inputCuts
-plots_cuts = options.inputCuts + "_" + options.outputCuts
-if options.errorFull:
-    input_cuts+="_FE"
-    plots_cuts+="_FE"
-if mixD:
-    plots_cuts+="_MD"
+# # Add fit type to the list of cuts!
+# input_cuts+="_"+fit_type # Add Fold or LR extension
+# plots_cuts+="_"+fit_type
 
-# Add fit type to the list of cuts!
-input_cuts+="_"+fit_type # Add Fold or LR extension
-plots_cuts+="_"+fit_type
-
-useZh = options.useZh
-usePt2 = options.usePt2
-if ("Z" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.inputCuts +"_"+ options.outputCuts))):
+useZh = False
+usePt2 = False
+if ("Z" in ms.getListOfCuts(plots_cuts)):
     useZh = True
-if ("P" in myStyle.getCutsAsList(myStyle.getCutStrFromStr(options.inputCuts +"_"+ options.outputCuts))):
+if ("P" in ms.getListOfCuts(plots_cuts)):
     usePt2 = True
 
 if (useZh) and (usePt2):
@@ -96,25 +82,25 @@ elif usePt2:
     input_cuts+="_Px"
     plots_cuts+="_Px"
 else:
-    print("  [ParRatio] Using Zx as default x binning!")
-    plots_cuts+="_Zx"
+    print("  [ParRatio] Select Zx or Px as x binning!")
+    exit()
 
 ## Deuterium info
 solid_targ = infoDict["Target"] if not mixD else ""
 dataset_D = "D%s_%s_%s"%(solid_targ,infoDict["BinningType"],infoDict["NDims"])
 
-inputPath_D = myStyle.getPlotsFolder("Fit", input_cuts, myStyle.getBinNameFormatted(dataset_D) + "/D" + solid_targ, isJLab, False) # "../output/"
-inputROOT_D = myStyle.getPlotsFile("Fit", dataset_D, "root", fit_type)
+inputPath_D = ms.getPlotsFolder("Fit", input_cuts, ms.getBinNameFormatted(dataset_D) + "/D" + solid_targ, isJLab, False) # "../output/"
+inputROOT_D = ms.getPlotsFile("Fit", dataset_D, "root", fit_type)
 inputfile_D = TFile(inputPath_D+inputROOT_D,"READ")
 
 ## Input
-inputPath_solid = myStyle.getPlotsFolder("Fit", input_cuts, myStyle.getBinNameFormatted(dataset) + "/" + infoDict["Target"], isJLab, False) # "../output/"
-inputROOT_solid = myStyle.getPlotsFile("Fit", dataset, "root", fit_type)
+inputPath_solid = ms.getPlotsFolder("Fit", input_cuts, ms.getBinNameFormatted(dataset) +"/"+ infoDict["Target"], isJLab, False) # "../output/"
+inputROOT_solid = ms.getPlotsFile("Fit", dataset, "root", fit_type)
 inputfile_solid = TFile(inputPath_solid+inputROOT_solid,"READ")
 
 ## Output
-outputPath = myStyle.getPlotsFolder("ParametersRatio", plots_cuts, myStyle.getBinNameFormatted(dataset) + "/" + infoDict["Target"], isJLab)
-outputROOT = myStyle.getPlotsFile("ParametersRatio", dataset, "root", fit_type)
+outputPath = ms.getPlotsFolder("ParametersRatio", plots_cuts, ms.getBinNameFormatted(dataset) +"/"+ infoDict["Target"], isJLab)
+outputROOT = ms.getPlotsFile("ParametersRatio", dataset, "root", fit_type)
 if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
     print("  [ParRatio] Parameters ratio file already exists! Not overwriting it.")
     exit()
@@ -278,7 +264,7 @@ ymax = 1.2
 for e,elem in enumerate(list_func_names):
     for t,typeR in enumerate(type_reco_short):
 
-        name_ext = myStyle.GetFitExtension(fit_type, elem)
+        name_ext = ms.GetFitExtension(fit_type, elem)
 
         hist_b = ratio_th1_b_list[t][e]
         hist_b.SetMinimum(ymin)
@@ -287,10 +273,10 @@ for e,elem in enumerate(list_func_names):
         hist_b.Write()
         hist_b.Draw("hist e")
 
-        myStyle.DrawPreliminaryInfo("Ratio over D%s %s"%(solid_targ,fit_type))
-        myStyle.DrawTargetInfo(nameFormatted, "Data")
+        ms.DrawPreliminaryInfo("Ratio over D%s %s"%(solid_targ,fit_type))
+        ms.DrawTargetInfo(nameFormatted, "Data")
 
-        outputName = myStyle.getPlotsFile("RatioD%s_B_%s"%(solid_targ,typeR), dataset, "png", name_ext)
+        outputName = ms.getPlotsFile("RatioD%s_B_%s"%(solid_targ,typeR), dataset, "png", name_ext)
         canvas.SaveAs(outputPath+outputName)
         canvas.Clear()
 
@@ -301,17 +287,16 @@ for e,elem in enumerate(list_func_names):
         hist_c.Write()
         hist_c.Draw("hist e")
 
-        myStyle.DrawPreliminaryInfo("Ratio over D%s %s"%(solid_targ,fit_type))
-        myStyle.DrawTargetInfo(nameFormatted, "Data")
+        ms.DrawPreliminaryInfo("Ratio over D%s %s"%(solid_targ,fit_type))
+        ms.DrawTargetInfo(nameFormatted, "Data")
 
-        outputName = myStyle.getPlotsFile("RatioD%s_C_%s"%(solid_targ,typeR), dataset, "png", name_ext)
+        outputName = ms.getPlotsFile("RatioD%s_C_%s"%(solid_targ,typeR), dataset, "png", name_ext)
         canvas.SaveAs(outputPath+outputName)
         canvas.Clear()
 
 outputFile.Write()
 outputFile.Close()
 
-print("  [ParRatio] Made it to the end!")
-
+print("  [ParRatio] Made it to the end!\n")
 inputfile_solid.Close()
 inputfile_D.Close()

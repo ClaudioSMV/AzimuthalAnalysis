@@ -174,7 +174,7 @@ elif [[ $CUTINFO == *"Px"* ]]; then
     CUTINFO=${CUTINFO/${UND}Px/}
     UND="_"
 else
-    echo "  Remember to select a dependence as x-axis (Zh or Pt2)"
+    echo "  Remember to select a dependence as x-axis: Zh (Zx) or Pt2 (Px)"
     exit
 fi
 
