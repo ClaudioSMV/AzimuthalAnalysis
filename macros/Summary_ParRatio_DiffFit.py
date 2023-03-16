@@ -2,7 +2,7 @@ from ROOT import TFile,TTree,TCanvas,TH1I,TH1D,TH1F,TH2D,TH2F,TLatex,TMath,TColo
 import ROOT
 import os
 import optparse
-import myStyle as mS
+import myStyle as ms
 from array import array
 import ctypes ## Needed to get pointer values
 
@@ -10,12 +10,12 @@ gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
 
 ## Defining Style
-mS.ForceStyle()
-# font=mS.GetFont()
-tsize=mS.GetSize()
+ms.ForceStyle()
+# font=ms.GetFont()
+tsize=ms.GetSize()
 
-# gStyle.SetStatX(1 - mS.GetMargin() - 0.005)
-# gStyle.SetStatY(2*mS.GetMargin() + 0.205)
+# gStyle.SetStatX(1 - ms.GetMargin() - 0.005)
+# gStyle.SetStatY(2*ms.GetMargin() + 0.205)
 
 def CanvasPartition(canvas, nx, ny, lMarg, rMarg, bMarg, tMarg, extra_name=""):
     ## Labelling xy:
@@ -113,66 +113,48 @@ parser = optparse.OptionParser("usage: %prog [options]\n")
 parser.add_option('-D', dest='Dataset', default = "", help="Dataset in format <targ>_<binType>_<Ndims>")
 parser.add_option('-p', dest='rootpath', default = "", help="Add path to files, if needed")
 parser.add_option('-J', dest='JLabCluster', action='store_true', default = False, help="Use folder from JLab_cluster")
+
 parser.add_option('-i', dest='inputCuts', default = "", help="Add input cuts Xf_Yb_Z/P...")
 parser.add_option('-o', dest='outputCuts', default = "", help="Add output cuts FE_...")
-
-parser.add_option('-e', dest='errorFull', action='store_true', default = False, help="Use FullError")
-
-parser.add_option('-m', dest='mixD', action='store_true', default = False, help="Mix deuterium data from all solid targets")
-parser.add_option('-Z', dest='useZh',  action='store_true', default = False, help="Use bin in Zh, integrate Pt2")
-parser.add_option('-P', dest='usePt2', action='store_true', default = False, help="Use bin in Pt2, integrate Zh")
 
 # input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
 
-rootpath = options.rootpath
 dataset = options.Dataset
+rootpath = options.rootpath
 isJLab = options.JLabCluster
 
+input_cuts = options.inputCuts
+plots_cuts = options.inputCuts +"_"+ options.outputCuts
+
 ### Set mixing of D info in one
-mixD = options.mixD
-if "MixD" in mS.getCutStrFromStr(options.outputCuts):
+mixD = False
+if "MixD" in ms.getListOfCuts(plots_cuts):
     mixD = True
 
 ## Cuts
-input_cuts = options.inputCuts
-plots_cuts = options.inputCuts + "_" + options.outputCuts
-if options.errorFull:
-    input_cuts+="_FE"
-    plots_cuts+="_FE"
-if mixD:
-    input_cuts+="_MD"
-    plots_cuts+="_MD"
-
-useZh = options.useZh
-usePt2 = options.usePt2
-if ("Z" in mS.getCutsAsList(mS.getCutStrFromStr(options.outputCuts))) or ("Z" in mS.getCutsAsList(mS.getCutStrFromStr(options.inputCuts))):
+useZh = False
+usePt2 = False
+if ("Z" in ms.getListOfCuts(plots_cuts)):
     useZh = True
-if ("P" in mS.getCutsAsList(mS.getCutStrFromStr(options.outputCuts))) or ("P" in mS.getCutsAsList(mS.getCutStrFromStr(options.inputCuts))):
+if ("P" in ms.getListOfCuts(plots_cuts)):
     usePt2 = True
 
 if (useZh) and (usePt2):
     print("  [SummaryRatio] Two binning selected. Please, choose only one of the options!")
     exit()
-elif useZh:
-    input_cuts+="_Zx"
-    plots_cuts+="_Zx"
-elif usePt2:
-    input_cuts+="_Px"
-    plots_cuts+="_Px"
-else:
-    print("  [SummaryRatio] Using Zx as default x binning!")
-    input_cuts+="_Zx"
-    plots_cuts+="_Zx"
+elif (not useZh) and (not usePt2):
+    print("  [SummaryRatio] Select Zx or Px as x binning!")
+    exit()
 
 keyX = 'Z' if useZh else 'P'
 
 ## Define target and binning
-infoDict = mS.getDictNameFormat(dataset)
-nameFormatted = mS.getNameFormatted(dataset)
+infoDict = ms.getDictNameFormat(dataset)
+nameFormatted = ms.getNameFormatted(dataset)
 this_targ = infoDict["Target"]
 this_binning = infoDict["BinningType"]
-this_bin_dict = mS.all_dicts[this_binning]
+this_bin_dict = ms.all_dicts[this_binning]
 
 key1 = 'N' if ("N" in this_bin_dict) else 'X'
 
@@ -183,11 +165,11 @@ nBinsP = len(this_bin_dict['P'])-1
 
 gStyle.SetOptStat(0)
 canvas_B = TCanvas("cvB","cvB",1000,800)
-CanvasPartition(canvas_B, nBinsQ, nBinsN,2*mS.GetMargin(),mS.GetMargin(),2*mS.GetMargin(),mS.GetMargin(),"B")
+CanvasPartition(canvas_B, nBinsQ, nBinsN,2*ms.GetMargin(),ms.GetMargin(),2*ms.GetMargin(),ms.GetMargin(),"B")
 canvas_B.SetGrid(0,1)
 
 canvas_C = TCanvas("cvC","cvC",1000,800)
-CanvasPartition(canvas_C, nBinsQ, nBinsN,2*mS.GetMargin(),mS.GetMargin(),2*mS.GetMargin(),mS.GetMargin(),"C")
+CanvasPartition(canvas_C, nBinsQ, nBinsN,2*ms.GetMargin(),ms.GetMargin(),2*ms.GetMargin(),ms.GetMargin(),"C")
 canvas_C.SetGrid(0,1)
 
 list_canvas = [canvas_B, canvas_C]
@@ -210,8 +192,8 @@ for fm in list_fitmethodsKey:
 
     # print("Detail: %s"%meth_detail)
 
-    inputPath = mS.getPlotsFolder("ParametersRatio", this_input_cuts, mS.getBinNameFormatted(dataset) + "/" + this_targ, isJLab, False) # "../output/"
-    inputROOT = mS.getPlotsFile("ParametersRatio", dataset, "root", this_meth)
+    inputPath = ms.getPlotsFolder("ParametersRatio", this_input_cuts, ms.getBinNameFormatted(dataset) +"/"+ this_targ, isJLab, False) # "../output/"
+    inputROOT = ms.getPlotsFile("ParametersRatio", dataset, "root", this_meth)
 
     inputfile = TFile(inputPath+inputROOT,"READ")
     list_infiles.append(inputfile)
@@ -219,7 +201,7 @@ for fm in list_fitmethodsKey:
 
 # Define variables for different x-axis (Zh or Pt2)
 
-x_axis_title = mS.axis_label(keyX,"LatexUnit") # "Z_{h}" or "P_{t}^{2} (GeV^{2})"
+x_axis_title = ms.axis_label(keyX,"LatexUnit") # "Z_{h}" or "P_{t}^{2} (GeV^{2})"
 this_n = nBinsZ if useZh else nBinsP
 
 type_reco_short = ["Reco", "RMmc", "RMre"]
@@ -286,8 +268,8 @@ axis_hist.SetTitleOffset(1.0,"x")
 axis_hist.SetTitleOffset(1.8,"y")
 
 ## Style
-l_color = mS.GetColors(True)
-list_marker = mS.GetMarkers()
+l_color = ms.GetColors(True)
+list_marker = ms.GetMarkers()
 
 for r,typeR in enumerate(type_reco_short):
     if typeR==0: # Skip reco method when does not exist!
@@ -298,10 +280,10 @@ for r,typeR in enumerate(type_reco_short):
         this_canvas.cd(0)
 
         # solid_mix = "_All" if mixD else "_Solid"
-        # mS.DrawSummaryInfo("%s ratio Solid/D%s %s"%(par,solid_mix,fit))
+        # ms.DrawSummaryInfo("%s ratio Solid/D%s %s"%(par,solid_mix,fit))
         solid_mix = " mixed D" if mixD else ""
-        mS.DrawSummaryInfo("%s multi fit%s"%(fancy_uptitle[p],solid_mix))
-        mS.DrawTargetInfo(this_targ, "Data")
+        ms.DrawSummaryInfo("%s multi fit%s"%(fancy_uptitle[p],solid_mix))
+        ms.DrawTargetInfo(this_targ, "Data")
 
         ## Legend
         legQ, legN = 2, 0
@@ -319,8 +301,8 @@ for r,typeR in enumerate(type_reco_short):
 
         legend = TLegend(l_x1, l_y1, l_x2, l_y2)
         legend.SetBorderSize(0)
-        legend.SetTextFont(mS.GetFont())
-        legend.SetTextSize(mS.GetSize()-14)
+        legend.SetTextFont(ms.GetFont())
+        legend.SetTextSize(ms.GetSize()-14)
         legend.SetFillStyle(0)
         legend.SetTextAlign(22)
         legend.SetNColumns(3)
@@ -399,7 +381,7 @@ for r,typeR in enumerate(type_reco_short):
                         text = ROOT.TLatex()
                         text.SetTextSize(tsize-14)
                         text.SetTextAlign(23)
-                        title = mS.GetBinInfo("Q%i"%(iQ), this_binning)
+                        title = ms.GetBinInfo("Q%i"%(iQ), this_binning)
                         text.DrawLatexNDC(XtoPad(0.5),YtoPad(Q2_bin_info_Ypos),title)
 
                     if (iQ==2):
@@ -407,7 +389,7 @@ for r,typeR in enumerate(type_reco_short):
                         text.SetTextSize(tsize-14)
                         text.SetTextAlign(23)
                         text.SetTextAngle(90)
-                        title = mS.GetBinInfo("%s%i"%(key1,iN), this_binning) # "Q%iN%i" or "Q%iX%i"
+                        title = ms.GetBinInfo("%s%i"%(key1,iN), this_binning) # "Q%iN%i" or "Q%iX%i"
                         text.DrawLatexNDC(XtoPad(1.05),YtoPad(0.5),title)
 
                     if (iQ==legQ and iN==legN):
@@ -418,13 +400,13 @@ for r,typeR in enumerate(type_reco_short):
 
         this_canvas.cd(0)
 
-        this_bininfo = mS.getBinNameFormatted(dataset)
+        this_bininfo = ms.getBinNameFormatted(dataset)
 
-        this_title_png = mS.getSummaryPath("%s_%s"%(this_bininfo,typeR), "png", plots_cuts, isJLab, this_bininfo +"/"+this_targ, "Summary_DiffMethods")
-        this_title_png = mS.addBeforeRootExt(this_title_png, "-DiffFitRatio%s_%s"%(par,this_targ), "png")
+        this_title_png = ms.getSummaryPath("%s_%s"%(this_bininfo,typeR), "png", plots_cuts, isJLab, this_bininfo +"/"+this_targ, "Summary_DiffMethods")
+        this_title_png = ms.addBeforeRootExt(this_title_png, "-DiffFitRatio%s_%s"%(par,this_targ), "png")
 
-        this_title_pdf = mS.getSummaryPath("%s_%s"%(this_bininfo,typeR), "pdf", plots_cuts, isJLab, this_bininfo +"/"+this_targ, "Summary_DiffMethods")
-        this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "-DiffFitRatio%s_%s"%(par,this_targ), "pdf")
+        this_title_pdf = ms.getSummaryPath("%s_%s"%(this_bininfo,typeR), "pdf", plots_cuts, isJLab, this_bininfo +"/"+this_targ, "Summary_DiffMethods")
+        this_title_pdf = ms.addBeforeRootExt(this_title_pdf, "-DiffFitRatio%s_%s"%(par,this_targ), "pdf")
 
         this_canvas.SaveAs(this_title_png)
         this_canvas.SaveAs(this_title_pdf)
