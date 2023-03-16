@@ -2,16 +2,15 @@ from ROOT import TFile,TTree,TCanvas,TH1I,TH1D,TH1F,TH2D,TH2F,TLatex,TMath,TColo
 import ROOT
 import os
 import optparse
-import myStyle as mS
+import myStyle as ms
 
 gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
 
 ## Defining Style
-mS.ForceStyle()
-
-# gStyle.SetStatX(1 - mS.GetMargin() - 0.005)
-# gStyle.SetStatY(2*mS.GetMargin() + 0.205)
+ms.ForceStyle()
+# gStyle.SetStatX(1 - ms.GetMargin() - 0.005)
+# gStyle.SetStatY(2*ms.GetMargin() + 0.205)
 
 def PropErrorDivision(v1, e1, v2, e2, cov=0):
     this_error = TMath.Abs(v1/v2)*TMath.Sqrt((e1/v1)*(e1/v1) + (e2/v2)*(e2/v2) - 2*cov/(v1*v2))
@@ -27,46 +26,37 @@ parser = optparse.OptionParser("usage: %prog [options]\n")
 parser.add_option('-D', dest='Dataset', default = "", help="Dataset in format <target>_<binType>_<Ndims>")
 parser.add_option('-p', dest='rootpath', default = "", help="Add path to files, if needed")
 parser.add_option('-J', dest='JLabCluster', action='store_true', default = False, help="Use folder from JLab_cluster")
+
 parser.add_option('-i', dest='inputCuts', default = "", help="Add input cuts Xf_Yb_...")
 parser.add_option('-o', dest='outputCuts', default = "", help="Add output cuts FE_...")
-
-parser.add_option('-F', dest='fold', action='store_true', default = False, help="Use fold tails (default does not)")
-parser.add_option('-e', dest='errorFull', action='store_true', default = False, help="Use FullError")
 
 # input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
 
-rootpath = options.rootpath
 dataset = options.Dataset
+rootpath = options.rootpath
 isJLab = options.JLabCluster
 
-use_Fold = options.fold
-if (use_Fold):
-    options.inputCuts+="_Fd"
+input_cuts = options.inputCuts
+plots_cuts = options.inputCuts +"_"+ options.outputCuts
 
 ### Define type of fit used
-fit_type = mS.GetFitMethod(options.inputCuts +"_"+ options.outputCuts)
+fit_type = ms.GetFitMethod(plots_cuts)
 
-infoDict = mS.getDictNameFormat(dataset)
-nameFormatted = mS.getNameFormatted(dataset)
+infoDict = ms.getDictNameFormat(dataset)
+nameFormatted = ms.getNameFormatted(dataset)
 
 ## Cuts
-input_cuts = options.inputCuts
-plots_cuts = options.inputCuts + "_" + options.outputCuts
-if options.errorFull:
-    input_cuts+="_FE"
-    plots_cuts+="_FE"
-
-input_cuts+="_"+fit_type # Add Fold or LR extension
-plots_cuts+="_"+fit_type
+# input_cuts+="_"+fit_type # Add Fold or LR extension
+# plots_cuts+="_"+fit_type
 
 ## Input
-inputPath = mS.getPlotsFolder("Fit", input_cuts, mS.getBinNameFormatted(dataset) + "/" + infoDict["Target"], isJLab, False) # "../output/"
-inputROOT = mS.getPlotsFile("Fit", dataset, "root", fit_type)
+inputPath = ms.getPlotsFolder("Fit", input_cuts, ms.getBinNameFormatted(dataset) +"/"+ infoDict["Target"], isJLab, False)
+inputROOT = ms.getPlotsFile("Fit", dataset, "root", fit_type)
 inputfile = TFile(inputPath+inputROOT,"READ")
 
 ## Output
-outputPath = mS.getPlotsFolder("CorrelationFit", plots_cuts, mS.getBinNameFormatted(dataset) + "/" + infoDict["Target"], isJLab)
+outputPath = ms.getPlotsFolder("CorrelationFit", plots_cuts, ms.getBinNameFormatted(dataset) +"/"+ infoDict["Target"], isJLab)
 
 ### Define list with fit names
 list_func_names = ["crossSectionR"]
@@ -129,20 +119,20 @@ canvas.SetGrid(0,1)
 # canvas.SetLogy(0)
 for e,elem in enumerate(list_func_names):
 
-    name_ext = mS.GetFitExtension(fit_type, elem)
+    name_ext = ms.GetFitExtension(fit_type, elem)
 
     th1_CorrAB_list[e].Draw()
 
-    mS.DrawPreliminaryInfo("Correlation AB %s"%(fit_type))
-    mS.DrawTargetInfo(nameFormatted, "Data")
+    ms.DrawPreliminaryInfo("Correlation AB %s"%(fit_type))
+    ms.DrawTargetInfo(nameFormatted, "Data")
 
-    this_title_png = outputPath + mS.getPlotsFile("CorrelationAB", dataset, "png")
+    this_title_png = outputPath + ms.getPlotsFile("CorrelationAB", dataset, "png")
     if ("LR" in this_title_png):
-        this_title_png = mS.addBeforeRootExt(this_title_png, "-%s"%(name_ext), "png")
+        this_title_png = ms.addBeforeRootExt(this_title_png, "-%s"%(name_ext), "png")
 
-    # this_title_pdf = outputPath + mS.getPlotsFile("CorrelationAB", dataset, "pdf")
+    # this_title_pdf = outputPath + ms.getPlotsFile("CorrelationAB", dataset, "pdf")
     # if ("LR" in this_title_pdf):
-    #     this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "-%s"%(name_ext), "pdf")
+    #     this_title_pdf = ms.addBeforeRootExt(this_title_pdf, "-%s"%(name_ext), "pdf")
 
     canvas.SaveAs(this_title_png)
     # canvas.SaveAs(this_title_pdf)
@@ -151,16 +141,16 @@ for e,elem in enumerate(list_func_names):
 
     th1_CorrAC_list[e].Draw()
 
-    mS.DrawPreliminaryInfo("Correlation AC %s"%(fit_type))
-    mS.DrawTargetInfo(nameFormatted, "Data")
+    ms.DrawPreliminaryInfo("Correlation AC %s"%(fit_type))
+    ms.DrawTargetInfo(nameFormatted, "Data")
 
-    this_title_png = outputPath + mS.getPlotsFile("CorrelationAC", dataset, "png")
+    this_title_png = outputPath + ms.getPlotsFile("CorrelationAC", dataset, "png")
     if ("LR" in this_title_png):
-        this_title_png = mS.addBeforeRootExt(this_title_png, "-%s"%(name_ext), "png")
+        this_title_png = ms.addBeforeRootExt(this_title_png, "-%s"%(name_ext), "png")
 
-    # this_title_pdf = outputPath + mS.getPlotsFile("CorrelationAC", dataset, "pdf")
+    # this_title_pdf = outputPath + ms.getPlotsFile("CorrelationAC", dataset, "pdf")
     # if ("LR" in this_title_pdf):
-    #     this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "-%s"%(name_ext), "pdf")
+    #     this_title_pdf = ms.addBeforeRootExt(this_title_pdf, "-%s"%(name_ext), "pdf")
 
     canvas.SaveAs(this_title_png)
     # canvas.SaveAs(this_title_pdf)
@@ -169,21 +159,20 @@ for e,elem in enumerate(list_func_names):
 
     th1_CorrBC_list[e].Draw()
 
-    mS.DrawPreliminaryInfo("Correlation BC %s"%(fit_type))
-    mS.DrawTargetInfo(nameFormatted, "Data")
+    ms.DrawPreliminaryInfo("Correlation BC %s"%(fit_type))
+    ms.DrawTargetInfo(nameFormatted, "Data")
 
-    this_title_png = outputPath + mS.getPlotsFile("CorrelationBC", dataset, "png")
+    this_title_png = outputPath + ms.getPlotsFile("CorrelationBC", dataset, "png")
     if ("LR" in this_title_png):
-        this_title_png = mS.addBeforeRootExt(this_title_png, "-%s"%(name_ext), "png")
+        this_title_png = ms.addBeforeRootExt(this_title_png, "-%s"%(name_ext), "png")
 
-    # this_title_pdf = outputPath + mS.getPlotsFile("CorrelationBC", dataset, "pdf")
+    # this_title_pdf = outputPath + ms.getPlotsFile("CorrelationBC", dataset, "pdf")
     # if ("LR" in this_title_pdf):
-    #     this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "-%s"%(name_ext), "pdf")
+    #     this_title_pdf = ms.addBeforeRootExt(this_title_pdf, "-%s"%(name_ext), "pdf")
 
     canvas.SaveAs(this_title_png)
     # canvas.SaveAs(this_title_pdf)
     canvas.Clear()
 
-print("Made it to the end!")
-
+print("Made it to the end!\n")
 inputfile.Close()
