@@ -19,7 +19,8 @@ bool FileExists(const std::string& name) // Also works with folders
 
 void CreateDir(std::string path)
 {
-    system(Form("mkdir -p %s",path.c_str()));
+    int i = system(Form("mkdir -p %s",path.c_str()));
+    return;
 }
 
 std::string cutExtension(std::string str_list, std::string dict_name[][2])
