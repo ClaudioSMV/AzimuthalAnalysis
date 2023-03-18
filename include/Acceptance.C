@@ -2474,6 +2474,9 @@ void Acceptance::Hist2D_NpheVs()
 
     // Nphe
     /////////
+    TH1D* hist1D_NoNphe_vsNpheEl = new TH1D("hist1D_NoNphe_vsNpheEl", "N_{phe}^{e} with NULL N_{phe}^{#pi};N_{phe}^{e};Counts", 300,0.0,300.0);
+    TH2D* hist2D_Nphe_vsNpheEl = new TH2D("hist2D_Nphe_vsNpheEl", "N_{phe}^{e} vs N_{phe}^{#pi};N_{phe}^{e};N_{phe}^{#pi}", 300,0.0,300.0, 300,0.0,300.0);
+
     TH1D* hist1D_NoNphe_vsPHad = new TH1D("hist1D_NoNphe_vsPHad", "P^{had} with NULL Nphe;P^{had} [GeV];Counts", 150,0.0,5.0);
     TH2D* hist2D_Nphe_vsPHad = new TH2D("hist2D_Nphe_vsPHad", "P^{had} vs Nphe;P^{had} [GeV];Nphe", 150,0.0,5.0, 300,0,300);
 
@@ -2576,10 +2579,10 @@ void Acceptance::Hist2D_NpheVs()
             hist2D_NpheEl_vsThetaLabEl_AllEvts->Fill(ThetaLabEl, NpheEl);
         }
 
-        if (!_isData && GoodElectron_MC(ientry, DISLimits))
-        {
-            good_electron_mc = true;
-        }
+        // if (!_isData && GoodElectron_MC(ientry, DISLimits))
+        // {
+        //     good_electron_mc = true;
+        // }
 
         // if (good_electron && good_electron_mc)
         // {
@@ -2595,7 +2598,9 @@ void Acceptance::Hist2D_NpheVs()
                 n_pions++;
                 good_pion = true;
 
-                if (Nphe->at(i) < 0){
+                if (Nphe->at(i) < 0)
+                {
+                    hist1D_NoNphe_vsNpheEl->Fill(NpheEl);
                     hist1D_NoNphe_vsPHad->Fill(P->at(i));
                     hist1D_NoNphe_vsMass2->Fill(Mass2->at(i));
                     hist1D_NoNphe_vsXf->Fill(Xf->at(i));
@@ -2606,6 +2611,8 @@ void Acceptance::Hist2D_NpheVs()
                     hist1D_NoNphe_vsPhiPQ->Fill(PhiPQ->at(i));
                     hist1D_NoNphe_vsThetaPQ->Fill(ThetaPQ->at(i));
                 }
+
+                hist2D_Nphe_vsNpheEl->Fill(NpheEl, Nphe->at(i));
                 hist2D_Nphe_vsPHad->Fill(P->at(i), Nphe->at(i));
                 hist2D_Nphe_vsMass2->Fill(Mass2->at(i), Nphe->at(i));
                 hist2D_Nphe_vsXf->Fill(Xf->at(i), Nphe->at(i));
