@@ -440,15 +440,15 @@ canvas_new = TCanvas("cvNew","cvNew",1000,800)
 canvas_new.SetGrid(0,1)
 canvas_new.cd(0)
 
-l_x1, l_x2 = XtoPad(0.3), XtoPad(0.7)
-l_y1, l_y2 = YtoPad(0.8), YtoPad(1.0)
-legend = TLegend(l_x1, l_y1, l_x2, l_y2)
-legend.SetBorderSize(0)
-legend.SetTextFont(ms.GetFont())
-legend.SetTextSize(ms.GetSize()-6)
-legend.SetFillStyle(0)
-legend.SetTextAlign(22)
-legend.SetNColumns(3)
+# l_x1, l_x2 = XtoPad(0.3), XtoPad(0.7)
+# l_y1, l_y2 = YtoPad(0.8), YtoPad(1.0)
+# legend = TLegend(l_x1, l_y1, l_x2, l_y2)
+# legend.SetBorderSize(0)
+# legend.SetTextFont(ms.GetFont())
+# legend.SetTextSize(ms.GetSize()-6)
+# legend.SetFillStyle(0)
+# legend.SetTextAlign(22)
+# legend.SetNColumns(3)
 
 # this_y_lmts = [[0.301,1.699]] if not usePt2 else [[0.401, 1.199]]
 this_y_lmts = [[-0.599,0.099], [-0.299,0.099]] if not usePt2 else [[-0.299,0.049], [-0.049,0.099]]
@@ -457,7 +457,19 @@ axis_hist.SetMinimum(this_y_lmts[0][0])
 axis_hist.SetMaximum(this_y_lmts[0][1])
 iQ, iN = 1,1
 
+(yB,yT) = ([0.8, 0.2],[1.0, 0.4])
+
 for p,par in enumerate(["B", "C"]):
+
+    l_x1, l_x2 = XtoPad(0.3), XtoPad(0.7)
+    l_y1, l_y2 = YtoPad(yB[p]), YtoPad(yT[p])
+    legend = TLegend(l_x1, l_y1, l_x2, l_y2)
+    legend.SetBorderSize(0)
+    legend.SetTextFont(ms.GetFont())
+    legend.SetTextSize(ms.GetSize()-6)
+    legend.SetFillStyle(0)
+    legend.SetTextAlign(22)
+    legend.SetNColumns(3)
     new_pad = True
     for t,targ in enumerate(list_targets):
         # canvas_new.cd(0)
