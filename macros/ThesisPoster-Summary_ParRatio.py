@@ -417,8 +417,8 @@ for r,typeR in enumerate(type_reco_short):
         if ("LR" in this_title_pdf):
             this_title_pdf = ms.addBeforeRootExt(this_title_pdf, "-%s"%(fit), "pdf")
 
-        # this_canvas.SaveAs(this_title_png)
-        # this_canvas.SaveAs(this_title_pdf)
+        this_canvas.SaveAs(this_title_png)
+        this_canvas.SaveAs(this_title_pdf)
 
 
 axis_hist.SetLabelSize(tsize-10,"xy")
@@ -528,7 +528,13 @@ for t,targ in enumerate(list_targets):
 ms.DrawSummaryInfo("%s ratio"%(fancy_uptitle[0]))
 ms.DrawTargetInfo("Solid targets", "Data")
 
-this_title_pdf = ms.getSummaryPath("%s_%s"%(this_bininfo,typeR), "pdf", plots_cuts, isJLab, this_bininfo)
+this_title_png = ms.getSummaryPath("%s"%(this_bininfo), "png", plots_cuts, isJLab, this_bininfo)
+this_title_png = ms.addBeforeRootExt(this_title_png, "-RatioNew", "png")
+if ("LR" in this_title_png):
+    this_title_png = ms.addBeforeRootExt(this_title_png, "-%s"%(fit), "png")
+canvas_new.SaveAs(this_title_png)
+
+this_title_pdf = ms.getSummaryPath("%s"%(this_bininfo), "pdf", plots_cuts, isJLab, this_bininfo)
 this_title_pdf = ms.addBeforeRootExt(this_title_pdf, "-RatioNew", "pdf")
 if ("LR" in this_title_pdf):
     this_title_pdf = ms.addBeforeRootExt(this_title_pdf, "-%s"%(fit), "pdf")
