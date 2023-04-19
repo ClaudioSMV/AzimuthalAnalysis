@@ -1,22 +1,5 @@
 #!/bin/bash
 
-#############################################################################
-#  ./send_job_ClosureTest.sh <target> <binName> <binNdim> <fracAcc> <cuts>  #
-#     <target> = (D, C, Fe, Pb)                                             #
-#   <binName> = (0: Usual, SMoran; 1: No-integrate Zh;                      #
-#                2: Thin Zh; 3: Thin Pt; 4: Thin Zh and Pt;                 #
-#                5: Thin Zh, coarse PhiPQ;                                  #
-#                6: Thin Zh and Pt, coarse PhiPQ)                           #
-#   <binNdim> = (1: All bins regular as in Binned Acc;                      #
-#                2: Regular bins in Zh, Pt2, and PhiPQ;                     #
-#                3: Regular bins in Pt2, and PhiPQ;)                        #
-#   <fracAcc> = 50 (default), 70, 80...                                     #
-#   <cuts> = aa_bb_... ("Xf": X Feynman; "FE": Full error)                  #
-#                                                                           #
-# EG: ./send_job_ClosureTest.sh C 0 2 FE                                    #
-#     ./send_job_ClosureTest.sh Fe 1 3 Xf_FE                                #
-#############################################################################
-
 #####
 # Input
 ###
@@ -28,6 +11,11 @@ BINNAME=${INPUTARRAY[1]}
 BINNDIM=${INPUTARRAY[2]}
 FRACACC=${INPUTARRAY[3]}
 CUTLIST=${INPUTARRAY[4]}
+
+if [[ -z $TARNAME ]]; then
+    cat ../../macros/ScriptHelp.sh
+    exit
+fi
 
 #####
 # Main

@@ -1,15 +1,5 @@
 #!/bin/bash
 
-###########################################################
-#      ./send_all_jobs.sh <method> <binName> <cuts>       #
-#    <method> = (Acceptance, Correction, Closure Test)    #
-#    <binName> = (0-10: uses Nu; 11: uses Xb              #
-#    <cuts> = aa_bb_... ("Xf": X Feynman;)                #
-#                                                         #
-# EG: ./send_all_jobs.sh Acceptance 10                    #
-#     ./send_all_jobs.sh Correction 11 Xf                 #
-###########################################################
-
 #####
 # Input
 ###
@@ -19,6 +9,11 @@ INPUTARRAY=("$@")
 USEMTHD=${INPUTARRAY[0]}
 BINNAME=${INPUTARRAY[1]}
 CUTLIST=${INPUTARRAY[2]}
+
+if [[ -z $USEMTHD ]]; then
+    cat ../../macros/ScriptHelp.sh
+    exit
+fi
 
 #####
 # Main

@@ -1,18 +1,5 @@
 #!/bin/bash
 
-##############################################################
-#     ./send_job_Acceptance.sh <target> <binName> <cuts>     #
-#    <target> = (D, C, Fe, Pb)                               #
-#    <binName> = (0: Usual, SMoran; 1: No-integrate Zh;      #
-#                 2: Thin Zh; 3: Thin Pt; 4: Thin Zh and Pt; #
-#                 5: Thin Zh, coarse PhiPQ;                  #
-#                 6: Thin Zh and Pt, coarse PhiPQ)           #
-#    <cuts> = aa_bb_... ("Xf": X Feynman;)                   #
-#                                                            #
-# EG: ./send_job_Acceptance.sh C 2                           #
-#     ./send_job_Acceptance.sh Fe 3 Xf                       #
-##############################################################
-
 #####
 # Input
 ###
@@ -22,6 +9,11 @@ INPUTARRAY=("$@")
 TARNAME=${INPUTARRAY[0]}
 BINNAME=${INPUTARRAY[1]}
 CUTLIST=${INPUTARRAY[2]}
+
+if [[ -z $TARNAME ]]; then
+    cat ../../macros/ScriptHelp.sh
+    exit
+fi
 
 #####
 # Main

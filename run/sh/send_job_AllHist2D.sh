@@ -1,21 +1,5 @@
 #!/bin/bash
 
-######################################################
-#    ./send_job_AllHist2D.sh <name> <CUTS> <nAcc>    #
-#    <name> = "KinVars", "XfVsYh", "ThetaPQ",        #
-#             "LabAngles", "PQVsLab", "VsSector",    #
-#             "VsDeltaSector", "VarsVsXb"            #
-#    <CUTS>    = Format "AA_BB_CC" ("" is default)   #
-#    "Xf": Use Xf>0; "DS": Delta Sector != 0;        #
-#    "BS": rm Bad Sect;                              #
-#    "PF": Pi+ fiducial cut;                         #
-#    "FE": Use FullError;                            #
-#    <nAcc> = nBin Acceptance (for corrected plots)  #
-#                                                    #
-# EG: ./send_job_AllHist2D.sh KinVars                #
-#     ./send_job_AllHist2D.sh ThetaPQ                #
-######################################################
-
 #####
 # Input
 ###
@@ -25,6 +9,11 @@ INPUTARRAY=("$@")
 VARNAME=${INPUTARRAY[0]}
 CUTLIST=${INPUTARRAY[1]}
 NBINACC=${INPUTARRAY[2]}
+
+if [[ -z $VARNAME ]]; then
+    cat ../../macros/ScriptHelp.sh
+    exit
+fi
 
 #####
 # Main

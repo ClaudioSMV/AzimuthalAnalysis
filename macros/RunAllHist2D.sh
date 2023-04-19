@@ -1,20 +1,5 @@
 #!/bin/bash
 
-#########################################################
-#      ./RunAllHist2D.sh <method> <cuts> <binName>      #
-#  <method>  = "DeltaSector", "CherenkovCounter"        #
-#  <cuts>    = Format "AA_BB_CC" (Empty is default)     #
-#  <binName> = (0-10: nu; 11: xb)                       #
-#                                                       #
-#  "Xf": Use Xf from data; "DS": Delta Sector != 0;     #
-#  "BS": rm Bad Sect;                                   #
-#  "PF": Pi+ fiducial cut; "MM": Mirror Match;          #
-#  "FE": Use FullError; "AQ": Acc Quality < 10%;        #
-#                                                       #
-#  EG: ./RunAllHist2D.sh DeltaSector Zx_FE_Fd 10        #
-#      ./RunAllHist2D.sh CherenkovCounter Zx_LR 10      #
-#########################################################
-
 #####
 # Input
 ###
@@ -25,14 +10,15 @@ METNAME=${INPUTARRAY[0]}
 CUTINFO=${INPUTARRAY[1]}
 BINNDIM=${INPUTARRAY[2]}
 
+if [[ -z $METNAME ]]; then # empty string
+    echo "Choose one method for 2D hists"; # : DeltaSector, CherenkovCounter
+    cat ScriptHelp.sh
+    exit
+fi
+
 #####
 # Main
 ###
-
-if [[ -z $METNAME ]]; then # empty string
-    echo "Choose one method: DeltaSector, CherenkovCounter";
-    exit
-fi
 
 if [[ -n $CUTINFO ]]; then # not empty string
     CUTINFO="-i ${CUTINFO}"

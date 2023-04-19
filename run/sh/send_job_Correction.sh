@@ -1,21 +1,5 @@
 #!/bin/bash
 
-###################################################################
-#   ./send_job_Correction.sh <target> <binName> <binNdim> <cuts>  #
-#   <target> = (D, C, Fe, Pb) *D runs over solid D info           #
-#   <binName> = (0: Usual, SMoran; 1: No-integrate Zh;            #
-#                2: Thin Zh; 3: Thin Pt; 4: Thin Zh and Pt;       #
-#                5: Thin Zh, coarse PhiPQ;                        #
-#                6: Thin Zh and Pt, coarse PhiPQ)                 #
-#   <binNdim> = (1: All bins regular as in Binned Acc;            #
-#                2: Regular bins in Zh, Pt2, and PhiPQ;           #
-#                3: Regular bins in Pt2, and PhiPQ;)              #
-#   <cuts> = aa_bb_... ("Xf": X Feynman; "FE": Full error)        #
-#                                                                 #
-# EG: ./send_job_Correction.sh C 2 1 FE                           #
-#     ./send_job_Correction.sh Fe 3 1 Xf_FE                       #
-###################################################################
-
 #####
 # Input
 ###
@@ -26,6 +10,11 @@ TARNAME=${INPUTARRAY[0]}
 BINNAME=${INPUTARRAY[1]}
 BINNDIM=${INPUTARRAY[2]}
 CUTLIST=${INPUTARRAY[3]}
+
+if [[ -z $TARNAME ]]; then
+    cat ../../macros/ScriptHelp.sh
+    exit
+fi
 
 #####
 # Main
