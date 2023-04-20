@@ -9,12 +9,7 @@ gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
 
 ## Defining Style
-ms.ForceStyle()
-gStyle.SetPadRightMargin(2*ms.GetMargin())
-gStyle.SetPadTopMargin(1.1*ms.GetMargin())
-gStyle.SetLabelSize(ms.GetSize()-10,"z")
-gStyle.SetTitleYOffset(1.3)
-gROOT.ForceStyle()
+ms.ForceStyle(True)
 
 # Construct the argument parser
 parser = optparse.OptionParser("usage: %prog [options]\n")

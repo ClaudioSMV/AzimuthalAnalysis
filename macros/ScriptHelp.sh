@@ -8,11 +8,11 @@
 #                                                                 #
 # RunAllFitAndSummary  : <binN> <binDim> <cuts> <run>             #
 # RunAllClosureTest    : <binN> <binDim> <cuts> <fAcc>            #
-# RunAllHist2D         : <method> <cuts> <binN>                   #
+# RunAllHist2D         : <plotHist2d> <cuts> <binN>               #
 #                                                                 #
 # ------------------------ From ~/run/sh ------------------------ #
 #                                                                 #
-# send_all_jobs        : <method> <binN> <cuts>                   #
+# send_all_jobs        : <jobtype> <binN> <cuts>                   #
 # send_job_Acceptance  : <target> <binN> <cuts>                   #
 # send_job_AllHist2D   : <hist2dMeth> <cuts> <binDim>*            #
 # send_job_ClosureTest : <target> <binN> <binDim> <fAcc> <cuts>   #
@@ -43,7 +43,9 @@
 #              "D": Summary with different methods;               #
 #  <fAcc>    = Fraction of stats used in calculation of Acc       #
 #              (from 0-100, ex: 50, 70...)                        #
-#  <method>  = (Acceptance, Correction, Closure Test)             #
+#  <plotHist2d> = "DeltaSector", "CherenkovCounter", "NpheVs";    #
+#                                                                 #
+#  <jobtype>  = (Acceptance, Correction, Closure Test)            #
 #                                                                 #
 #  <hist2dMeth> = ("KinVars", "XfVsYh", "ThetaPQ", "LabAngles",   #
 #               "PQVsLab", "VsSector", "VsDeltaSector",           #

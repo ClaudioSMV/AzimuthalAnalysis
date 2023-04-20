@@ -509,7 +509,7 @@ def getSummaryPath(nameMethod, fileExt = "pdf", cuts = "", JLab_cluster = True, 
 ##  Define style and pad parameters  ##
 #######################################
 
-def ForceStyle():
+def ForceStyle(useCOLZ = False):
     ## Defining Style
     ROOT.gStyle.SetPadTopMargin(marg)    #0.05
     ROOT.gStyle.SetPadRightMargin(marg)  #0.05
@@ -551,6 +551,13 @@ def ForceStyle():
     ROOT.gStyle.SetGridStyle()
 
     ROOT.gROOT.ForceStyle()
+
+    if useCOLZ:
+        ROOT.gStyle.SetPadRightMargin(2*marg)
+        ROOT.gStyle.SetPadTopMargin(1.1*marg)
+        ROOT.gStyle.SetLabelSize(tsize-10,"z")
+        ROOT.gStyle.SetTitleYOffset(1.3)
+        ROOT.gROOT.ForceStyle()
 
 def GetMargin():
     return marg
