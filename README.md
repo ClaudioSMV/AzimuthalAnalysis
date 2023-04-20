@@ -20,16 +20,25 @@ root [3] >> .x ../run/runAll_ClosureTest.C(2,1) // Get Closure test for **all ta
 ```
 This creates .root files with the 'raw' plots.
 
-## Getting plots
-To get them with a better style, run the [python macros](https://github.com/ClaudioSMV/AzimuthalAnalysis/tree/main/macros):
+## Running in JLab's cluster
+If the code is run in the JLab cluster, remember to copy the output files into a local folder `<AzimuthalAnalysis>/output/JLab_cluster` with
 ```
-python PlotClosureTest.py -D Fe_2_1 // The format is <targ>_<binType>_<Ndims> as in the C scripts
-python PlotCorrection.py -D Fe_2_1
-python PlotFit_FoldTails.py -D Fe_2_1
+scp <user>@ftp.jlab.org:/home/<user>/work/AzimuthalAnalysis/output/<folder> <AzimuthalAnalysis>/output/JLab_cluster/.
+```
+Later, you can run the macros using an extra option `-J`.
+Remember to call `-h` for extra help with the macros' options.
+
+## Getting plots
+To get the plots with a better style, run the [python macros](https://github.com/ClaudioSMV/AzimuthalAnalysis/tree/main/macros) following:
+```
+// The format for the sample is <targ>_<binType>_<Ndims>
+python PlotClosureTest.py   -D Fe_10_1 -i FE_AQ     -o FE_AQ_Zx -f 50
+python PlotCorrection.py    -D Fe_10_1 -i FE_AQ     -o FE_AQ_Zx
+python PlotFit.py           -D Fe_10_1 -i FE_AQ_Zx  -o FE_AQ_Zx_NP_Fd
 ```
 If you want to run the whole process (this is, Correct data -> Fit -> GetParameters) you can run the script:
 ```
-./FitCrossSection.sh Fe 2 1 // For a further description type: head FitCrossSection.sh
+./FitCrossSection.sh Fe 10 1 FE_AQ_Zx_NP_Fd // For a further description of the options call without arguments: ./FitCrossSection.sh
 ```
 Summary plots are available after running the script over all sensors. Summaries are given by:
 ```
@@ -37,11 +46,9 @@ python Summary_ParametersNorm.py -D 2_1
 python Summary_ParameterRatioOverD.py -D 2_1
 ```
 
-## Running in JLab's cluster
-If the code was run in the JLab cluster, remember to copy them into a local folder `<AzimuthalAnalysis>/output/JLab_cluster` with
+The whole process can be done all at once by using the 'RunAll' scripts.
+They run over all targets and accept arguments to run over all fit methods and Zh ot Pt2 dependency.
 ```
-scp <user>@ftp.jlab.org:/home/<user>/work/AzimuthalAnalysis/output/<folder> <AzimuthalAnalysis>/output/JLab_cluster/.
+./RunAllFitAndSummary 10 1 FE_AQ_Zx_NP_Fd
 ```
-Later, you can run the macros as before but adding an extra option `-J`.
-Remember to call `-h` for extra help with the macros' options.
 
