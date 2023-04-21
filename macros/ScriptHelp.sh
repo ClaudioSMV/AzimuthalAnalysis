@@ -12,7 +12,7 @@
 #                                                                 #
 # ------------------------ From ~/run/sh ------------------------ #
 #                                                                 #
-# send_all_jobs        : <jobtype> <binN> <cuts>                   #
+# send_all_jobs        : <jobtype> <binN> <cuts>                  #
 # send_job_Acceptance  : <target> <binN> <cuts>                   #
 # send_job_AllHist2D   : <hist2dMeth> <cuts> <binDim>*            #
 # send_job_ClosureTest : <target> <binN> <binDim> <fAcc> <cuts>   #
