@@ -42,8 +42,8 @@ rootpath = options.rootpath
 dataset = options.Dataset
 isJLab = options.JLabCluster
 
-infoDict = ms.getDictNameFormat(dataset)
-nameFormatted = ms.getNameFormatted(dataset, True)
+infoDict = ms.get_name_dict(dataset)
+nameFormatted = ms.get_name_format(dataset, True)
 this_binning = infoDict["BinningType"]
 this_bin_dict = ms.all_dicts[this_binning]
 
@@ -52,7 +52,7 @@ input_cuts = options.inputCuts
 
 ## Input
 inputPath = ms.getOutputFolder("QualityCheck", input_cuts, isJLab, False) # "../output/"
-inputROOT = this_file = "Quality_"+ms.getNameFormatted(dataset, True)+".root"
+inputROOT = this_file = "Quality_"+ms.get_name_format(dataset, True)+".root"
 inputfile = TFile(inputPath+inputROOT,"READ")
 
 ## Output

@@ -30,8 +30,8 @@ rootpath = options.rootpath
 dataset = options.Dataset
 isJLab = options.JLabCluster
 
-infoDict = ms.getDictNameFormat(dataset)
-# nameFormatted = ms.getNameFormatted(dataset,True)
+infoDict = ms.get_name_dict(dataset)
+# nameFormatted = ms.get_name_format(dataset,True)
 
 ## Cuts
 input_cuts = options.inputCuts
@@ -42,7 +42,7 @@ inputPath = ms.getOutputFileWithPath("Acceptance", dataset, input_cuts, isJLab, 
 inputfile = TFile(inputPath,"READ")
 
 ## Output
-outputPath = ms.getPlotsFolder("Resolution", plots_cuts, ms.getBinNameFormatted(dataset) +"/"+ infoDict["Target"], isJLab)
+outputPath = ms.getPlotsFolder("Resolution", plots_cuts, ms.get_name_format_bin(dataset) +"/"+ infoDict["Target"], isJLab)
 # outputROOT = ms.getPlotsFile("Resolution", dataset, "root")
 
 list_vars = ["Q2", "Nu", "Xb", "Zh", "Pt2", "PhiPQ"]

@@ -32,16 +32,16 @@ rootpath = options.rootpath
 dataset = options.Dataset
 isJLab = options.JLabCluster
 
-infoDict = ms.getDictNameFormat(dataset)
-nameFormatted = ms.getNameFormatted(dataset)
+infoDict = ms.get_name_dict(dataset)
+nameFormatted = ms.get_name_format(dataset)
 
 ## Cuts
 input_cuts = options.inputCuts
 plots_cuts = options.inputCuts + "_" + options.outputCuts
 
-if ("FErr" in ms.getListOfCuts(input_cuts)):
+if ("FErr" in ms.get_cut_str2finallist(input_cuts)):
     input_cuts = input_cuts.replace("FE","")
-if ("FErr" in ms.getListOfCuts(plots_cuts)):
+if ("FErr" in ms.get_cut_str2finallist(plots_cuts)):
     plots_cuts = plots_cuts.replace("FE","")
 
 input_cuts_eE = input_cuts

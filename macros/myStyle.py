@@ -28,31 +28,39 @@ tsize=38
 ##  File name and format  ##
 ############################
 
-def getDictNameFormat(nameFormat):                  #input: <targ>_<nBin>_<nDim>   --->   <targ>_<nBin>B<nDim>
+def get_name_dict(nameFormat):
+# Create dictionary from input: <targ>_<nBin>_<nDim>
+# with output: {"Target": <targ>, "BinningType": <nBin>, "NDims": <nDim>}
     targetDict = {}
-    targetList = nameFormat.split("_")              # [ <targ> , <nBin>, <nDim> ]
-    targetDict["Target"] = targetList[0]            # <targ>
-    targetDict["BinningType"] = int(targetList[1])  # <nBin>
+    targetList = nameFormat.split("_")
+    targetDict["Target"] = targetList[0]
+    targetDict["BinningType"] = int(targetList[1])
     if (len(targetList)==2):
         targetList.append(0)
-    targetDict["NDims"] = int(targetList[2])        # <nDim>
+    targetDict["NDims"] = int(targetList[2])
 
-    return targetDict                               # <targ>_<nBin>B<nDim>
+    return targetDict
 
-def getNameFormatted(nameFormat, isAcc = False): #input: Fe_0_1 ; <targ>_<nBin>_<nDim>
-    formDict = getDictNameFormat(nameFormat)
+def get_name_format(nameFormat, isAcc = False):
+# Give string with name formatted using input: <targ>_<nBin>_<nDim>
+# with output: "<targ>_<nBin>B<nDim>"
+    formDict = get_name_dict(nameFormat)
     fileName = "%s_%iB"%(formDict["Target"],formDict["BinningType"])
     if (not isAcc) and formDict["NDims"]:
         fileName+="%i"%(formDict["NDims"])
 
-    return fileName #output: Fe_0B1 ; <target>_<binningType number>B<non-integrated dimensions>
+    return fileName
 
-def getBinNameFormatted(nameFormat): #input: Fe_0_1 ; <targ>_<nBin>_<nDim>
-    nameFull = getNameFormatted(nameFormat) # Fe_0B1 ; <targ>_<nBin>B<nDim>
+def get_name_format_bin(nameFormat):
+# Give string with name formatted using input: <targ>_<nBin>_<nDim>
+# with output: "<nBin>B<nDim>"
+    nameFull = get_name_format(nameFormat)
+    name_bin = nameFull.split('_')[1]
 
-    return nameFull.split('_')[1] # 0B1 ; <nBin>B<nDim>
+    return name_bin
 
-def addBeforeRootExt(path, before_dot, other_extension = "root"):
+def add_str_before_ext(path, before_dot, other_extension = "root"):
+# Returns same string <path> with new text <before_dot> before extension
     new_path = path.split(".%s"%other_extension)[0]
 
     return new_path + before_dot + "." + other_extension
@@ -65,7 +73,7 @@ def addBeforeRootExt(path, before_dot, other_extension = "root"):
 ### Input name
 ########
 ## From python macro input to internal/input code
-dict_Cut2Code = {
+dict_cut_long2short = {
     "XF": "Xf", "Xf": "Xf",
     "XT_TFR": "XT", "XTFR": "XT", "Xt": "XT", "XT": "XT",
     "DeltaSector": "DS", "DSect": "DS", "DSctr": "DS", "DS": "DS",
@@ -89,19 +97,19 @@ dict_Cut2Code = {
     # "Right": "Rg", "Rg": "Rg",
     "MixD": "MD", "MD": "MD",
 }
-dict_FitMeth2Code = {
+dict_fit_long2short = {
     "Shift": "Sh", "Sh": "Sh",
     "Fold": "Fd", "Fd": "Fd",
     "LR": "LR",
     "Fullfit": "Ff", "FFit": "Ff", "Ff": "Ff",
 }
 
-dict_Cut2Code.update(dict_FitMeth2Code)
+dict_cut_long2short.update(dict_fit_long2short)
 
 ### Output name
 ########
 ## From internal/input code to folder-name format
-dict_CutCode2Name = {
+dict_cut_short2long = {
     "Xf": "Xf", "XT": "XTFR", "DS": "DSect0", "BS": "NoBadSec", "PF": "PiFid", "MM": "MMtch", "M2": "MMtch2",
     "FE": "FErr", "AQ": "AccQlt", "Pe": "dfNphe",
     "Zx": "Z", "Px": "P", #"Sh": "Shift",
@@ -109,16 +117,16 @@ dict_CutCode2Name = {
     #"Fd": "Fold", "LR": "LR", "Ff": "Full",
     "MD": "MixD", #"Lf": "Left", "Rg": "Right",
 }
-dict_FitMeth2Name = {
+dict_fit_short2long = {
     "Fd": "Fold", "LR": "LR", "Ff": "Full", "Sh": "Shift",
 }
 
-dict_CutCode2Name.update(dict_FitMeth2Name)
+dict_cut_short2long.update(dict_fit_short2long)
 
 ### Legend name
 ########
 ## From internal/input code to Legend's text (Latex format)
-dict_CutCode2Leg = {
+dict_cut_short2legend = {
     "Xf": "#X_f CFR", "XT": "#X_f TFR", "DS": "#Delta Sect #neq 0", "BS": "No bad Sect", "PF": "Fidual cut #pi", "MM": "Mirror Match",
     "M2": "Mirror Match 2",
     "FE": "", "AQ": "", "Pe": "N_{phe}^{el} #neq N_{phe}^{h}",
@@ -126,11 +134,11 @@ dict_CutCode2Leg = {
     "Fs": "", "NP": "",
     "MD": "",
 }
-dict_FitMeth2Leg = {
+dict_fit_short2legend = {
     "Fd": "Fold", "LR": "LR", "Ff": "Full", "Sh": "Shift", # "LR_Left": "Left", "LR_Right": "Right"
 }
 
-dict_CutCode2Leg.update(dict_FitMeth2Leg)
+dict_cut_short2legend.update(dict_fit_short2legend)
 
 ### Define key with cuts in order of applicability (Acc, Corr, Fit, Summary)
 ########
@@ -153,19 +161,33 @@ cutMasterKey+= "MD0"
 ##  Format cut names  ##
 ########################
 
-def getCutStrFormat(list_cuts):
+def get_cut_str2list(this_cut_str):
+# Transform a str of cuts separated by "_" to a list
+    this_list = this_cut_str.split("_")
+    # Remove empty elements from input
+    while ("" in this_list):
+        this_list.remove("")
+
+    return this_list
+
+def cut_list2longstr(list_cuts):
+# Take list of cuts short-name with format <cut><0-1>
+# where 0 is cut not applied and 1 is applied
+# Returns str with long-names of cuts applied separated by "_"
     cut_str = ""
     for c in list_cuts:
+        # Skip unused cuts and empty elements
         if (c[-1] == "0" or c == ""):
             continue
-        this_cut = c
-        if (len(c) == 3):
-            this_cut = c[0:2]
-        cut_str+="_"+dict_CutCode2Name[this_cut]
+        this_cut = c[0:-1]
+        cut_str+="_"+dict_cut_short2long[this_cut]
 
     return cut_str
 
-def getLegendFromList(list_cuts):
+def cut_list2legend(list_cuts):
+# Take list of cuts short-name with format <cut><0-1>
+# where 0 is cut not applied and 1 is applied
+# Returns str with legends of cuts applied
     cut_str = ""
     for c in list_cuts:
         if (c[-1] == "0" or c == ""):
@@ -174,71 +196,62 @@ def getLegendFromList(list_cuts):
         if (len(c) == 3):
             this_cut = c[0:2]
 
-        if cut_str and dict_CutCode2Leg[this_cut]:
+        if cut_str and dict_cut_short2legend[this_cut]:
             cut_str+=" "
-        cut_str+=dict_CutCode2Leg[this_cut]
+        cut_str+=dict_cut_short2legend[this_cut]
 
         print(cut_str)
 
     print("    Final legend: %s"%cut_str)
     return cut_str
 
-def getCutStrFromStr(cut_str = "", isLegend = False): # Aaaa_Bbb_ccc_Ddd
-    # Format: AA0BB1CC0EE1
-    #           AA: First two letters of the cut name
-    #           0 or 1: Do (1) or don't (0) apply cut
-    this_Key = cutMasterKey
-    this_list = this_Key.split("0")
+def get_cut_long2final(cut_str = "", isLegend = False):
+# Takes str with format "Aaaa_Bbb_ccc_Ddd" (long-name)
+# and returns str with final names for the file
+# The order is defined by cutMasterKey
+    the_key = cutMasterKey
+    this_list = the_key.split("0")
     this_list.remove("")
 
     ref_list = list(this_list)
 
-    list_input = cut_str.split("_")
-    while ("" in list_input):
-        list_input.remove("") # = cut_str.split("_")[1:-1]
+    list_input = get_cut_str2list(cut_str)
 
     for elem in list_input:
-        try:
-            if dict_Cut2Code[elem]:
-                this_index = ref_list.index(dict_Cut2Code[elem])
-                this_list[this_index] = dict_Cut2Code[elem]+"1"
-        except:
-            if (("Left" in elem) or ("Right" in elem)):
-                continue
-            else:
-                print("  [CutStr] Cut not found! : %s"%(elem))
-                exit()
+        if elem in dict_cut_long2short:
+            this_index = ref_list.index(dict_cut_long2short[elem])
+            this_list[this_index] = dict_cut_long2short[elem]+"1"
+        elif (("Left" in elem) or ("Right" in elem)):
+            continue
+        else:
+            print("  [CutStr] Cut not found! : %s"%(elem))
+            exit()
 
     for elem in this_list:
         if (elem[-1] != "1"):
             this_index = ref_list.index(elem)
             this_list[this_index] = elem+"0"
 
-    this_str = getCutStrFormat(this_list) if not isLegend else getLegendFromList(this_list)
+    this_str = cut_list2longstr(this_list) if not isLegend else cut_list2legend(this_list)
 
     return this_str
 
-def getCutsAsList(this_cut_str): # Intro should be output of getCutStrFormat()
-    this_list = this_cut_str.split("_")
-    while ("" in this_list):
-        this_list.remove("")
+def get_cut_str2finallist(cut_str):
+# Transform a str of cuts separated by "_" to a list with output (final) names
+    real_cut_str = get_cut_long2final(cut_str)
+    this_finallist = get_cut_str2list(real_cut_str)
 
-    return this_list
-
-def getListOfCuts(cut_str):
-    real_cut_str = getCutStrFromStr(cut_str)
-    this_list = real_cut_str.split("_")
-    while ("" in this_list):
-        this_list.remove("")
-
-    return this_list
+    return this_finallist
 
 
 ################################
 ##  Set study dimensionality  ##
 ################################
 
-def getPhiHist(th1_input, name, do_shift):
+def create_phi_hist(th1_input, name, do_shift):
+# Create a copy of a 1d histogram for phi_PQ
+# By default, it uses x-axis within [-180, 180]
+# Option do_shift plots within [0, 360]
     this_xmin = th1_input.GetXaxis().GetXmin() # -180.
     this_xmax = th1_input.GetXaxis().GetXmax() #  180.
     this_nbin = th1_input.GetNbinsX()
@@ -247,7 +260,9 @@ def getPhiHist(th1_input, name, do_shift):
         # if (this_nbin%2 == 0): # Even (0. is in a bin edge) (default)
         this_xmin =   0.
         this_xmax = 360.
-        central_bin = int(this_nbin/2)+1 # Even: Right to the center; Odd: Central bin
+        central_bin = int(this_nbin/2)+1
+        # Note that if nbin is Even, central_bin is the bin at the right of the
+        # central one; if it is Odd, central_bin is the real central one;
 
         if (this_nbin%2 == 1): # Odd (0. is in the middle of a bin)
             bin_width = th1_input.GetBinWidth(central_bin)
@@ -258,6 +273,7 @@ def getPhiHist(th1_input, name, do_shift):
 
     h_tmp = ROOT.TH1D(name,";%s;Counts"%(axis_label('I',"LatexUnit")), this_nbin, this_xmin, this_xmax)
 
+    # Fill histogram bin by bin
     for i in range(1,this_nbin+1):
         this_value = th1_input.GetBinContent(i)
         this_error = th1_input.GetBinError(i)
@@ -270,17 +286,20 @@ def getPhiHist(th1_input, name, do_shift):
 
         the_bin = i
         if (do_shift):
-            if (this_nbin%2 == 0): # Even   6 -> First right bin is 4
+            # Move the left half to the right of the right half
+            if (this_nbin%2 == 0): # Even  e.g. with 6 bins, first right bin is 4
                 if (bin_L_edge < 0.0):
-                    the_bin = i + central_bin -1 # 4,5,6
+                    the_bin = i + central_bin -1 #  e.g. 1,2,3 bins will be 4,5,6
                 else:
-                    the_bin = i - central_bin + 1 # 1,2,3
+                    the_bin = i - central_bin + 1 # e.g. 4,5,6 bins will be 1,2,3
 
-            elif (this_nbin%2 == 1): # Odd   5 -> center is 3
+            elif (this_nbin%2 == 1): # Odd e.g. with 5 bins, center is 3
                 if (bin_center < 0.0):
-                    the_bin = i + central_bin # 4,5
+                    the_bin = i + central_bin #     e.g. 1,2 bins will be 4,5
                 else:
-                    the_bin = i - central_bin + 1 # 1,2,3
+                    the_bin = i - central_bin + 1 # e.g. 3,4,5 bins will be 1,2,3
+                # Note in this case the distribution does not start at zero,
+                # but at a negative number
         # Skip bins that are empty (if not, they will count as an entry with zero value)
         if (this_value != 0):
             h_tmp.SetBinContent(the_bin, this_value)
@@ -341,7 +360,7 @@ def getListTSparseProj1D(thnSparse, list_binstr, shift):
 
         proj_tmp = thnSparse.Projection(4)
         proj_tmp.SetName("proj_tmp")
-        this_hist = getPhiHist(proj_tmp, thnSparse.GetName()+"_"+bincode, shift)
+        this_hist = create_phi_hist(proj_tmp, thnSparse.GetName()+"_"+bincode, shift)
         this_outlist.append(this_hist)
         proj_tmp.Delete()
 
@@ -355,10 +374,10 @@ def getListTSparseProj1D(thnSparse, list_binstr, shift):
 def GetFitMethod(output_str, use_def = True):
     this_method = ""
 
-    for fm in dict_FitMeth2Name:
-        out_name = dict_FitMeth2Name[fm]
+    for fm in dict_fit_short2long:
+        out_name = dict_fit_short2long[fm]
 
-        if out_name in getCutStrFromStr(output_str):
+        if out_name in get_cut_long2final(output_str):
             if (this_method != ""): # and not accept_more
                 print("  [FitMethod] More than one fit method selected. Please, choose only one of the options!")
                 print("              Ff-Full (empty, default); LR; Fd-Fold; Sh-Shift;")
@@ -374,7 +393,7 @@ def GetFitMethod(output_str, use_def = True):
     # if (this_method):
     #     str_meth = this_method.replace("_", ", ")
     #     if not accept_more:
-    #         print("    [FitMethod] Using %s fit method"%dict_FitMeth2Name[str_meth])
+    #         print("    [FitMethod] Using %s fit method"%dict_fit_short2long[str_meth])
     #     else:
     #         print("    [FitMethod] Using %s fit method/s"%str_meth)
 
@@ -422,7 +441,7 @@ def getOutputFolder(nameMethod, extraCuts = "", JLab_cluster = True, isOutput = 
     this_folder = "../output/"
     if JLab_cluster: this_folder+="JLab_cluster/"
 
-    these_cuts = getCutStrFromStr(extraCuts)
+    these_cuts = get_cut_long2final(extraCuts)
     this_folder+=nameMethod+these_cuts+"/"
     if isOutput:
         CreateFolder(this_folder, "", False, False)
@@ -431,13 +450,13 @@ def getOutputFolder(nameMethod, extraCuts = "", JLab_cluster = True, isOutput = 
 
 def getOutputFile(nameMethod, nameFileExt):
     if nameMethod=="Acceptance":
-        this_file = "Acceptance_"+getNameFormatted(nameFileExt, True)+".root"
+        this_file = "Acceptance_"+get_name_format(nameFileExt, True)+".root"
     elif nameMethod=="Correction":
-        this_file = "Corrected_"+getNameFormatted(nameFileExt, False)+".root"
+        this_file = "Corrected_"+get_name_format(nameFileExt, False)+".root"
     elif nameMethod=="Hist2D":
-        this_file = "Hist2D_"+getDictNameFormat(nameFileExt)["Target"]+"_.root" # Remember to add "data" or "hsim" with addBeforeRootExt()
+        this_file = "Hist2D_"+get_name_dict(nameFileExt)["Target"]+"_.root" # Remember to add "data" or "hsim" with add_str_before_ext()
     else:
-        this_file = nameMethod+"_"+getNameFormatted(nameFileExt, False)+".root"
+        this_file = nameMethod+"_"+get_name_format(nameFileExt, False)+".root"
 
     return this_file
 
@@ -453,7 +472,7 @@ def getPlotsFolder(nameMethod, extraCuts = "", extraPath = "", JLab_cluster = Tr
     this_folder = "../macros/plots/"
     if JLab_cluster: this_folder+="JLab_cluster/"
 
-    these_cuts = getCutStrFromStr(extraCuts)
+    these_cuts = get_cut_long2final(extraCuts)
     this_folder+=nameMethod+"/"+these_cuts[1:]+"/"
     if extraPath:
         this_folder+=extraPath+"/" # <target>/
@@ -465,7 +484,7 @@ def getPlotsFolder(nameMethod, extraCuts = "", extraPath = "", JLab_cluster = Tr
 def getPlotsFile(nameMethod, nameFileExt = "", fileExt = "root", plotBin = ""):
     this_file = nameMethod
     if nameFileExt:
-        this_file+= "_"+getNameFormatted(nameFileExt, False)
+        this_file+= "_"+get_name_format(nameFileExt, False)
 
     if (fileExt == "root"):
         if plotBin:
@@ -489,15 +508,15 @@ def getSummaryPath(nameMethod, fileExt = "pdf", cuts = "", JLab_cluster = True, 
     if extra_path:
         this_folder+=extra_path+"/"
     if cuts:
-        # Remember: getCutStrFromStr(cuts) has an underscore as first element
-        this_folder+= getCutStrFromStr(cuts)[1:] +"/"
+        # Remember: get_cut_long2final(cuts) has an underscore as first element
+        this_folder+= get_cut_long2final(cuts)[1:] +"/"
 
     if not os.path.exists(this_folder):
         CreateFolder(this_folder, "", False, False)
 
     this_file = nameMethod
     if (cuts):
-        these_cuts = getCutStrFromStr(cuts)
+        these_cuts = get_cut_long2final(cuts)
         this_file+=these_cuts
 
     this_file+="."+fileExt

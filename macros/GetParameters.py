@@ -36,14 +36,14 @@ isJLab = options.JLabCluster
 verbose = options.verbose
 
 useFold = options.fold
-if "Fold" in myStyle.getCutStrFromStr(options.outputCuts):
+if "Fold" in myStyle.get_cut_long2final(options.outputCuts):
     useFold = True
 fit_type = "Fd" if useFold else "LR"
 
 useZoom = options.useZoom
 
-infoDict = myStyle.getDictNameFormat(dataset)
-nameFormatted = myStyle.getNameFormatted(dataset)
+infoDict = myStyle.get_name_dict(dataset)
+nameFormatted = myStyle.get_name_format(dataset)
 
 ## Cuts
 input_cuts = options.inputCuts
@@ -61,7 +61,7 @@ inputROOT = myStyle.getPlotsFile("Fit", dataset, "root", fit_type)
 inputfile = TFile(inputPath+inputROOT,"READ")
 
 ## Output
-outputPath = myStyle.getPlotsFolder("FitParameters", plots_cuts, infoDict["Target"], isJLab)
+outputPath = myStyle.getPlotsFolder("Parameters", plots_cuts, infoDict["Target"], isJLab)
 outputROOT = myStyle.getPlotsFile("Parameters", dataset, "root", fit_type)
 if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
     print("Parameters file already exists! Not overwriting it.")

@@ -136,9 +136,9 @@ plots_cuts = options.inputCuts +"_"+ options.outputCuts
 
 useZh = False
 usePt2 = False
-if ("Z" in ms.getListOfCuts(plots_cuts)):
+if ("Z" in ms.get_cut_str2finallist(plots_cuts)):
     useZh = True
-if ("P" in ms.getListOfCuts(plots_cuts)):
+if ("P" in ms.get_cut_str2finallist(plots_cuts)):
     usePt2 = True
 
 if (useZh) and (usePt2):
@@ -151,8 +151,8 @@ elif (not useZh) and (not usePt2):
 keyX = 'Z' if useZh else 'P'
 
 ## Define target and binning
-infoDict = ms.getDictNameFormat(dataset)
-nameFormatted = ms.getNameFormatted(dataset)
+infoDict = ms.get_name_dict(dataset)
+nameFormatted = ms.get_name_format(dataset)
 this_targ = infoDict["Target"]
 this_binning = infoDict["BinningType"]
 this_bin_dict = ms.all_dicts[this_binning]
@@ -193,7 +193,7 @@ for fm in list_fitmethodsKey:
     except:
         meth_detail = ""
 
-    inputPath = ms.getPlotsFolder("ParametersNorm", this_input_cuts, ms.getBinNameFormatted(dataset) +"/"+ this_targ, isJLab, False) # "../output/"
+    inputPath = ms.getPlotsFolder("ParametersNorm", this_input_cuts, ms.get_name_format_bin(dataset) +"/"+ this_targ, isJLab, False) # "../output/"
     inputROOT = ms.getPlotsFile("Parameters", dataset, "root", this_meth)
 
     inputfile = TFile(inputPath+inputROOT,"READ")
@@ -384,13 +384,13 @@ for r,typeR in enumerate(type_reco_short):
                             legend.Draw()
             new_pad = False
 
-        this_bininfo = ms.getBinNameFormatted(dataset)
+        this_bininfo = ms.get_name_format_bin(dataset)
 
         this_title_png = ms.getSummaryPath("%s_%s"%(this_bininfo,typeR), "png", plots_cuts, isJLab, this_bininfo +"/"+this_targ, "Summary_DiffMethods")
-        this_title_png = ms.addBeforeRootExt(this_title_png, "-DiffFitNorm%s_%s"%(par,this_targ), "png")
+        this_title_png = ms.add_str_before_ext(this_title_png, "-DiffFitNorm%s_%s"%(par,this_targ), "png")
 
         this_title_pdf = ms.getSummaryPath("%s_%s"%(this_bininfo,typeR), "pdf", plots_cuts, isJLab, this_bininfo +"/"+this_targ, "Summary_DiffMethods")
-        this_title_pdf = ms.addBeforeRootExt(this_title_pdf, "-DiffFitNorm%s_%s"%(par,this_targ), "pdf")
+        this_title_pdf = ms.add_str_before_ext(this_title_pdf, "-DiffFitNorm%s_%s"%(par,this_targ), "pdf")
 
         this_canvas.SaveAs(this_title_png)
         this_canvas.SaveAs(this_title_pdf)

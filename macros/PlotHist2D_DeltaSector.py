@@ -35,8 +35,8 @@ isJLab = options.JLabCluster
 # drawLines = options.drawLines
 isData = options.isData
 
-infoDict = ms.getDictNameFormat(dataset)
-nameFormatted = ms.getNameFormatted(dataset, True)
+infoDict = ms.get_name_dict(dataset)
+nameFormatted = ms.get_name_format(dataset, True)
 this_binning = infoDict["BinningType"]
 this_bin_dict = ms.all_dicts[this_binning]
 
@@ -50,7 +50,7 @@ inputPath += "data.root" if isData else "hsim.root"
 inputfile = TFile(inputPath,"READ")
 
 ## Output
-outputPath = ms.getPlotsFolder("Hist2D/DeltaSector", input_cuts, ms.getBinNameFormatted(dataset) +"/"+ infoDict["Target"], isJLab)
+outputPath = ms.getPlotsFolder("Hist2D/DeltaSector", input_cuts, ms.get_name_format_bin(dataset) +"/"+ infoDict["Target"], isJLab)
 
 correct_prefix = {"reco": "Reconstructed", "recoAcc": "Acc corrected", "gene": "Generated"}
 # short_prefix = {"reco": "Rec", "mtch": "Rec", "gene": "Gen"}

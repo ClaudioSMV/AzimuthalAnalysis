@@ -40,8 +40,8 @@ rootpath = options.rootpath
 dataset = options.Dataset
 isJLab = options.JLabCluster
 
-infoDict = mS.getDictNameFormat(dataset)
-nameFormatted = mS.getNameFormatted(dataset)
+infoDict = mS.get_name_dict(dataset)
+nameFormatted = mS.get_name_format(dataset)
 
 ## Cuts
 input_cuts = options.inputCuts

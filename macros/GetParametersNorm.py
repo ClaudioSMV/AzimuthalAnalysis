@@ -47,8 +47,8 @@ plots_cuts = options.inputCuts +"_"+ options.outputCuts
 ### Define type of fit used
 fit_type = ms.GetFitMethod(plots_cuts)
 
-infoDict = ms.getDictNameFormat(dataset)
-nameFormatted = ms.getNameFormatted(dataset)
+infoDict = ms.get_name_dict(dataset)
+nameFormatted = ms.get_name_format(dataset)
 
 ## Cuts
 # # Add fit type to the list of cuts!
@@ -56,12 +56,12 @@ nameFormatted = ms.getNameFormatted(dataset)
 # plots_cuts+="_"+fit_type
 
 ## Input
-inputPath = ms.getPlotsFolder("Fit", input_cuts, ms.getBinNameFormatted(dataset) +"/"+ infoDict["Target"], isJLab, False) # "../output/"
+inputPath = ms.getPlotsFolder("Fit", input_cuts, ms.get_name_format_bin(dataset) +"/"+ infoDict["Target"], isJLab, False) # "../output/"
 inputROOT = ms.getPlotsFile("Fit", dataset, "root", fit_type)
 inputfile = TFile(inputPath+inputROOT,"READ")
 
 ## Output
-outputPath = ms.getPlotsFolder("ParametersNorm", plots_cuts, ms.getBinNameFormatted(dataset) +"/"+ infoDict["Target"], isJLab)
+outputPath = ms.getPlotsFolder("ParametersNorm", plots_cuts, ms.get_name_format_bin(dataset) +"/"+ infoDict["Target"], isJLab)
 outputROOT = ms.getPlotsFile("Parameters", dataset, "root", fit_type)
 if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
     print("  [ParNorm] Parameters normalized file already exists! Not overwriting it.")

@@ -50,11 +50,11 @@ plots_cuts = options.inputCuts +"_"+ options.outputCuts
 fit_type = ms.GetFitMethod(plots_cuts)
 
 mixD = False
-if "MixD" in ms.getListOfCuts(plots_cuts):
+if "MixD" in ms.get_cut_str2finallist(plots_cuts):
     mixD = True
 
-infoDict = ms.getDictNameFormat(dataset) # ["Target", "BinningType", "NDims"]
-nameFormatted = ms.getNameFormatted(dataset)
+infoDict = ms.get_name_dict(dataset) # ["Target", "BinningType", "NDims"]
+nameFormatted = ms.get_name_format(dataset)
 
 if ("D" in infoDict["Target"]):
     print("  [ParRatio] Trivial ratio with D. Try with a solid target.")
@@ -67,9 +67,9 @@ if ("D" in infoDict["Target"]):
 
 useZh = False
 usePt2 = False
-if ("Z" in ms.getListOfCuts(plots_cuts)):
+if ("Z" in ms.get_cut_str2finallist(plots_cuts)):
     useZh = True
-if ("P" in ms.getListOfCuts(plots_cuts)):
+if ("P" in ms.get_cut_str2finallist(plots_cuts)):
     usePt2 = True
 
 if (useZh) and (usePt2):
@@ -89,17 +89,17 @@ else:
 solid_targ = infoDict["Target"] if not mixD else ""
 dataset_D = "D%s_%s_%s"%(solid_targ,infoDict["BinningType"],infoDict["NDims"])
 
-inputPath_D = ms.getPlotsFolder("Fit", input_cuts, ms.getBinNameFormatted(dataset_D) + "/D" + solid_targ, isJLab, False) # "../output/"
+inputPath_D = ms.getPlotsFolder("Fit", input_cuts, ms.get_name_format_bin(dataset_D) + "/D" + solid_targ, isJLab, False) # "../output/"
 inputROOT_D = ms.getPlotsFile("Fit", dataset_D, "root", fit_type)
 inputfile_D = TFile(inputPath_D+inputROOT_D,"READ")
 
 ## Input
-inputPath_solid = ms.getPlotsFolder("Fit", input_cuts, ms.getBinNameFormatted(dataset) +"/"+ infoDict["Target"], isJLab, False) # "../output/"
+inputPath_solid = ms.getPlotsFolder("Fit", input_cuts, ms.get_name_format_bin(dataset) +"/"+ infoDict["Target"], isJLab, False) # "../output/"
 inputROOT_solid = ms.getPlotsFile("Fit", dataset, "root", fit_type)
 inputfile_solid = TFile(inputPath_solid+inputROOT_solid,"READ")
 
 ## Output
-outputPath = ms.getPlotsFolder("ParametersRatio", plots_cuts, ms.getBinNameFormatted(dataset) +"/"+ infoDict["Target"], isJLab)
+outputPath = ms.getPlotsFolder("ParametersRatio", plots_cuts, ms.get_name_format_bin(dataset) +"/"+ infoDict["Target"], isJLab)
 outputROOT = ms.getPlotsFile("ParametersRatio", dataset, "root", fit_type)
 if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
     print("  [ParRatio] Parameters ratio file already exists! Not overwriting it.")

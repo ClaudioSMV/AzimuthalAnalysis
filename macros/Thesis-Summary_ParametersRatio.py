@@ -131,21 +131,21 @@ dataset = options.Dataset
 isJLab = options.JLabCluster
 fit = options.fit
 
-if ("LR" in mS.getCutStrFromStr(options.inputCuts) and (not "Left" in options.inputCuts) and (not "Right" in options.inputCuts)):
+if ("LR" in mS.get_cut_long2final(options.inputCuts) and (not "Left" in options.inputCuts) and (not "Right" in options.inputCuts)):
     print("Specify \"Left\" or \"Right\" in input when using \"LR\" method!")
     exit()
 
-if "Fold" in mS.getCutStrFromStr(options.inputCuts):
+if "Fold" in mS.get_cut_long2final(options.inputCuts):
     fit = "F"
-elif ("Left" in mS.getCutStrFromStr(options.inputCuts) or "Left" in options.inputCuts):
+elif ("Left" in mS.get_cut_long2final(options.inputCuts) or "Left" in options.inputCuts):
     fit = "L"
-elif ("Right" in mS.getCutStrFromStr(options.inputCuts) or "Right" in options.inputCuts):
+elif ("Right" in mS.get_cut_long2final(options.inputCuts) or "Right" in options.inputCuts):
     fit = "R"
 
 fit_type = "Fd" if "F" in fit else "LR"
 fit_num = 0 if (fit != "L") else 1
 mixD = options.mixD
-if "MixD" in mS.getCutStrFromStr(options.outputCuts):
+if "MixD" in mS.get_cut_long2final(options.outputCuts):
     mixD = True
 
 ## Cuts
@@ -163,9 +163,9 @@ plots_cuts+="_"+fit_type
 
 useZh = options.useZh
 usePt2 = options.usePt2
-if ("Z" in mS.getCutsAsList(mS.getCutStrFromStr(options.outputCuts))) or ("Z" in mS.getCutsAsList(mS.getCutStrFromStr(options.inputCuts))):
+if ("Z" in mS.get_cut_str2list(mS.get_cut_long2final(options.outputCuts))) or ("Z" in mS.get_cut_str2list(mS.get_cut_long2final(options.inputCuts))):
     useZh = True
-if ("P" in mS.getCutsAsList(mS.getCutStrFromStr(options.outputCuts))) or ("P" in mS.getCutsAsList(mS.getCutStrFromStr(options.inputCuts))):
+if ("P" in mS.get_cut_str2list(mS.get_cut_long2final(options.outputCuts))) or ("P" in mS.get_cut_str2list(mS.get_cut_long2final(options.inputCuts))):
     usePt2 = True
 
 if (useZh) and (usePt2):
@@ -192,7 +192,7 @@ except:
     print("")
 
 this_binning_type = int(dataset_elemts[0])
-dataset_title = mS.getNameFormatted("_"+dataset)
+dataset_title = mS.get_name_format("_"+dataset)
 this_bin_dict = mS.all_dicts[this_binning_type]
 
 nBinsQ = len(this_bin_dict['Q'])-1
@@ -374,11 +374,11 @@ for p,par in enumerate(["B", "C"]):
     this_canvas.cd(0)
     this_title_gif = mS.getSummaryPath("Par%s_Ratio%s"%(par,dataset_title), "gif", plots_cuts, isJLab, "Thesis/"+dataset_title[1:])
     if ("LR" in this_title_gif):
-        this_title_gif = mS.addBeforeRootExt(this_title_gif, "-%s"%(fit), "gif")
+        this_title_gif = mS.add_str_before_ext(this_title_gif, "-%s"%(fit), "gif")
 
     this_title_pdf = mS.getSummaryPath("Par%s_Ratio%s"%(par,dataset_title), "pdf", plots_cuts, isJLab, "Thesis/"+dataset_title[1:])
     if ("LR" in this_title_pdf):
-        this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "-%s"%(fit), "pdf")
+        this_title_pdf = mS.add_str_before_ext(this_title_pdf, "-%s"%(fit), "pdf")
 
     this_canvas.SaveAs(this_title_gif)
     this_canvas.SaveAs(this_title_pdf)

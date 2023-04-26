@@ -37,10 +37,10 @@ dataset = options.Dataset
 if options.JLabCluster: rootpath = "JLab_cluster"
 ext_error = "_FullErr" if options.errorFull else ""
 
-infoDict = myStyle.getDictNameFormat(dataset)
+infoDict = myStyle.get_name_dict(dataset)
 
 inputPath = myStyle.getOutputDir("Correction",infoDict["Target"],rootpath)
-nameFormatted = myStyle.getNameFormatted(dataset)
+nameFormatted = myStyle.get_name_format(dataset)
 inputfile = TFile(inputPath+nameFormatted+ext_error+".root","READ")
 
 outputPath = myStyle.getOutputDir("Fit",infoDict["Target"],rootpath)

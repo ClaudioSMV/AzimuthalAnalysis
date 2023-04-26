@@ -130,7 +130,7 @@ plots_cuts = options.inputCuts +"_"+ options.outputCuts
 # ### Set Fit method under use
 # fit = options.fit
 
-if ("LR" in ms.getListOfCuts(input_cuts) and ("Left" not in plots_cuts) and ("Right" not in plots_cuts)):
+if ("LR" in ms.get_cut_str2finallist(input_cuts) and ("Left" not in plots_cuts) and ("Right" not in plots_cuts)):
     print("  [SummaryRatio] Specify \"Left\" or \"Right\" in input when using \"LR\" method!")
     exit()
 
@@ -144,7 +144,7 @@ fit_num = 0 if (fit != "L") else 1
 
 ### Set mixing of D info in one
 mixD = False
-if "MixD" in ms.getListOfCuts(plots_cuts):
+if "MixD" in ms.get_cut_str2finallist(plots_cuts):
     mixD = True
 
 ## Cuts
@@ -153,9 +153,9 @@ if "MixD" in ms.getListOfCuts(plots_cuts):
 
 useZh = False
 usePt2 = False
-if ("Z" in ms.getListOfCuts(plots_cuts)):
+if ("Z" in ms.get_cut_str2finallist(plots_cuts)):
     useZh = True
-if ("P" in ms.getListOfCuts(plots_cuts)):
+if ("P" in ms.get_cut_str2finallist(plots_cuts)):
     usePt2 = True
 
 if (useZh) and (usePt2):
@@ -180,7 +180,7 @@ except:
     # print("")
 
 this_binning_type = int(dataset_elemts[0])
-dataset_title = ms.getNameFormatted("_"+dataset)
+dataset_title = ms.get_name_format("_"+dataset)
 this_bin_dict = ms.all_dicts[this_binning_type]
 
 key1 = 'N' if ("N" in this_bin_dict) else 'X'
@@ -208,7 +208,7 @@ list_infiles = []
 # Open files
 for targ in list_targets:
     this_dataset = "%s_%s"%(targ, dataset)
-    inputPath = ms.getPlotsFolder("ParametersRatio", input_cuts, ms.getBinNameFormatted(this_dataset) +"/"+ targ, isJLab, False)
+    inputPath = ms.getPlotsFolder("ParametersRatio", input_cuts, ms.get_name_format_bin(this_dataset) +"/"+ targ, isJLab, False)
     inputROOT = ms.getPlotsFile("ParametersRatio", this_dataset, "root", fit_type)
 
     inputfile = TFile(inputPath+inputROOT,"READ")
@@ -408,14 +408,14 @@ for r,typeR in enumerate(type_reco_short):
         this_bininfo = dataset_title[1:]
 
         this_title_png = ms.getSummaryPath("%s_%s"%(this_bininfo,typeR), "png", plots_cuts, isJLab, this_bininfo)
-        this_title_png = ms.addBeforeRootExt(this_title_png, "-Ratio%s"%(par), "png")
+        this_title_png = ms.add_str_before_ext(this_title_png, "-Ratio%s"%(par), "png")
         if ("LR" in this_title_png):
-            this_title_png = ms.addBeforeRootExt(this_title_png, "-%s"%(fit), "png")
+            this_title_png = ms.add_str_before_ext(this_title_png, "-%s"%(fit), "png")
 
         this_title_pdf = ms.getSummaryPath("%s_%s"%(this_bininfo,typeR), "pdf", plots_cuts, isJLab, this_bininfo)
-        this_title_pdf = ms.addBeforeRootExt(this_title_pdf, "-Ratio%s"%(par), "pdf")
+        this_title_pdf = ms.add_str_before_ext(this_title_pdf, "-Ratio%s"%(par), "pdf")
         if ("LR" in this_title_pdf):
-            this_title_pdf = ms.addBeforeRootExt(this_title_pdf, "-%s"%(fit), "pdf")
+            this_title_pdf = ms.add_str_before_ext(this_title_pdf, "-%s"%(fit), "pdf")
 
         this_canvas.SaveAs(this_title_png)
         this_canvas.SaveAs(this_title_pdf)

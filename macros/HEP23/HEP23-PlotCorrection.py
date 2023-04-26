@@ -34,8 +34,8 @@ rootpath = options.rootpath
 saveAll = options.saveAll
 isJLab = options.JLabCluster
 
-infoDict = mS.getDictNameFormat(dataset)
-nameFormatted = mS.getNameFormatted(dataset)
+infoDict = mS.get_name_dict(dataset)
+nameFormatted = mS.get_name_format(dataset)
 
 ## Cuts
 input_cuts = options.inputCuts
@@ -46,10 +46,10 @@ if options.errorFull:
 
 useZh = options.useZh
 usePt2 = options.usePt2
-# print(mS.getCutStrFromStr(options.outputCuts))
-if ("Z" in mS.getCutsAsList(mS.getCutStrFromStr(options.outputCuts))) or ("Z" in mS.getCutsAsList(mS.getCutStrFromStr(options.inputCuts))):
+# print(mS.get_cut_long2final(options.outputCuts))
+if ("Z" in mS.get_cut_str2list(mS.get_cut_long2final(options.outputCuts))) or ("Z" in mS.get_cut_str2list(mS.get_cut_long2final(options.inputCuts))):
     useZh = True
-if ("P" in mS.getCutsAsList(mS.getCutStrFromStr(options.outputCuts))) or ("P" in mS.getCutsAsList(mS.getCutStrFromStr(options.inputCuts))):
+if ("P" in mS.get_cut_str2list(mS.get_cut_long2final(options.outputCuts))) or ("P" in mS.get_cut_str2list(mS.get_cut_long2final(options.inputCuts))):
     usePt2 = True
 
 if (useZh) and (usePt2):

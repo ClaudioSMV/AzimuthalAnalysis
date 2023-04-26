@@ -133,15 +133,15 @@ dataset = options.Dataset
 isJLab = options.JLabCluster
 fit = options.fit
 
-if ("LR" in mS.getCutStrFromStr(options.inputCuts) and (not "Left" in options.inputCuts) and (not "Right" in options.inputCuts)):
+if ("LR" in mS.get_cut_long2final(options.inputCuts) and (not "Left" in options.inputCuts) and (not "Right" in options.inputCuts)):
     print("Specify \"Left\" or \"Right\" in input when using \"LR\" method!")
     exit()
 
-if "Fold" in mS.getCutStrFromStr(options.inputCuts):
+if "Fold" in mS.get_cut_long2final(options.inputCuts):
     fit = "F"
-elif ("Left" in mS.getCutStrFromStr(options.inputCuts) or "Left" in options.inputCuts):
+elif ("Left" in mS.get_cut_long2final(options.inputCuts) or "Left" in options.inputCuts):
     fit = "L"
-elif ("Right" in mS.getCutStrFromStr(options.inputCuts) or "Right" in options.inputCuts):
+elif ("Right" in mS.get_cut_long2final(options.inputCuts) or "Right" in options.inputCuts):
     fit = "R"
 
 fit_type = "Fd" if "F" in fit else "LR"
@@ -159,9 +159,9 @@ plots_cuts+="_"+fit_type
 
 useZh = options.useZh
 usePt2 = options.usePt2
-if "Z" in mS.getCutsAsList(mS.getCutStrFromStr(options.outputCuts)):
+if "Z" in mS.get_cut_str2list(mS.get_cut_long2final(options.outputCuts)):
     useZh = True
-if "P" in mS.getCutsAsList(mS.getCutStrFromStr(options.outputCuts)):
+if "P" in mS.get_cut_str2list(mS.get_cut_long2final(options.outputCuts)):
     usePt2 = True
 
 if (useZh) and (usePt2):
@@ -188,7 +188,7 @@ except:
     print("")
 
 this_binning_type = int(dataset_elemts[0])
-dataset_title = mS.getNameFormatted("_"+dataset)
+dataset_title = mS.get_name_format("_"+dataset)
 this_bin_dict = mS.all_dicts[this_binning_type]
 
 key1 = 'N' if ("N" in this_bin_dict) else 'X'
@@ -387,14 +387,14 @@ for p,par in enumerate(par_list):
                         legend.Draw()
 
     this_title_png = mS.getSummaryPath("Par%s%s"%(par,dataset_title), "png", plots_cuts, isJLab, dataset_title[1:])
-    this_title_png = mS.addBeforeRootExt(this_title_png, "_%s"%(whatsPlot), "png")
+    this_title_png = mS.add_str_before_ext(this_title_png, "_%s"%(whatsPlot), "png")
     if ("LR" in this_title_png):
-        this_title_png = mS.addBeforeRootExt(this_title_png, "-%s"%(fit), "png")
+        this_title_png = mS.add_str_before_ext(this_title_png, "-%s"%(fit), "png")
 
     this_title_pdf = mS.getSummaryPath("Par%s%s"%(par,dataset_title), "pdf", plots_cuts, isJLab, dataset_title[1:])
-    this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "_%s"%(whatsPlot), "pdf")
+    this_title_pdf = mS.add_str_before_ext(this_title_pdf, "_%s"%(whatsPlot), "pdf")
     if ("LR" in this_title_pdf):
-        this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "-%s"%(fit), "pdf")
+        this_title_pdf = mS.add_str_before_ext(this_title_pdf, "-%s"%(fit), "pdf")
 
     this_canvas.SaveAs(this_title_png)
     this_canvas.SaveAs(this_title_pdf)

@@ -35,7 +35,7 @@ rootpath = options.rootpath
 dataset = options.Dataset
 if options.JLabCluster: rootpath = "JLab_cluster"
 
-infoDict = myStyle.getDictNameFormat(dataset)
+infoDict = myStyle.get_name_dict(dataset)
 
 inputPath = myStyle.getInputFile("Acceptance",dataset,rootpath) # Acceptance/Acceptance_Fe_B0.root
 inputfile = TFile(inputPath,"READ")
@@ -56,7 +56,7 @@ prefixType = ["True", "Reco", "Mtch_mc", "Mtch_rec"]
 ## Store this in a 1D histogram and check what happens...
 ## Later I could get different "projections" by using GetBinContent(2,a), where a stores the bin numbers per axis
 
-nameFormatted = myStyle.getNameFormatted(dataset)
+nameFormatted = myStyle.get_name_format(dataset)
 outputfile = TFile(outputPath+"Count_"+infoDict["Target"]+".root","RECREATE")
 
 list_EvntsOverTotal = []

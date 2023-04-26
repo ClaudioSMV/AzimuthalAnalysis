@@ -33,8 +33,8 @@ isJLab = options.JLabCluster
 # saveAll = options.saveAll
 fracAcc = int(options.fracAcc)
 
-infoDict  = ms.getDictNameFormat(dataset)
-nameFormatted = ms.getNameFormatted(dataset)
+infoDict  = ms.get_name_dict(dataset)
+nameFormatted = ms.get_name_format(dataset)
 
 ## Cuts
 input_cuts = options.inputCuts
@@ -42,9 +42,9 @@ plots_cuts = options.inputCuts +"_"+ options.outputCuts
 
 useZh = False
 usePt2 = False
-if ("Z" in ms.getListOfCuts(plots_cuts)):
+if ("Z" in ms.get_cut_str2finallist(plots_cuts)):
     useZh = True
-if ("P" in ms.getListOfCuts(plots_cuts)):
+if ("P" in ms.get_cut_str2finallist(plots_cuts)):
     usePt2 = True
 
 if (useZh) and (usePt2):
@@ -64,7 +64,7 @@ inputName = ms.getOutputFile("ClosureTest", dataset) # "../output/"
 inputfile = TFile(inputPath+inputName,"READ")
 
 ## Output
-outputPath = ms.getPlotsFolder("ClosureTest%ip"%int(fracAcc), plots_cuts, ms.getBinNameFormatted(dataset) +"/"+ infoDict["Target"], isJLab)
+outputPath = ms.getPlotsFolder("ClosureTest%ip"%int(fracAcc), plots_cuts, ms.get_name_format_bin(dataset) +"/"+ infoDict["Target"], isJLab)
 outputROOT = ms.getPlotsFile("ClosureTest", dataset, "root")
 
 histCorr_Reconstru = inputfile.Get("Corr_Reconstru")

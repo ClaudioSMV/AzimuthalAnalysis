@@ -11,62 +11,6 @@ gStyle.SetOptFit(1011)
 ms.ForceStyle()
 
 
-def getPhiHist(th1_input, name, do_shift):
-    this_xmin = th1_input.GetXaxis().GetXmin() # -180.
-    this_xmax = th1_input.GetXaxis().GetXmax() #  180.
-    this_nbin = th1_input.GetNbinsX()
-
-    if (do_shift):
-        # if (this_nbin%2 == 0): # Even (0. is in a bin edge) (default)
-        this_xmin =   0.
-        this_xmax = 360.
-        central_bin = int(this_nbin/2)+1 # Even: Right to the center; Odd: Central bin
-
-        if (this_nbin%2 == 1): # Odd (0. is in the middle of a bin)
-            bin_width = th1_input.GetBinWidth(central_bin)
-
-            # Slightly shift edges so that bins are correct
-            this_xmin -= bin_width/2.
-            this_xmax -= bin_width/2.
-
-    h_tmp = TH1D(name,";%s;Counts"%(ms.axis_label('I',"LatexUnit")), this_nbin, this_xmin, this_xmax)
-
-    for i in range(1,this_nbin+1):
-
-        this_value = th1_input.GetBinContent(i)
-        this_error = th1_input.GetBinError(i)
-
-        # if (this_value == 0):
-        #     print("    %s : Value: %i"%(name,this_value))
-        #     this_value = 0.0
-        #     this_error = 0.0
-
-        bin_L_edge = th1_input.GetBinLowEdge(i)
-        bin_center = th1_input.GetBinCenter(i)
-
-        the_bin = i
-
-        if (do_shift):
-            if (this_nbin%2 == 0): # Even   6 -> First right bin is 4
-                if (bin_L_edge < 0.0):
-                    the_bin = i + central_bin -1 # 4,5,6
-                else:
-                    the_bin = i - central_bin + 1 # 1,2,3
-
-            elif (this_nbin%2 == 1): # Odd   5 -> center is 3
-                if (bin_center < 0.0):
-                    the_bin = i + central_bin # 4,5
-                else:
-                    the_bin = i - central_bin + 1 # 1,2,3
-
-        # Skip bins that are empty (if not, they will count as an entry with zero value)
-        if (this_value != 0):
-            h_tmp.SetBinContent(the_bin, this_value)
-            h_tmp.SetBinError(the_bin, this_error)
-
-    return h_tmp
-
-
 # Construct the argument parser
 parser = optparse.OptionParser("usage: %prog [options]\n")
 # parser.add_option('-x','--xlength', dest='xlength', default = 4.0, help="X axis range [-x, x]")
@@ -91,20 +35,20 @@ saveAll = options.saveAll
 input_cuts = options.inputCuts
 plots_cuts = options.inputCuts +"_"+ options.outputCuts
 
-infoDict = ms.getDictNameFormat(dataset)
-nameFormatted = ms.getNameFormatted(dataset)
+infoDict = ms.get_name_dict(dataset)
+nameFormatted = ms.get_name_format(dataset)
 
 ## Cuts
 shift = False
-if ("Shift" in ms.getListOfCuts(plots_cuts)):
+if ("Shift" in ms.get_cut_str2finallist(plots_cuts)):
     shift = True
     print("  [Correction] Plot PhiPQ shifted, ranging in ~(0., 360.)")
 
 useZh = False
 usePt2 = False
-if ("Z" in ms.getListOfCuts(plots_cuts)):
+if ("Z" in ms.get_cut_str2finallist(plots_cuts)):
     useZh = True
-if ("P" in ms.getListOfCuts(plots_cuts)):
+if ("P" in ms.get_cut_str2finallist(plots_cuts)):
     usePt2 = True
 
 if (useZh) and (usePt2):
@@ -123,7 +67,7 @@ inputPath = ms.getOutputFileWithPath("Correction", dataset, input_cuts, isJLab, 
 inputfile = TFile(inputPath,"READ")
 
 ## Output
-outputPath = ms.getPlotsFolder("Correction", plots_cuts, ms.getBinNameFormatted(dataset) +"/"+ infoDict["Target"], isJLab)
+outputPath = ms.getPlotsFolder("Correction", plots_cuts, ms.get_name_format_bin(dataset) +"/"+ infoDict["Target"], isJLab)
 outputROOT = ms.getPlotsFile("Corrected", dataset, "root")
 if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
     print("  [Correction] Correction already exists! Not overwriting it.")
