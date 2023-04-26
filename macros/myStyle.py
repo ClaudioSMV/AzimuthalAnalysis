@@ -307,13 +307,16 @@ def create_phi_hist(th1_input, name, do_shift):
 
     return h_tmp
 
-def getListBinCode(bin_vars, this_binList):
-    # Say input is "QNZ" -> I want bins of QNZ, P integrated
-
-    this_outlist = []
+def get_bincode_list(bin_vars, this_binList):
+# Create a list with the short code str to identify each kinematic bin; e.g. a bin of Q2,Nu,Zh
+# will integrate Pt2, so code will be QaNbZc with a,b,c some integer corresponding to the bin
+#   bin_vars: str with initial of the vars used; this_binList: list with bins limits
+    output_list = []
+    # Change second electron variable if necessary
     template = ["Q","N","Z","P"] if ("X" not in bin_vars) else ["Q","X","Z","P"]
     nbins = [1,1,1,1]
 
+    # Get total number of bins per variable and remove integrated ones
     for v,var in enumerate(template):
         if var not in bin_vars:
             template[v] = ""
@@ -322,6 +325,7 @@ def getListBinCode(bin_vars, this_binList):
             nbins[v] = this_bin
 
     totalsize = nbins[0]*nbins[1]*nbins[2]*nbins[3]
+    # Fill list beginning with all bins zero and up to the total nbins per variable
     for i in range(totalsize):
         total_tmp = totalsize
         i_tmp = i
@@ -333,30 +337,34 @@ def getListBinCode(bin_vars, this_binList):
             index = i_tmp/(total_tmp)
             i_tmp -= index*total_tmp
             txt_tmp += "%s%i"%(var, index)
-        this_outlist.append(txt_tmp)
+        output_list.append(txt_tmp)
 
     # Output would be ["Q0N0Z0", "Q0N0Z1", ..., "Q3N3Z9"]
-    return this_outlist
+    return output_list
 
-def getListTSparseProj1D(thnSparse, list_binstr, shift):
+def get_sparseproj1d_list(thnSparse, list_binstr, shift):
+# Create list of phi 1d hist from thnSparse for each bin defined in
+# list_binstr (list of bincodes)
     this_outlist = []
     template = ["Q","N","Z","P"] if ("X" not in list_binstr[0]) else ["Q","X","Z","P"]
 
-    ## Runs over letters only
+    # Remove integrated variables (not in bincode)
     for l,letter in enumerate(template):
         if letter not in list_binstr[0]:
             template[l] = ""
 
-    ## Run over all n-dimensional bins
+    # Run over all n-dimensional bins
     for bincode in list_binstr:
 
         for l,letter in enumerate(template):
             if not letter:
                 continue
 
-            ## Get letter location by its position in the string with index, then add 1 to get number location and save value as int
+            # Get letter location by its position in the string with index, then add 1 to get
+            # the bin number location
             pos = int(bincode[bincode.index(letter)+1])
             thnSparse.GetAxis(l).SetRange(pos+1, pos+1)
+            # Note that if range is not changed, projection will integrate over that axis!
 
         proj_tmp = thnSparse.Projection(4)
         proj_tmp.SetName("proj_tmp")

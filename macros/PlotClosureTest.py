@@ -116,11 +116,11 @@ else:
     exit()
 
 ## Get projections
-names_list = ms.getListBinCode(binstr, this_binDict)
+names_list = ms.get_bincode_list(binstr, this_binDict)
 Proj1DTHnSparse_list = []
 
 for th in inputTHnSparse_list:
-    list_proj = ms.getListTSparseProj1D(th, names_list, False)
+    list_proj = ms.get_sparseproj1d_list(th, names_list, False)
     Proj1DTHnSparse_list.append(list_proj)
 
 ## Create TH1 summary ClosureTest

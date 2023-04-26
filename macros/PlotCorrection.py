@@ -122,11 +122,11 @@ else:
     exit()
 
 ## Get projections
-names_list = ms.getListBinCode(binstr, this_binDict)
+names_list = ms.get_bincode_list(binstr, this_binDict)
 Proj1DTHnSparse_list = []
 
 for th in inputTHnSparse_list:
-    list_proj = ms.getListTSparseProj1D(th, names_list, shift)
+    list_proj = ms.get_sparseproj1d_list(th, names_list, shift)
     Proj1DTHnSparse_list.append(list_proj)
 
 canvas = TCanvas("cv","cv",1000,800)
