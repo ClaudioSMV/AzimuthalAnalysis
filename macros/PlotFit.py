@@ -9,10 +9,10 @@ gROOT.SetBatch( True )
 gStyle.SetOptFit(1)
 
 ## Defining Style
-ms.ForceStyle()
+ms.force_style()
 
-gStyle.SetStatX(1 - ms.GetMargin() - 0.005)
-gStyle.SetStatY(2*ms.GetMargin() + 0.205)
+gStyle.SetStatX(1 - ms.get_margin() - 0.005)
+gStyle.SetStatY(2*ms.get_margin() + 0.205)
 
 
 ## Define functions
@@ -179,7 +179,7 @@ def Get_Chi2ndf(fit_funct, x,y, position):
     # elif (this_fittype == "Ff"):
 
     str_Fit.SetTextAlign(text_orientation)
-    str_Fit.SetTextSize(ms.GetSize()-6)
+    str_Fit.SetTextSize(ms.get_size()-6)
 
     return str_Fit
 

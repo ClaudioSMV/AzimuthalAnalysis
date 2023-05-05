@@ -9,7 +9,7 @@ gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
 
 ## Defining Style
-ms.ForceStyle(True)
+ms.force_style(True)
 
 # Construct the argument parser
 parser = optparse.OptionParser("usage: %prog [options]\n")

@@ -8,7 +8,7 @@ gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
 
 ## Defining Style
-mS.ForceStyle()
+mS.force_style()
 
 # Construct the argument parser
 parser = optparse.OptionParser("usage: %prog [options]\n")
@@ -178,8 +178,8 @@ for i,info in enumerate(names_list):
         htemp.GetXaxis().SetTitle("#phi_{PQ} (deg)")
         htemp.GetYaxis().SetTitle("Counts")
 
-        htemp.SetLabelSize(mS.GetSize()-10,"xy")
-        htemp.SetTitleSize(mS.GetSize()-8,"xy")
+        htemp.SetLabelSize(mS.get_size()-10,"xy")
+        htemp.SetTitleSize(mS.get_size()-8,"xy")
         htemp.SetTitleOffset(1.05,"x")
         htemp.SetTitleOffset(1.4,"y")
 
@@ -204,12 +204,12 @@ for i,info in enumerate(names_list):
         # mS.DrawTargetInfo(nameFormatted, "Data")
         # mS.DrawBinInfo(info, infoDict["BinningType"])
         text = ROOT.TLatex()
-        text.SetTextSize(mS.GetSize()-4)
+        text.SetTextSize(mS.get_size()-4)
         text.SetTextAlign(23)
         title = mS.GetBinInfo(info, infoDict["BinningType"])
         # text.DrawLatexNDC(1-marg-0.005,1-marg-0.01,"#bf{"+title+"}")
-        text.DrawLatexNDC(mS.GetPadCenter(),1-mS.GetMargin()-0.02,title)
-        # mS.DrawBinInfo(info, infoDict["BinningType"], 1-mS.GetMargin()-0.005, 1-mS.GetMargin()+0.01)
+        text.DrawLatexNDC(mS.get_padcenter(),1-mS.get_margin()-0.02,title)
+        # mS.DrawBinInfo(info, infoDict["BinningType"], 1-mS.get_margin()-0.005, 1-mS.get_margin()+0.01)
         mS.DrawPreliminaryInfo("%s distribution"%(prefixType[p]))
 
         histName = "_".join(this_proj.GetName().split("_")[0:-1]) # Corr_A_B_Q1N2 -> Corr_A_B

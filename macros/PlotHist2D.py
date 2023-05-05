@@ -9,9 +9,9 @@ gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
 
 ## Defining Style
-ms.ForceStyle()
-gStyle.SetPadRightMargin(2*ms.GetMargin())
-gStyle.SetLabelSize(ms.GetSize()-10,"z")
+ms.force_style()
+gStyle.SetPadRightMargin(2*ms.get_margin())
+gStyle.SetLabelSize(ms.get_size()-10,"z")
 gROOT.ForceStyle()
 
 # Construct the argument parser
@@ -110,10 +110,10 @@ for h in list_of_hists:
             out_DatOrSim = "Data" if isData else "HSim"
 
             text_UpRight = ROOT.TLatex()
-            text_UpRight.SetTextSize(ms.GetSize()-5)
+            text_UpRight.SetTextSize(ms.get_size()-5)
             text_UpRight.SetTextAlign(31)
             to_write = "%s vs %s, %s"%(ms.axis_label(var1, "Name"), ms.axis_label(var2, "Name"), dataOrSim)
-            text_UpRight.DrawLatexNDC(1-2*ms.GetMargin()-0.005,1-ms.GetMargin()+0.01, to_write)
+            text_UpRight.DrawLatexNDC(1-2*ms.get_margin()-0.005,1-ms.get_margin()+0.01, to_write)
 
             canvas.SaveAs(outputPath+nameFormatted+"_"+out_DatOrSim+"-"+out_pref+"_"+var1+var2+".png")
             canvas.Clear()

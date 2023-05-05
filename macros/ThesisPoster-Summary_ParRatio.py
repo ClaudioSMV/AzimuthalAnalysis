@@ -10,12 +10,12 @@ gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
 
 ## Defining Style
-ms.ForceStyle()
-# font=ms.GetFont()
-tsize=ms.GetSize()
+ms.force_style()
+# font=ms.get_font()
+tsize=ms.get_size()
 
-# gStyle.SetStatX(1 - ms.GetMargin() - 0.005)
-# gStyle.SetStatY(2*ms.GetMargin() + 0.205)
+# gStyle.SetStatX(1 - ms.get_margin() - 0.005)
+# gStyle.SetStatY(2*ms.get_margin() + 0.205)
 
 def CanvasPartition(canvas, nx, ny, lMarg, rMarg, bMarg, tMarg, extra_name=""):
     ## Labelling xy:
@@ -192,11 +192,11 @@ nBinsP = len(this_bin_dict['P'])-1
 
 gStyle.SetOptStat(0)
 canvas_B = TCanvas("cvB","cvB",1000,800)
-CanvasPartition(canvas_B, nBinsQ, nBinsN,2*ms.GetMargin(),ms.GetMargin(),2*ms.GetMargin(),ms.GetMargin(),"B")
+CanvasPartition(canvas_B, nBinsQ, nBinsN,2*ms.get_margin(),ms.get_margin(),2*ms.get_margin(),ms.get_margin(),"B")
 canvas_B.SetGrid(0,1)
 
 canvas_C = TCanvas("cvC","cvC",1000,800)
-CanvasPartition(canvas_C, nBinsQ, nBinsN,2*ms.GetMargin(),ms.GetMargin(),2*ms.GetMargin(),ms.GetMargin(),"C")
+CanvasPartition(canvas_C, nBinsQ, nBinsN,2*ms.get_margin(),ms.get_margin(),2*ms.get_margin(),ms.get_margin(),"C")
 canvas_C.SetGrid(0,1)
 
 list_canvas = [canvas_B, canvas_C]
@@ -310,8 +310,8 @@ for r,typeR in enumerate(type_reco_short):
 
         legend = TLegend(l_x1, l_y1, l_x2, l_y2)
         legend.SetBorderSize(0)
-        legend.SetTextFont(ms.GetFont())
-        legend.SetTextSize(ms.GetSize()-14)
+        legend.SetTextFont(ms.get_font())
+        legend.SetTextSize(ms.get_size()-14)
         legend.SetFillStyle(0)
         legend.SetTextAlign(22)
         legend.SetNColumns(3)
@@ -427,7 +427,7 @@ axis_hist.SetTitleOffset(1.0,"x")
 axis_hist.SetTitleOffset(1.4,"y")
 
 canvas_new = TCanvas("cvNew","cvNew",1000,800)
-# CanvasPartition(canvas_new, 1, 1,2*ms.GetMargin(),ms.GetMargin(),2*ms.GetMargin(),ms.GetMargin(),"New")
+# CanvasPartition(canvas_new, 1, 1,2*ms.get_margin(),ms.get_margin(),2*ms.get_margin(),ms.get_margin(),"New")
 canvas_new.SetGrid(0,1)
 canvas_new.cd(0)
 
@@ -435,8 +435,8 @@ l_x1, l_x2 = XtoPad(0.3), XtoPad(0.7)
 l_y1, l_y2 = YtoPad(0.8), YtoPad(1.0)
 legend = TLegend(l_x1, l_y1, l_x2, l_y2)
 legend.SetBorderSize(0)
-legend.SetTextFont(ms.GetFont())
-legend.SetTextSize(ms.GetSize()-6)
+legend.SetTextFont(ms.get_font())
+legend.SetTextSize(ms.get_size()-6)
 legend.SetFillStyle(0)
 legend.SetTextAlign(22)
 legend.SetNColumns(3)

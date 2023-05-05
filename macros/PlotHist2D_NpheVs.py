@@ -9,10 +9,10 @@ gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
 
 ## Defining Style
-ms.ForceStyle(True)
-# gStyle.SetPadRightMargin(2*ms.GetMargin())
-# gStyle.SetPadTopMargin(1.1*ms.GetMargin())
-# gStyle.SetLabelSize(ms.GetSize()-10,"z")
+ms.force_style(True)
+# gStyle.SetPadRightMargin(2*ms.get_margin())
+# gStyle.SetPadTopMargin(1.1*ms.get_margin())
+# gStyle.SetLabelSize(ms.get_size()-10,"z")
 # gStyle.SetTitleYOffset(1.3)
 # gROOT.ForceStyle()
 

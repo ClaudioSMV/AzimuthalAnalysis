@@ -608,8 +608,9 @@ def get_summary_fullpath(name_meth, cuts = "", dataset = "", extension = "root",
 ##  Define style and pad parameters  ##
 #######################################
 
-def ForceStyle(useCOLZ = False):
-    ## Defining Style
+def force_style(useCOLZ = False):
+# Define Style for plots with uniform margins and text format
+# useCOLZ option gives a special margin set to see the color bar
     ROOT.gStyle.SetPadTopMargin(marg)    #0.05
     ROOT.gStyle.SetPadRightMargin(marg)  #0.05
     ROOT.gStyle.SetPadBottomMargin(2*marg)  #0.16
@@ -658,16 +659,20 @@ def ForceStyle(useCOLZ = False):
         ROOT.gStyle.SetTitleYOffset(1.3)
         ROOT.gROOT.ForceStyle()
 
-def GetMargin():
+def get_margin():
+# Return margin value
     return marg
 
-def GetFont():
+def get_font():
+# Return font value
     return font
 
-def GetSize():
+def get_size():
+# Return size of text value
     return tsize
 
-def GetPadCenter():
+def get_padcenter():
+# Return pad center value (Needs to be updated when useCOLZ)
     return (1 + marg)/2
 
 

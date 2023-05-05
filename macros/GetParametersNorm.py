@@ -8,10 +8,10 @@ gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
 
 ## Defining Style
-ms.ForceStyle()
+ms.force_style()
 
-# gStyle.SetStatX(1 - ms.GetMargin() - 0.005)
-# gStyle.SetStatY(2*ms.GetMargin() + 0.205)
+# gStyle.SetStatX(1 - ms.get_margin() - 0.005)
+# gStyle.SetStatY(2*ms.get_margin() + 0.205)
 
 def PropErrorDivision(v1, e1, v2, e2, cov=0):
     this_error = TMath.Abs(v1/v2)*TMath.Sqrt((e1/v1)*(e1/v1) + (e2/v2)*(e2/v2) - 2*cov/(v1*v2))
@@ -201,11 +201,11 @@ for e,elem in enumerate(list_func_names):
         name_ext = ms.get_fit_shortmethod(fit_type, elem)
 
         ## Ratio b/a
-        # legend_b = TLegend(1-ms.GetMargin()-0.35,1-ms.GetMargin()-0.12, 1-ms.GetMargin()-0.05,1-ms.GetMargin()-0.02)
+        # legend_b = TLegend(1-ms.get_margin()-0.35,1-ms.get_margin()-0.12, 1-ms.get_margin()-0.05,1-ms.get_margin()-0.02)
         # legend_b.SetBorderSize(0)
         # # legend_b.SetFillColor(ROOT.kWhite)
-        # legend_b.SetTextFont(ms.GetFont())
-        # legend_b.SetTextSize(ms.GetSize()-8)
+        # legend_b.SetTextFont(ms.get_font())
+        # legend_b.SetTextSize(ms.get_size()-8)
         # legend_b.SetFillStyle(0)
         ## Positive ratios
         hist_b = th1_b_norm_list[t][e]
@@ -228,11 +228,11 @@ for e,elem in enumerate(list_func_names):
         canvas.Clear()
 
         ## Ratio c/a
-        # legend_c = TLegend(1-ms.GetMargin()-0.35,1-ms.GetMargin()-0.12, 1-ms.GetMargin()-0.05,1-ms.GetMargin()-0.02)
+        # legend_c = TLegend(1-ms.get_margin()-0.35,1-ms.get_margin()-0.12, 1-ms.get_margin()-0.05,1-ms.get_margin()-0.02)
         # legend_c.SetBorderSize(0)
         # # legend_c.SetFillColor(ROOT.kWhite)
-        # legend_c.SetTextFont(ms.GetFont())
-        # legend_c.SetTextSize(ms.GetSize()-8)
+        # legend_c.SetTextFont(ms.get_font())
+        # legend_c.SetTextSize(ms.get_size()-8)
         # legend_c.SetFillStyle(0)
         ## Positive ratios
         hist_c = th1_c_norm_list[t][e]

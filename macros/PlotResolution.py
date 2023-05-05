@@ -9,9 +9,9 @@ gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
 
 ## Defining Style
-ms.ForceStyle()
-# gStyle.SetPadRightMargin(2*ms.GetMargin())
-# gStyle.SetLabelSize(ms.GetSize()-10,"z")
+ms.force_style()
+# gStyle.SetPadRightMargin(2*ms.get_margin())
+# gStyle.SetLabelSize(ms.get_size()-10,"z")
 # gROOT.ForceStyle()
 
 # Construct the argument parser

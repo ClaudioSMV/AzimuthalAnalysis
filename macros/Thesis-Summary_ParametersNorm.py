@@ -10,12 +10,12 @@ gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
 
 ## Defining Style
-mS.ForceStyle()
-# font=mS.GetFont()
-tsize=mS.GetSize()
+mS.force_style()
+# font=mS.get_font()
+tsize=mS.get_size()
 
-# gStyle.SetStatX(1 - mS.GetMargin() - 0.005)
-# gStyle.SetStatY(2*mS.GetMargin() + 0.205)
+# gStyle.SetStatX(1 - mS.get_margin() - 0.005)
+# gStyle.SetStatY(2*mS.get_margin() + 0.205)
 
 def CanvasPartition(canvas, nx, ny, lMarg, rMarg, bMarg, tMarg, extra_name=""):
     ## Labelling xy:
@@ -199,11 +199,11 @@ nBinsP = len(this_bin_dict['P'])-1
 
 gStyle.SetOptStat(0)
 canvas_B = TCanvas("cvB","cvB",1000,800)
-CanvasPartition(canvas_B, nBinsQ, nBinsN,2*mS.GetMargin(),mS.GetMargin(),2*mS.GetMargin(),mS.GetMargin(),"B")
+CanvasPartition(canvas_B, nBinsQ, nBinsN,2*mS.get_margin(),mS.get_margin(),2*mS.get_margin(),mS.get_margin(),"B")
 canvas_B.SetGrid(0,1)
 
 canvas_C = TCanvas("cvC","cvC",1000,800)
-CanvasPartition(canvas_C, nBinsQ, nBinsN,2*mS.GetMargin(),mS.GetMargin(),2*mS.GetMargin(),mS.GetMargin(),"C")
+CanvasPartition(canvas_C, nBinsQ, nBinsN,2*mS.get_margin(),mS.get_margin(),2*mS.get_margin(),mS.get_margin(),"C")
 canvas_C.SetGrid(0,1)
 
 list_canvas = [canvas_B, canvas_C]
@@ -307,8 +307,8 @@ for p,par in enumerate(["B", "C"]):
         l_y2 = 0.3
     legend = TLegend(l_x1, l_y1, l_x2, l_y2)
     legend.SetBorderSize(0)
-    legend.SetTextFont(mS.GetFont())
-    legend.SetTextSize(mS.GetSize()-14)
+    legend.SetTextFont(mS.get_font())
+    legend.SetTextSize(mS.get_size()-14)
     legend.SetFillStyle(0)
     legend.SetNColumns(3)
 

@@ -8,10 +8,10 @@ gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
 
 ## Defining Style
-myStyle.ForceStyle()
+myStyle.force_style()
 
-gStyle.SetStatX(1 - myStyle.GetMargin() - 0.005)
-gStyle.SetStatY(2*myStyle.GetMargin() + 0.205)
+gStyle.SetStatX(1 - myStyle.get_margin() - 0.005)
+gStyle.SetStatY(2*myStyle.get_margin() + 0.205)
 
 # Construct the argument parser
 parser = optparse.OptionParser("usage: %prog [options]\n")
