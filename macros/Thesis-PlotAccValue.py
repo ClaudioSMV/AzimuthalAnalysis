@@ -51,12 +51,12 @@ this_bin_dict = ms.all_dicts[this_binning]
 input_cuts = options.inputCuts
 
 ## Input
-inputPath = ms.getOutputFolder("QualityCheck", input_cuts, isJLab, False) # "../output/"
+inputPath = ms.get_output_folder("QualityCheck", input_cuts, isJLab, False) # "../output/"
 inputROOT = this_file = "Quality_"+ms.get_name_format(dataset, True)+".root"
 inputfile = TFile(inputPath+inputROOT,"READ")
 
 ## Output
-outputPath = ms.getPlotsFolder("ValuesAcc", input_cuts, "", isJLab)
+outputPath = ms.get_plots_folder("AccValue", input_cuts, dataset, isJLab)
 
 
 list_colors = ms.GetColors(True)
@@ -106,10 +106,10 @@ ms.DrawPreliminaryInfo("Acceptance values")
 # ms.DrawTargetInfo(nameFormatted, "Simulation")
 ms.DrawTopRight(nameFormatted, "Simulation")
 
-name_png = ms.getPlotsFile("SummaryValueAcc",dataset,"png")
+name_png = ms.get_plots_file("SummaryValueAcc",dataset,"png")
 canvas.SaveAs(outputPath+name_png)
 
-name_pdf = ms.getPlotsFile("SummaryValueAcc",dataset,"pdf")
+name_pdf = ms.get_plots_file("SummaryValueAcc",dataset,"pdf")
 canvas.SaveAs(outputPath+name_pdf)
 
 canvas.Clear()
@@ -154,10 +154,10 @@ ms.DrawPreliminaryInfo("Null acceptance factors")
 # ms.DrawTargetInfo(nameFormatted, "Simulation")
 ms.DrawTopRight(nameFormatted, "Simulation")
 
-name_png = ms.getPlotsFile("SummaryEmptyAcc",dataset,"png")
+name_png = ms.get_plots_file("SummaryEmptyAcc",dataset,"png")
 canvas.SaveAs(outputPath+name_png)
 
-name_pdf = ms.getPlotsFile("SummaryEmptyAcc",dataset,"pdf")
+name_pdf = ms.get_plots_file("SummaryEmptyAcc",dataset,"pdf")
 canvas.SaveAs(outputPath+name_pdf)
 
 

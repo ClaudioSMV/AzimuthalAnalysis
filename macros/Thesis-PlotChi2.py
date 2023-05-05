@@ -48,15 +48,15 @@ this_bin_dict = ms.all_dicts[this_binning]
 
 ## Cuts
 input_cuts = options.inputCuts
-fit_type = ms.GetFitMethod(input_cuts)
+fit_type = ms.get_fit_method(input_cuts)
 
 ## Input
-inputPath = ms.getPlotsFolder("Fit", input_cuts, ms.get_name_format_bin(dataset) +"/"+ infoDict["Target"], isJLab, False) # "../output/"
-inputROOT = ms.getPlotsFile("Fit", dataset, "root", fit_type)
+inputPath = ms.get_plots_folder("Fit", input_cuts, dataset, isJLab, False) # "../output/"
+inputROOT = ms.get_plots_file("Fit", dataset, "root", fit_type)
 inputfile = TFile(inputPath+inputROOT,"READ")
 
 ## Output
-outputPath = ms.getPlotsFolder("Fit_Chi2", input_cuts, "", isJLab)
+outputPath = ms.get_plots_folder("Fit_Chi2", input_cuts, dataset, isJLab)
 
 ### Define fit name
 this_fit_name = "crossSectionR"
@@ -113,11 +113,11 @@ ms.DrawPreliminaryInfo("#chi^{2}/ndf from fit")
 
 ms.DrawTargetInfo(nameFormatted, "Data")
 
-ext_fit = ms.GetFitExtension(fit_type, this_fit_name)
-name_png = ms.getPlotsFile("Chi2ndf",dataset,"png",ext_fit)
+ext_fit = ms.get_fit_shortmethod(fit_type, this_fit_name)
+name_png = ms.get_plots_file("Chi2ndf",dataset,"png",ext_fit)
 canvas.SaveAs(outputPath+name_png)
 
-# name_pdf = ms.getPlotsFile("PvsNphe_%s"%(this_targ),"","pdf",out_DatOrSim)
+# name_pdf = ms.get_plots_file("PvsNphe_%s"%(this_targ),"","pdf",out_DatOrSim)
 # canvas.SaveAs(outputPath+name_pdf)
 
 canvas.Clear()

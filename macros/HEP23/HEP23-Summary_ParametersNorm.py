@@ -226,8 +226,8 @@ list_infiles = []
 # Open files
 for targ in list_targets:
     this_dataset = "%s_%s"%(targ, dataset)
-    inputPath = mS.getPlotsFolder("FitParametersNorm", input_cuts, targ, isJLab, False) # "../output/"
-    inputROOT = mS.getPlotsFile("Parameters", this_dataset, "root", fit_type)
+    inputPath = mS.get_plots_folder("FitParametersNorm", input_cuts, this_dataset, isJLab, False) # "../output/"
+    inputROOT = mS.get_plots_file("Parameters", this_dataset, "root", fit_type)
 
     inputfile = TFile(inputPath+inputROOT,"READ")
     list_infiles.append(inputfile)
@@ -388,12 +388,12 @@ for p,par in enumerate(["B", "C"]):
                     if (legend.GetListOfPrimitives().GetEntries()==len(list_targets)):
                         legend.Draw()
 
-    this_title_gif = mS.getSummaryPath("Par%s_Norm%s"%(par,dataset_title), "gif", plots_cuts, isJLab, "Poster_HEP2023/"+dataset_title[1:])
+    this_title_gif = mS.get_summary_fullpath("Par%s_Norm%s"%(par,dataset_title), "gif", plots_cuts, isJLab, "Poster_HEP2023/"+dataset_title[1:])
     this_title_gif = mS.add_str_before_ext(this_title_gif, "_%s"%(whatsPlot), "gif")
     if ("LR" in this_title_gif):
         this_title_gif = mS.add_str_before_ext(this_title_gif, "-%s"%(fit), "gif")
 
-    # this_title_pdf = mS.getSummaryPath("Par%s_Norm%s"%(par,dataset_title), "pdf", plots_cuts, isJLab, "Poster_HEP2023/"+dataset_title[1:])
+    # this_title_pdf = mS.get_summary_fullpath("Par%s_Norm%s"%(par,dataset_title), "pdf", plots_cuts, isJLab, "Poster_HEP2023/"+dataset_title[1:])
     # this_title_pdf = mS.add_str_before_ext(this_title_pdf, "_%s"%(whatsPlot), "pdf")
     # if ("LR" in this_title_pdf):
     #     this_title_pdf = mS.add_str_before_ext(this_title_pdf, "-%s"%(fit), "pdf")
