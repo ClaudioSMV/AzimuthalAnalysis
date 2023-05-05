@@ -44,13 +44,13 @@ this_bin_dict = ms.all_dicts[this_binning]
 input_cuts = options.inputCuts
 
 ## Input
-inputPath = ms.getOutputFolder("Hist2D", input_cuts, isJLab, False) # "../output/"
+inputPath = ms.get_output_folder("Hist2D", input_cuts, isJLab, False) # "../output/"
 inputPath += "PQVsDeltaSector_"+nameFormatted+"_"
 inputPath += "data.root" if isData else "hsim.root"
 inputfile = TFile(inputPath,"READ")
 
 ## Output
-outputPath = ms.getPlotsFolder("Hist2D/DeltaSector", input_cuts, ms.get_name_format_bin(dataset) +"/"+ infoDict["Target"], isJLab)
+outputPath = ms.get_plots_folder("Hist2D/DeltaSector", input_cuts, dataset, isJLab)
 
 correct_prefix = {"reco": "Reconstructed", "recoAcc": "Acc corrected", "gene": "Generated"}
 # short_prefix = {"reco": "Rec", "mtch": "Rec", "gene": "Gen"}
@@ -138,10 +138,10 @@ for h,hist in enumerate(list_2dHist):
 
     ms.DrawTargetInfo(infoDict["Target"], dataOrSim)
 
-    name_png = ms.getPlotsFile("DSect_%s"%(this_method),dataset,"png",out_DatOrSim)
+    name_png = ms.get_plots_file("DSect_%s"%(this_method),dataset,"png",out_DatOrSim)
     canvas.SaveAs(outputPath+name_png)
 
-    # name_pdf = ms.getPlotsFile("DSect_%s"%(this_method),dataset,"pdf",out_DatOrSim)
+    # name_pdf = ms.get_plots_file("DSect_%s"%(this_method),dataset,"pdf",out_DatOrSim)
     # canvas.SaveAs(outputPath+name_pdf)
 
     canvas.Clear()

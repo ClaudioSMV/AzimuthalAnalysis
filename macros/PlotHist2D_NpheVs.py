@@ -41,13 +41,13 @@ this_targ = dataset
 input_cuts = options.inputCuts
 
 ## Input
-inputPath = ms.getOutputFolder("Hist2D", input_cuts, isJLab, False) # "../output/"
+inputPath = ms.get_output_folder("Hist2D", input_cuts, isJLab, False) # "../output/"
 inputPath += "NpheVs_"+this_targ+"_"
 inputPath += "data.root" if isData else "hsim.root"
 inputfile = TFile(inputPath,"READ")
 
 ## Output
-outputPath = ms.getPlotsFolder("Hist2D/NpheVs", input_cuts, "", isJLab)
+outputPath = ms.get_plots_folder("Hist2D/NpheVs", input_cuts, dataset, isJLab)
 
 canvas = TCanvas("cv","cv",1000,800)
 gStyle.SetOptStat(0)
@@ -72,10 +72,10 @@ for i_h,h in enumerate(inputfile.GetListOfKeys()):
 
         ms.DrawTargetInfo(this_targ, dataOrSim)
 
-        name_png = ms.getPlotsFile("%sVS%s_%s"%(nameYvar,nameXvar, this_targ),"","png",out_DatOrSim)
+        name_png = ms.get_plots_file("%sVS%s_%s"%(nameYvar,nameXvar, this_targ),"","png",out_DatOrSim)
         canvas.SaveAs(outputPath+name_png)
 
-        # name_pdf = ms.getPlotsFile("PvsNphe_%s"%(this_targ),"","pdf",out_DatOrSim)
+        # name_pdf = ms.get_plots_file("PvsNphe_%s"%(this_targ),"","pdf",out_DatOrSim)
         # canvas.SaveAs(outputPath+name_pdf)
 
         canvas.Clear()

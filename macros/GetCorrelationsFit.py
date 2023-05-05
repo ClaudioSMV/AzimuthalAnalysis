@@ -41,7 +41,7 @@ input_cuts = options.inputCuts
 plots_cuts = options.inputCuts +"_"+ options.outputCuts
 
 ### Define type of fit used
-fit_type = ms.GetFitMethod(plots_cuts)
+fit_type = ms.get_fit_method(plots_cuts)
 
 infoDict = ms.get_name_dict(dataset)
 nameFormatted = ms.get_name_format(dataset)
@@ -51,12 +51,12 @@ nameFormatted = ms.get_name_format(dataset)
 # plots_cuts+="_"+fit_type
 
 ## Input
-inputPath = ms.getPlotsFolder("Fit", input_cuts, ms.get_name_format_bin(dataset) +"/"+ infoDict["Target"], isJLab, False)
-inputROOT = ms.getPlotsFile("Fit", dataset, "root", fit_type)
+inputPath = ms.get_plots_folder("Fit", input_cuts, dataset, isJLab, False)
+inputROOT = ms.get_plots_file("Fit", dataset, "root", fit_type)
 inputfile = TFile(inputPath+inputROOT,"READ")
 
 ## Output
-outputPath = ms.getPlotsFolder("CorrelationFit", plots_cuts, ms.get_name_format_bin(dataset) +"/"+ infoDict["Target"], isJLab)
+outputPath = ms.get_plots_folder("CorrelationFit", plots_cuts, dataset, isJLab)
 
 ### Define list with fit names
 list_func_names = ["crossSectionR"]
@@ -119,18 +119,18 @@ canvas.SetGrid(0,1)
 # canvas.SetLogy(0)
 for e,elem in enumerate(list_func_names):
 
-    name_ext = ms.GetFitExtension(fit_type, elem)
+    name_ext = ms.get_fit_shortmethod(fit_type, elem)
 
     th1_CorrAB_list[e].Draw()
 
     ms.DrawPreliminaryInfo("Correlation AB %s"%(fit_type))
     ms.DrawTargetInfo(nameFormatted, "Data")
 
-    this_title_png = outputPath + ms.getPlotsFile("CorrelationAB", dataset, "png")
+    this_title_png = outputPath + ms.get_plots_file("CorrelationAB", dataset, "png")
     if ("LR" in this_title_png):
         this_title_png = ms.add_str_before_ext(this_title_png, "-%s"%(name_ext), "png")
 
-    # this_title_pdf = outputPath + ms.getPlotsFile("CorrelationAB", dataset, "pdf")
+    # this_title_pdf = outputPath + ms.get_plots_file("CorrelationAB", dataset, "pdf")
     # if ("LR" in this_title_pdf):
     #     this_title_pdf = ms.add_str_before_ext(this_title_pdf, "-%s"%(name_ext), "pdf")
 
@@ -144,11 +144,11 @@ for e,elem in enumerate(list_func_names):
     ms.DrawPreliminaryInfo("Correlation AC %s"%(fit_type))
     ms.DrawTargetInfo(nameFormatted, "Data")
 
-    this_title_png = outputPath + ms.getPlotsFile("CorrelationAC", dataset, "png")
+    this_title_png = outputPath + ms.get_plots_file("CorrelationAC", dataset, "png")
     if ("LR" in this_title_png):
         this_title_png = ms.add_str_before_ext(this_title_png, "-%s"%(name_ext), "png")
 
-    # this_title_pdf = outputPath + ms.getPlotsFile("CorrelationAC", dataset, "pdf")
+    # this_title_pdf = outputPath + ms.get_plots_file("CorrelationAC", dataset, "pdf")
     # if ("LR" in this_title_pdf):
     #     this_title_pdf = ms.add_str_before_ext(this_title_pdf, "-%s"%(name_ext), "pdf")
 
@@ -162,11 +162,11 @@ for e,elem in enumerate(list_func_names):
     ms.DrawPreliminaryInfo("Correlation BC %s"%(fit_type))
     ms.DrawTargetInfo(nameFormatted, "Data")
 
-    this_title_png = outputPath + ms.getPlotsFile("CorrelationBC", dataset, "png")
+    this_title_png = outputPath + ms.get_plots_file("CorrelationBC", dataset, "png")
     if ("LR" in this_title_png):
         this_title_png = ms.add_str_before_ext(this_title_png, "-%s"%(name_ext), "png")
 
-    # this_title_pdf = outputPath + ms.getPlotsFile("CorrelationBC", dataset, "pdf")
+    # this_title_pdf = outputPath + ms.get_plots_file("CorrelationBC", dataset, "pdf")
     # if ("LR" in this_title_pdf):
     #     this_title_pdf = ms.add_str_before_ext(this_title_pdf, "-%s"%(name_ext), "pdf")
 

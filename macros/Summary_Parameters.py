@@ -228,8 +228,8 @@ list_infiles = []
 # Open files
 for targ in list_targets:
     this_dataset = "%s_%s"%(targ, dataset)
-    inputPath = mS.getPlotsFolder("FitParameters", input_cuts, targ, isJLab, False) # "../output/"
-    inputROOT = mS.getPlotsFile("Parameters", this_dataset, "root", fit_type)
+    inputPath = mS.get_plots_folder("FitParameters", input_cuts, this_dataset, isJLab, False)
+    inputROOT = mS.get_plots_file("Parameters", this_dataset, "root", fit_type)
 
     inputfile = TFile(inputPath+inputROOT,"READ")
     list_infiles.append(inputfile)
@@ -386,18 +386,12 @@ for p,par in enumerate(par_list):
                     if (legend.GetListOfPrimitives().GetEntries()==len(list_targets)):
                         legend.Draw()
 
-    this_title_png = mS.getSummaryPath("Par%s%s"%(par,dataset_title), "png", plots_cuts, isJLab, dataset_title[1:])
-    this_title_png = mS.add_str_before_ext(this_title_png, "_%s"%(whatsPlot), "png")
-    if ("LR" in this_title_png):
-        this_title_png = mS.add_str_before_ext(this_title_png, "-%s"%(fit), "png")
+    for ext in ["png", "pdf"]:
+        this_title = mS.get_summary_fullpath("Par%s"%(par), plots_cuts, dataset, ext, whatsPlot, isJLab)
+        if ("LR" in this_title):
+            this_title = mS.add_str_before_ext(this_title, "-%s"%(fit), ext)
 
-    this_title_pdf = mS.getSummaryPath("Par%s%s"%(par,dataset_title), "pdf", plots_cuts, isJLab, dataset_title[1:])
-    this_title_pdf = mS.add_str_before_ext(this_title_pdf, "_%s"%(whatsPlot), "pdf")
-    if ("LR" in this_title_pdf):
-        this_title_pdf = mS.add_str_before_ext(this_title_pdf, "-%s"%(fit), "pdf")
-
-    this_canvas.SaveAs(this_title_png)
-    this_canvas.SaveAs(this_title_pdf)
+        this_canvas.SaveAs(this_title)
 
 for t,targ in enumerate(list_targets):
     list_infiles[t].Close()

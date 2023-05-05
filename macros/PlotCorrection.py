@@ -63,12 +63,12 @@ else:
     exit()
 
 ## Input
-inputPath = ms.getOutputFileWithPath("Correction", dataset, input_cuts, isJLab, False) # "../output/"
+inputPath = ms.get_output_fullpath("Correction", dataset, input_cuts, isJLab, False) # "../output/"
 inputfile = TFile(inputPath,"READ")
 
 ## Output
-outputPath = ms.getPlotsFolder("Correction", plots_cuts, ms.get_name_format_bin(dataset) +"/"+ infoDict["Target"], isJLab)
-outputROOT = ms.getPlotsFile("Corrected", dataset, "root")
+outputPath = ms.get_plots_folder("Correction", plots_cuts, dataset, isJLab)
+outputROOT = ms.get_plots_file("Corrected", dataset, "root")
 if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
     print("  [Correction] Correction already exists! Not overwriting it.")
     exit()
@@ -174,7 +174,7 @@ for i,info in enumerate(names_list):
         ms.DrawBinInfo(info, infoDict["BinningType"])
 
         histName = "_".join(this_proj.GetName().split("_")[0:-1]) # Corr_A_B_Q1N2 -> Corr_A_B
-        outputName = ms.getPlotsFile(histName, dataset, "png", info)
+        outputName = ms.get_plots_file(histName, dataset, "png", info)
         canvas.SaveAs(outputPath+outputName)
         this_proj.Write()
         htemp.Delete()

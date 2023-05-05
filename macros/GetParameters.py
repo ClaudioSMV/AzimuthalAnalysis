@@ -56,13 +56,13 @@ input_cuts+="_"+fit_type # Add Fold or LR extension
 plots_cuts+="_"+fit_type
 
 ## Input
-inputPath = myStyle.getOutputFileWithPath("Fit", dataset, input_cuts, isJLab, False) # "../output/"
-inputROOT = myStyle.getPlotsFile("Fit", dataset, "root", fit_type)
+inputPath = myStyle.get_output_fullpath("Fit", dataset, input_cuts, isJLab, False) # "../output/"
+inputROOT = myStyle.get_plots_file("Fit", dataset, "root", fit_type)
 inputfile = TFile(inputPath+inputROOT,"READ")
 
 ## Output
-outputPath = myStyle.getPlotsFolder("Parameters", plots_cuts, infoDict["Target"], isJLab)
-outputROOT = myStyle.getPlotsFile("Parameters", dataset, "root", fit_type)
+outputPath = myStyle.get_plots_folder("Parameters", plots_cuts, dataset, isJLab)
+outputROOT = myStyle.get_plots_file("Parameters", dataset, "root", fit_type)
 if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
     print("Parameters file already exists! Not overwriting it.")
     exit()
@@ -175,7 +175,7 @@ for e,elem in enumerate(list_func_names):
     myStyle.DrawPreliminaryInfo("Parameter A %s"%fit_type)
     myStyle.DrawTargetInfo(nameFormatted, "Data")
 
-    outputName = myStyle.getPlotsFile("ParameterA%s"%zoom_ext, dataset, "gif", name_ext)
+    outputName = myStyle.get_plots_file("ParameterA%s"%zoom_ext, dataset, "gif", name_ext)
     canvas.SaveAs(outputPath+outputName)
     canvas.Clear()
     # legend.Clear()
@@ -193,7 +193,7 @@ for e,elem in enumerate(list_func_names):
     myStyle.DrawPreliminaryInfo("Parameter B %s"%fit_type)
     myStyle.DrawTargetInfo(nameFormatted, "Data")
 
-    outputName = myStyle.getPlotsFile("ParameterB%s"%zoom_ext, dataset, "gif", name_ext)
+    outputName = myStyle.get_plots_file("ParameterB%s"%zoom_ext, dataset, "gif", name_ext)
     canvas.SaveAs(outputPath+outputName)
     canvas.Clear()
 
@@ -210,7 +210,7 @@ for e,elem in enumerate(list_func_names):
     myStyle.DrawPreliminaryInfo("Parameter C %s"%fit_type)
     myStyle.DrawTargetInfo(nameFormatted, "Data")
 
-    outputName = myStyle.getPlotsFile("ParameterC%s"%zoom_ext, dataset, "gif", name_ext)
+    outputName = myStyle.get_plots_file("ParameterC%s"%zoom_ext, dataset, "gif", name_ext)
     canvas.SaveAs(outputPath+outputName)
     canvas.Clear()
 

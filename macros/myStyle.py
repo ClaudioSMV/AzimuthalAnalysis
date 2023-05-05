@@ -51,6 +51,17 @@ def get_name_format(nameFormat, isAcc = False):
 
     return fileName
 
+def get_name_format_inverse(nameFormat, isAcc = False):
+# Give string with name formatted inversed using input: <targ>_<nBin>_<nDim>
+# with output: "<nBin>B<nDim>_<targ>"
+    formDict = get_name_dict(nameFormat)
+    fileName = "%iB"%(formDict["BinningType"])
+    if (not isAcc) and formDict["NDims"]:
+        fileName+="%i"%(formDict["NDims"])
+    fileName+= "_%s"%(formDict["Target"])
+
+    return fileName
+
 def get_name_format_bin(nameFormat):
 # Give string with name formatted using input: <targ>_<nBin>_<nDim>
 # with output: "<nBin>B<nDim>"
@@ -379,7 +390,8 @@ def get_sparseproj1d_list(thnSparse, list_binstr, shift):
 ##  Get fit information  ##
 ###########################
 
-def GetFitMethod(output_str, use_def = True):
+def get_fit_method(output_str, use_default = True):
+# Return str with short-name of the fit method chosen in output_str
     this_method = ""
 
     for fm in dict_fit_short2long:
@@ -394,8 +406,8 @@ def GetFitMethod(output_str, use_def = True):
             #     this_method +="_"
             this_method = fm
 
-    ## Set default method
-    if (use_def and not this_method):
+    # Set default method if none is given
+    if (use_default and not this_method):
         this_method = "Ff"
 
     # if (this_method):
@@ -407,11 +419,15 @@ def GetFitMethod(output_str, use_def = True):
 
     return this_method
 
-def GetFitExtension(this_method, fname):
+def get_fit_shortmethod(this_method, fname):
+# Return new short-name for method to be used in the name of a file
+    # In principle, the initial letter should be enough
     this_ext = this_method[0]
 
+    # We want to differenciate between Left and Right
     if (this_method=="LR") and ("R" in fname):
         this_ext = "R"
+    # Since Fold and Full have the same initial, A stands for All in Full
     elif (this_method=="Ff"):
         this_ext = "A"
 
@@ -421,7 +437,10 @@ def GetFitExtension(this_method, fname):
 ##  Paths and directories  ##
 #############################
 
-def CreateFolder(outdir, title, overwrite = False, enumerate = True):
+def create_folder(outdir, title, overwrite = False, enumerate = False):
+# Create folder with path outdir and title
+# Overwrite recreates the file. If not, enumerate will add a number at the end
+# By default, if file exists, nothing is done
     outdir2 = os.path.join(outdir,title)
 
     if overwrite:
@@ -433,6 +452,7 @@ def CreateFolder(outdir, title, overwrite = False, enumerate = True):
             print("  [myStyle] %s created."%outdir2)
         elif enumerate:
             i = 1
+            outdir2 = outdir2[0:-1] + str(i) + outdir2[-1]
             while(os.path.exists(outdir2)):
                     outdir2 = outdir2[0:-2] + str(i) + outdir2[-1]
                     i+=1
@@ -443,91 +463,143 @@ def CreateFolder(outdir, title, overwrite = False, enumerate = True):
 
     return outdir2
 
-### /output/
-########
-def getOutputFolder(nameMethod, extraCuts = "", JLab_cluster = True, isOutput = True):
-    this_folder = "../output/"
-    if JLab_cluster: this_folder+="JLab_cluster/"
+def get_folder(initial_path, name_folder, pre_cut = "", cuts = "", post_cut = "", use_JLab = True, save_folder = True):
+# def get_folder(initial_path, name_folder, cuts = "", extra_path = "", use_JLab = True, save_folder = True):
+# Return path to folder using process-name and cuts
+#  initial_path/JLab_cluster/name_folder/pre_cut/cuts/post_cut/
+#  e.g.: ../macros/plots/ JLab_cluster/ Correction/ 10B1/ FErr_AccQlt/ Fe/
+    this_folder = initial_path
+    if use_JLab:
+        this_folder+="JLab_cluster/"
 
-    these_cuts = get_cut_long2final(extraCuts)
-    this_folder+=nameMethod+these_cuts+"/"
-    if isOutput:
-        CreateFolder(this_folder, "", False, False)
+    this_folder+=name_folder+"/"
+
+    if pre_cut:
+        this_folder+=pre_cut+"/"
+
+    these_cuts = get_cut_long2final(cuts)
+    if these_cuts:
+        this_folder+=these_cuts[1:]+"/"
+    elif ("output" not in initial_path):
+        this_folder+="NoCuts/"
+
+    if post_cut:
+        this_folder+=post_cut+"/"
+
+    if (not os.path.exists(this_folder) or save_folder):
+        create_folder(this_folder, "", False, False)
 
     return this_folder
 
-def getOutputFile(nameMethod, nameFileExt):
-    if nameMethod=="Acceptance":
-        this_file = "Acceptance_"+get_name_format(nameFileExt, True)+".root"
-    elif nameMethod=="Correction":
-        this_file = "Corrected_"+get_name_format(nameFileExt, False)+".root"
-    elif nameMethod=="Hist2D":
-        this_file = "Hist2D_"+get_name_dict(nameFileExt)["Target"]+"_.root" # Remember to add "data" or "hsim" with add_str_before_ext()
-    else:
-        this_file = nameMethod+"_"+get_name_format(nameFileExt, False)+".root"
+def get_file(name_file, targ_binning = "", bin_code = "", extension = "root"):
+# Return file name with format <name_file>_<targ_binning>-<bin_code>.<extension>
+#   e.g.: Correction_Fe_10B1-Q0N0Z0.root
+    this_file = name_file
+    if targ_binning:
+        this_file+= "_"+get_name_format(targ_binning, False)
+
+    if bin_code:
+        this_file+= "-"+bin_code
+
+    this_file+="."+extension
 
     return this_file
 
-def getOutputFileWithPath(nameMethod, nameFileExt, extraCuts = "", JLab_cluster = True, isOutput = True):
-    this_path = getOutputFolder(nameMethod, extraCuts, JLab_cluster, isOutput) # "../<out>/"
-    this_file = getOutputFile(nameMethod, nameFileExt)
+### From output folder
+########################
+def get_output_folder(name_meth, cuts = "", JLab_cluster = True, save_folder = True):
+# Return path with /output/ folder using name of the method and cuts
+    these_cuts = get_cut_long2final(cuts)
+    name_fullfolder = name_meth+these_cuts+"/"
+
+    this_folder = get_folder("../output/", name_fullfolder, "", "", "", JLab_cluster, save_folder)
+
+    return this_folder
+
+def get_output_file(name_meth, file_extension):
+# Return file name using /output/ folder style (from c++)
+    if name_meth=="Acceptance":
+        this_file = "Acceptance_"+get_name_format(file_extension, True)+".root"
+    elif name_meth=="Correction":
+        this_file = "Corrected_"+get_name_format(file_extension, False)+".root"
+    elif name_meth=="Hist2D":
+        this_file = "Hist2D_"+get_name_dict(file_extension)["Target"]+"_.root"
+        # Remember to add "data" or "hsim" with add_str_before_ext()
+    else:
+        this_file = name_meth+"_"+get_name_format(file_extension, False)+".root"
+
+    return this_file
+
+def get_output_fullpath(name_meth, file_extension, cuts = "", JLab_cluster = True, save_folder = True):
+# Return full path + file name
+    this_path = get_output_folder(name_meth, cuts, JLab_cluster, save_folder) # "../<out>/"
+    this_file = get_output_file(name_meth, file_extension)
 
     return this_path+this_file
 
-### /plots/
-########
-def getPlotsFolder(nameMethod, extraCuts = "", extraPath = "", JLab_cluster = True, isOutput = True):
-    this_folder = "../macros/plots/"
-    if JLab_cluster: this_folder+="JLab_cluster/"
-
-    these_cuts = get_cut_long2final(extraCuts)
-    this_folder+=nameMethod+"/"+these_cuts[1:]+"/"
-    if extraPath:
-        this_folder+=extraPath+"/" # <target>/
-    if isOutput:
-        CreateFolder(this_folder, "", False, False)
+### From plots folder
+#######################
+def get_plots_folder(name_meth, cuts = "", dataset = "", JLab_cluster = True, save_folder = True):
+# Return path with /plots/ folder using name of the method, cuts, and dataset as targ_nbin_ndim
+#  e.g.: ../macros/plots/ JLab_cluster/ Correction/ 10B1/ FErr_AccQlt/ Fe/
+    # If dataset is target only, add "_" to skip pre_cut folder
+    if (dataset in color_target):
+        dataset+= "_"
+    this_targ, this_ext = get_name_format(dataset).split("_")
+    # Skip nDim default value
+    if (this_ext[-1]=="0"):
+        this_ext = this_ext[0:-1]
+    this_folder = get_folder("../macros/plots/", name_meth, this_ext,  cuts, this_targ, JLab_cluster, save_folder)
 
     return this_folder
 
-def getPlotsFile(nameMethod, nameFileExt = "", fileExt = "root", plotBin = ""):
-    this_file = nameMethod
-    if nameFileExt:
-        this_file+= "_"+get_name_format(nameFileExt, False)
+def get_plots_file(name_meth, targ_binning = "", extension = "root", bin_code = ""):
+# Return file name using /plots/ folder style
+# bin_code could be a fit method too, e.g.: "Q0N0" or "Fd"
+    this_file = get_file(name_meth, targ_binning, bin_code, extension)
 
-    if (fileExt == "root"):
-        if plotBin:
-            this_file+="-"+plotBin+"."+fileExt  # Corr_Reconstructed_Fe_0B1-Fd.root
-        else:
-            this_file+="."+fileExt              # Corr_Reconstructed_Fe_0B1.root
-    else:
-        if plotBin:
-            this_file+="-"+plotBin+"."+fileExt  # Corr_Reconstructed_Fe_0B1-Q0N0.gif (.pdf)
-        else:
-            this_file+="."+fileExt  # Corr_Reconstructed_Fe_0B1.gif (.pdf)
+    # if (fileExt == "root"):
+    #         this_file+="-"+plotBin+"."+fileExt  # Corr_Reconstructed_Fe_0B1-Fd.root
+    # else:
+    #         this_file+="-"+plotBin+"."+fileExt  # Corr_Reconstructed_Fe_0B1-Q0N0.gif (.pdf)
 
     return this_file
 
-### /plots/Summary
-########
-def getSummaryPath(nameMethod, fileExt = "pdf", cuts = "", JLab_cluster = True, extra_path = "", name_folder = "Summary"):
-    this_folder = "../macros/plots/"
-    if JLab_cluster: this_folder+="JLab_cluster/"
-    this_folder+="%s/"%(name_folder) ## +="Summary/"
-    if extra_path:
-        this_folder+=extra_path+"/"
-    if cuts:
-        # Remember: get_cut_long2final(cuts) has an underscore as first element
-        this_folder+= get_cut_long2final(cuts)[1:] +"/"
+### From Summary folder
+#########################
+def get_summary_folder(name_meth, cuts = "", dataset = "", JLab_cluster = True, save_folder = True):
+# Return summary path using name of the method, cuts, and dataset as nbin_ndim (NO target!)
+#  e.g.: ../macros/plots/ JLab_cluster/ Summary/ Ratio/10B1/ FErr_AccQlt/
+    # If dataset is target only, add "_" to skip pre_cut folder
+    if (dataset[0]!="_"):
+        dataset = "_%s"%(dataset)
+    this_nbin = get_name_format_bin(dataset)
+    pre_cut = "%s/%s"%(name_meth, this_nbin)
+    this_folder = get_folder("../macros/plots/", "Summary", pre_cut,  cuts, "", JLab_cluster, save_folder)
 
-    if not os.path.exists(this_folder):
-        CreateFolder(this_folder, "", False, False)
+    return this_folder
 
-    this_file = nameMethod
-    if (cuts):
-        these_cuts = get_cut_long2final(cuts)
-        this_file+=these_cuts
+def get_summary_file(name_meth, cuts = "", dataset = "", extension = "png", pre_name = ""):
+# Return name of file in summary style, with dataset as nbin_ndim (NO target!)
+#   <dataset>_<cuts>-<pre_name>-<name_meth>.<extension>
+#   e.g.: 10B1_FErr-Reco-NormB.png
+    if (dataset[0]!="_"):
+        dataset = "_%s"%(dataset)
+    this_nbin = get_name_format_bin(dataset)
+    these_cuts = get_cut_long2final(cuts)
+    info = "%s%s"%(this_nbin, these_cuts)
 
-    this_file+="."+fileExt
+    if pre_name:
+        name_meth = pre_name+"-"+name_meth
+
+    this_file = get_file(info, "", name_meth, extension)
+
+    return this_file
+
+def get_summary_fullpath(name_meth, cuts = "", dataset = "", extension = "root", pre_name = "", JLab_cluster = True, save_folder = True):
+# Return full summary path using the previous functions
+    this_folder = get_summary_folder(name_meth, cuts, dataset, JLab_cluster, save_folder)
+    this_file = get_summary_file(name_meth, cuts, dataset, extension, pre_name)
 
     return this_folder+this_file
 

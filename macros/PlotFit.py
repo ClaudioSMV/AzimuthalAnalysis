@@ -205,7 +205,7 @@ input_cuts = options.inputCuts
 plots_cuts = options.inputCuts +"_"+ options.outputCuts
 
 ### Define type of fit used
-fit_type = ms.GetFitMethod(plots_cuts)
+fit_type = ms.get_fit_method(plots_cuts)
 
 infoDict = ms.get_name_dict(dataset)
 nameFormatted = ms.get_name_format(dataset)
@@ -224,13 +224,13 @@ if ((fit_type == "Ff") and ("NPeak" in ms.get_cut_str2finallist(plots_cuts))):
 
 
 ## Input
-inputPath = ms.getPlotsFolder("Correction", input_cuts, ms.get_name_format_bin(dataset) +"/"+ infoDict["Target"], isJLab, False) # "../output/"
-inputROOT = ms.getPlotsFile("Corrected", dataset, "root")
+inputPath = ms.get_plots_folder("Correction", input_cuts, dataset, isJLab, False)
+inputROOT = ms.get_plots_file("Corrected", dataset, "root")
 inputfile = TFile(inputPath+inputROOT,"READ")
 
 ## Output
-outputPath = ms.getPlotsFolder("Fit", plots_cuts, ms.get_name_format_bin(dataset) +"/"+ infoDict["Target"], isJLab)
-outputROOT = ms.getPlotsFile("Fit", dataset, "root", fit_type)
+outputPath = ms.get_plots_folder("Fit", plots_cuts, dataset, isJLab)
+outputROOT = ms.get_plots_file("Fit", dataset, "root", fit_type)
 if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
     print("  [Fit] Fit already exists! Not overwriting it.")
     exit()
@@ -334,7 +334,7 @@ for h in list_of_hists:
             ms.DrawTargetInfo(nameFormatted, "Data")
             ms.DrawBinInfo(this_nbin, infoDict["BinningType"])
 
-            outputName = ms.getPlotsFile("Fit_"+tmp_name, dataset, "png",this_nbin)
+            outputName = ms.get_plots_file("Fit_"+tmp_name, dataset, "png",this_nbin)
             canvas.SaveAs(outputPath+outputName)
             canvas.Clear()
 

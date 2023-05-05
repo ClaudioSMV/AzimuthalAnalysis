@@ -59,13 +59,13 @@ else:
     exit()
 
 ## Input
-inputPath = ms.getOutputFolder("ClosureTest%ip"%int(fracAcc), input_cuts, isJLab, False) # "../output/"
-inputName = ms.getOutputFile("ClosureTest", dataset) # "../output/"
+inputPath = ms.get_output_folder("ClosureTest%ip"%int(fracAcc), input_cuts, isJLab, False) # "../output/"
+inputName = ms.get_output_file("ClosureTest", dataset) # "../output/"
 inputfile = TFile(inputPath+inputName,"READ")
 
 ## Output
-outputPath = ms.getPlotsFolder("ClosureTest%ip"%int(fracAcc), plots_cuts, ms.get_name_format_bin(dataset) +"/"+ infoDict["Target"], isJLab)
-outputROOT = ms.getPlotsFile("ClosureTest", dataset, "root")
+outputPath = ms.get_plots_folder("ClosureTest%ip"%int(fracAcc), plots_cuts, dataset, isJLab)
+outputROOT = ms.get_plots_file("ClosureTest", dataset, "root")
 
 histCorr_Reconstru = inputfile.Get("Corr_Reconstru")
 histCorr_ReMtch_mc = inputfile.Get("Corr_ReMtch_mc")
@@ -188,7 +188,7 @@ for pt,pref in enumerate(type_reco_short):
         #         ms.DrawBinInfo(info, infoDict["BinningType"])
 
         #         histName = "_".join(this_proj.GetName().split("_")[0:-1]) # Corr_A_B_Q1N2 -> Corr_A_B
-        #         outputName = ms.getPlotsFile(histName, dataset, "png", info)
+        #         outputName = ms.get_plots_file(histName, dataset, "png", info)
         #         canvas.SaveAs(outputPath+outputName)
         #         # canvas.SaveAs(outputPath+nameFormatted+"-"+this_proj.GetName()+".png")
         #         this_proj.Write()
@@ -226,7 +226,7 @@ for pt,pref in enumerate(type_reco_short):
 
         gPad.RedrawAxis("g")
 
-        outputName = ms.getPlotsFile(this_name, dataset, "png", info)
+        outputName = ms.get_plots_file(this_name, dataset, "png", info)
         canvas.SaveAs(outputPath+outputName)
         # canvas.SaveAs(outputPath+nameFormatted+"-ClosureTest_"+info+ext_error+".png")
         hCT.Write()
@@ -256,9 +256,9 @@ for pt,pref in enumerate(type_reco_short):
     ms.DrawSummaryInfo("ClosureTest 3d (Q^{2},#nu,%s)"%(top_label))
     ms.DrawTargetInfo(nameFormatted, "Simulation")
 
-    outputName_png = ms.getPlotsFile(th1_ct.GetName(), dataset, "png")
+    outputName_png = ms.get_plots_file(th1_ct.GetName(), dataset, "png")
     canvas.SaveAs(outputPath+outputName_png)
-    outputName_pdf = ms.getPlotsFile(th1_ct.GetName(), dataset, "pdf")
+    outputName_pdf = ms.get_plots_file(th1_ct.GetName(), dataset, "pdf")
     canvas.SaveAs(outputPath+outputName_pdf)
     th1_ct.Write()
 
@@ -270,7 +270,7 @@ for pt,pref in enumerate(type_reco_short):
     ms.DrawSummaryInfo("Closure error %s"%pref)
     ms.DrawTargetInfo(nameFormatted, "Simulation")
 
-    outputName = ms.getPlotsFile(th1_ct_err.GetName(), dataset, "png")
+    outputName = ms.get_plots_file(th1_ct_err.GetName(), dataset, "png")
     canvas.SaveAs(outputPath+outputName)
     th1_ct_err.Write()
 
@@ -282,7 +282,7 @@ for pt,pref in enumerate(type_reco_short):
     ms.DrawSummaryInfo("Closure error %% %s"%pref)
     ms.DrawTargetInfo(nameFormatted, "Simulation")
 
-    outputName = ms.getPlotsFile(th1_ct_err100.GetName(), dataset, "png")
+    outputName = ms.get_plots_file(th1_ct_err100.GetName(), dataset, "png")
     canvas.SaveAs(outputPath+outputName)
     th1_ct_err100.Write()
 

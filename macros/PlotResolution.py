@@ -38,12 +38,12 @@ input_cuts = options.inputCuts
 plots_cuts = options.inputCuts +"_"+ options.outputCuts
 
 ## Input
-inputPath = ms.getOutputFileWithPath("Acceptance", dataset, input_cuts, isJLab, False) # "../output/"
+inputPath = ms.get_output_fullpath("Acceptance", dataset, input_cuts, isJLab, False) # "../output/"
 inputfile = TFile(inputPath,"READ")
 
 ## Output
-outputPath = ms.getPlotsFolder("Resolution", plots_cuts, ms.get_name_format_bin(dataset) +"/"+ infoDict["Target"], isJLab)
-# outputROOT = ms.getPlotsFile("Resolution", dataset, "root")
+outputPath = ms.get_plots_folder("Resolution", plots_cuts, dataset, isJLab)
+# outputROOT = ms.get_plots_file("Resolution", dataset, "root")
 
 list_vars = ["Q2", "Nu", "Xb", "Zh", "Pt2", "PhiPQ"]
 
@@ -83,7 +83,7 @@ for this_var in list_vars:
     ms.DrawPreliminaryInfo("Resolution")
     ms.DrawTargetInfo(infoDict["Target"], "Simulation")
 
-    outputName = ms.getPlotsFile("Resolution1D", dataset, "png",this_var)
+    outputName = ms.get_plots_file("Resolution1D", dataset, "png",this_var)
     canvas.SaveAs(outputPath+outputName)
     canvas.Clear()
 
@@ -136,7 +136,7 @@ for this_var in list_vars:
     ms.DrawPreliminaryInfo("Resolution vs x")
     ms.DrawTargetInfo(infoDict["Target"], "Simulation")
 
-    outputName = ms.getPlotsFile("ResolutionVsX", dataset, "png",this_var)
+    outputName = ms.get_plots_file("ResolutionVsX", dataset, "png",this_var)
     canvas.SaveAs(outputPath+outputName)
     canvas.Clear()
 

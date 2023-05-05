@@ -192,8 +192,8 @@ for fm in list_fitmethodsKey:
 
     # print("Detail: %s"%meth_detail)
 
-    inputPath = ms.getPlotsFolder("ParametersRatio", this_input_cuts, ms.get_name_format_bin(dataset) +"/"+ this_targ, isJLab, False) # "../output/"
-    inputROOT = ms.getPlotsFile("ParametersRatio", dataset, "root", this_meth)
+    inputPath = ms.get_plots_folder("ParametersRatio", this_input_cuts, dataset, isJLab, False)
+    inputROOT = ms.get_plots_file("ParametersRatio", dataset, "root", this_meth)
 
     inputfile = TFile(inputPath+inputROOT,"READ")
     list_infiles.append(inputfile)
@@ -400,16 +400,13 @@ for r,typeR in enumerate(type_reco_short):
 
         this_canvas.cd(0)
 
-        this_bininfo = ms.get_name_format_bin(dataset)
+        no_targ_dataset = dataset.replace(this_targ+"_", "")
 
-        this_title_png = ms.getSummaryPath("%s_%s"%(this_bininfo,typeR), "png", plots_cuts, isJLab, this_bininfo +"/"+this_targ, "Summary_DiffMethods")
-        this_title_png = ms.add_str_before_ext(this_title_png, "-DiffFitRatio%s_%s"%(par,this_targ), "png")
+        for ext in ["png", "pdf"]:
+            this_title = ms.get_summary_fullpath("DifFit_Ratio%s"%(par), plots_cuts, no_targ_dataset, ext, typeR, isJLab)
+            this_title = ms.add_str_before_ext(this_title, "-%s"%(this_targ), ext)
 
-        this_title_pdf = ms.getSummaryPath("%s_%s"%(this_bininfo,typeR), "pdf", plots_cuts, isJLab, this_bininfo +"/"+this_targ, "Summary_DiffMethods")
-        this_title_pdf = ms.add_str_before_ext(this_title_pdf, "-DiffFitRatio%s_%s"%(par,this_targ), "pdf")
-
-        this_canvas.SaveAs(this_title_png)
-        this_canvas.SaveAs(this_title_pdf)
+            this_canvas.SaveAs(this_title)
 
 for m,meth in enumerate(list_fitmethodsKey):
     list_infiles[m].Close()

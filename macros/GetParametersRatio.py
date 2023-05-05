@@ -47,7 +47,7 @@ input_cuts = options.inputCuts
 plots_cuts = options.inputCuts +"_"+ options.outputCuts
 
 ### Define type of fit used
-fit_type = ms.GetFitMethod(plots_cuts)
+fit_type = ms.get_fit_method(plots_cuts)
 
 mixD = False
 if "MixD" in ms.get_cut_str2finallist(plots_cuts):
@@ -89,18 +89,18 @@ else:
 solid_targ = infoDict["Target"] if not mixD else ""
 dataset_D = "D%s_%s_%s"%(solid_targ,infoDict["BinningType"],infoDict["NDims"])
 
-inputPath_D = ms.getPlotsFolder("Fit", input_cuts, ms.get_name_format_bin(dataset_D) + "/D" + solid_targ, isJLab, False) # "../output/"
-inputROOT_D = ms.getPlotsFile("Fit", dataset_D, "root", fit_type)
+inputPath_D = ms.get_plots_folder("Fit", input_cuts, dataset_D, isJLab, False)
+inputROOT_D = ms.get_plots_file("Fit", dataset_D, "root", fit_type)
 inputfile_D = TFile(inputPath_D+inputROOT_D,"READ")
 
 ## Input
-inputPath_solid = ms.getPlotsFolder("Fit", input_cuts, ms.get_name_format_bin(dataset) +"/"+ infoDict["Target"], isJLab, False) # "../output/"
-inputROOT_solid = ms.getPlotsFile("Fit", dataset, "root", fit_type)
+inputPath_solid = ms.get_plots_folder("Fit", input_cuts, dataset, isJLab, False)
+inputROOT_solid = ms.get_plots_file("Fit", dataset, "root", fit_type)
 inputfile_solid = TFile(inputPath_solid+inputROOT_solid,"READ")
 
 ## Output
-outputPath = ms.getPlotsFolder("ParametersRatio", plots_cuts, ms.get_name_format_bin(dataset) +"/"+ infoDict["Target"], isJLab)
-outputROOT = ms.getPlotsFile("ParametersRatio", dataset, "root", fit_type)
+outputPath = ms.get_plots_folder("ParametersRatio", plots_cuts, dataset, isJLab)
+outputROOT = ms.get_plots_file("ParametersRatio", dataset, "root", fit_type)
 if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
     print("  [ParRatio] Parameters ratio file already exists! Not overwriting it.")
     exit()
@@ -264,7 +264,7 @@ ymax = 1.2
 for e,elem in enumerate(list_func_names):
     for t,typeR in enumerate(type_reco_short):
 
-        name_ext = ms.GetFitExtension(fit_type, elem)
+        name_ext = ms.get_fit_shortmethod(fit_type, elem)
 
         hist_b = ratio_th1_b_list[t][e]
         hist_b.SetMinimum(ymin)
@@ -276,7 +276,7 @@ for e,elem in enumerate(list_func_names):
         ms.DrawPreliminaryInfo("Ratio over D%s %s"%(solid_targ,fit_type))
         ms.DrawTargetInfo(nameFormatted, "Data")
 
-        outputName = ms.getPlotsFile("RatioD%s_B_%s"%(solid_targ,typeR), dataset, "png", name_ext)
+        outputName = ms.get_plots_file("RatioD%s_B_%s"%(solid_targ,typeR), dataset, "png", name_ext)
         canvas.SaveAs(outputPath+outputName)
         canvas.Clear()
 
@@ -290,7 +290,7 @@ for e,elem in enumerate(list_func_names):
         ms.DrawPreliminaryInfo("Ratio over D%s %s"%(solid_targ,fit_type))
         ms.DrawTargetInfo(nameFormatted, "Data")
 
-        outputName = ms.getPlotsFile("RatioD%s_C_%s"%(solid_targ,typeR), dataset, "png", name_ext)
+        outputName = ms.get_plots_file("RatioD%s_C_%s"%(solid_targ,typeR), dataset, "png", name_ext)
         canvas.SaveAs(outputPath+outputName)
         canvas.Clear()
 

@@ -45,7 +45,7 @@ input_cuts = options.inputCuts
 plots_cuts = options.inputCuts +"_"+ options.outputCuts
 
 ### Define type of fit used
-fit_type = ms.GetFitMethod(plots_cuts)
+fit_type = ms.get_fit_method(plots_cuts)
 
 infoDict = ms.get_name_dict(dataset)
 nameFormatted = ms.get_name_format(dataset)
@@ -56,13 +56,13 @@ nameFormatted = ms.get_name_format(dataset)
 # plots_cuts+="_"+fit_type
 
 ## Input
-inputPath = ms.getPlotsFolder("Fit", input_cuts, ms.get_name_format_bin(dataset) +"/"+ infoDict["Target"], isJLab, False) # "../output/"
-inputROOT = ms.getPlotsFile("Fit", dataset, "root", fit_type)
+inputPath = ms.get_plots_folder("Fit", input_cuts, dataset, isJLab, False)
+inputROOT = ms.get_plots_file("Fit", dataset, "root", fit_type)
 inputfile = TFile(inputPath+inputROOT,"READ")
 
 ## Output
-outputPath = ms.getPlotsFolder("ParametersNorm", plots_cuts, ms.get_name_format_bin(dataset) +"/"+ infoDict["Target"], isJLab)
-outputROOT = ms.getPlotsFile("Parameters", dataset, "root", fit_type)
+outputPath = ms.get_plots_folder("ParametersNorm", plots_cuts, dataset, isJLab)
+outputROOT = ms.get_plots_file("Parameters", dataset, "root", fit_type)
 if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
     print("  [ParNorm] Parameters normalized file already exists! Not overwriting it.")
     exit()
@@ -198,7 +198,7 @@ ymax =  1.2
 for e,elem in enumerate(list_func_names):
     for t,typeR in enumerate(type_reco_short):
 
-        name_ext = ms.GetFitExtension(fit_type, elem)
+        name_ext = ms.get_fit_shortmethod(fit_type, elem)
 
         ## Ratio b/a
         # legend_b = TLegend(1-ms.GetMargin()-0.35,1-ms.GetMargin()-0.12, 1-ms.GetMargin()-0.05,1-ms.GetMargin()-0.02)
@@ -223,7 +223,7 @@ for e,elem in enumerate(list_func_names):
         ms.DrawPreliminaryInfo("Parameters normalized %s"%(fit_type))
         ms.DrawTargetInfo(nameFormatted, "Data")
 
-        outputName = ms.getPlotsFile("ParNorm_B_%s"%(typeR), dataset, "png", name_ext)
+        outputName = ms.get_plots_file("ParNorm_B_%s"%(typeR), dataset, "png", name_ext)
         canvas.SaveAs(outputPath+outputName)
         canvas.Clear()
 
@@ -250,7 +250,7 @@ for e,elem in enumerate(list_func_names):
         ms.DrawPreliminaryInfo("Parameters normalized %s"%(fit_type))
         ms.DrawTargetInfo(nameFormatted, "Data")
 
-        outputName = ms.getPlotsFile("ParNorm_C_%s"%(typeR), dataset, "png", name_ext)
+        outputName = ms.get_plots_file("ParNorm_C_%s"%(typeR), dataset, "png", name_ext)
         canvas.SaveAs(outputPath+outputName)
         canvas.Clear()
 

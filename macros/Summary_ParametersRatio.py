@@ -135,10 +135,10 @@ if ("LR" in ms.get_cut_str2finallist(input_cuts) and ("Left" not in plots_cuts) 
     exit()
 
 ### Define type of fit used
-fit_type = ms.GetFitMethod(input_cuts)
+fit_type = ms.get_fit_method(input_cuts)
 
 fname = "R" if "Right" in plots_cuts else ""
-fit = ms.GetFitExtension(fit_type, fname)
+fit = ms.get_fit_shortmethod(fit_type, fname)
 
 fit_num = 0 if (fit != "L") else 1
 
@@ -208,8 +208,8 @@ list_infiles = []
 # Open files
 for targ in list_targets:
     this_dataset = "%s_%s"%(targ, dataset)
-    inputPath = ms.getPlotsFolder("ParametersRatio", input_cuts, ms.get_name_format_bin(this_dataset) +"/"+ targ, isJLab, False)
-    inputROOT = ms.getPlotsFile("ParametersRatio", this_dataset, "root", fit_type)
+    inputPath = ms.get_plots_folder("ParametersRatio", input_cuts, this_dataset, isJLab, False)
+    inputROOT = ms.get_plots_file("ParametersRatio", this_dataset, "root", fit_type)
 
     inputfile = TFile(inputPath+inputROOT,"READ")
     list_infiles.append(inputfile)
@@ -405,20 +405,13 @@ for r,typeR in enumerate(type_reco_short):
             new_pad = False
 
         this_canvas.cd(0)
-        this_bininfo = dataset_title[1:]
 
-        this_title_png = ms.getSummaryPath("%s_%s"%(this_bininfo,typeR), "png", plots_cuts, isJLab, this_bininfo)
-        this_title_png = ms.add_str_before_ext(this_title_png, "-Ratio%s"%(par), "png")
-        if ("LR" in this_title_png):
-            this_title_png = ms.add_str_before_ext(this_title_png, "-%s"%(fit), "png")
+        for ext in ["png", "pdf"]:
+            this_title = ms.get_summary_fullpath("Ratio%s"%(par), plots_cuts, dataset, ext, typeR, isJLab)
+            if ("LR" in this_title):
+                this_title = ms.add_str_before_ext(this_title, "-%s"%(fit), ext)
 
-        this_title_pdf = ms.getSummaryPath("%s_%s"%(this_bininfo,typeR), "pdf", plots_cuts, isJLab, this_bininfo)
-        this_title_pdf = ms.add_str_before_ext(this_title_pdf, "-Ratio%s"%(par), "pdf")
-        if ("LR" in this_title_pdf):
-            this_title_pdf = ms.add_str_before_ext(this_title_pdf, "-%s"%(fit), "pdf")
-
-        this_canvas.SaveAs(this_title_png)
-        this_canvas.SaveAs(this_title_pdf)
+            this_canvas.SaveAs(this_title)
 
 for t,targ in enumerate(list_targets):
     list_infiles[t].Close()

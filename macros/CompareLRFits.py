@@ -54,12 +54,12 @@ input_cuts+="_LR"
 # plots_cuts+="_LR"
 
 ## Input
-inputPath = mS.getPlotsFolder("Fit", input_cuts, infoDict["Target"], isJLab, False) # "../output/"
-inputROOT = mS.getPlotsFile("Fit", dataset, "root", "LR")
+inputPath = mS.get_plots_folder("Fit", input_cuts, dataset, isJLab, False)
+inputROOT = mS.get_plots_file("Fit", dataset, "root", "LR")
 inputfile = TFile(inputPath+inputROOT,"READ")
 
 ## Output
-outputPath = mS.getPlotsFolder("CompareLRFits", plots_cuts, infoDict["Target"], isJLab)
+outputPath = mS.get_plots_folder("CompareLRFits", plots_cuts, dataset, isJLab)
 
 list_func_names = ["crossSectionR"]
 list_func_names.append("crossSectionL")
@@ -118,8 +118,8 @@ for i,ipar in enumerate(["A", "B", "C"]):
     mS.DrawPreliminaryInfo("Comparison L/R %s"%ipar)
     mS.DrawTargetInfo(nameFormatted, "Data")
 
-    this_title_gif = outputPath + mS.getPlotsFile("CompareLR_%s"%ipar, dataset, "gif")
-    this_title_pdf = outputPath + mS.getPlotsFile("CompareLR_%s"%ipar, dataset, "pdf")
+    this_title_gif = outputPath + mS.get_plots_file("CompareLR_%s"%ipar, dataset, "gif")
+    this_title_pdf = outputPath + mS.get_plots_file("CompareLR_%s"%ipar, dataset, "pdf")
 
     canvas.SaveAs(this_title_gif)
     canvas.SaveAs(this_title_pdf)

@@ -42,7 +42,7 @@ useNu = True if ("N" in this_bin_dict) else False
 plot_method = 'KinematicVars' if useNu else 'VarsVsXb' # Update this to get Q2, Zh... plots with Xb too
 
 ## Input
-inputPath = ms.getOutputFolder("Hist2D", "", isJLab, False) # "../output/"
+inputPath = ms.get_output_folder("Hist2D", "", isJLab, False) # "../output/"
 
 inputPath += plot_method+"_"+infoDict["Target"]+"_"
 if isData:  inputPath += "data.root"
@@ -50,7 +50,7 @@ else:       inputPath += "hsim.root"
 inputfile = TFile(inputPath,"READ")
 
 ## Output
-outputPath = ms.getPlotsFolder("Map_Bin2D", "", plot_method +"/"+ infoDict["Target"], isJLab)
+outputPath = ms.get_plots_folder("Map_Bin2D", "", infoDict["Target"]+"_"+plot_method, isJLab)
 
 correct_prefix = {"reco": "Reconstructed", "mtch": "Reconstructed", "gene": "Generated"}
 short_prefix = {"reco": "Rec", "mtch": "Rec", "gene": "Gen"}
