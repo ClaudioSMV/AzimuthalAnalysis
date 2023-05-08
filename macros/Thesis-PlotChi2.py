@@ -9,10 +9,10 @@ gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
 
 ## Defining Style
-ms.ForceStyle()
-# gStyle.SetPadRightMargin(2*ms.GetMargin())
-# gStyle.SetPadTopMargin(1.1*ms.GetMargin())
-# gStyle.SetLabelSize(ms.GetSize()-10,"z")
+ms.force_style()
+# gStyle.SetPadRightMargin(2*ms.get_margin())
+# gStyle.SetPadTopMargin(1.1*ms.get_margin())
+# gStyle.SetLabelSize(ms.get_size()-10,"z")
 # gStyle.SetTitleYOffset(1.3)
 gROOT.ForceStyle()
 
@@ -41,22 +41,22 @@ rootpath = options.rootpath
 dataset = options.Dataset
 isJLab = options.JLabCluster
 
-infoDict = ms.getDictNameFormat(dataset)
-nameFormatted = ms.getNameFormatted(dataset, True)
+infoDict = ms.get_name_dict(dataset)
+nameFormatted = ms.get_name_format(dataset, True)
 this_binning = infoDict["BinningType"]
 this_bin_dict = ms.all_dicts[this_binning]
 
 ## Cuts
 input_cuts = options.inputCuts
-fit_type = ms.GetFitMethod(input_cuts)
+fit_type = ms.get_fit_method(input_cuts)
 
 ## Input
-inputPath = ms.getPlotsFolder("Fit", input_cuts, ms.getBinNameFormatted(dataset) +"/"+ infoDict["Target"], isJLab, False) # "../output/"
-inputROOT = ms.getPlotsFile("Fit", dataset, "root", fit_type)
+inputPath = ms.get_plots_folder("Fit", input_cuts, dataset, isJLab, False) # "../output/"
+inputROOT = ms.get_plots_file("Fit", dataset, "root", fit_type)
 inputfile = TFile(inputPath+inputROOT,"READ")
 
 ## Output
-outputPath = ms.getPlotsFolder("Fit_Chi2", input_cuts, "", isJLab)
+outputPath = ms.get_plots_folder("Fit_Chi2", input_cuts, dataset, isJLab)
 
 ### Define fit name
 this_fit_name = "crossSectionR"
@@ -109,15 +109,15 @@ th1_chi2.GetYaxis().SetRangeUser(0.001, 1.1*th1_chi2.GetMaximum())
 # tmp_hist.Draw("AXIS")
 th1_chi2.Draw("")
 
-ms.DrawPreliminaryInfo("#chi^{2}/ndf from fit")
+ms.draw_preliminary("#chi^{2}/ndf from fit")
 
-ms.DrawTargetInfo(nameFormatted, "Data")
+ms.draw_targetinfo(nameFormatted, "Data")
 
-ext_fit = ms.GetFitExtension(fit_type, this_fit_name)
-name_png = ms.getPlotsFile("Chi2ndf",dataset,"png",ext_fit)
+ext_fit = ms.get_fit_shortmethod(fit_type, this_fit_name)
+name_png = ms.get_plots_file("Chi2ndf",dataset,"png",ext_fit)
 canvas.SaveAs(outputPath+name_png)
 
-# name_pdf = ms.getPlotsFile("PvsNphe_%s"%(this_targ),"","pdf",out_DatOrSim)
+# name_pdf = ms.get_plots_file("PvsNphe_%s"%(this_targ),"","pdf",out_DatOrSim)
 # canvas.SaveAs(outputPath+name_pdf)
 
 canvas.Clear()

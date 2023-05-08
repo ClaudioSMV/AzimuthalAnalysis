@@ -8,10 +8,10 @@ gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
 
 ## Defining Style
-ms.ForceStyle()
+ms.force_style()
 
-gStyle.SetStatX(1 - ms.GetMargin() - 0.005)
-gStyle.SetStatY(2*ms.GetMargin() + 0.205)
+gStyle.SetStatX(1 - ms.get_margin() - 0.005)
+gStyle.SetStatY(2*ms.get_margin() + 0.205)
 
 def PropErrorDivision(v1, e1, v2, e2, cov=0):
     this_error = TMath.Abs(v1/v2)*TMath.Sqrt((e1/v1)*(e1/v1) + (e2/v2)*(e2/v2) - 2*cov/(v1*v2))
@@ -47,14 +47,14 @@ input_cuts = options.inputCuts
 plots_cuts = options.inputCuts +"_"+ options.outputCuts
 
 ### Define type of fit used
-fit_type = ms.GetFitMethod(plots_cuts)
+fit_type = ms.get_fit_method(plots_cuts)
 
 mixD = False
-if "MixD" in ms.getListOfCuts(plots_cuts):
+if "MixD" in ms.get_cut_str2finallist(plots_cuts):
     mixD = True
 
-infoDict = ms.getDictNameFormat(dataset) # ["Target", "BinningType", "NDims"]
-nameFormatted = ms.getNameFormatted(dataset)
+infoDict = ms.get_name_dict(dataset) # ["Target", "BinningType", "NDims"]
+nameFormatted = ms.get_name_format(dataset)
 
 if ("D" in infoDict["Target"]):
     print("  [ParRatio] Trivial ratio with D. Try with a solid target.")
@@ -67,9 +67,9 @@ if ("D" in infoDict["Target"]):
 
 useZh = False
 usePt2 = False
-if ("Z" in ms.getListOfCuts(plots_cuts)):
+if ("Z" in ms.get_cut_str2finallist(plots_cuts)):
     useZh = True
-if ("P" in ms.getListOfCuts(plots_cuts)):
+if ("P" in ms.get_cut_str2finallist(plots_cuts)):
     usePt2 = True
 
 if (useZh) and (usePt2):
@@ -89,18 +89,18 @@ else:
 solid_targ = infoDict["Target"] if not mixD else ""
 dataset_D = "D%s_%s_%s"%(solid_targ,infoDict["BinningType"],infoDict["NDims"])
 
-inputPath_D = ms.getPlotsFolder("Fit", input_cuts, ms.getBinNameFormatted(dataset_D) + "/D" + solid_targ, isJLab, False) # "../output/"
-inputROOT_D = ms.getPlotsFile("Fit", dataset_D, "root", fit_type)
+inputPath_D = ms.get_plots_folder("Fit", input_cuts, dataset_D, isJLab, False)
+inputROOT_D = ms.get_plots_file("Fit", dataset_D, "root", fit_type)
 inputfile_D = TFile(inputPath_D+inputROOT_D,"READ")
 
 ## Input
-inputPath_solid = ms.getPlotsFolder("Fit", input_cuts, ms.getBinNameFormatted(dataset) +"/"+ infoDict["Target"], isJLab, False) # "../output/"
-inputROOT_solid = ms.getPlotsFile("Fit", dataset, "root", fit_type)
+inputPath_solid = ms.get_plots_folder("Fit", input_cuts, dataset, isJLab, False)
+inputROOT_solid = ms.get_plots_file("Fit", dataset, "root", fit_type)
 inputfile_solid = TFile(inputPath_solid+inputROOT_solid,"READ")
 
 ## Output
-outputPath = ms.getPlotsFolder("ParametersRatio", plots_cuts, ms.getBinNameFormatted(dataset) +"/"+ infoDict["Target"], isJLab)
-outputROOT = ms.getPlotsFile("ParametersRatio", dataset, "root", fit_type)
+outputPath = ms.get_plots_folder("ParametersRatio", plots_cuts, dataset, isJLab)
+outputROOT = ms.get_plots_file("ParametersRatio", dataset, "root", fit_type)
 if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
     print("  [ParRatio] Parameters ratio file already exists! Not overwriting it.")
     exit()
@@ -264,7 +264,7 @@ ymax = 1.2
 for e,elem in enumerate(list_func_names):
     for t,typeR in enumerate(type_reco_short):
 
-        name_ext = ms.GetFitExtension(fit_type, elem)
+        name_ext = ms.get_fit_shortmethod(fit_type, elem)
 
         hist_b = ratio_th1_b_list[t][e]
         hist_b.SetMinimum(ymin)
@@ -273,10 +273,10 @@ for e,elem in enumerate(list_func_names):
         hist_b.Write()
         hist_b.Draw("hist e")
 
-        ms.DrawPreliminaryInfo("Ratio over D%s %s"%(solid_targ,fit_type))
-        ms.DrawTargetInfo(nameFormatted, "Data")
+        ms.draw_preliminary("Ratio over D%s %s"%(solid_targ,fit_type))
+        ms.draw_targetinfo(nameFormatted, "Data")
 
-        outputName = ms.getPlotsFile("RatioD%s_B_%s"%(solid_targ,typeR), dataset, "png", name_ext)
+        outputName = ms.get_plots_file("RatioD%s_B_%s"%(solid_targ,typeR), dataset, "png", name_ext)
         canvas.SaveAs(outputPath+outputName)
         canvas.Clear()
 
@@ -287,10 +287,10 @@ for e,elem in enumerate(list_func_names):
         hist_c.Write()
         hist_c.Draw("hist e")
 
-        ms.DrawPreliminaryInfo("Ratio over D%s %s"%(solid_targ,fit_type))
-        ms.DrawTargetInfo(nameFormatted, "Data")
+        ms.draw_preliminary("Ratio over D%s %s"%(solid_targ,fit_type))
+        ms.draw_targetinfo(nameFormatted, "Data")
 
-        outputName = ms.getPlotsFile("RatioD%s_C_%s"%(solid_targ,typeR), dataset, "png", name_ext)
+        outputName = ms.get_plots_file("RatioD%s_C_%s"%(solid_targ,typeR), dataset, "png", name_ext)
         canvas.SaveAs(outputPath+outputName)
         canvas.Clear()
 

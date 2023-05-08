@@ -9,10 +9,10 @@ gROOT.SetBatch( True )
 gStyle.SetOptFit(1)
 
 ## Defining Style
-ms.ForceStyle()
+ms.force_style()
 
-gStyle.SetStatX(1 - ms.GetMargin() - 0.005)
-gStyle.SetStatY(2*ms.GetMargin() + 0.205)
+gStyle.SetStatX(1 - ms.get_margin() - 0.005)
+gStyle.SetStatY(2*ms.get_margin() + 0.205)
 
 # Construct the argument parser
 parser = optparse.OptionParser("usage: %prog [options]\n")
@@ -32,16 +32,16 @@ rootpath = options.rootpath
 dataset = options.Dataset
 isJLab = options.JLabCluster
 
-infoDict = ms.getDictNameFormat(dataset)
-nameFormatted = ms.getNameFormatted(dataset)
+infoDict = ms.get_name_dict(dataset)
+nameFormatted = ms.get_name_format(dataset)
 
 ## Cuts
 input_cuts = options.inputCuts
 plots_cuts = options.inputCuts + "_" + options.outputCuts
 
-if ("FErr" in ms.getListOfCuts(input_cuts)):
+if ("FErr" in ms.get_cut_str2finallist(input_cuts)):
     input_cuts = input_cuts.replace("FE","")
-if ("FErr" in ms.getListOfCuts(plots_cuts)):
+if ("FErr" in ms.get_cut_str2finallist(plots_cuts)):
     plots_cuts = plots_cuts.replace("FE","")
 
 input_cuts_eE = input_cuts
@@ -51,16 +51,16 @@ input_cuts_FE = input_cuts + "_FE"
 plots_cuts_FE = plots_cuts + "_FE"
 
 ## Input
-inputPath_eE = ms.getPlotsFolder("Correction", input_cuts_eE, infoDict["Target"], isJLab, False)
-inputPath_FE = ms.getPlotsFolder("Correction", input_cuts_FE, infoDict["Target"], isJLab, False)
-inputROOT = ms.getPlotsFile("Corrected", dataset, "root")
+inputPath_eE = ms.get_plots_folder("Correction", input_cuts_eE, dataset, isJLab, False)
+inputPath_FE = ms.get_plots_folder("Correction", input_cuts_FE, dataset, isJLab, False)
+inputROOT = ms.get_plots_file("Corrected", dataset, "root")
 
 inputfile_eE = TFile(inputPath_eE+inputROOT,"READ")
 inputfile_FE = TFile(inputPath_FE+inputROOT,"READ")
 
 ## Output
-outputPath = ms.getPlotsFolder("ErrorsCompared", plots_cuts_eE, infoDict["Target"], isJLab)
-outputROOT = ms.getPlotsFile("Errors", dataset, "root")
+outputPath = ms.get_plots_folder("ErrorsCompared", plots_cuts_eE, dataset, isJLab)
+outputROOT = ms.get_plots_file("Errors", dataset, "root")
 # if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
 #     print("Fit already exists! Not overwriting it.")
 #     exit()
@@ -117,11 +117,11 @@ for h in list_hists:
             hist_tmp.Draw("hist col")
             hist_tmp.Write()
 
-            ms.DrawPreliminaryInfo("Compare error")
-            ms.DrawTargetInfo(nameFormatted, "Data")
-            ms.DrawBinInfo(tmp_txt, infoDict["BinningType"])
+            ms.draw_preliminary("Compare error")
+            ms.draw_targetinfo(nameFormatted, "Data")
+            ms.draw_bininfo(tmp_txt, infoDict["BinningType"])
 
-            outputName = ms.getPlotsFile("CompareError_"+tmp_name, dataset, "png",tmp_txt)
+            outputName = ms.get_plots_file("CompareError_"+tmp_name, dataset, "png",tmp_txt)
             canvas.SaveAs(outputPath+outputName)
             canvas.Clear()
 

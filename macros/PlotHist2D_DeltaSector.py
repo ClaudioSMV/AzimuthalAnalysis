@@ -9,9 +9,9 @@ gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
 
 ## Defining Style
-ms.ForceStyle()
-# gStyle.SetPadRightMargin(2*ms.GetMargin())
-gStyle.SetLabelSize(ms.GetSize()-10,"z")
+ms.force_style()
+# gStyle.SetPadRightMargin(2*ms.get_margin())
+gStyle.SetLabelSize(ms.get_size()-10,"z")
 gStyle.SetTitleYOffset(1.3)
 gROOT.ForceStyle()
 
@@ -35,8 +35,8 @@ isJLab = options.JLabCluster
 # drawLines = options.drawLines
 isData = options.isData
 
-infoDict = ms.getDictNameFormat(dataset)
-nameFormatted = ms.getNameFormatted(dataset, True)
+infoDict = ms.get_name_dict(dataset)
+nameFormatted = ms.get_name_format(dataset, True)
 this_binning = infoDict["BinningType"]
 this_bin_dict = ms.all_dicts[this_binning]
 
@@ -44,13 +44,13 @@ this_bin_dict = ms.all_dicts[this_binning]
 input_cuts = options.inputCuts
 
 ## Input
-inputPath = ms.getOutputFolder("Hist2D", input_cuts, isJLab, False) # "../output/"
+inputPath = ms.get_output_folder("Hist2D", input_cuts, isJLab, False) # "../output/"
 inputPath += "PQVsDeltaSector_"+nameFormatted+"_"
 inputPath += "data.root" if isData else "hsim.root"
 inputfile = TFile(inputPath,"READ")
 
 ## Output
-outputPath = ms.getPlotsFolder("Hist2D/DeltaSector", input_cuts, ms.getBinNameFormatted(dataset) +"/"+ infoDict["Target"], isJLab)
+outputPath = ms.get_plots_folder("Hist2D/DeltaSector", input_cuts, dataset, isJLab)
 
 correct_prefix = {"reco": "Reconstructed", "recoAcc": "Acc corrected", "gene": "Generated"}
 # short_prefix = {"reco": "Rec", "mtch": "Rec", "gene": "Gen"}
@@ -77,7 +77,7 @@ for m in list_methods:
 canvas = TCanvas("cv","cv",1000,800)
 gStyle.SetOptStat(0)
 
-list_colors = ms.GetColors(True)
+list_colors = ms.get_color()
 
 ROOT.TGaxis.SetExponentOffset(-0.06, 0.0, "y")
 
@@ -85,11 +85,11 @@ for h,hist in enumerate(list_2dHist):
     xbins = hist.GetXaxis().GetNbins()
     list_outHists = []
 
-    this_legend = TLegend(ms.GetPadCenter()-0.2,1-ms.GetMargin()-0.27, ms.GetPadCenter()+0.2,1-ms.GetMargin()-0.02)
+    this_legend = TLegend(ms.get_padcenter()-0.2,1-ms.get_margin()-0.27, ms.get_padcenter()+0.2,1-ms.get_margin()-0.02)
     this_legend.SetBorderSize(0)
     # this_legend.SetFillColor(ROOT.kWhite)
-    this_legend.SetTextFont(ms.GetFont())
-    this_legend.SetTextSize(ms.GetSize()-8)
+    this_legend.SetTextFont(ms.get_font())
+    this_legend.SetTextSize(ms.get_size()-8)
     this_legend.SetFillStyle(0)
 
     this_thStack = list_thStack[h]
@@ -132,16 +132,16 @@ for h,hist in enumerate(list_2dHist):
     this_legend.Draw()
 
     this_method = list_methods[h]
-    ms.DrawPreliminaryInfo("#DeltaSector %s"%correct_prefix[this_method])
+    ms.draw_preliminary("#DeltaSector %s"%correct_prefix[this_method])
     dataOrSim = "Data" if isData else "Simulation"
     out_DatOrSim = "Data" if isData else "HSim"
 
-    ms.DrawTargetInfo(infoDict["Target"], dataOrSim)
+    ms.draw_targetinfo(infoDict["Target"], dataOrSim)
 
-    name_png = ms.getPlotsFile("DSect_%s"%(this_method),dataset,"png",out_DatOrSim)
+    name_png = ms.get_plots_file("DSect_%s"%(this_method),dataset,"png",out_DatOrSim)
     canvas.SaveAs(outputPath+name_png)
 
-    # name_pdf = ms.getPlotsFile("DSect_%s"%(this_method),dataset,"pdf",out_DatOrSim)
+    # name_pdf = ms.get_plots_file("DSect_%s"%(this_method),dataset,"pdf",out_DatOrSim)
     # canvas.SaveAs(outputPath+name_pdf)
 
     canvas.Clear()

@@ -16,10 +16,10 @@ gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
 
 ## Defining Style
-myStyle.ForceStyle()
+myStyle.force_style()
 
-gStyle.SetStatX(1 - myStyle.GetMargin() - 0.005)
-gStyle.SetStatY(2*myStyle.GetMargin() + 0.205)
+gStyle.SetStatX(1 - myStyle.get_margin() - 0.005)
+gStyle.SetStatY(2*myStyle.get_margin() + 0.205)
 
 # Construct the argument parser
 parser = optparse.OptionParser("usage: %prog [options]\n")
@@ -37,10 +37,10 @@ dataset = options.Dataset
 if options.JLabCluster: rootpath = "JLab_cluster"
 ext_error = "_FullErr" if options.errorFull else ""
 
-infoDict = myStyle.getDictNameFormat(dataset)
+infoDict = myStyle.get_name_dict(dataset)
 
 inputPath = myStyle.getOutputDir("Correction",infoDict["Target"],rootpath)
-nameFormatted = myStyle.getNameFormatted(dataset)
+nameFormatted = myStyle.get_name_format(dataset)
 inputfile = TFile(inputPath+nameFormatted+ext_error+".root","READ")
 
 outputPath = myStyle.getOutputDir("Fit",infoDict["Target"],rootpath)
@@ -106,18 +106,18 @@ for h in list_of_hists:
 
             hist.Write()
 
-            myStyle.DrawPreliminaryInfo("Correction fit")
-            myStyle.DrawTargetInfo(nameFormatted, "Data")
-            myStyle.DrawBinInfo(tmp_txt, infoDict["BinningType"])
+            myStyle.draw_preliminary("Correction fit")
+            myStyle.draw_targetinfo(nameFormatted, "Data")
+            myStyle.draw_bininfo(tmp_txt, infoDict["BinningType"])
 
             str_FitL = TLatex(-15, 0.8*hist.GetBinContent(limit_bin_L), "#chi^2 / ndf = %.2f / %i"%(fit_funct_left.GetChisquare(), fit_funct_left.GetNDF()))
             str_FitL.SetTextAlign(33)
-            str_FitL.SetTextSize(myStyle.GetSize()-6)
+            str_FitL.SetTextSize(myStyle.get_size()-6)
             str_FitL.Draw()
 
             str_FitR = TLatex(15, 0.8*hist.GetBinContent(limit_bin_R), "#chi^2 / ndf = %.2f / %i"%(fit_funct_right.GetChisquare(), fit_funct_right.GetNDF()))
             str_FitR.SetTextAlign(13)
-            str_FitR.SetTextSize(myStyle.GetSize()-6)
+            str_FitR.SetTextSize(myStyle.get_size()-6)
             str_FitR.Draw()
 
             canvas.SaveAs(outputPath+"FitBothTails_"+nameFormatted+"_"+tmp_txt+".gif")

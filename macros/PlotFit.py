@@ -9,10 +9,10 @@ gROOT.SetBatch( True )
 gStyle.SetOptFit(1)
 
 ## Defining Style
-ms.ForceStyle()
+ms.force_style()
 
-gStyle.SetStatX(1 - ms.GetMargin() - 0.005)
-gStyle.SetStatY(2*ms.GetMargin() + 0.205)
+gStyle.SetStatX(1 - ms.get_margin() - 0.005)
+gStyle.SetStatY(2*ms.get_margin() + 0.205)
 
 
 ## Define functions
@@ -90,8 +90,8 @@ def Get_FitFunctions(h_out, list_fname, this_fittype, opts):
     # elif (this_fittype == "Ff"):
 
     ### Define options
-    opt_sk0 = True if ("NPeak" in ms.getListOfCuts(opts)) else False
-    opt_sin = True if ("Sin" in ms.getListOfCuts(opts)) else False
+    opt_sk0 = True if ("NPeak" in ms.get_cut_str2finallist(opts)) else False
+    opt_sin = True if ("Sin" in ms.get_cut_str2finallist(opts)) else False
 
     ### Set limits
     Nbins = h_out.GetXaxis().GetNbins()
@@ -179,7 +179,7 @@ def Get_Chi2ndf(fit_funct, x,y, position):
     # elif (this_fittype == "Ff"):
 
     str_Fit.SetTextAlign(text_orientation)
-    str_Fit.SetTextSize(ms.GetSize()-6)
+    str_Fit.SetTextSize(ms.get_size()-6)
 
     return str_Fit
 
@@ -205,32 +205,32 @@ input_cuts = options.inputCuts
 plots_cuts = options.inputCuts +"_"+ options.outputCuts
 
 ### Define type of fit used
-fit_type = ms.GetFitMethod(plots_cuts)
+fit_type = ms.get_fit_method(plots_cuts)
 
-infoDict = ms.getDictNameFormat(dataset)
-nameFormatted = ms.getNameFormatted(dataset)
+infoDict = ms.get_name_dict(dataset)
+nameFormatted = ms.get_name_format(dataset)
 
 ## Cuts
 # plots_cuts+="_"+fit_type # Add Fold or LR extension
 useSin = False
-if ("Sin" in ms.getListOfCuts(plots_cuts)):
+if ("Sin" in ms.get_cut_str2finallist(plots_cuts)):
     useSin = True
 
 ### Remove incompatible methods
-if ((fit_type == "Ff") and ("NPeak" in ms.getListOfCuts(plots_cuts))):
+if ((fit_type == "Ff") and ("NPeak" in ms.get_cut_str2finallist(plots_cuts))):
     # print("  [Fit] Full fit (Ff) method is incompatible with removing peak. Use LR or Fd instead!")
     # exit()
     print("  [Fit] This time Full fit (Ff) method will run without removing peak")
 
 
 ## Input
-inputPath = ms.getPlotsFolder("Correction", input_cuts, ms.getBinNameFormatted(dataset) +"/"+ infoDict["Target"], isJLab, False) # "../output/"
-inputROOT = ms.getPlotsFile("Corrected", dataset, "root")
+inputPath = ms.get_plots_folder("Correction", input_cuts, dataset, isJLab, False)
+inputROOT = ms.get_plots_file("Corrected", dataset, "root")
 inputfile = TFile(inputPath+inputROOT,"READ")
 
 ## Output
-outputPath = ms.getPlotsFolder("Fit", plots_cuts, ms.getBinNameFormatted(dataset) +"/"+ infoDict["Target"], isJLab)
-outputROOT = ms.getPlotsFile("Fit", dataset, "root", fit_type)
+outputPath = ms.get_plots_folder("Fit", plots_cuts, dataset, isJLab)
+outputROOT = ms.get_plots_file("Fit", dataset, "root", fit_type)
 if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
     print("  [Fit] Fit already exists! Not overwriting it.")
     exit()
@@ -330,11 +330,11 @@ for h in list_of_hists:
             hist_corr.Draw("FUNC same")
             hist_corr.Write()
 
-            ms.DrawPreliminaryInfo("Correction fit")
-            ms.DrawTargetInfo(nameFormatted, "Data")
-            ms.DrawBinInfo(this_nbin, infoDict["BinningType"])
+            ms.draw_preliminary("Correction fit")
+            ms.draw_targetinfo(nameFormatted, "Data")
+            ms.draw_bininfo(this_nbin, infoDict["BinningType"])
 
-            outputName = ms.getPlotsFile("Fit_"+tmp_name, dataset, "png",this_nbin)
+            outputName = ms.get_plots_file("Fit_"+tmp_name, dataset, "png",this_nbin)
             canvas.SaveAs(outputPath+outputName)
             canvas.Clear()
 

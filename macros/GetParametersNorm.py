@@ -8,10 +8,10 @@ gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
 
 ## Defining Style
-ms.ForceStyle()
+ms.force_style()
 
-# gStyle.SetStatX(1 - ms.GetMargin() - 0.005)
-# gStyle.SetStatY(2*ms.GetMargin() + 0.205)
+# gStyle.SetStatX(1 - ms.get_margin() - 0.005)
+# gStyle.SetStatY(2*ms.get_margin() + 0.205)
 
 def PropErrorDivision(v1, e1, v2, e2, cov=0):
     this_error = TMath.Abs(v1/v2)*TMath.Sqrt((e1/v1)*(e1/v1) + (e2/v2)*(e2/v2) - 2*cov/(v1*v2))
@@ -45,10 +45,10 @@ input_cuts = options.inputCuts
 plots_cuts = options.inputCuts +"_"+ options.outputCuts
 
 ### Define type of fit used
-fit_type = ms.GetFitMethod(plots_cuts)
+fit_type = ms.get_fit_method(plots_cuts)
 
-infoDict = ms.getDictNameFormat(dataset)
-nameFormatted = ms.getNameFormatted(dataset)
+infoDict = ms.get_name_dict(dataset)
+nameFormatted = ms.get_name_format(dataset)
 
 ## Cuts
 # # Add fit type to the list of cuts!
@@ -56,13 +56,13 @@ nameFormatted = ms.getNameFormatted(dataset)
 # plots_cuts+="_"+fit_type
 
 ## Input
-inputPath = ms.getPlotsFolder("Fit", input_cuts, ms.getBinNameFormatted(dataset) +"/"+ infoDict["Target"], isJLab, False) # "../output/"
-inputROOT = ms.getPlotsFile("Fit", dataset, "root", fit_type)
+inputPath = ms.get_plots_folder("Fit", input_cuts, dataset, isJLab, False)
+inputROOT = ms.get_plots_file("Fit", dataset, "root", fit_type)
 inputfile = TFile(inputPath+inputROOT,"READ")
 
 ## Output
-outputPath = ms.getPlotsFolder("ParametersNorm", plots_cuts, ms.getBinNameFormatted(dataset) +"/"+ infoDict["Target"], isJLab)
-outputROOT = ms.getPlotsFile("Parameters", dataset, "root", fit_type)
+outputPath = ms.get_plots_folder("ParametersNorm", plots_cuts, dataset, isJLab)
+outputROOT = ms.get_plots_file("Parameters", dataset, "root", fit_type)
 if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
     print("  [ParNorm] Parameters normalized file already exists! Not overwriting it.")
     exit()
@@ -198,14 +198,14 @@ ymax =  1.2
 for e,elem in enumerate(list_func_names):
     for t,typeR in enumerate(type_reco_short):
 
-        name_ext = ms.GetFitExtension(fit_type, elem)
+        name_ext = ms.get_fit_shortmethod(fit_type, elem)
 
         ## Ratio b/a
-        # legend_b = TLegend(1-ms.GetMargin()-0.35,1-ms.GetMargin()-0.12, 1-ms.GetMargin()-0.05,1-ms.GetMargin()-0.02)
+        # legend_b = TLegend(1-ms.get_margin()-0.35,1-ms.get_margin()-0.12, 1-ms.get_margin()-0.05,1-ms.get_margin()-0.02)
         # legend_b.SetBorderSize(0)
         # # legend_b.SetFillColor(ROOT.kWhite)
-        # legend_b.SetTextFont(ms.GetFont())
-        # legend_b.SetTextSize(ms.GetSize()-8)
+        # legend_b.SetTextFont(ms.get_font())
+        # legend_b.SetTextSize(ms.get_size()-8)
         # legend_b.SetFillStyle(0)
         ## Positive ratios
         hist_b = th1_b_norm_list[t][e]
@@ -220,19 +220,19 @@ for e,elem in enumerate(list_func_names):
         hist_b.Draw("hist e")
 
         # legend_b.Draw()
-        ms.DrawPreliminaryInfo("Parameters normalized %s"%(fit_type))
-        ms.DrawTargetInfo(nameFormatted, "Data")
+        ms.draw_preliminary("Parameters normalized %s"%(fit_type))
+        ms.draw_targetinfo(nameFormatted, "Data")
 
-        outputName = ms.getPlotsFile("ParNorm_B_%s"%(typeR), dataset, "png", name_ext)
+        outputName = ms.get_plots_file("ParNorm_B_%s"%(typeR), dataset, "png", name_ext)
         canvas.SaveAs(outputPath+outputName)
         canvas.Clear()
 
         ## Ratio c/a
-        # legend_c = TLegend(1-ms.GetMargin()-0.35,1-ms.GetMargin()-0.12, 1-ms.GetMargin()-0.05,1-ms.GetMargin()-0.02)
+        # legend_c = TLegend(1-ms.get_margin()-0.35,1-ms.get_margin()-0.12, 1-ms.get_margin()-0.05,1-ms.get_margin()-0.02)
         # legend_c.SetBorderSize(0)
         # # legend_c.SetFillColor(ROOT.kWhite)
-        # legend_c.SetTextFont(ms.GetFont())
-        # legend_c.SetTextSize(ms.GetSize()-8)
+        # legend_c.SetTextFont(ms.get_font())
+        # legend_c.SetTextSize(ms.get_size()-8)
         # legend_c.SetFillStyle(0)
         ## Positive ratios
         hist_c = th1_c_norm_list[t][e]
@@ -247,10 +247,10 @@ for e,elem in enumerate(list_func_names):
         hist_c.Draw("hist e")
 
         # legend_c.Draw()
-        ms.DrawPreliminaryInfo("Parameters normalized %s"%(fit_type))
-        ms.DrawTargetInfo(nameFormatted, "Data")
+        ms.draw_preliminary("Parameters normalized %s"%(fit_type))
+        ms.draw_targetinfo(nameFormatted, "Data")
 
-        outputName = ms.getPlotsFile("ParNorm_C_%s"%(typeR), dataset, "png", name_ext)
+        outputName = ms.get_plots_file("ParNorm_C_%s"%(typeR), dataset, "png", name_ext)
         canvas.SaveAs(outputPath+outputName)
         canvas.Clear()
 

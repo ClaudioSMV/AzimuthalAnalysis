@@ -8,7 +8,7 @@ gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
 
 ## Defining Style
-ms.ForceStyle()
+ms.force_style()
 
 # Construct the argument parser
 parser = optparse.OptionParser("usage: %prog [options]\n")
@@ -33,8 +33,8 @@ isJLab = options.JLabCluster
 # saveAll = options.saveAll
 fracAcc = int(options.fracAcc)
 
-infoDict  = ms.getDictNameFormat(dataset)
-nameFormatted = ms.getNameFormatted(dataset)
+infoDict  = ms.get_name_dict(dataset)
+nameFormatted = ms.get_name_format(dataset)
 
 ## Cuts
 input_cuts = options.inputCuts
@@ -42,9 +42,9 @@ plots_cuts = options.inputCuts +"_"+ options.outputCuts
 
 useZh = False
 usePt2 = False
-if ("Z" in ms.getListOfCuts(plots_cuts)):
+if ("Z" in ms.get_cut_str2finallist(plots_cuts)):
     useZh = True
-if ("P" in ms.getListOfCuts(plots_cuts)):
+if ("P" in ms.get_cut_str2finallist(plots_cuts)):
     usePt2 = True
 
 if (useZh) and (usePt2):
@@ -59,13 +59,13 @@ else:
     exit()
 
 ## Input
-inputPath = ms.getOutputFolder("ClosureTest%ip"%int(fracAcc), input_cuts, isJLab, False) # "../output/"
-inputName = ms.getOutputFile("ClosureTest", dataset) # "../output/"
+inputPath = ms.get_output_folder("ClosureTest%ip"%int(fracAcc), input_cuts, isJLab, False) # "../output/"
+inputName = ms.get_output_file("ClosureTest", dataset) # "../output/"
 inputfile = TFile(inputPath+inputName,"READ")
 
 ## Output
-outputPath = ms.getPlotsFolder("ClosureTest%ip"%int(fracAcc), plots_cuts, ms.getBinNameFormatted(dataset) +"/"+ infoDict["Target"], isJLab)
-outputROOT = ms.getPlotsFile("ClosureTest", dataset, "root")
+outputPath = ms.get_plots_folder("ClosureTest%ip"%int(fracAcc), plots_cuts, dataset, isJLab)
+outputROOT = ms.get_plots_file("ClosureTest", dataset, "root")
 
 histCorr_Reconstru = inputfile.Get("Corr_Reconstru")
 histCorr_ReMtch_mc = inputfile.Get("Corr_ReMtch_mc")
@@ -116,11 +116,11 @@ else:
     exit()
 
 ## Get projections
-names_list = ms.getListBinCode(binstr, this_binDict)
+names_list = ms.get_bincode_list(binstr, this_binDict)
 Proj1DTHnSparse_list = []
 
 for th in inputTHnSparse_list:
-    list_proj = ms.getListTSparseProj1D(th, names_list, False)
+    list_proj = ms.get_sparseproj1d_list(th, names_list, False)
     Proj1DTHnSparse_list.append(list_proj)
 
 ## Create TH1 summary ClosureTest
@@ -183,12 +183,12 @@ for pt,pref in enumerate(type_reco_short):
         #         this_proj.Draw("hist e same")
 
         #         # legend.Draw();
-        #         ms.DrawPreliminaryInfo(prefixType[p])
-        #         ms.DrawTargetInfo(nameFormatted, "Simulation")
-        #         ms.DrawBinInfo(info, infoDict["BinningType"])
+        #         ms.draw_preliminary(prefixType[p])
+        #         ms.draw_targetinfo(nameFormatted, "Simulation")
+        #         ms.draw_bininfo(info, infoDict["BinningType"])
 
         #         histName = "_".join(this_proj.GetName().split("_")[0:-1]) # Corr_A_B_Q1N2 -> Corr_A_B
-        #         outputName = ms.getPlotsFile(histName, dataset, "png", info)
+        #         outputName = ms.get_plots_file(histName, dataset, "png", info)
         #         canvas.SaveAs(outputPath+outputName)
         #         # canvas.SaveAs(outputPath+nameFormatted+"-"+this_proj.GetName()+".png")
         #         this_proj.Write()
@@ -220,13 +220,13 @@ for pt,pref in enumerate(type_reco_short):
 
         hCT.Draw("hist e same")
 
-        ms.DrawPreliminaryInfo("ClosureTest %s"%pref)
-        ms.DrawTargetInfo(nameFormatted, "Simulation")
-        ms.DrawBinInfo(info, infoDict["BinningType"])
+        ms.draw_preliminary("ClosureTest %s"%pref)
+        ms.draw_targetinfo(nameFormatted, "Simulation")
+        ms.draw_bininfo(info, infoDict["BinningType"])
 
         gPad.RedrawAxis("g")
 
-        outputName = ms.getPlotsFile(this_name, dataset, "png", info)
+        outputName = ms.get_plots_file(this_name, dataset, "png", info)
         canvas.SaveAs(outputPath+outputName)
         # canvas.SaveAs(outputPath+nameFormatted+"-ClosureTest_"+info+ext_error+".png")
         hCT.Write()
@@ -253,12 +253,12 @@ for pt,pref in enumerate(type_reco_short):
     top_label = "Z_{h}" if useZh else "P_{t}^{2}"
     if (pref != "Reco"):
         top_label+=" %s"%pref
-    ms.DrawSummaryInfo("ClosureTest 3d (Q^{2},#nu,%s)"%(top_label))
-    ms.DrawTargetInfo(nameFormatted, "Simulation")
+    ms.draw_summary("ClosureTest 3d (Q^{2},#nu,%s)"%(top_label))
+    ms.draw_targetinfo(nameFormatted, "Simulation")
 
-    outputName_png = ms.getPlotsFile(th1_ct.GetName(), dataset, "png")
+    outputName_png = ms.get_plots_file(th1_ct.GetName(), dataset, "png")
     canvas.SaveAs(outputPath+outputName_png)
-    outputName_pdf = ms.getPlotsFile(th1_ct.GetName(), dataset, "pdf")
+    outputName_pdf = ms.get_plots_file(th1_ct.GetName(), dataset, "pdf")
     canvas.SaveAs(outputPath+outputName_pdf)
     th1_ct.Write()
 
@@ -267,10 +267,10 @@ for pt,pref in enumerate(type_reco_short):
     th1_ct_err.SetLineColor(kBlack)
     th1_ct_err.SetTitleOffset(1.3,"y")
     th1_ct_err.Draw()
-    ms.DrawSummaryInfo("Closure error %s"%pref)
-    ms.DrawTargetInfo(nameFormatted, "Simulation")
+    ms.draw_summary("Closure error %s"%pref)
+    ms.draw_targetinfo(nameFormatted, "Simulation")
 
-    outputName = ms.getPlotsFile(th1_ct_err.GetName(), dataset, "png")
+    outputName = ms.get_plots_file(th1_ct_err.GetName(), dataset, "png")
     canvas.SaveAs(outputPath+outputName)
     th1_ct_err.Write()
 
@@ -279,10 +279,10 @@ for pt,pref in enumerate(type_reco_short):
     th1_ct_err100.SetLineColor(kBlack)
     th1_ct_err100.SetTitleOffset(1.3,"y")
     th1_ct_err100.Draw()
-    ms.DrawSummaryInfo("Closure error %% %s"%pref)
-    ms.DrawTargetInfo(nameFormatted, "Simulation")
+    ms.draw_summary("Closure error %% %s"%pref)
+    ms.draw_targetinfo(nameFormatted, "Simulation")
 
-    outputName = ms.getPlotsFile(th1_ct_err100.GetName(), dataset, "png")
+    outputName = ms.get_plots_file(th1_ct_err100.GetName(), dataset, "png")
     canvas.SaveAs(outputPath+outputName)
     th1_ct_err100.Write()
 

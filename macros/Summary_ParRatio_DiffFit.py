@@ -10,12 +10,12 @@ gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
 
 ## Defining Style
-ms.ForceStyle()
-# font=ms.GetFont()
-tsize=ms.GetSize()
+ms.force_style()
+# font=ms.get_font()
+tsize=ms.get_size()
 
-# gStyle.SetStatX(1 - ms.GetMargin() - 0.005)
-# gStyle.SetStatY(2*ms.GetMargin() + 0.205)
+# gStyle.SetStatX(1 - ms.get_margin() - 0.005)
+# gStyle.SetStatY(2*ms.get_margin() + 0.205)
 
 def CanvasPartition(canvas, nx, ny, lMarg, rMarg, bMarg, tMarg, extra_name=""):
     ## Labelling xy:
@@ -129,15 +129,15 @@ plots_cuts = options.inputCuts +"_"+ options.outputCuts
 
 ### Set mixing of D info in one
 mixD = False
-if "MixD" in ms.getListOfCuts(plots_cuts):
+if "MixD" in ms.get_cut_str2finallist(plots_cuts):
     mixD = True
 
 ## Cuts
 useZh = False
 usePt2 = False
-if ("Z" in ms.getListOfCuts(plots_cuts)):
+if ("Z" in ms.get_cut_str2finallist(plots_cuts)):
     useZh = True
-if ("P" in ms.getListOfCuts(plots_cuts)):
+if ("P" in ms.get_cut_str2finallist(plots_cuts)):
     usePt2 = True
 
 if (useZh) and (usePt2):
@@ -150,8 +150,8 @@ elif (not useZh) and (not usePt2):
 keyX = 'Z' if useZh else 'P'
 
 ## Define target and binning
-infoDict = ms.getDictNameFormat(dataset)
-nameFormatted = ms.getNameFormatted(dataset)
+infoDict = ms.get_name_dict(dataset)
+nameFormatted = ms.get_name_format(dataset)
 this_targ = infoDict["Target"]
 this_binning = infoDict["BinningType"]
 this_bin_dict = ms.all_dicts[this_binning]
@@ -165,11 +165,11 @@ nBinsP = len(this_bin_dict['P'])-1
 
 gStyle.SetOptStat(0)
 canvas_B = TCanvas("cvB","cvB",1000,800)
-CanvasPartition(canvas_B, nBinsQ, nBinsN,2*ms.GetMargin(),ms.GetMargin(),2*ms.GetMargin(),ms.GetMargin(),"B")
+CanvasPartition(canvas_B, nBinsQ, nBinsN,2*ms.get_margin(),ms.get_margin(),2*ms.get_margin(),ms.get_margin(),"B")
 canvas_B.SetGrid(0,1)
 
 canvas_C = TCanvas("cvC","cvC",1000,800)
-CanvasPartition(canvas_C, nBinsQ, nBinsN,2*ms.GetMargin(),ms.GetMargin(),2*ms.GetMargin(),ms.GetMargin(),"C")
+CanvasPartition(canvas_C, nBinsQ, nBinsN,2*ms.get_margin(),ms.get_margin(),2*ms.get_margin(),ms.get_margin(),"C")
 canvas_C.SetGrid(0,1)
 
 list_canvas = [canvas_B, canvas_C]
@@ -192,8 +192,8 @@ for fm in list_fitmethodsKey:
 
     # print("Detail: %s"%meth_detail)
 
-    inputPath = ms.getPlotsFolder("ParametersRatio", this_input_cuts, ms.getBinNameFormatted(dataset) +"/"+ this_targ, isJLab, False) # "../output/"
-    inputROOT = ms.getPlotsFile("ParametersRatio", dataset, "root", this_meth)
+    inputPath = ms.get_plots_folder("ParametersRatio", this_input_cuts, dataset, isJLab, False)
+    inputROOT = ms.get_plots_file("ParametersRatio", dataset, "root", this_meth)
 
     inputfile = TFile(inputPath+inputROOT,"READ")
     list_infiles.append(inputfile)
@@ -268,8 +268,8 @@ axis_hist.SetTitleOffset(1.0,"x")
 axis_hist.SetTitleOffset(1.8,"y")
 
 ## Style
-l_color = ms.GetColors(True)
-list_marker = ms.GetMarkers()
+l_color = ms.get_color()
+list_marker = ms.get_marker()
 
 for r,typeR in enumerate(type_reco_short):
     if typeR==0: # Skip reco method when does not exist!
@@ -280,10 +280,10 @@ for r,typeR in enumerate(type_reco_short):
         this_canvas.cd(0)
 
         # solid_mix = "_All" if mixD else "_Solid"
-        # ms.DrawSummaryInfo("%s ratio Solid/D%s %s"%(par,solid_mix,fit))
+        # ms.draw_summary("%s ratio Solid/D%s %s"%(par,solid_mix,fit))
         solid_mix = " mixed D" if mixD else ""
-        ms.DrawSummaryInfo("%s multi fit%s"%(fancy_uptitle[p],solid_mix))
-        ms.DrawTargetInfo(this_targ, "Data")
+        ms.draw_summary("%s multi fit%s"%(fancy_uptitle[p],solid_mix))
+        ms.draw_targetinfo(this_targ, "Data")
 
         ## Legend
         legQ, legN = 2, 0
@@ -301,8 +301,8 @@ for r,typeR in enumerate(type_reco_short):
 
         legend = TLegend(l_x1, l_y1, l_x2, l_y2)
         legend.SetBorderSize(0)
-        legend.SetTextFont(ms.GetFont())
-        legend.SetTextSize(ms.GetSize()-14)
+        legend.SetTextFont(ms.get_font())
+        legend.SetTextSize(ms.get_size()-14)
         legend.SetFillStyle(0)
         legend.SetTextAlign(22)
         legend.SetNColumns(3)
@@ -381,7 +381,7 @@ for r,typeR in enumerate(type_reco_short):
                         text = ROOT.TLatex()
                         text.SetTextSize(tsize-14)
                         text.SetTextAlign(23)
-                        title = ms.GetBinInfo("Q%i"%(iQ), this_binning)
+                        title = ms.get_bintxt("Q%i"%(iQ), this_binning)
                         text.DrawLatexNDC(XtoPad(0.5),YtoPad(Q2_bin_info_Ypos),title)
 
                     if (iQ==2):
@@ -389,7 +389,7 @@ for r,typeR in enumerate(type_reco_short):
                         text.SetTextSize(tsize-14)
                         text.SetTextAlign(23)
                         text.SetTextAngle(90)
-                        title = ms.GetBinInfo("%s%i"%(key1,iN), this_binning) # "Q%iN%i" or "Q%iX%i"
+                        title = ms.get_bintxt("%s%i"%(key1,iN), this_binning) # "Q%iN%i" or "Q%iX%i"
                         text.DrawLatexNDC(XtoPad(1.05),YtoPad(0.5),title)
 
                     if (iQ==legQ and iN==legN):
@@ -400,16 +400,13 @@ for r,typeR in enumerate(type_reco_short):
 
         this_canvas.cd(0)
 
-        this_bininfo = ms.getBinNameFormatted(dataset)
+        no_targ_dataset = dataset.replace(this_targ+"_", "")
 
-        this_title_png = ms.getSummaryPath("%s_%s"%(this_bininfo,typeR), "png", plots_cuts, isJLab, this_bininfo +"/"+this_targ, "Summary_DiffMethods")
-        this_title_png = ms.addBeforeRootExt(this_title_png, "-DiffFitRatio%s_%s"%(par,this_targ), "png")
+        for ext in ["png", "pdf"]:
+            this_title = ms.get_summary_fullpath("DifFit_Ratio%s"%(par), plots_cuts, no_targ_dataset, ext, typeR, isJLab)
+            this_title = ms.add_str_before_ext(this_title, "-%s"%(this_targ), ext)
 
-        this_title_pdf = ms.getSummaryPath("%s_%s"%(this_bininfo,typeR), "pdf", plots_cuts, isJLab, this_bininfo +"/"+this_targ, "Summary_DiffMethods")
-        this_title_pdf = ms.addBeforeRootExt(this_title_pdf, "-DiffFitRatio%s_%s"%(par,this_targ), "pdf")
-
-        this_canvas.SaveAs(this_title_png)
-        this_canvas.SaveAs(this_title_pdf)
+            this_canvas.SaveAs(this_title)
 
 for m,meth in enumerate(list_fitmethodsKey):
     list_infiles[m].Close()

@@ -9,9 +9,9 @@ gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
 
 ## Defining Style
-ms.ForceStyle()
-gStyle.SetPadRightMargin(2*ms.GetMargin())
-gStyle.SetLabelSize(ms.GetSize()-10,"z")
+ms.force_style()
+gStyle.SetPadRightMargin(2*ms.get_margin())
+gStyle.SetLabelSize(ms.get_size()-10,"z")
 gROOT.ForceStyle()
 
 # Construct the argument parser
@@ -32,8 +32,8 @@ isJLab = options.JLabCluster
 drawLines = options.drawLines
 isData = options.isData
 
-infoDict = ms.getDictNameFormat(dataset)
-nameFormatted = ms.getNameFormatted(dataset, True)
+infoDict = ms.get_name_dict(dataset)
+nameFormatted = ms.get_name_format(dataset, True)
 this_binning = infoDict["BinningType"]
 this_bin_dict = ms.all_dicts[this_binning]
 
@@ -42,7 +42,7 @@ useNu = True if ("N" in this_bin_dict) else False
 plot_method = 'KinematicVars' if useNu else 'VarsVsXb' # Update this to get Q2, Zh... plots with Xb too
 
 ## Input
-inputPath = ms.getOutputFolder("Hist2D", "", isJLab, False) # "../output/"
+inputPath = ms.get_output_folder("Hist2D", "", isJLab, False) # "../output/"
 
 inputPath += plot_method+"_"+infoDict["Target"]+"_"
 if isData:  inputPath += "data.root"
@@ -50,7 +50,7 @@ else:       inputPath += "hsim.root"
 inputfile = TFile(inputPath,"READ")
 
 ## Output
-outputPath = ms.getPlotsFolder("Map_Bin2D", "", plot_method +"/"+ infoDict["Target"], isJLab)
+outputPath = ms.get_plots_folder("Map_Bin2D", "", infoDict["Target"]+"_"+plot_method, isJLab)
 
 correct_prefix = {"reco": "Reconstructed", "mtch": "Reconstructed", "gene": "Generated"}
 short_prefix = {"reco": "Rec", "mtch": "Rec", "gene": "Gen"}
@@ -105,15 +105,15 @@ for h in list_of_hists:
                 for iy in range(1,len(y_axis)-1):
                     line.DrawLine(x_axis[0],y_axis[iy], x_axis[-1],y_axis[iy])
 
-            ms.DrawPreliminaryInfo(type_hist)
+            ms.draw_preliminary(type_hist)
             dataOrSim = "Data" if isData else "Simulation"
             out_DatOrSim = "Data" if isData else "HSim"
 
             text_UpRight = ROOT.TLatex()
-            text_UpRight.SetTextSize(ms.GetSize()-5)
+            text_UpRight.SetTextSize(ms.get_size()-5)
             text_UpRight.SetTextAlign(31)
             to_write = "%s vs %s, %s"%(ms.axis_label(var1, "Name"), ms.axis_label(var2, "Name"), dataOrSim)
-            text_UpRight.DrawLatexNDC(1-2*ms.GetMargin()-0.005,1-ms.GetMargin()+0.01, to_write)
+            text_UpRight.DrawLatexNDC(1-2*ms.get_margin()-0.005,1-ms.get_margin()+0.01, to_write)
 
             canvas.SaveAs(outputPath+nameFormatted+"_"+out_DatOrSim+"-"+out_pref+"_"+var1+var2+".png")
             canvas.Clear()

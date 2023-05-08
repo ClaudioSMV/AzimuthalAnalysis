@@ -9,10 +9,10 @@ gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
 
 ## Defining Style
-ms.ForceStyle(True)
-# gStyle.SetPadRightMargin(2*ms.GetMargin())
-# gStyle.SetPadTopMargin(1.1*ms.GetMargin())
-# gStyle.SetLabelSize(ms.GetSize()-10,"z")
+ms.force_style(True)
+# gStyle.SetPadRightMargin(2*ms.get_margin())
+# gStyle.SetPadTopMargin(1.1*ms.get_margin())
+# gStyle.SetLabelSize(ms.get_size()-10,"z")
 # gStyle.SetTitleYOffset(1.3)
 # gROOT.ForceStyle()
 
@@ -41,13 +41,13 @@ this_targ = dataset
 input_cuts = options.inputCuts
 
 ## Input
-inputPath = ms.getOutputFolder("Hist2D", input_cuts, isJLab, False) # "../output/"
+inputPath = ms.get_output_folder("Hist2D", input_cuts, isJLab, False) # "../output/"
 inputPath += "NpheVs_"+this_targ+"_"
 inputPath += "data.root" if isData else "hsim.root"
 inputfile = TFile(inputPath,"READ")
 
 ## Output
-outputPath = ms.getPlotsFolder("Hist2D/NpheVs", input_cuts, "", isJLab)
+outputPath = ms.get_plots_folder("Hist2D/NpheVs", input_cuts, dataset, isJLab)
 
 canvas = TCanvas("cv","cv",1000,800)
 gStyle.SetOptStat(0)
@@ -65,17 +65,17 @@ for i_h,h in enumerate(inputfile.GetListOfKeys()):
         hist2D.GetZaxis().SetMaxDigits(3)
         hist2D.Draw("colz")
 
-        # ms.DrawPreliminaryInfo("P_{#pi^{+}} vs N_{phe} map")
-        ms.DrawPreliminaryInfo(hist2D.GetTitle())
+        # ms.draw_preliminary("P_{#pi^{+}} vs N_{phe} map")
+        ms.draw_preliminary(hist2D.GetTitle())
         dataOrSim = "Data" if isData else "Simulation"
         out_DatOrSim = "Data" if isData else "HSim"
 
-        ms.DrawTargetInfo(this_targ, dataOrSim)
+        ms.draw_targetinfo(this_targ, dataOrSim)
 
-        name_png = ms.getPlotsFile("%sVS%s_%s"%(nameYvar,nameXvar, this_targ),"","png",out_DatOrSim)
+        name_png = ms.get_plots_file("%sVS%s_%s"%(nameYvar,nameXvar, this_targ),"","png",out_DatOrSim)
         canvas.SaveAs(outputPath+name_png)
 
-        # name_pdf = ms.getPlotsFile("PvsNphe_%s"%(this_targ),"","pdf",out_DatOrSim)
+        # name_pdf = ms.get_plots_file("PvsNphe_%s"%(this_targ),"","pdf",out_DatOrSim)
         # canvas.SaveAs(outputPath+name_pdf)
 
         canvas.Clear()

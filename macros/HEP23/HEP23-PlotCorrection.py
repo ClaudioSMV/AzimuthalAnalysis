@@ -8,7 +8,7 @@ gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
 
 ## Defining Style
-mS.ForceStyle()
+mS.force_style()
 
 # Construct the argument parser
 parser = optparse.OptionParser("usage: %prog [options]\n")
@@ -34,8 +34,8 @@ rootpath = options.rootpath
 saveAll = options.saveAll
 isJLab = options.JLabCluster
 
-infoDict = mS.getDictNameFormat(dataset)
-nameFormatted = mS.getNameFormatted(dataset)
+infoDict = mS.get_name_dict(dataset)
+nameFormatted = mS.get_name_format(dataset)
 
 ## Cuts
 input_cuts = options.inputCuts
@@ -46,10 +46,10 @@ if options.errorFull:
 
 useZh = options.useZh
 usePt2 = options.usePt2
-# print(mS.getCutStrFromStr(options.outputCuts))
-if ("Z" in mS.getCutsAsList(mS.getCutStrFromStr(options.outputCuts))) or ("Z" in mS.getCutsAsList(mS.getCutStrFromStr(options.inputCuts))):
+# print(mS.get_cut_long2final(options.outputCuts))
+if ("Z" in mS.get_cut_str2list(mS.get_cut_long2final(options.outputCuts))) or ("Z" in mS.get_cut_str2list(mS.get_cut_long2final(options.inputCuts))):
     useZh = True
-if ("P" in mS.getCutsAsList(mS.getCutStrFromStr(options.outputCuts))) or ("P" in mS.getCutsAsList(mS.getCutStrFromStr(options.inputCuts))):
+if ("P" in mS.get_cut_str2list(mS.get_cut_long2final(options.outputCuts))) or ("P" in mS.get_cut_str2list(mS.get_cut_long2final(options.inputCuts))):
     usePt2 = True
 
 if (useZh) and (usePt2):
@@ -64,12 +64,12 @@ elif infoDict["BinningType"] != 0:
     plots_cuts+="_Zx"
 
 ## Input
-inputPath = mS.getOutputFileWithPath("Correction", dataset, input_cuts, isJLab, False) # "../output/"
+inputPath = mS.get_output_fullpath("Correction", dataset, input_cuts, isJLab, False) # "../output/"
 inputfile = TFile(inputPath,"READ")
 
 # ## Output
-# outputPath = mS.getPlotsFolder("Correction", plots_cuts, infoDict["Target"], isJLab)
-# outputROOT = mS.getPlotsFile("Corrected", dataset, "root")
+# outputPath = mS.get_plots_folder("Correction", plots_cuts, infoDict["Target"], isJLab)
+# outputROOT = mS.get_plots_file("Corrected", dataset, "root")
 # if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
 #     print("Correction already exists! Not overwriting it.")
 #     exit()
@@ -178,8 +178,8 @@ for i,info in enumerate(names_list):
         htemp.GetXaxis().SetTitle("#phi_{PQ} (deg)")
         htemp.GetYaxis().SetTitle("Counts")
 
-        htemp.SetLabelSize(mS.GetSize()-10,"xy")
-        htemp.SetTitleSize(mS.GetSize()-8,"xy")
+        htemp.SetLabelSize(mS.get_size()-10,"xy")
+        htemp.SetTitleSize(mS.get_size()-8,"xy")
         htemp.SetTitleOffset(1.05,"x")
         htemp.SetTitleOffset(1.4,"y")
 
@@ -200,22 +200,22 @@ for i,info in enumerate(names_list):
         this_proj.Draw("hist e same")
 
         # legend.Draw();
-        # mS.DrawPreliminaryInfo(prefixType[p])
-        # mS.DrawTargetInfo(nameFormatted, "Data")
-        # mS.DrawBinInfo(info, infoDict["BinningType"])
+        # mS.draw_preliminary(prefixType[p])
+        # mS.draw_targetinfo(nameFormatted, "Data")
+        # mS.draw_bininfo(info, infoDict["BinningType"])
         text = ROOT.TLatex()
-        text.SetTextSize(mS.GetSize()-4)
+        text.SetTextSize(mS.get_size()-4)
         text.SetTextAlign(23)
-        title = mS.GetBinInfo(info, infoDict["BinningType"])
+        title = mS.get_bintxt(info, infoDict["BinningType"])
         # text.DrawLatexNDC(1-marg-0.005,1-marg-0.01,"#bf{"+title+"}")
-        text.DrawLatexNDC(mS.GetPadCenter(),1-mS.GetMargin()-0.02,title)
-        # mS.DrawBinInfo(info, infoDict["BinningType"], 1-mS.GetMargin()-0.005, 1-mS.GetMargin()+0.01)
-        mS.DrawPreliminaryInfo("%s distribution"%(prefixType[p]))
+        text.DrawLatexNDC(mS.get_padcenter(),1-mS.get_margin()-0.02,title)
+        # mS.draw_bininfo(info, infoDict["BinningType"], 1-mS.get_margin()-0.005, 1-mS.get_margin()+0.01)
+        mS.draw_preliminary("%s distribution"%(prefixType[p]))
 
         histName = "_".join(this_proj.GetName().split("_")[0:-1]) # Corr_A_B_Q1N2 -> Corr_A_B
-        # outputName = mS.getPlotsFile(histName, dataset, "gif", info)
+        # outputName = mS.get_plots_file(histName, dataset, "gif", info)
         # canvas.SaveAs(outputPath+outputName)
-        this_title_gif = mS.getSummaryPath("%s-%s"%(histName,info), "gif", plots_cuts, isJLab, "Poster_HEP2023")
+        this_title_gif = mS.get_summary_fullpath("%s-%s"%(histName,info), "gif", plots_cuts, isJLab, "Poster_HEP2023")
         canvas.SaveAs(this_title_gif)
         # this_proj.Write()
         htemp.Delete()

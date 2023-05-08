@@ -9,9 +9,9 @@ gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
 
 ## Defining Style
-ms.ForceStyle()
-# gStyle.SetPadRightMargin(2*ms.GetMargin())
-# gStyle.SetLabelSize(ms.GetSize()-10,"z")
+ms.force_style()
+# gStyle.SetPadRightMargin(2*ms.get_margin())
+# gStyle.SetLabelSize(ms.get_size()-10,"z")
 # gROOT.ForceStyle()
 
 # Construct the argument parser
@@ -30,20 +30,20 @@ rootpath = options.rootpath
 dataset = options.Dataset
 isJLab = options.JLabCluster
 
-infoDict = ms.getDictNameFormat(dataset)
-# nameFormatted = ms.getNameFormatted(dataset,True)
+infoDict = ms.get_name_dict(dataset)
+# nameFormatted = ms.get_name_format(dataset,True)
 
 ## Cuts
 input_cuts = options.inputCuts
 plots_cuts = options.inputCuts +"_"+ options.outputCuts
 
 ## Input
-inputPath = ms.getOutputFileWithPath("Acceptance", dataset, input_cuts, isJLab, False) # "../output/"
+inputPath = ms.get_output_fullpath("Acceptance", dataset, input_cuts, isJLab, False) # "../output/"
 inputfile = TFile(inputPath,"READ")
 
 ## Output
-outputPath = ms.getPlotsFolder("Resolution", plots_cuts, ms.getBinNameFormatted(dataset) +"/"+ infoDict["Target"], isJLab)
-# outputROOT = ms.getPlotsFile("Resolution", dataset, "root")
+outputPath = ms.get_plots_folder("Resolution", plots_cuts, dataset, isJLab)
+# outputROOT = ms.get_plots_file("Resolution", dataset, "root")
 
 list_vars = ["Q2", "Nu", "Xb", "Zh", "Pt2", "PhiPQ"]
 
@@ -80,10 +80,10 @@ for this_var in list_vars:
     this_res_hist.Draw("hist e")
     fit.Draw("same")
 
-    ms.DrawPreliminaryInfo("Resolution")
-    ms.DrawTargetInfo(infoDict["Target"], "Simulation")
+    ms.draw_preliminary("Resolution")
+    ms.draw_targetinfo(infoDict["Target"], "Simulation")
 
-    outputName = ms.getPlotsFile("Resolution1D", dataset, "png",this_var)
+    outputName = ms.get_plots_file("Resolution1D", dataset, "png",this_var)
     canvas.SaveAs(outputPath+outputName)
     canvas.Clear()
 
@@ -133,10 +133,10 @@ for this_var in list_vars:
 
     res_vs_X.GetYaxis().SetRangeUser(0.0, 1.2*res_vs_X.GetMaximum())
     res_vs_X.Draw("hist e")
-    ms.DrawPreliminaryInfo("Resolution vs x")
-    ms.DrawTargetInfo(infoDict["Target"], "Simulation")
+    ms.draw_preliminary("Resolution vs x")
+    ms.draw_targetinfo(infoDict["Target"], "Simulation")
 
-    outputName = ms.getPlotsFile("ResolutionVsX", dataset, "png",this_var)
+    outputName = ms.get_plots_file("ResolutionVsX", dataset, "png",this_var)
     canvas.SaveAs(outputPath+outputName)
     canvas.Clear()
 

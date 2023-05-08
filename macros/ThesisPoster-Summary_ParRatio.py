@@ -10,12 +10,12 @@ gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
 
 ## Defining Style
-ms.ForceStyle()
-# font=ms.GetFont()
-tsize=ms.GetSize()
+ms.force_style()
+# font=ms.get_font()
+tsize=ms.get_size()
 
-# gStyle.SetStatX(1 - ms.GetMargin() - 0.005)
-# gStyle.SetStatY(2*ms.GetMargin() + 0.205)
+# gStyle.SetStatX(1 - ms.get_margin() - 0.005)
+# gStyle.SetStatY(2*ms.get_margin() + 0.205)
 
 def CanvasPartition(canvas, nx, ny, lMarg, rMarg, bMarg, tMarg, extra_name=""):
     ## Labelling xy:
@@ -130,21 +130,21 @@ plots_cuts = options.inputCuts +"_"+ options.outputCuts
 # ### Set Fit method under use
 # fit = options.fit
 
-if ("LR" in ms.getListOfCuts(input_cuts) and ("Left" not in plots_cuts) and ("Right" not in plots_cuts)):
+if ("LR" in ms.get_cut_str2finallist(input_cuts) and ("Left" not in plots_cuts) and ("Right" not in plots_cuts)):
     print("  [SummaryRatio] Specify \"Left\" or \"Right\" in input when using \"LR\" method!")
     exit()
 
 ### Define type of fit used
-fit_type = ms.GetFitMethod(input_cuts)
+fit_type = ms.get_fit_method(input_cuts)
 
 fname = "R" if "Right" in plots_cuts else ""
-fit = ms.GetFitExtension(fit_type, fname)
+fit = ms.get_fit_shortmethod(fit_type, fname)
 
 fit_num = 0 if (fit != "L") else 1
 
 ### Set mixing of D info in one
 mixD = False
-if "MixD" in ms.getListOfCuts(plots_cuts):
+if "MixD" in ms.get_cut_str2finallist(plots_cuts):
     mixD = True
 
 ## Cuts
@@ -153,9 +153,9 @@ if "MixD" in ms.getListOfCuts(plots_cuts):
 
 useZh = False
 usePt2 = False
-if ("Z" in ms.getListOfCuts(plots_cuts)):
+if ("Z" in ms.get_cut_str2finallist(plots_cuts)):
     useZh = True
-if ("P" in ms.getListOfCuts(plots_cuts)):
+if ("P" in ms.get_cut_str2finallist(plots_cuts)):
     usePt2 = True
 
 if (useZh) and (usePt2):
@@ -180,7 +180,7 @@ except:
     # print("")
 
 this_binning_type = int(dataset_elemts[0])
-dataset_title = ms.getNameFormatted("_"+dataset)
+dataset_title = ms.get_name_format("_"+dataset)
 this_bin_dict = ms.all_dicts[this_binning_type]
 
 key1 = 'N' if ("N" in this_bin_dict) else 'X'
@@ -192,11 +192,11 @@ nBinsP = len(this_bin_dict['P'])-1
 
 gStyle.SetOptStat(0)
 canvas_B = TCanvas("cvB","cvB",1000,800)
-CanvasPartition(canvas_B, nBinsQ, nBinsN,2*ms.GetMargin(),ms.GetMargin(),2*ms.GetMargin(),ms.GetMargin(),"B")
+CanvasPartition(canvas_B, nBinsQ, nBinsN,2*ms.get_margin(),ms.get_margin(),2*ms.get_margin(),ms.get_margin(),"B")
 canvas_B.SetGrid(0,1)
 
 canvas_C = TCanvas("cvC","cvC",1000,800)
-CanvasPartition(canvas_C, nBinsQ, nBinsN,2*ms.GetMargin(),ms.GetMargin(),2*ms.GetMargin(),ms.GetMargin(),"C")
+CanvasPartition(canvas_C, nBinsQ, nBinsN,2*ms.get_margin(),ms.get_margin(),2*ms.get_margin(),ms.get_margin(),"C")
 canvas_C.SetGrid(0,1)
 
 list_canvas = [canvas_B, canvas_C]
@@ -208,8 +208,8 @@ list_infiles = []
 # Open files
 for targ in list_targets:
     this_dataset = "%s_%s"%(targ, dataset)
-    inputPath = ms.getPlotsFolder("ParametersRatio", input_cuts, ms.getBinNameFormatted(this_dataset) +"/"+ targ, isJLab, False)
-    inputROOT = ms.getPlotsFile("ParametersRatio", this_dataset, "root", fit_type)
+    inputPath = ms.get_plots_folder("ParametersRatio", input_cuts, this_dataset, isJLab, False)
+    inputROOT = ms.get_plots_file("ParametersRatio", this_dataset, "root", fit_type)
 
     inputfile = TFile(inputPath+inputROOT,"READ")
     list_infiles.append(inputfile)
@@ -291,10 +291,10 @@ for r,typeR in enumerate(type_reco_short):
         this_canvas.cd(0)
 
         # solid_mix = "_All" if mixD else "_Solid"
-        # ms.DrawSummaryInfo("%s ratio Solid/D%s %s"%(par,solid_mix,fit))
+        # ms.draw_summary("%s ratio Solid/D%s %s"%(par,solid_mix,fit))
         solid_mix = " mixed D" if mixD else ""
-        ms.DrawSummaryInfo("%s ratio%s %s"%(fancy_uptitle[p],solid_mix,fit))
-        ms.DrawTargetInfo("Solid targets", "Data")
+        ms.draw_summary("%s ratio%s %s"%(fancy_uptitle[p],solid_mix,fit))
+        ms.draw_targetinfo("Solid targets", "Data")
 
         ## Legend
         legQ, legN = 2, 0
@@ -310,8 +310,8 @@ for r,typeR in enumerate(type_reco_short):
 
         legend = TLegend(l_x1, l_y1, l_x2, l_y2)
         legend.SetBorderSize(0)
-        legend.SetTextFont(ms.GetFont())
-        legend.SetTextSize(ms.GetSize()-14)
+        legend.SetTextFont(ms.get_font())
+        legend.SetTextSize(ms.get_size()-14)
         legend.SetFillStyle(0)
         legend.SetTextAlign(22)
         legend.SetNColumns(3)
@@ -387,7 +387,7 @@ for r,typeR in enumerate(type_reco_short):
                         text = ROOT.TLatex()
                         text.SetTextSize(tsize-14)
                         text.SetTextAlign(23)
-                        title = ms.GetBinInfo("Q%i"%(iQ), this_binning_type)
+                        title = ms.get_bintxt("Q%i"%(iQ), this_binning_type)
                         text.DrawLatexNDC(XtoPad(0.5),YtoPad(Q2_bin_info_Ypos),title)
 
                     if (iQ==2):
@@ -395,7 +395,7 @@ for r,typeR in enumerate(type_reco_short):
                         text.SetTextSize(tsize-14)
                         text.SetTextAlign(23)
                         text.SetTextAngle(90)
-                        title = ms.GetBinInfo("%s%i"%(key1,iN), this_binning_type) # "Q%iN%i" or "Q%iX%i"
+                        title = ms.get_bintxt("%s%i"%(key1,iN), this_binning_type) # "Q%iN%i" or "Q%iX%i"
                         text.DrawLatexNDC(XtoPad(1.05),YtoPad(0.5),title)
 
                     if (iQ==legQ and iN==legN):
@@ -407,15 +407,15 @@ for r,typeR in enumerate(type_reco_short):
         this_canvas.cd(0)
         this_bininfo = dataset_title[1:]
 
-        this_title_png = ms.getSummaryPath("%s_%s"%(this_bininfo,typeR), "png", plots_cuts, isJLab, this_bininfo)
-        this_title_png = ms.addBeforeRootExt(this_title_png, "-Ratio%s"%(par), "png")
+        this_title_png = ms.get_summary_fullpath("%s_%s"%(this_bininfo,typeR), "png", plots_cuts, isJLab, this_bininfo)
+        this_title_png = ms.add_str_before_ext(this_title_png, "-Ratio%s"%(par), "png")
         if ("LR" in this_title_png):
-            this_title_png = ms.addBeforeRootExt(this_title_png, "-%s"%(fit), "png")
+            this_title_png = ms.add_str_before_ext(this_title_png, "-%s"%(fit), "png")
 
-        this_title_pdf = ms.getSummaryPath("%s_%s"%(this_bininfo,typeR), "pdf", plots_cuts, isJLab, this_bininfo)
-        this_title_pdf = ms.addBeforeRootExt(this_title_pdf, "-Ratio%s"%(par), "pdf")
+        this_title_pdf = ms.get_summary_fullpath("%s_%s"%(this_bininfo,typeR), "pdf", plots_cuts, isJLab, this_bininfo)
+        this_title_pdf = ms.add_str_before_ext(this_title_pdf, "-Ratio%s"%(par), "pdf")
         if ("LR" in this_title_pdf):
-            this_title_pdf = ms.addBeforeRootExt(this_title_pdf, "-%s"%(fit), "pdf")
+            this_title_pdf = ms.add_str_before_ext(this_title_pdf, "-%s"%(fit), "pdf")
 
         this_canvas.SaveAs(this_title_png)
         this_canvas.SaveAs(this_title_pdf)
@@ -427,7 +427,7 @@ axis_hist.SetTitleOffset(1.0,"x")
 axis_hist.SetTitleOffset(1.4,"y")
 
 canvas_new = TCanvas("cvNew","cvNew",1000,800)
-# CanvasPartition(canvas_new, 1, 1,2*ms.GetMargin(),ms.GetMargin(),2*ms.GetMargin(),ms.GetMargin(),"New")
+# CanvasPartition(canvas_new, 1, 1,2*ms.get_margin(),ms.get_margin(),2*ms.get_margin(),ms.get_margin(),"New")
 canvas_new.SetGrid(0,1)
 canvas_new.cd(0)
 
@@ -435,8 +435,8 @@ l_x1, l_x2 = XtoPad(0.3), XtoPad(0.7)
 l_y1, l_y2 = YtoPad(0.8), YtoPad(1.0)
 legend = TLegend(l_x1, l_y1, l_x2, l_y2)
 legend.SetBorderSize(0)
-legend.SetTextFont(ms.GetFont())
-legend.SetTextSize(ms.GetSize()-6)
+legend.SetTextFont(ms.get_font())
+legend.SetTextSize(ms.get_size()-6)
 legend.SetFillStyle(0)
 legend.SetTextAlign(22)
 legend.SetNColumns(3)
@@ -506,7 +506,7 @@ for t,targ in enumerate(list_targets):
     #     text = ROOT.TLatex()
     #     text.SetTextSize(tsize-14)
     #     text.SetTextAlign(23)
-    #     title = ms.GetBinInfo("Q%i"%(iQ), this_binning_type)
+    #     title = ms.get_bintxt("Q%i"%(iQ), this_binning_type)
     #     text.DrawLatexNDC(XtoPad(0.5),YtoPad(Q2_bin_info_Ypos),title)
 
     # if (iQ==2):
@@ -514,7 +514,7 @@ for t,targ in enumerate(list_targets):
     #     text.SetTextSize(tsize-14)
     #     text.SetTextAlign(23)
     #     text.SetTextAngle(90)
-    #     title = ms.GetBinInfo("%s%i"%(key1,iN), this_binning_type) # "Q%iN%i" or "Q%iX%i"
+    #     title = ms.get_bintxt("%s%i"%(key1,iN), this_binning_type) # "Q%iN%i" or "Q%iX%i"
     #     text.DrawLatexNDC(XtoPad(1.05),YtoPad(0.5),title)
 
     # if (iQ==legQ and iN==legN):
@@ -525,19 +525,19 @@ for t,targ in enumerate(list_targets):
     new_pad = False
 
 # canvas_new.cd(0)
-ms.DrawSummaryInfo("%s ratio"%(fancy_uptitle[0]))
-ms.DrawTargetInfo("Solid targets", "Data")
+ms.draw_summary("%s ratio"%(fancy_uptitle[0]))
+ms.draw_targetinfo("Solid targets", "Data")
 
-this_title_png = ms.getSummaryPath("%s"%(this_bininfo), "png", plots_cuts, isJLab, this_bininfo)
-this_title_png = ms.addBeforeRootExt(this_title_png, "-RatioNew", "png")
+this_title_png = ms.get_summary_fullpath("%s"%(this_bininfo), "png", plots_cuts, isJLab, this_bininfo)
+this_title_png = ms.add_str_before_ext(this_title_png, "-RatioNew", "png")
 if ("LR" in this_title_png):
-    this_title_png = ms.addBeforeRootExt(this_title_png, "-%s"%(fit), "png")
+    this_title_png = ms.add_str_before_ext(this_title_png, "-%s"%(fit), "png")
 canvas_new.SaveAs(this_title_png)
 
-this_title_pdf = ms.getSummaryPath("%s"%(this_bininfo), "pdf", plots_cuts, isJLab, this_bininfo)
-this_title_pdf = ms.addBeforeRootExt(this_title_pdf, "-RatioNew", "pdf")
+this_title_pdf = ms.get_summary_fullpath("%s"%(this_bininfo), "pdf", plots_cuts, isJLab, this_bininfo)
+this_title_pdf = ms.add_str_before_ext(this_title_pdf, "-RatioNew", "pdf")
 if ("LR" in this_title_pdf):
-    this_title_pdf = ms.addBeforeRootExt(this_title_pdf, "-%s"%(fit), "pdf")
+    this_title_pdf = ms.add_str_before_ext(this_title_pdf, "-%s"%(fit), "pdf")
 canvas_new.SaveAs(this_title_pdf)
 
 

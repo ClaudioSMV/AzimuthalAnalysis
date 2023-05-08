@@ -8,10 +8,10 @@ gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
 
 ## Defining Style
-myStyle.ForceStyle()
+myStyle.force_style()
 
-gStyle.SetStatX(1 - myStyle.GetMargin() - 0.005)
-gStyle.SetStatY(2*myStyle.GetMargin() + 0.205)
+gStyle.SetStatX(1 - myStyle.get_margin() - 0.005)
+gStyle.SetStatY(2*myStyle.get_margin() + 0.205)
 
 # Construct the argument parser
 parser = optparse.OptionParser("usage: %prog [options]\n")
@@ -36,14 +36,14 @@ isJLab = options.JLabCluster
 verbose = options.verbose
 
 useFold = options.fold
-if "Fold" in myStyle.getCutStrFromStr(options.outputCuts):
+if "Fold" in myStyle.get_cut_long2final(options.outputCuts):
     useFold = True
 fit_type = "Fd" if useFold else "LR"
 
 useZoom = options.useZoom
 
-infoDict = myStyle.getDictNameFormat(dataset)
-nameFormatted = myStyle.getNameFormatted(dataset)
+infoDict = myStyle.get_name_dict(dataset)
+nameFormatted = myStyle.get_name_format(dataset)
 
 ## Cuts
 input_cuts = options.inputCuts
@@ -56,13 +56,13 @@ input_cuts+="_"+fit_type # Add Fold or LR extension
 plots_cuts+="_"+fit_type
 
 ## Input
-inputPath = myStyle.getOutputFileWithPath("Fit", dataset, input_cuts, isJLab, False) # "../output/"
-inputROOT = myStyle.getPlotsFile("Fit", dataset, "root", fit_type)
+inputPath = myStyle.get_output_fullpath("Fit", dataset, input_cuts, isJLab, False) # "../output/"
+inputROOT = myStyle.get_plots_file("Fit", dataset, "root", fit_type)
 inputfile = TFile(inputPath+inputROOT,"READ")
 
 ## Output
-outputPath = myStyle.getPlotsFolder("FitParameters", plots_cuts, infoDict["Target"], isJLab)
-outputROOT = myStyle.getPlotsFile("Parameters", dataset, "root", fit_type)
+outputPath = myStyle.get_plots_folder("Parameters", plots_cuts, dataset, isJLab)
+outputROOT = myStyle.get_plots_file("Parameters", dataset, "root", fit_type)
 if (not options.Overwrite and os.path.exists(outputPath+outputROOT)):
     print("Parameters file already exists! Not overwriting it.")
     exit()
@@ -172,10 +172,10 @@ for e,elem in enumerate(list_func_names):
     hist_A.Write()
     hist_A.Draw("hist e")
 
-    myStyle.DrawPreliminaryInfo("Parameter A %s"%fit_type)
-    myStyle.DrawTargetInfo(nameFormatted, "Data")
+    myStyle.draw_preliminary("Parameter A %s"%fit_type)
+    myStyle.draw_targetinfo(nameFormatted, "Data")
 
-    outputName = myStyle.getPlotsFile("ParameterA%s"%zoom_ext, dataset, "gif", name_ext)
+    outputName = myStyle.get_plots_file("ParameterA%s"%zoom_ext, dataset, "gif", name_ext)
     canvas.SaveAs(outputPath+outputName)
     canvas.Clear()
     # legend.Clear()
@@ -190,10 +190,10 @@ for e,elem in enumerate(list_func_names):
     hist_B.Write()
     hist_B.Draw("hist e")
 
-    myStyle.DrawPreliminaryInfo("Parameter B %s"%fit_type)
-    myStyle.DrawTargetInfo(nameFormatted, "Data")
+    myStyle.draw_preliminary("Parameter B %s"%fit_type)
+    myStyle.draw_targetinfo(nameFormatted, "Data")
 
-    outputName = myStyle.getPlotsFile("ParameterB%s"%zoom_ext, dataset, "gif", name_ext)
+    outputName = myStyle.get_plots_file("ParameterB%s"%zoom_ext, dataset, "gif", name_ext)
     canvas.SaveAs(outputPath+outputName)
     canvas.Clear()
 
@@ -207,10 +207,10 @@ for e,elem in enumerate(list_func_names):
     hist_C.Write()
     hist_C.Draw("hist e")
 
-    myStyle.DrawPreliminaryInfo("Parameter C %s"%fit_type)
-    myStyle.DrawTargetInfo(nameFormatted, "Data")
+    myStyle.draw_preliminary("Parameter C %s"%fit_type)
+    myStyle.draw_targetinfo(nameFormatted, "Data")
 
-    outputName = myStyle.getPlotsFile("ParameterC%s"%zoom_ext, dataset, "gif", name_ext)
+    outputName = myStyle.get_plots_file("ParameterC%s"%zoom_ext, dataset, "gif", name_ext)
     canvas.SaveAs(outputPath+outputName)
     canvas.Clear()
 

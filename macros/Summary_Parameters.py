@@ -10,12 +10,12 @@ gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
 
 ## Defining Style
-mS.ForceStyle()
-# font=mS.GetFont()
-tsize=mS.GetSize()
+mS.force_style()
+# font=mS.get_font()
+tsize=mS.get_size()
 
-# gStyle.SetStatX(1 - mS.GetMargin() - 0.005)
-# gStyle.SetStatY(2*mS.GetMargin() + 0.205)
+# gStyle.SetStatX(1 - mS.get_margin() - 0.005)
+# gStyle.SetStatY(2*mS.get_margin() + 0.205)
 
 def CanvasPartition(canvas, nx, ny, lMarg, rMarg, bMarg, tMarg, extra_name=""):
     ## Labelling xy:
@@ -133,15 +133,15 @@ dataset = options.Dataset
 isJLab = options.JLabCluster
 fit = options.fit
 
-if ("LR" in mS.getCutStrFromStr(options.inputCuts) and (not "Left" in options.inputCuts) and (not "Right" in options.inputCuts)):
+if ("LR" in mS.get_cut_long2final(options.inputCuts) and (not "Left" in options.inputCuts) and (not "Right" in options.inputCuts)):
     print("Specify \"Left\" or \"Right\" in input when using \"LR\" method!")
     exit()
 
-if "Fold" in mS.getCutStrFromStr(options.inputCuts):
+if "Fold" in mS.get_cut_long2final(options.inputCuts):
     fit = "F"
-elif ("Left" in mS.getCutStrFromStr(options.inputCuts) or "Left" in options.inputCuts):
+elif ("Left" in mS.get_cut_long2final(options.inputCuts) or "Left" in options.inputCuts):
     fit = "L"
-elif ("Right" in mS.getCutStrFromStr(options.inputCuts) or "Right" in options.inputCuts):
+elif ("Right" in mS.get_cut_long2final(options.inputCuts) or "Right" in options.inputCuts):
     fit = "R"
 
 fit_type = "Fd" if "F" in fit else "LR"
@@ -159,9 +159,9 @@ plots_cuts+="_"+fit_type
 
 useZh = options.useZh
 usePt2 = options.usePt2
-if "Z" in mS.getCutsAsList(mS.getCutStrFromStr(options.outputCuts)):
+if "Z" in mS.get_cut_str2list(mS.get_cut_long2final(options.outputCuts)):
     useZh = True
-if "P" in mS.getCutsAsList(mS.getCutStrFromStr(options.outputCuts)):
+if "P" in mS.get_cut_str2list(mS.get_cut_long2final(options.outputCuts)):
     usePt2 = True
 
 if (useZh) and (usePt2):
@@ -188,7 +188,7 @@ except:
     print("")
 
 this_binning_type = int(dataset_elemts[0])
-dataset_title = mS.getNameFormatted("_"+dataset)
+dataset_title = mS.get_name_format("_"+dataset)
 this_bin_dict = mS.all_dicts[this_binning_type]
 
 key1 = 'N' if ("N" in this_bin_dict) else 'X'
@@ -200,13 +200,13 @@ nBinsP = len(this_bin_dict['P'])-1
 
 gStyle.SetOptStat(0)
 canvas_A = TCanvas("cvA","cvA",1000,800)
-CanvasPartition(canvas_A, nBinsQ, nBinsN,2*mS.GetMargin(),mS.GetMargin(),2*mS.GetMargin(),mS.GetMargin(),"A")
+CanvasPartition(canvas_A, nBinsQ, nBinsN,2*mS.get_margin(),mS.get_margin(),2*mS.get_margin(),mS.get_margin(),"A")
 
 canvas_B = TCanvas("cvB","cvB",1000,800)
-CanvasPartition(canvas_B, nBinsQ, nBinsN,2*mS.GetMargin(),mS.GetMargin(),2*mS.GetMargin(),mS.GetMargin(),"B")
+CanvasPartition(canvas_B, nBinsQ, nBinsN,2*mS.get_margin(),mS.get_margin(),2*mS.get_margin(),mS.get_margin(),"B")
 
 canvas_C = TCanvas("cvC","cvC",1000,800)
-CanvasPartition(canvas_C, nBinsQ, nBinsN,2*mS.GetMargin(),mS.GetMargin(),2*mS.GetMargin(),mS.GetMargin(),"C")
+CanvasPartition(canvas_C, nBinsQ, nBinsN,2*mS.get_margin(),mS.get_margin(),2*mS.get_margin(),mS.get_margin(),"C")
 
 list_canvas = [canvas_A, canvas_B, canvas_C]
 
@@ -228,8 +228,8 @@ list_infiles = []
 # Open files
 for targ in list_targets:
     this_dataset = "%s_%s"%(targ, dataset)
-    inputPath = mS.getPlotsFolder("FitParameters", input_cuts, targ, isJLab, False) # "../output/"
-    inputROOT = mS.getPlotsFile("Parameters", this_dataset, "root", fit_type)
+    inputPath = mS.get_plots_folder("FitParameters", input_cuts, this_dataset, isJLab, False)
+    inputROOT = mS.get_plots_file("Parameters", this_dataset, "root", fit_type)
 
     inputfile = TFile(inputPath+inputROOT,"READ")
     list_infiles.append(inputfile)
@@ -304,14 +304,14 @@ if usePt2:
 for p,par in enumerate(par_list):
     this_canvas = list_canvas[p]
     this_canvas.cd(0)
-    mS.DrawSummaryInfo("%s values %s"%(par,fit))
+    mS.draw_summary("%s values %s"%(par,fit))
     if (whatsPlot=="All"):
         targs_drawn = "All_targets"
     elif (whatsPlot=="Solid"):
         targs_drawn = "Solid_targets"
     elif (whatsPlot=="D"):
         targs_drawn = "Deuterium"
-    mS.DrawTargetInfo(targs_drawn, "Data")
+    mS.draw_targetinfo(targs_drawn, "Data")
 
     l_x1, l_x2 = 0.3, 0.7
     l_y1, l_y2 = 0.1, 0.3
@@ -320,8 +320,8 @@ for p,par in enumerate(par_list):
         l_y2 = 0.7
     legend = TLegend(l_x1, l_y1, l_x2, l_y2)
     legend.SetBorderSize(0)
-    legend.SetTextFont(mS.GetFont())
-    legend.SetTextSize(mS.GetSize()-14)
+    legend.SetTextFont(mS.get_font())
+    legend.SetTextSize(mS.get_size()-14)
     legend.SetFillStyle(0)
     legend.SetNColumns(2)
 
@@ -370,7 +370,7 @@ for p,par in enumerate(par_list):
                     text = ROOT.TLatex()
                     text.SetTextSize(tsize-14)
                     text.SetTextAlign(23)
-                    title = mS.GetBinInfo("Q%i"%(iQ), this_binning_type)
+                    title = mS.get_bintxt("Q%i"%(iQ), this_binning_type)
                     text.DrawLatexNDC(XtoPad(0.5),YtoPad(Q2_bin_info_Ypos),title)
 
                 if (iQ==2):
@@ -378,7 +378,7 @@ for p,par in enumerate(par_list):
                     text.SetTextSize(tsize-14)
                     text.SetTextAlign(23)
                     text.SetTextAngle(90)
-                    title = mS.GetBinInfo("%s%i"%(key1,iN), this_binning_type) # "Q%iN%i" or "Q%iX%i"
+                    title = mS.get_bintxt("%s%i"%(key1,iN), this_binning_type) # "Q%iN%i" or "Q%iX%i"
                     text.DrawLatexNDC(XtoPad(1.05),YtoPad(0.5),title)
 
                 if (iQ==2 and iN==0):
@@ -386,18 +386,12 @@ for p,par in enumerate(par_list):
                     if (legend.GetListOfPrimitives().GetEntries()==len(list_targets)):
                         legend.Draw()
 
-    this_title_png = mS.getSummaryPath("Par%s%s"%(par,dataset_title), "png", plots_cuts, isJLab, dataset_title[1:])
-    this_title_png = mS.addBeforeRootExt(this_title_png, "_%s"%(whatsPlot), "png")
-    if ("LR" in this_title_png):
-        this_title_png = mS.addBeforeRootExt(this_title_png, "-%s"%(fit), "png")
+    for ext in ["png", "pdf"]:
+        this_title = mS.get_summary_fullpath("Par%s"%(par), plots_cuts, dataset, ext, whatsPlot, isJLab)
+        if ("LR" in this_title):
+            this_title = mS.add_str_before_ext(this_title, "-%s"%(fit), ext)
 
-    this_title_pdf = mS.getSummaryPath("Par%s%s"%(par,dataset_title), "pdf", plots_cuts, isJLab, dataset_title[1:])
-    this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "_%s"%(whatsPlot), "pdf")
-    if ("LR" in this_title_pdf):
-        this_title_pdf = mS.addBeforeRootExt(this_title_pdf, "-%s"%(fit), "pdf")
-
-    this_canvas.SaveAs(this_title_png)
-    this_canvas.SaveAs(this_title_pdf)
+        this_canvas.SaveAs(this_title)
 
 for t,targ in enumerate(list_targets):
     list_infiles[t].Close()

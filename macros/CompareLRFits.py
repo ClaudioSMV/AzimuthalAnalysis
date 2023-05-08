@@ -8,10 +8,10 @@ gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
 
 ## Defining Style
-mS.ForceStyle()
+mS.force_style()
 
-# gStyle.SetStatX(1 - mS.GetMargin() - 0.005)
-# gStyle.SetStatY(2*mS.GetMargin() + 0.205)
+# gStyle.SetStatX(1 - mS.get_margin() - 0.005)
+# gStyle.SetStatY(2*mS.get_margin() + 0.205)
 
 def PropErrorDivision(v1, e1, v2, e2, cov=0):
     this_error = TMath.Abs(v1/v2)*TMath.Sqrt((e1/v1)*(e1/v1) + (e2/v2)*(e2/v2) - 2*cov/(v1*v2))
@@ -40,8 +40,8 @@ rootpath = options.rootpath
 dataset = options.Dataset
 isJLab = options.JLabCluster
 
-infoDict = mS.getDictNameFormat(dataset)
-nameFormatted = mS.getNameFormatted(dataset)
+infoDict = mS.get_name_dict(dataset)
+nameFormatted = mS.get_name_format(dataset)
 
 ## Cuts
 input_cuts = options.inputCuts
@@ -54,12 +54,12 @@ input_cuts+="_LR"
 # plots_cuts+="_LR"
 
 ## Input
-inputPath = mS.getPlotsFolder("Fit", input_cuts, infoDict["Target"], isJLab, False) # "../output/"
-inputROOT = mS.getPlotsFile("Fit", dataset, "root", "LR")
+inputPath = mS.get_plots_folder("Fit", input_cuts, dataset, isJLab, False)
+inputROOT = mS.get_plots_file("Fit", dataset, "root", "LR")
 inputfile = TFile(inputPath+inputROOT,"READ")
 
 ## Output
-outputPath = mS.getPlotsFolder("CompareLRFits", plots_cuts, infoDict["Target"], isJLab)
+outputPath = mS.get_plots_folder("CompareLRFits", plots_cuts, dataset, isJLab)
 
 list_func_names = ["crossSectionR"]
 list_func_names.append("crossSectionL")
@@ -115,11 +115,11 @@ canvas.SetGrid(0,1)
 
 for i,ipar in enumerate(["A", "B", "C"]):
     th1_LoverR_list[i].Draw()
-    mS.DrawPreliminaryInfo("Comparison L/R %s"%ipar)
-    mS.DrawTargetInfo(nameFormatted, "Data")
+    mS.draw_preliminary("Comparison L/R %s"%ipar)
+    mS.draw_targetinfo(nameFormatted, "Data")
 
-    this_title_gif = outputPath + mS.getPlotsFile("CompareLR_%s"%ipar, dataset, "gif")
-    this_title_pdf = outputPath + mS.getPlotsFile("CompareLR_%s"%ipar, dataset, "pdf")
+    this_title_gif = outputPath + mS.get_plots_file("CompareLR_%s"%ipar, dataset, "gif")
+    this_title_pdf = outputPath + mS.get_plots_file("CompareLR_%s"%ipar, dataset, "pdf")
 
     canvas.SaveAs(this_title_gif)
     canvas.SaveAs(this_title_pdf)

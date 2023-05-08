@@ -9,10 +9,10 @@ gROOT.SetBatch( True )
 gStyle.SetOptFit(1011)
 
 ## Defining Style
-ms.ForceStyle()
-# gStyle.SetPadRightMargin(2*ms.GetMargin())
-# gStyle.SetPadTopMargin(1.1*ms.GetMargin())
-# gStyle.SetLabelSize(ms.GetSize()-10,"z")
+ms.force_style()
+# gStyle.SetPadRightMargin(2*ms.get_margin())
+# gStyle.SetPadTopMargin(1.1*ms.get_margin())
+# gStyle.SetLabelSize(ms.get_size()-10,"z")
 gStyle.SetTitleXOffset(0.98)
 gStyle.SetTitleYOffset(1.4)
 gROOT.ForceStyle()
@@ -42,8 +42,8 @@ rootpath = options.rootpath
 dataset = options.Dataset
 isJLab = options.JLabCluster
 
-infoDict = ms.getDictNameFormat(dataset)
-nameFormatted = ms.getNameFormatted(dataset, True)
+infoDict = ms.get_name_dict(dataset)
+nameFormatted = ms.get_name_format(dataset, True)
 this_binning = infoDict["BinningType"]
 this_bin_dict = ms.all_dicts[this_binning]
 
@@ -51,15 +51,15 @@ this_bin_dict = ms.all_dicts[this_binning]
 input_cuts = options.inputCuts
 
 ## Input
-inputPath = ms.getOutputFolder("QualityCheck", input_cuts, isJLab, False) # "../output/"
-inputROOT = this_file = "Quality_"+ms.getNameFormatted(dataset, True)+".root"
+inputPath = ms.get_output_folder("QualityCheck", input_cuts, isJLab, False) # "../output/"
+inputROOT = this_file = "Quality_"+ms.get_name_format(dataset, True)+".root"
 inputfile = TFile(inputPath+inputROOT,"READ")
 
 ## Output
-outputPath = ms.getPlotsFolder("ValuesAcc", input_cuts, "", isJLab)
+outputPath = ms.get_plots_folder("AccValue", input_cuts, dataset, isJLab)
 
 
-list_colors = ms.GetColors(True)
+list_colors = ms.get_color()
 
 canvas = TCanvas("cv","cv",1000,800)
 gStyle.SetOptStat(0)
@@ -70,8 +70,8 @@ gStyle.SetOptStat(0)
 
 legend = TLegend(0.5, 0.7, 0.9, 0.9)
 legend.SetBorderSize(0)
-legend.SetTextFont(ms.GetFont())
-legend.SetTextSize(ms.GetSize()-6)
+legend.SetTextFont(ms.get_font())
+legend.SetTextSize(ms.get_size()-6)
 legend.SetFillStyle(0)
 # legend.SetTextAlign(22)
 
@@ -102,14 +102,14 @@ acc_Stack.GetXaxis().SetRangeUser(0.0,0.6)
 acc_Stack.Draw("nostack")
 legend.Draw()
 
-ms.DrawPreliminaryInfo("Acceptance values")
-# ms.DrawTargetInfo(nameFormatted, "Simulation")
-ms.DrawTopRight(nameFormatted, "Simulation")
+ms.draw_preliminary("Acceptance values")
+# ms.draw_targetinfo(nameFormatted, "Simulation")
+ms.draw_topR(nameFormatted, "Simulation")
 
-name_png = ms.getPlotsFile("SummaryValueAcc",dataset,"png")
+name_png = ms.get_plots_file("SummaryValueAcc",dataset,"png")
 canvas.SaveAs(outputPath+name_png)
 
-name_pdf = ms.getPlotsFile("SummaryValueAcc",dataset,"pdf")
+name_pdf = ms.get_plots_file("SummaryValueAcc",dataset,"pdf")
 canvas.SaveAs(outputPath+name_pdf)
 
 canvas.Clear()
@@ -121,8 +121,8 @@ canvas.Clear()
 
 legendEmpty = TLegend(0.58, 0.7, 0.9, 0.9)
 legendEmpty.SetBorderSize(0)
-legendEmpty.SetTextFont(ms.GetFont())
-legendEmpty.SetTextSize(ms.GetSize()-6)
+legendEmpty.SetTextFont(ms.get_font())
+legendEmpty.SetTextSize(ms.get_size()-6)
 legendEmpty.SetFillStyle(0)
 
 x_axis_title = ms.axis_label("I","LatexUnit")
@@ -150,14 +150,14 @@ legendEmpty.AddEntry(accEmpty_remc, "Match use gen. vars")
 accEmpty_Stack.Draw("nostack")
 legendEmpty.Draw()
 
-ms.DrawPreliminaryInfo("Null acceptance factors")
-# ms.DrawTargetInfo(nameFormatted, "Simulation")
-ms.DrawTopRight(nameFormatted, "Simulation")
+ms.draw_preliminary("Null acceptance factors")
+# ms.draw_targetinfo(nameFormatted, "Simulation")
+ms.draw_topR(nameFormatted, "Simulation")
 
-name_png = ms.getPlotsFile("SummaryEmptyAcc",dataset,"png")
+name_png = ms.get_plots_file("SummaryEmptyAcc",dataset,"png")
 canvas.SaveAs(outputPath+name_png)
 
-name_pdf = ms.getPlotsFile("SummaryEmptyAcc",dataset,"pdf")
+name_pdf = ms.get_plots_file("SummaryEmptyAcc",dataset,"pdf")
 canvas.SaveAs(outputPath+name_pdf)
 
 
