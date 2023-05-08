@@ -105,7 +105,7 @@ for h in list_of_hists:
                 for iy in range(1,len(y_axis)-1):
                     line.DrawLine(x_axis[0],y_axis[iy], x_axis[-1],y_axis[iy])
 
-            ms.DrawPreliminaryInfo(type_hist)
+            ms.draw_preliminary(type_hist)
             dataOrSim = "Data" if isData else "Simulation"
             out_DatOrSim = "Data" if isData else "HSim"
 

@@ -200,17 +200,17 @@ for i,info in enumerate(names_list):
         this_proj.Draw("hist e same")
 
         # legend.Draw();
-        # mS.DrawPreliminaryInfo(prefixType[p])
-        # mS.DrawTargetInfo(nameFormatted, "Data")
-        # mS.DrawBinInfo(info, infoDict["BinningType"])
+        # mS.draw_preliminary(prefixType[p])
+        # mS.draw_targetinfo(nameFormatted, "Data")
+        # mS.draw_bininfo(info, infoDict["BinningType"])
         text = ROOT.TLatex()
         text.SetTextSize(mS.get_size()-4)
         text.SetTextAlign(23)
-        title = mS.GetBinInfo(info, infoDict["BinningType"])
+        title = mS.get_bintxt(info, infoDict["BinningType"])
         # text.DrawLatexNDC(1-marg-0.005,1-marg-0.01,"#bf{"+title+"}")
         text.DrawLatexNDC(mS.get_padcenter(),1-mS.get_margin()-0.02,title)
-        # mS.DrawBinInfo(info, infoDict["BinningType"], 1-mS.get_margin()-0.005, 1-mS.get_margin()+0.01)
-        mS.DrawPreliminaryInfo("%s distribution"%(prefixType[p]))
+        # mS.draw_bininfo(info, infoDict["BinningType"], 1-mS.get_margin()-0.005, 1-mS.get_margin()+0.01)
+        mS.draw_preliminary("%s distribution"%(prefixType[p]))
 
         histName = "_".join(this_proj.GetName().split("_")[0:-1]) # Corr_A_B_Q1N2 -> Corr_A_B
         # outputName = mS.get_plots_file(histName, dataset, "gif", info)

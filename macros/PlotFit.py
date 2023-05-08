@@ -330,9 +330,9 @@ for h in list_of_hists:
             hist_corr.Draw("FUNC same")
             hist_corr.Write()
 
-            ms.DrawPreliminaryInfo("Correction fit")
-            ms.DrawTargetInfo(nameFormatted, "Data")
-            ms.DrawBinInfo(this_nbin, infoDict["BinningType"])
+            ms.draw_preliminary("Correction fit")
+            ms.draw_targetinfo(nameFormatted, "Data")
+            ms.draw_bininfo(this_nbin, infoDict["BinningType"])
 
             outputName = ms.get_plots_file("Fit_"+tmp_name, dataset, "png",this_nbin)
             canvas.SaveAs(outputPath+outputName)

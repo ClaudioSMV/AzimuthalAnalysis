@@ -169,9 +169,9 @@ for i,info in enumerate(names_list):
         this_proj.Draw("hist e same")
 
         # legend.Draw();
-        ms.DrawPreliminaryInfo(prefixType[p])
-        ms.DrawTargetInfo(nameFormatted, "Data")
-        ms.DrawBinInfo(info, infoDict["BinningType"])
+        ms.draw_preliminary(prefixType[p])
+        ms.draw_targetinfo(nameFormatted, "Data")
+        ms.draw_bininfo(info, infoDict["BinningType"])
 
         histName = "_".join(this_proj.GetName().split("_")[0:-1]) # Corr_A_B_Q1N2 -> Corr_A_B
         outputName = ms.get_plots_file(histName, dataset, "png", info)

@@ -287,18 +287,18 @@ if usePt2:
 for p,par in enumerate(["B", "C"]):
     this_canvas = list_canvas[p]
     this_canvas.cd(0)
-    # mS.DrawSummaryInfo("Norm %s/A %s"%(par,fit))
+    # mS.draw_summary("Norm %s/A %s"%(par,fit))
     if (whatsPlot=="All"):
         targs_drawn = "All_targets"
     elif (whatsPlot=="Solid"):
         targs_drawn = "Solid targets"
     elif (whatsPlot=="D"):
         targs_drawn = "Deuterium"
-    # mS.DrawTargetInfo(targs_drawn, "Data")
+    # mS.draw_targetinfo(targs_drawn, "Data")
 
-    # mS.DrawSummaryInfo("%s ratio Solid/D%s %s"%(par,solid_mix,fit))
-    mS.DrawPreliminaryInfo("%s normalized for %s"%(par,targs_drawn))
-    # mS.DrawTargetInfo("Solid targets", "Data")
+    # mS.draw_summary("%s ratio Solid/D%s %s"%(par,solid_mix,fit))
+    mS.draw_preliminary("%s normalized for %s"%(par,targs_drawn))
+    # mS.draw_targetinfo("Solid targets", "Data")
 
     l_x1, l_x2 = 0.1, 0.9
     l_y1, l_y2 = 0.60, 0.80
@@ -370,8 +370,8 @@ for p,par in enumerate(["B", "C"]):
                     text = ROOT.TLatex()
                     text.SetTextSize(tsize-14)
                     text.SetTextAlign(23)
-                    # title = mS.GetBinInfo("Q%iN%i"%(iQ,iN), this_binning_type)
-                    title = mS.GetBinInfo("Q%i"%(iQ), this_binning_type)
+                    # title = mS.get_bintxt("Q%iN%i"%(iQ,iN), this_binning_type)
+                    title = mS.get_bintxt("Q%i"%(iQ), this_binning_type)
                     text.DrawLatexNDC(XtoPad(0.5),YtoPad(Q2_bin_info_Ypos),title)
 
                 if (iQ==2):
@@ -379,8 +379,8 @@ for p,par in enumerate(["B", "C"]):
                     text.SetTextSize(tsize-14)
                     text.SetTextAlign(23)
                     text.SetTextAngle(90)
-                    # title = mS.GetBinInfo("Q%iN%i"%(iQ,iN), this_binning_type)
-                    title = mS.GetBinInfo("N%i"%(iN), this_binning_type)
+                    # title = mS.get_bintxt("Q%iN%i"%(iQ,iN), this_binning_type)
+                    title = mS.get_bintxt("N%i"%(iN), this_binning_type)
                     text.DrawLatexNDC(XtoPad(1.05),YtoPad(0.5),title)
 
                 if (iQ==2 and iN==0):

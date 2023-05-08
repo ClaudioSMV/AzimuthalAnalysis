@@ -109,9 +109,9 @@ th1_chi2.GetYaxis().SetRangeUser(0.001, 1.1*th1_chi2.GetMaximum())
 # tmp_hist.Draw("AXIS")
 th1_chi2.Draw("")
 
-ms.DrawPreliminaryInfo("#chi^{2}/ndf from fit")
+ms.draw_preliminary("#chi^{2}/ndf from fit")
 
-ms.DrawTargetInfo(nameFormatted, "Data")
+ms.draw_targetinfo(nameFormatted, "Data")
 
 ext_fit = ms.get_fit_shortmethod(fit_type, this_fit_name)
 name_png = ms.get_plots_file("Chi2ndf",dataset,"png",ext_fit)

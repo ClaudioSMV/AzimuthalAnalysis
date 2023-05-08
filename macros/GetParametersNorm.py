@@ -220,8 +220,8 @@ for e,elem in enumerate(list_func_names):
         hist_b.Draw("hist e")
 
         # legend_b.Draw()
-        ms.DrawPreliminaryInfo("Parameters normalized %s"%(fit_type))
-        ms.DrawTargetInfo(nameFormatted, "Data")
+        ms.draw_preliminary("Parameters normalized %s"%(fit_type))
+        ms.draw_targetinfo(nameFormatted, "Data")
 
         outputName = ms.get_plots_file("ParNorm_B_%s"%(typeR), dataset, "png", name_ext)
         canvas.SaveAs(outputPath+outputName)
@@ -247,8 +247,8 @@ for e,elem in enumerate(list_func_names):
         hist_c.Draw("hist e")
 
         # legend_c.Draw()
-        ms.DrawPreliminaryInfo("Parameters normalized %s"%(fit_type))
-        ms.DrawTargetInfo(nameFormatted, "Data")
+        ms.draw_preliminary("Parameters normalized %s"%(fit_type))
+        ms.draw_targetinfo(nameFormatted, "Data")
 
         outputName = ms.get_plots_file("ParNorm_C_%s"%(typeR), dataset, "png", name_ext)
         canvas.SaveAs(outputPath+outputName)

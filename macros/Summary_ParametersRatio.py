@@ -291,10 +291,10 @@ for r,typeR in enumerate(type_reco_short):
         this_canvas.cd(0)
 
         # solid_mix = "_All" if mixD else "_Solid"
-        # ms.DrawSummaryInfo("%s ratio Solid/D%s %s"%(par,solid_mix,fit))
+        # ms.draw_summary("%s ratio Solid/D%s %s"%(par,solid_mix,fit))
         solid_mix = " mixed D" if mixD else ""
-        ms.DrawSummaryInfo("%s ratio%s %s"%(fancy_uptitle[p],solid_mix,fit))
-        ms.DrawTargetInfo("Solid targets", "Data")
+        ms.draw_summary("%s ratio%s %s"%(fancy_uptitle[p],solid_mix,fit))
+        ms.draw_targetinfo("Solid targets", "Data")
 
         ## Legend
         legQ, legN = 2, 0
@@ -387,7 +387,7 @@ for r,typeR in enumerate(type_reco_short):
                         text = ROOT.TLatex()
                         text.SetTextSize(tsize-14)
                         text.SetTextAlign(23)
-                        title = ms.GetBinInfo("Q%i"%(iQ), this_binning_type)
+                        title = ms.get_bintxt("Q%i"%(iQ), this_binning_type)
                         text.DrawLatexNDC(XtoPad(0.5),YtoPad(Q2_bin_info_Ypos),title)
 
                     if (iQ==2):
@@ -395,7 +395,7 @@ for r,typeR in enumerate(type_reco_short):
                         text.SetTextSize(tsize-14)
                         text.SetTextAlign(23)
                         text.SetTextAngle(90)
-                        title = ms.GetBinInfo("%s%i"%(key1,iN), this_binning_type) # "Q%iN%i" or "Q%iX%i"
+                        title = ms.get_bintxt("%s%i"%(key1,iN), this_binning_type) # "Q%iN%i" or "Q%iX%i"
                         text.DrawLatexNDC(XtoPad(1.05),YtoPad(0.5),title)
 
                     if (iQ==legQ and iN==legN):

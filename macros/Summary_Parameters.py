@@ -304,14 +304,14 @@ if usePt2:
 for p,par in enumerate(par_list):
     this_canvas = list_canvas[p]
     this_canvas.cd(0)
-    mS.DrawSummaryInfo("%s values %s"%(par,fit))
+    mS.draw_summary("%s values %s"%(par,fit))
     if (whatsPlot=="All"):
         targs_drawn = "All_targets"
     elif (whatsPlot=="Solid"):
         targs_drawn = "Solid_targets"
     elif (whatsPlot=="D"):
         targs_drawn = "Deuterium"
-    mS.DrawTargetInfo(targs_drawn, "Data")
+    mS.draw_targetinfo(targs_drawn, "Data")
 
     l_x1, l_x2 = 0.3, 0.7
     l_y1, l_y2 = 0.1, 0.3
@@ -370,7 +370,7 @@ for p,par in enumerate(par_list):
                     text = ROOT.TLatex()
                     text.SetTextSize(tsize-14)
                     text.SetTextAlign(23)
-                    title = mS.GetBinInfo("Q%i"%(iQ), this_binning_type)
+                    title = mS.get_bintxt("Q%i"%(iQ), this_binning_type)
                     text.DrawLatexNDC(XtoPad(0.5),YtoPad(Q2_bin_info_Ypos),title)
 
                 if (iQ==2):
@@ -378,7 +378,7 @@ for p,par in enumerate(par_list):
                     text.SetTextSize(tsize-14)
                     text.SetTextAlign(23)
                     text.SetTextAngle(90)
-                    title = mS.GetBinInfo("%s%i"%(key1,iN), this_binning_type) # "Q%iN%i" or "Q%iX%i"
+                    title = mS.get_bintxt("%s%i"%(key1,iN), this_binning_type) # "Q%iN%i" or "Q%iX%i"
                     text.DrawLatexNDC(XtoPad(1.05),YtoPad(0.5),title)
 
                 if (iQ==2 and iN==0):

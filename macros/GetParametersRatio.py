@@ -273,8 +273,8 @@ for e,elem in enumerate(list_func_names):
         hist_b.Write()
         hist_b.Draw("hist e")
 
-        ms.DrawPreliminaryInfo("Ratio over D%s %s"%(solid_targ,fit_type))
-        ms.DrawTargetInfo(nameFormatted, "Data")
+        ms.draw_preliminary("Ratio over D%s %s"%(solid_targ,fit_type))
+        ms.draw_targetinfo(nameFormatted, "Data")
 
         outputName = ms.get_plots_file("RatioD%s_B_%s"%(solid_targ,typeR), dataset, "png", name_ext)
         canvas.SaveAs(outputPath+outputName)
@@ -287,8 +287,8 @@ for e,elem in enumerate(list_func_names):
         hist_c.Write()
         hist_c.Draw("hist e")
 
-        ms.DrawPreliminaryInfo("Ratio over D%s %s"%(solid_targ,fit_type))
-        ms.DrawTargetInfo(nameFormatted, "Data")
+        ms.draw_preliminary("Ratio over D%s %s"%(solid_targ,fit_type))
+        ms.draw_targetinfo(nameFormatted, "Data")
 
         outputName = ms.get_plots_file("RatioD%s_C_%s"%(solid_targ,typeR), dataset, "png", name_ext)
         canvas.SaveAs(outputPath+outputName)

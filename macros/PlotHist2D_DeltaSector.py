@@ -77,7 +77,7 @@ for m in list_methods:
 canvas = TCanvas("cv","cv",1000,800)
 gStyle.SetOptStat(0)
 
-list_colors = ms.GetColors(True)
+list_colors = ms.get_color()
 
 ROOT.TGaxis.SetExponentOffset(-0.06, 0.0, "y")
 
@@ -132,11 +132,11 @@ for h,hist in enumerate(list_2dHist):
     this_legend.Draw()
 
     this_method = list_methods[h]
-    ms.DrawPreliminaryInfo("#DeltaSector %s"%correct_prefix[this_method])
+    ms.draw_preliminary("#DeltaSector %s"%correct_prefix[this_method])
     dataOrSim = "Data" if isData else "Simulation"
     out_DatOrSim = "Data" if isData else "HSim"
 
-    ms.DrawTargetInfo(infoDict["Target"], dataOrSim)
+    ms.draw_targetinfo(infoDict["Target"], dataOrSim)
 
     name_png = ms.get_plots_file("DSect_%s"%(this_method),dataset,"png",out_DatOrSim)
     canvas.SaveAs(outputPath+name_png)

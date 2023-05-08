@@ -117,9 +117,9 @@ for h in list_hists:
             hist_tmp.Draw("hist col")
             hist_tmp.Write()
 
-            ms.DrawPreliminaryInfo("Compare error")
-            ms.DrawTargetInfo(nameFormatted, "Data")
-            ms.DrawBinInfo(tmp_txt, infoDict["BinningType"])
+            ms.draw_preliminary("Compare error")
+            ms.draw_targetinfo(nameFormatted, "Data")
+            ms.draw_bininfo(tmp_txt, infoDict["BinningType"])
 
             outputName = ms.get_plots_file("CompareError_"+tmp_name, dataset, "png",tmp_txt)
             canvas.SaveAs(outputPath+outputName)

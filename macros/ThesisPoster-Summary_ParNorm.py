@@ -303,15 +303,15 @@ for r,typeR in enumerate(type_reco_short):
     for p,par in enumerate(["B", "C"]):
         this_canvas = list_canvas[p]
         this_canvas.cd(0)
-        # ms.DrawSummaryInfo("Norm %s/A %s"%(par,fit))
-        ms.DrawSummaryInfo("%s %s"%(fancy_uptitle[p], fit))
+        # ms.draw_summary("Norm %s/A %s"%(par,fit))
+        ms.draw_summary("%s %s"%(fancy_uptitle[p], fit))
         if (whatsPlot=="All"):
             targs_drawn = "All targets"
         elif (whatsPlot=="Solid"):
             targs_drawn = "Solid targets"
         elif (whatsPlot=="D"):
             targs_drawn = "Liquid target"
-        ms.DrawTargetInfo(targs_drawn, "Data")
+        ms.draw_targetinfo(targs_drawn, "Data")
 
         ## Legend
         legQ, legN = 2, 0
@@ -397,7 +397,7 @@ for r,typeR in enumerate(type_reco_short):
                         text = ROOT.TLatex()
                         text.SetTextSize(tsize-14)
                         text.SetTextAlign(23)
-                        title = ms.GetBinInfo("Q%i"%(iQ), this_binning_type)
+                        title = ms.get_bintxt("Q%i"%(iQ), this_binning_type)
                         text.DrawLatexNDC(XtoPad(0.5),YtoPad(Q2_bin_info_Ypos),title)
 
                     if (iQ==2):
@@ -405,7 +405,7 @@ for r,typeR in enumerate(type_reco_short):
                         text.SetTextSize(tsize-14)
                         text.SetTextAlign(23)
                         text.SetTextAngle(90)
-                        title = ms.GetBinInfo("%s%i"%(key1,iN), this_binning_type) # "Q%iN%i" or "Q%iX%i"
+                        title = ms.get_bintxt("%s%i"%(key1,iN), this_binning_type) # "Q%iN%i" or "Q%iX%i"
                         text.DrawLatexNDC(XtoPad(1.05),YtoPad(0.5),title)
 
                     if (iQ==legQ and iN==legN):
@@ -530,7 +530,7 @@ for p,par in enumerate(["B", "C"]):
         #     text = ROOT.TLatex()
         #     text.SetTextSize(tsize-14)
         #     text.SetTextAlign(23)
-        #     title = ms.GetBinInfo("Q%i"%(iQ), this_binning_type)
+        #     title = ms.get_bintxt("Q%i"%(iQ), this_binning_type)
         #     text.DrawLatexNDC(XtoPad(0.5),YtoPad(Q2_bin_info_Ypos),title)
 
         # if (iQ==2):
@@ -538,7 +538,7 @@ for p,par in enumerate(["B", "C"]):
         #     text.SetTextSize(tsize-14)
         #     text.SetTextAlign(23)
         #     text.SetTextAngle(90)
-        #     title = ms.GetBinInfo("%s%i"%(key1,iN), this_binning_type) # "Q%iN%i" or "Q%iX%i"
+        #     title = ms.get_bintxt("%s%i"%(key1,iN), this_binning_type) # "Q%iN%i" or "Q%iX%i"
         #     text.DrawLatexNDC(XtoPad(1.05),YtoPad(0.5),title)
 
         # if (iQ==legQ and iN==legN):
@@ -549,8 +549,8 @@ for p,par in enumerate(["B", "C"]):
         new_pad = False
 
     # canvas_new.cd(0)
-    ms.DrawSummaryInfo("%s"%(fancy_uptitle[p]))
-    ms.DrawTargetInfo(targs_drawn, "Data")
+    ms.draw_summary("%s"%(fancy_uptitle[p]))
+    ms.draw_targetinfo(targs_drawn, "Data")
 
 
 

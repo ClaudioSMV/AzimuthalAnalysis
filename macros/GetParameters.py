@@ -172,8 +172,8 @@ for e,elem in enumerate(list_func_names):
     hist_A.Write()
     hist_A.Draw("hist e")
 
-    myStyle.DrawPreliminaryInfo("Parameter A %s"%fit_type)
-    myStyle.DrawTargetInfo(nameFormatted, "Data")
+    myStyle.draw_preliminary("Parameter A %s"%fit_type)
+    myStyle.draw_targetinfo(nameFormatted, "Data")
 
     outputName = myStyle.get_plots_file("ParameterA%s"%zoom_ext, dataset, "gif", name_ext)
     canvas.SaveAs(outputPath+outputName)
@@ -190,8 +190,8 @@ for e,elem in enumerate(list_func_names):
     hist_B.Write()
     hist_B.Draw("hist e")
 
-    myStyle.DrawPreliminaryInfo("Parameter B %s"%fit_type)
-    myStyle.DrawTargetInfo(nameFormatted, "Data")
+    myStyle.draw_preliminary("Parameter B %s"%fit_type)
+    myStyle.draw_targetinfo(nameFormatted, "Data")
 
     outputName = myStyle.get_plots_file("ParameterB%s"%zoom_ext, dataset, "gif", name_ext)
     canvas.SaveAs(outputPath+outputName)
@@ -207,8 +207,8 @@ for e,elem in enumerate(list_func_names):
     hist_C.Write()
     hist_C.Draw("hist e")
 
-    myStyle.DrawPreliminaryInfo("Parameter C %s"%fit_type)
-    myStyle.DrawTargetInfo(nameFormatted, "Data")
+    myStyle.draw_preliminary("Parameter C %s"%fit_type)
+    myStyle.draw_targetinfo(nameFormatted, "Data")
 
     outputName = myStyle.get_plots_file("ParameterC%s"%zoom_ext, dataset, "gif", name_ext)
     canvas.SaveAs(outputPath+outputName)

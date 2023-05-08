@@ -123,8 +123,8 @@ for e,elem in enumerate(list_func_names):
 
     th1_CorrAB_list[e].Draw()
 
-    ms.DrawPreliminaryInfo("Correlation AB %s"%(fit_type))
-    ms.DrawTargetInfo(nameFormatted, "Data")
+    ms.draw_preliminary("Correlation AB %s"%(fit_type))
+    ms.draw_targetinfo(nameFormatted, "Data")
 
     this_title_png = outputPath + ms.get_plots_file("CorrelationAB", dataset, "png")
     if ("LR" in this_title_png):
@@ -141,8 +141,8 @@ for e,elem in enumerate(list_func_names):
 
     th1_CorrAC_list[e].Draw()
 
-    ms.DrawPreliminaryInfo("Correlation AC %s"%(fit_type))
-    ms.DrawTargetInfo(nameFormatted, "Data")
+    ms.draw_preliminary("Correlation AC %s"%(fit_type))
+    ms.draw_targetinfo(nameFormatted, "Data")
 
     this_title_png = outputPath + ms.get_plots_file("CorrelationAC", dataset, "png")
     if ("LR" in this_title_png):
@@ -159,8 +159,8 @@ for e,elem in enumerate(list_func_names):
 
     th1_CorrBC_list[e].Draw()
 
-    ms.DrawPreliminaryInfo("Correlation BC %s"%(fit_type))
-    ms.DrawTargetInfo(nameFormatted, "Data")
+    ms.draw_preliminary("Correlation BC %s"%(fit_type))
+    ms.draw_targetinfo(nameFormatted, "Data")
 
     this_title_png = outputPath + ms.get_plots_file("CorrelationBC", dataset, "png")
     if ("LR" in this_title_png):

@@ -608,9 +608,9 @@ def get_summary_fullpath(name_meth, cuts = "", dataset = "", extension = "root",
 ##  Define style and pad parameters  ##
 #######################################
 
-def force_style(useCOLZ = False):
+def force_style(use_colz = False):
 # Define Style for plots with uniform margins and text format
-# useCOLZ option gives a special margin set to see the color bar
+# use_colz option gives a special margin set to see the color bar
     ROOT.gStyle.SetPadTopMargin(marg)    #0.05
     ROOT.gStyle.SetPadRightMargin(marg)  #0.05
     ROOT.gStyle.SetPadBottomMargin(2*marg)  #0.16
@@ -652,7 +652,7 @@ def force_style(useCOLZ = False):
 
     ROOT.gROOT.ForceStyle()
 
-    if useCOLZ:
+    if use_colz:
         ROOT.gStyle.SetPadRightMargin(2*marg)
         ROOT.gStyle.SetPadTopMargin(1.1*marg)
         ROOT.gStyle.SetLabelSize(tsize-10,"z")
@@ -671,50 +671,64 @@ def get_size():
 # Return size of text value
     return tsize
 
-def get_padcenter():
-# Return pad center value (Needs to be updated when useCOLZ)
-    return (1 + marg)/2
+def get_padcenter(use_colz = False):
+# Return pad center value as ratio wrt total pad length
+    center = 0.5 if use_colz else (1 + marg)/2
+
+    return center
 
 
 #############################
 ##  Draw top text/summary  ##
 #############################
 
-def DrawTopLeft(text_bold = "", text = "", xl=0.0, yb=0.0):
+def draw_topL(text_bold = "", text = "", xl=0.0, yb=0.0):
+# Draw text at top left corner of the pad, with reference point
+# shifted to the right by xl and up by yb
     upLeft_text = ROOT.TLatex()
     upLeft_text.SetTextSize(tsize-4)
     upLeft_text.DrawLatexNDC(2*marg+0.005+xl,1-marg+0.01+yb,"#bf{%s} %s"%(text_bold,text))
 
-def DrawTopRight(text_bold = "", text = "", xr=0.0, yb=0.0):
+def draw_topR(text_bold = "", text = "", xr=0.0, yb=0.0):
+# Draw text at top right corner of the pad, with reference point
+# shifted to the left by xr and up by yb
     upRight_text = ROOT.TLatex()
     upRight_text.SetTextSize(tsize-4)
     upRight_text.SetTextAlign(31)
     upRight_text.DrawLatexNDC(1-marg-0.005-xr,1-marg+0.01+yb,"#bf{%s} %s"%(text_bold,text))
 
-def DrawPreliminaryInfo(text = "", xl=0.0, yb=0.0):
-    DrawTopLeft(text, "Preliminary", xl, yb)
+def draw_preliminary(text = "", xl=0.0, yb=0.0):
+# Draw top left label "Preliminary", with reference point shifted
+# to the right by xl and up by yb
+    draw_topL(text, "Preliminary", xl, yb)
 
-def DrawSummaryInfo(text = "", xl=0.0, yb=0.0):
-    DrawTopLeft(text, "Summary", xl, yb)
+def draw_summary(text = "", xl=0.0, yb=0.0):
+# Draw top left label "Summary", with reference point shifted
+# to the right by xl and up by yb
+    draw_topL(text, "Summary", xl, yb)
 
-def DrawTargetInfo(target="X", fileType="SimOrData"):
+def draw_targetinfo(target="X", fileType="SimOrData"):
+# Draw top right label with target and "simulation" or "data" info
     if "targ" in target:
-        DrawTopRight("%s, %s"%(target,fileType),"")
+        draw_topR("%s, %s"%(target,fileType),"")
     else:
-        DrawTopRight("%s target, %s"%(target,fileType),"")
+        draw_topR("%s target, %s"%(target,fileType),"")
 
-def DrawBinInfo(bin_name="A0B1", bin_type=0, xR=0, yT=0):
-    # Draw w.r.t. TopRight point (xR, yT)
+def draw_bininfo(bin_name="A0B1", bin_type=0, xR=0, yT=0):
+# Draw bin info such as: "0.1 GeV < nu < 1.0 GeV"
+# below top text banner w.r.t. TopRight point (xR, yT)
     text = ROOT.TLatex()
     text.SetTextSize(tsize-4)
     text.SetTextAlign(33)
-    title = GetBinInfo(bin_name, bin_type)
+    title = get_bintxt(bin_name, bin_type)
     if (xR==0 and yT==0):
         text.DrawLatexNDC(1-marg-0.005,1-marg-0.01,title)
     else:
         text.DrawLatexNDC(xR,yT,title)
 
-def GetBinInfo(bin_name="A0B1", bin_type=0):
+def get_bintxt(bin_name="A0B1", bin_type=0):
+# Get text with bin info such as: "0.1 GeV < nu < 1.0 GeV" to be written using
+# bin_name in bincode format and bin_type from the binning dictionary
     tmp_txt = ""
 
     this_dict = all_dicts[bin_type]
@@ -736,7 +750,8 @@ def GetBinInfo(bin_name="A0B1", bin_type=0):
 ##  Plot markers and colors  ##
 ###############################
 
-def GetColors(color_blind = False):
+def get_color(color_blind = True):
+# Get list with color-blind friendly (by default) colors (7 in the pallete)
     colors_list = [416+2, 432+2, 600, 880, 632, 400+2, 600-3]
     ## [#kGreen+2, #kCyan+2, #kBlue, #kViolet, #kRed, #kYellow+2, #kBlue-3]
     if color_blind:
@@ -748,7 +763,8 @@ def GetColors(color_blind = False):
 
     return colors_list
 
-def GetMarkers(filled = False):
+def get_marker(filled = False):
+# Get list with 6 shapes for markers, hollow by default
     ## [circle, square, triangle, diamond, star-inverse, inverse-triangle]
     marker_list = [24, 25, 26, 27, 30, 32] # Hollow option
     if filled:
@@ -756,8 +772,9 @@ def GetMarkers(filled = False):
 
     return marker_list
 
-color_target = {'C': GetColors(True)[0], 'Fe': GetColors(True)[2], 'Pb': GetColors(True)[3], 'D': GetColors(True)[4],
-                'DC': GetColors(True)[1], 'DFe': GetColors(True)[5], 'DPb': GetColors(True)[6]}
+# Dictionary with a color associated to each target
+color_target = {'C': get_color()[0], 'Fe': get_color()[2], 'Pb': get_color()[3], 'D': get_color()[4],
+                'DC': get_color()[1], 'DFe': get_color()[5], 'DPb': get_color()[6]}
 
 
 ################################
@@ -767,12 +784,13 @@ color_target = {'C': GetColors(True)[0], 'Fe': GetColors(True)[2], 'Pb': GetColo
 # Copy dictionaries of bins from Bins.py
 all_dicts = list(bn.Bin_List)
 
-# Short name
+# Short name of each kinematic variable of interest
 varname2key = {
     "Q2":'Q', "Nu":'N', "Zh":'Z', "Pt2":'P', "PhiPQ":'I', "Xb":'X',
     "Pt":'P', "PQ":'I'
 }
 
+# Dictionary with axis title per variable
 #   <initial> : [<name>,    <axis_name_latex>,  <units>  ]
 var_label = {
     'Q': ["Q2",     "Q^{2}",        "(GeV^{2})" ],
@@ -784,6 +802,8 @@ var_label = {
 }
 
 def axis_label(var, text):
+# Return str with text to be used as title for axis
+# Usually, axis needs "LatexUnit"
     this_output = ""
     if ("Name" in text):
         this_output += var_label[var][0]

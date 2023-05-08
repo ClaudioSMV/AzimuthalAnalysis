@@ -65,12 +65,12 @@ for i_h,h in enumerate(inputfile.GetListOfKeys()):
         hist2D.GetZaxis().SetMaxDigits(3)
         hist2D.Draw("colz")
 
-        # ms.DrawPreliminaryInfo("P_{#pi^{+}} vs N_{phe} map")
-        ms.DrawPreliminaryInfo(hist2D.GetTitle())
+        # ms.draw_preliminary("P_{#pi^{+}} vs N_{phe} map")
+        ms.draw_preliminary(hist2D.GetTitle())
         dataOrSim = "Data" if isData else "Simulation"
         out_DatOrSim = "Data" if isData else "HSim"
 
-        ms.DrawTargetInfo(this_targ, dataOrSim)
+        ms.draw_targetinfo(this_targ, dataOrSim)
 
         name_png = ms.get_plots_file("%sVS%s_%s"%(nameYvar,nameXvar, this_targ),"","png",out_DatOrSim)
         canvas.SaveAs(outputPath+name_png)

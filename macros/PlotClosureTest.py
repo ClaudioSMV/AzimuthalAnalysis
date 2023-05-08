@@ -183,9 +183,9 @@ for pt,pref in enumerate(type_reco_short):
         #         this_proj.Draw("hist e same")
 
         #         # legend.Draw();
-        #         ms.DrawPreliminaryInfo(prefixType[p])
-        #         ms.DrawTargetInfo(nameFormatted, "Simulation")
-        #         ms.DrawBinInfo(info, infoDict["BinningType"])
+        #         ms.draw_preliminary(prefixType[p])
+        #         ms.draw_targetinfo(nameFormatted, "Simulation")
+        #         ms.draw_bininfo(info, infoDict["BinningType"])
 
         #         histName = "_".join(this_proj.GetName().split("_")[0:-1]) # Corr_A_B_Q1N2 -> Corr_A_B
         #         outputName = ms.get_plots_file(histName, dataset, "png", info)
@@ -220,9 +220,9 @@ for pt,pref in enumerate(type_reco_short):
 
         hCT.Draw("hist e same")
 
-        ms.DrawPreliminaryInfo("ClosureTest %s"%pref)
-        ms.DrawTargetInfo(nameFormatted, "Simulation")
-        ms.DrawBinInfo(info, infoDict["BinningType"])
+        ms.draw_preliminary("ClosureTest %s"%pref)
+        ms.draw_targetinfo(nameFormatted, "Simulation")
+        ms.draw_bininfo(info, infoDict["BinningType"])
 
         gPad.RedrawAxis("g")
 
@@ -253,8 +253,8 @@ for pt,pref in enumerate(type_reco_short):
     top_label = "Z_{h}" if useZh else "P_{t}^{2}"
     if (pref != "Reco"):
         top_label+=" %s"%pref
-    ms.DrawSummaryInfo("ClosureTest 3d (Q^{2},#nu,%s)"%(top_label))
-    ms.DrawTargetInfo(nameFormatted, "Simulation")
+    ms.draw_summary("ClosureTest 3d (Q^{2},#nu,%s)"%(top_label))
+    ms.draw_targetinfo(nameFormatted, "Simulation")
 
     outputName_png = ms.get_plots_file(th1_ct.GetName(), dataset, "png")
     canvas.SaveAs(outputPath+outputName_png)
@@ -267,8 +267,8 @@ for pt,pref in enumerate(type_reco_short):
     th1_ct_err.SetLineColor(kBlack)
     th1_ct_err.SetTitleOffset(1.3,"y")
     th1_ct_err.Draw()
-    ms.DrawSummaryInfo("Closure error %s"%pref)
-    ms.DrawTargetInfo(nameFormatted, "Simulation")
+    ms.draw_summary("Closure error %s"%pref)
+    ms.draw_targetinfo(nameFormatted, "Simulation")
 
     outputName = ms.get_plots_file(th1_ct_err.GetName(), dataset, "png")
     canvas.SaveAs(outputPath+outputName)
@@ -279,8 +279,8 @@ for pt,pref in enumerate(type_reco_short):
     th1_ct_err100.SetLineColor(kBlack)
     th1_ct_err100.SetTitleOffset(1.3,"y")
     th1_ct_err100.Draw()
-    ms.DrawSummaryInfo("Closure error %% %s"%pref)
-    ms.DrawTargetInfo(nameFormatted, "Simulation")
+    ms.draw_summary("Closure error %% %s"%pref)
+    ms.draw_targetinfo(nameFormatted, "Simulation")
 
     outputName = ms.get_plots_file(th1_ct_err100.GetName(), dataset, "png")
     canvas.SaveAs(outputPath+outputName)

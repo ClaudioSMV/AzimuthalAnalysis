@@ -80,8 +80,8 @@ for this_var in list_vars:
     this_res_hist.Draw("hist e")
     fit.Draw("same")
 
-    ms.DrawPreliminaryInfo("Resolution")
-    ms.DrawTargetInfo(infoDict["Target"], "Simulation")
+    ms.draw_preliminary("Resolution")
+    ms.draw_targetinfo(infoDict["Target"], "Simulation")
 
     outputName = ms.get_plots_file("Resolution1D", dataset, "png",this_var)
     canvas.SaveAs(outputPath+outputName)
@@ -133,8 +133,8 @@ for this_var in list_vars:
 
     res_vs_X.GetYaxis().SetRangeUser(0.0, 1.2*res_vs_X.GetMaximum())
     res_vs_X.Draw("hist e")
-    ms.DrawPreliminaryInfo("Resolution vs x")
-    ms.DrawTargetInfo(infoDict["Target"], "Simulation")
+    ms.draw_preliminary("Resolution vs x")
+    ms.draw_targetinfo(infoDict["Target"], "Simulation")
 
     outputName = ms.get_plots_file("ResolutionVsX", dataset, "png",this_var)
     canvas.SaveAs(outputPath+outputName)

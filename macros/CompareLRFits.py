@@ -115,8 +115,8 @@ canvas.SetGrid(0,1)
 
 for i,ipar in enumerate(["A", "B", "C"]):
     th1_LoverR_list[i].Draw()
-    mS.DrawPreliminaryInfo("Comparison L/R %s"%ipar)
-    mS.DrawTargetInfo(nameFormatted, "Data")
+    mS.draw_preliminary("Comparison L/R %s"%ipar)
+    mS.draw_targetinfo(nameFormatted, "Data")
 
     this_title_gif = outputPath + mS.get_plots_file("CompareLR_%s"%ipar, dataset, "gif")
     this_title_pdf = outputPath + mS.get_plots_file("CompareLR_%s"%ipar, dataset, "pdf")

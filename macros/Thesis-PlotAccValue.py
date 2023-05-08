@@ -59,7 +59,7 @@ inputfile = TFile(inputPath+inputROOT,"READ")
 outputPath = ms.get_plots_folder("AccValue", input_cuts, dataset, isJLab)
 
 
-list_colors = ms.GetColors(True)
+list_colors = ms.get_color()
 
 canvas = TCanvas("cv","cv",1000,800)
 gStyle.SetOptStat(0)
@@ -102,9 +102,9 @@ acc_Stack.GetXaxis().SetRangeUser(0.0,0.6)
 acc_Stack.Draw("nostack")
 legend.Draw()
 
-ms.DrawPreliminaryInfo("Acceptance values")
-# ms.DrawTargetInfo(nameFormatted, "Simulation")
-ms.DrawTopRight(nameFormatted, "Simulation")
+ms.draw_preliminary("Acceptance values")
+# ms.draw_targetinfo(nameFormatted, "Simulation")
+ms.draw_topR(nameFormatted, "Simulation")
 
 name_png = ms.get_plots_file("SummaryValueAcc",dataset,"png")
 canvas.SaveAs(outputPath+name_png)
@@ -150,9 +150,9 @@ legendEmpty.AddEntry(accEmpty_remc, "Match use gen. vars")
 accEmpty_Stack.Draw("nostack")
 legendEmpty.Draw()
 
-ms.DrawPreliminaryInfo("Null acceptance factors")
-# ms.DrawTargetInfo(nameFormatted, "Simulation")
-ms.DrawTopRight(nameFormatted, "Simulation")
+ms.draw_preliminary("Null acceptance factors")
+# ms.draw_targetinfo(nameFormatted, "Simulation")
+ms.draw_topR(nameFormatted, "Simulation")
 
 name_png = ms.get_plots_file("SummaryEmptyAcc",dataset,"png")
 canvas.SaveAs(outputPath+name_png)

@@ -269,8 +269,8 @@ axis_hist.SetTitleOffset(1.0,"x")
 axis_hist.SetTitleOffset(1.8,"y")
 
 ## Style
-l_color = ms.GetColors(True)
-list_marker = ms.GetMarkers()
+l_color = ms.get_color()
+list_marker = ms.get_marker()
 
 for r,typeR in enumerate(type_reco_short):
     if typeR==0: # Skip reco method when does not exist!
@@ -279,9 +279,9 @@ for r,typeR in enumerate(type_reco_short):
     for p,par in enumerate(["B", "C"]):
         this_canvas = list_canvas[p]
         this_canvas.cd(0)
-        # ms.DrawSummaryInfo("Norm %s/A Diff methods"%(par))
-        ms.DrawSummaryInfo("%s multi fit"%(fancy_uptitle[p]))
-        ms.DrawTargetInfo(this_targ, "Data")
+        # ms.draw_summary("Norm %s/A Diff methods"%(par))
+        ms.draw_summary("%s multi fit"%(fancy_uptitle[p]))
+        ms.draw_targetinfo(this_targ, "Data")
 
         ## Legend
         legQ, legN = 2, 0
@@ -367,7 +367,7 @@ for r,typeR in enumerate(type_reco_short):
                         text = ROOT.TLatex()
                         text.SetTextSize(tsize-14)
                         text.SetTextAlign(23)
-                        title = ms.GetBinInfo("Q%i"%(iQ), this_binning)
+                        title = ms.get_bintxt("Q%i"%(iQ), this_binning)
                         text.DrawLatexNDC(XtoPad(0.5),YtoPad(Q2_bin_info_Ypos),title)
 
                     if (iQ==2):
@@ -375,7 +375,7 @@ for r,typeR in enumerate(type_reco_short):
                         text.SetTextSize(tsize-14)
                         text.SetTextAlign(23)
                         text.SetTextAngle(90)
-                        title = ms.GetBinInfo("%s%i"%(key1,iN), this_binning) # "Q%iN%i" or "Q%iX%i"
+                        title = ms.get_bintxt("%s%i"%(key1,iN), this_binning) # "Q%iN%i" or "Q%iX%i"
                         text.DrawLatexNDC(XtoPad(1.05),YtoPad(0.5),title)
 
                     if (iQ==legQ and iN==legN):
