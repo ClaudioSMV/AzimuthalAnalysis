@@ -17,8 +17,8 @@ gStyle.SetStatY(2*ms.get_margin() + 0.205)
 
 ## Define functions
 
-def Get_HistCorrected(h_input, h_name, this_fittype): # , opts):
-
+def get_corrected_hist(h_input, h_name, this_fittype): # , opts):
+# Return corrected histogram copy
     ### Get binning
     Nbins_in = h_input.GetXaxis().GetNbins()
 
@@ -79,7 +79,8 @@ def Get_HistCorrected(h_input, h_name, this_fittype): # , opts):
 
     return h_output
 
-def Get_FitFunctions(h_out, list_fname, this_fittype, opts):
+def get_fit_functions(h_out, list_fname, this_fittype, opts):
+# Return list of TF1 with the proper range
     ### Options:
     ###     Skip0: Skip central peak
     ###     Sin: Use sin(x) term in fit
@@ -157,11 +158,10 @@ def Get_FitFunctions(h_out, list_fname, this_fittype, opts):
         this_func = TF1(fname,the_func, this_xmin,this_xmax)
         tf1_fit.append(this_func)
 
-    ### Return list with TF1 with the proper range
     return tf1_fit
 
 
-def Get_Chi2ndf(fit_funct, x,y, position):
+def get_chi2ndf(fit_funct, x,y, position):
     chisq = fit_funct.GetChisquare()
     ndf = fit_funct.GetNDF()
     if (ndf != 0):
@@ -287,7 +287,7 @@ for h in list_of_hists:
                 continue
 
             ### Get corrected histogram
-            hist_corr = Get_HistCorrected(hist, hist_name, fit_type)
+            hist_corr = get_corrected_hist(hist, hist_name, fit_type)
 
             hist_corr.SetMinimum(0.0001)
             hist_corr.SetMaximum(hist_corr.GetMaximum()*1.4)
@@ -295,7 +295,7 @@ for h in list_of_hists:
 
             ### Return list of TF1 with the proper range
             # Use plots_cuts to find special cuts/options
-            list_tf1 = Get_FitFunctions(hist_corr, list_fitfname, fit_type, plots_cuts) # fit_opts
+            list_tf1 = get_fit_functions(hist_corr, list_fitfname, fit_type, plots_cuts) # fit_opts
 
             ### Make fit and save covariance and correlation matrices
             list_this_chi2 = []
@@ -320,7 +320,7 @@ for h in list_of_hists:
                 elif (fit_type == "Ff"):
                     xpos_tex = 0.0
 
-                this_chi2 = Get_Chi2ndf(fitfunc, xpos_tex,ypos_tex, "%s%i"%(fit_type,i))
+                this_chi2 = get_chi2ndf(fitfunc, xpos_tex,ypos_tex, "%s%i"%(fit_type,i))
                 list_this_chi2.append(this_chi2)
 
             for c in list_this_chi2:
