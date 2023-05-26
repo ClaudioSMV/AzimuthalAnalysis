@@ -19,8 +19,8 @@ tsize=38
 
 ####
 # Acceptance_%s_B%i.root      ; <Target>,<_binIndex>
-# Corrected_%s_B%i_%iD.root   ; <Target>,<_binIndex>,<_binNdims (non-integrated dims)>
-# ClosureTest_%s_B%i_%iD.root ; <Target>,<_binIndex>,<_binNdims (non-integrated dims)>
+# Corrected_%s_B%i_%iD.root   ; <Target>,<_binIndex>,<_binNdims>
+# ClosureTest_%s_B%i_%iD.root ; <Target>,<_binIndex>,<_binNdims>
 ####
 
 
@@ -77,10 +77,170 @@ def add_str_before_ext(path, before_dot, other_extension = "root"):
     return new_path + before_dot + "." + other_extension
 
 
-#############################
-##  Cuts and dictionaries  ##
-#############################
+##########################
+##  Messages functions  ##
+##########################
 
+def error_msg(function, text):
+    msg_str = "  [!|%s] "%(function)
+    msg_str+= text
+
+    print(msg_str)
+    exit()
+
+def info_msg(function, text):
+    msg_str = "  [%s] "%(function)
+    msg_str+= text
+
+    print(msg_str)
+
+
+#################################
+##  Cuts and dictionaries  NEW ##
+#################################
+
+# Transform a long named cut into a short tag
+d_cut_acc = {
+    "XF": "Xf", "Xf": "Xf",
+    "XT_TFR": "XT", "XTFR": "XT", "Xt": "XT", "XT": "XT",
+    "DeltaSector": "DS", "DSect": "DS", "DSctr": "DS", "DS": "DS",
+    "BadSector": "BS", "rmBadSector": "BS", "BS": "BS",
+    "PionFiducial": "PF", "PiFiducial": "PF", "Pf": "PF", "PF": "PF",
+    "MirrorMatch": "MM", "MMtch": "MM", "MM": "MM",
+    "MirrorMatch2": "M2", "MMtch2": "M2", "M2": "M2",
+}
+
+d_cut_cor = {
+    "FErr": "FE", "FullError": "FE", "Fe": "FE", "FE": "FE",
+    "AccQlt": "AQ", "AccQuality": "AQ", "AQ": "AQ",
+    "rmNpheElH": "Pe", "PheElH": "Pe", "PE": "Pe", "Pe": "Pe",
+    "Z": "Zx", "Zx": "Zx",
+    "P": "Px", "Px": "Px",
+}
+
+d_cut_fit = {
+    "useSin": "Fs", "FitSin": "Fs", "Fs": "Fs",
+    "NPeak": "NP", "NP": "NP",
+}
+
+d_cut_sum = {
+    "MixD": "MD", "MD": "MD",
+}
+
+d_fit_met = {
+    "Shift": "Sh", "Sh": "Sh",
+    "Fold": "Fd", "Fd": "Fd",
+    "LR": "LR",
+    "Fullfit": "Ff", "FFit": "Ff", "Ff": "Ff",
+}
+
+# Merge all dictionaries into one
+d_cuts = {}
+d_cuts.update(d_cut_acc)
+d_cuts.update(d_cut_cor)
+d_cuts.update(d_cut_fit)
+d_cuts.update(d_cut_sum)
+d_cuts.update(d_fit_met)
+
+
+# Get the label given to each cut in output folder
+d_cut_out_acc = {
+    "Xf": "Xf", "XT": "XTFR", "DS": "DSect0", "BS": "NoBadSec",
+    "PF": "PiFid", "MM": "MMtch", "M2": "MMtch2",
+}
+
+d_cut_out_cor = {
+    "FE": "FErr", "AQ": "AccQlt", "Pe": "dfNphe",
+}
+
+d_cuts_output = {}
+d_cuts_output.update(d_cut_out_acc)
+d_cuts_output.update(d_cut_out_cor)
+
+
+# Get final names from short tags
+d_cut_fin_acc = {
+    "Xf": "CFR", "XT": "TFR", "DS": "DS", "BS": "rS", "PF": "PFid",
+    "MM": "MM", "M2": "MM2",
+}
+
+d_cut_fin_cor = {
+    "FE": "Err", "AQ": "AQ", "Pe": "rmTheLine",
+    "Zx": "Zx", "Px": "Px",
+}
+
+d_cut_fin_fit = {
+    "Fs": "fSin", "NP": "NP",
+}
+
+d_cut_fin_sum = {
+    "MD": "mergeD",
+}
+
+d_fit_fin_met = {
+    "Sh": "Shift", "Fd": "Fold", "LR": "LR", "Ff": "FullRng",
+}
+
+d_cuts_final = {}
+d_cuts_final.update(d_cut_fin_acc)
+d_cuts_final.update(d_cut_fin_cor)
+d_cuts_final.update(d_cut_fin_fit)
+d_cuts_final.update(d_cut_fin_sum)
+d_cuts_final.update(d_fit_fin_met)
+
+
+# Get cuts in legend style
+d_cut_leg_acc = {
+    "Xf": "#X_f CFR", "XT": "#X_f TFR", "DS": "#Delta Sect #neq 0",
+    "BS": "No bad Sect", "PF": "Fidual cut #pi",
+    "MM": "Mirror Matching", "M2": "Mirror Matching 2",
+}
+
+d_cut_leg_cor = {
+    "FE": "", "AQ": "", "Pe": "N_{phe}^{el} #neq N_{phe}^{h}",
+    "Zx": "", "Px": "",
+}
+
+d_cut_leg_fit = {
+    "Fs": "Fit with Sin(x)", "NP": "Skip central peak",
+}
+
+d_cut_leg_sum = {
+    "MD": "Merge all D",
+}
+
+d_fit_leg_met = {
+    "Sh": "Shift", "Fd": "Fold", "LR": "LR", "Ff": "Full range",
+}
+
+d_cuts_legend = {}
+d_cuts_legend.update(d_cut_leg_acc)
+d_cuts_legend.update(d_cut_leg_cor)
+d_cuts_legend.update(d_cut_leg_fit)
+d_cuts_legend.update(d_cut_leg_sum)
+d_cuts_legend.update(d_fit_leg_met)
+
+
+# Save cuts in this order
+l_cut_xaxis = ["Zx", "Px",]
+l_fit_met = ["Sh", "Fd", "LR", "Ff",]
+l_cut_acc = ["Xf", "XT", "DS", "BS", "PF", "MM", "M2",]
+l_cut_cor = ["FE", "AQ", "Pe",]
+l_cut_fit = ["Fs", "NP",]
+l_cut_sum = ["MD",]
+
+l_cuts = []
+l_cuts.extend(l_cut_xaxis)
+l_cuts.extend(l_fit_met)
+l_cuts.extend(l_cut_acc)
+l_cuts.extend(l_cut_cor)
+l_cuts.extend(l_cut_fit)
+l_cuts.extend(l_cut_sum)
+
+
+#################################
+##  Cuts and dictionaries  OLD ##
+#################################
 ### Input name
 ########
 ## From python macro input to internal/input code
@@ -168,9 +328,81 @@ cutMasterKey+= "Sh0Fs0NP0Fd0LR0Ff0"
 cutMasterKey+= "MD0"
 
 
-########################
-##  Format cut names  ##
-########################
+############################
+##  Format cut names  NEW ##
+############################
+
+def get_cut_final(cut_str = "", among_these = "all", is_output = False):
+# Transform str with cuts as in "Aa_Bb_Cccc" into a str with final names
+
+    ref_list = list(l_cuts)
+    # Create list with unwanted cuts to remove from reference list
+    unwanted_cuts = []
+    if is_output:
+        unwanted_cuts.extend(l_cut_sum)
+        unwanted_cuts.extend(l_cut_fit)
+        unwanted_cuts.extend(l_fit_met)
+        unwanted_cuts.extend(l_cut_xaxis)
+        if "acc" in among_these.lower():
+            unwanted_cuts.extend(l_cut_cor)
+    elif among_these is not "all":
+        is_higher_cut = False
+        if ("acc" in among_these.lower()) or is_higher_cut:
+            unwanted_cuts.extend(l_cut_cor)
+            unwanted_cuts.extend(l_cut_xaxis)
+            is_higher_cut = True
+        if ("cor" in among_these.lower()) or is_higher_cut:
+            unwanted_cuts.extend(l_cut_fit)
+            unwanted_cuts.extend(l_fit_met)
+            is_higher_cut = True
+        if ("closure" in among_these.lower()) or is_higher_cut:
+            unwanted_cuts.extend(l_cut_fit)
+            unwanted_cuts.extend(l_fit_met)
+            is_higher_cut = True
+        if ("sum" not in among_these.lower()) or is_higher_cut:
+            unwanted_cuts.extend(l_cut_sum)
+            is_higher_cut = True
+
+    # Remove selected elements from reference
+    for uc in unwanted_cuts:
+        ref_list.remove(uc)
+
+    l_mycuts = cut_str.split("_")
+    # Remove empty entries from input
+    while("" in l_mycuts):
+        l_mycuts.remove("")
+
+    # Save input entries with their short name
+    for c,cut in enumerate(l_mycuts):
+        if cut in d_cuts:
+            l_mycuts[c] = d_cuts[cut]
+        # Send error if input doesn't exist
+        else:
+            err_txt = "\"%s\" cut not found in any list."%(cut)
+            error_msg("Cut", err_txt)
+
+    l_cutfin = []
+    # Save proper name in final list
+    for possible_cut in ref_list:
+        if possible_cut in l_mycuts:
+            ftag = d_cuts_final[possible_cut]
+            if is_output:
+                ftag = d_cuts_output[possible_cut]
+            l_cutfin.append(ftag)
+            l_mycuts.remove(possible_cut)
+
+    # Send warning if an existing cut is not in the sublist
+    if len(l_mycuts) > 0:
+        inf_txt = "Elements not used as cuts: %s."%(l_mycuts)
+        info_msg("Cut", inf_txt)
+
+    final_str = "_".join(l_cutfin)
+    return final_str
+
+
+############################
+##  Format cut names  OLD ##
+############################
 
 def get_cut_str2list(this_cut_str):
 # Transform a str of cuts separated by "_" to a list
@@ -324,7 +556,8 @@ def get_bincode_list(bin_vars, this_binList):
 #   bin_vars: str with initial of the vars used; this_binList: list with bins limits
     output_list = []
     # Change second electron variable if necessary
-    template = ["Q","N","Z","P"] if ("X" not in bin_vars) else ["Q","X","Z","P"]
+    template = ["Q","","Z","P"]
+    template[1] = "N" if ("X" not in bin_vars) else "X"
     nbins = [1,1,1,1]
 
     # Get total number of bins per variable and remove integrated ones
@@ -357,7 +590,8 @@ def get_sparseproj1d_list(thnSparse, list_binstr, shift):
 # Create list of phi 1d hist from thnSparse for each bin defined in
 # list_binstr (list of bincodes)
     this_outlist = []
-    template = ["Q","N","Z","P"] if ("X" not in list_binstr[0]) else ["Q","X","Z","P"]
+    template = ["Q","","Z","P"]
+    template[1] = "N" if ("X" not in list_binstr[0]) else "X"
 
     # Remove integrated variables (not in bincode)
     for l,letter in enumerate(template):
@@ -366,20 +600,21 @@ def get_sparseproj1d_list(thnSparse, list_binstr, shift):
 
     # Run over all n-dimensional bins
     for bincode in list_binstr:
-
         for l,letter in enumerate(template):
             if not letter:
                 continue
 
-            # Get letter location by its position in the string with index, then add 1 to get
-            # the bin number location
-            pos = int(bincode[bincode.index(letter)+1])
+            # Get letter location and add 1 to get the number location
+            idx_letter = bincode.index(letter)
+            pos = int(bincode[idx_letter+1])
             thnSparse.GetAxis(l).SetRange(pos+1, pos+1)
-            # Note that if range is not changed, projection will integrate over that axis!
+            # Note that if range is not changed, projection
+            # will integrate over that axis!
 
         proj_tmp = thnSparse.Projection(4)
         proj_tmp.SetName("proj_tmp")
-        this_hist = create_phi_hist(proj_tmp, thnSparse.GetName()+"_"+bincode, shift)
+        final_name = thnSparse.GetName()+"_"+bincode
+        this_hist = create_phi_hist(proj_tmp, final_name, shift)
         this_outlist.append(this_hist)
         proj_tmp.Delete()
 
@@ -390,32 +625,29 @@ def get_sparseproj1d_list(thnSparse, list_binstr, shift):
 ##  Get fit information  ##
 ###########################
 
-def get_fit_method(output_str, use_default = True):
+def get_fit_method(cut_str, use_default = True):
 # Return str with short-name of the fit method chosen in output_str
     this_method = ""
 
+    final_cut_str = get_cut_long2final(cut_str)
+    error1_str = "More than one fit method selected.\n"\
+                "  Please, choose only one (Ff -Full is default)."
+    # For each fit method available...
     for fm in dict_fit_short2long:
-        out_name = dict_fit_short2long[fm]
+        fname = dict_fit_short2long[fm]
 
-        if out_name in get_cut_long2final(output_str):
-            if (this_method != ""): # and not accept_more
-                print("  [FitMethod] More than one fit method selected. Please, choose only one of the options!")
-                print("              Ff-Full (empty, default); LR; Fd-Fold; Sh-Shift;")
-                exit()
-            # elif (this_method != "" ):
-            #     this_method +="_"
+        # ... look if it exists in the cuts list
+        if fname in final_cut_str:
+            # Send error if another method is already used
+            if this_method:
+                error_msg("FitMethod", error1_str)
             this_method = fm
 
     # Set default method if none is given
     if (use_default and not this_method):
         this_method = "Ff"
-
-    # if (this_method):
-    #     str_meth = this_method.replace("_", ", ")
-    #     if not accept_more:
-    #         print("    [FitMethod] Using %s fit method"%dict_fit_short2long[str_meth])
-    #     else:
-    #         print("    [FitMethod] Using %s fit method/s"%str_meth)
+        info_str = "No fit method introduced. Using Full as default."
+        info_msg("FitMethod", info_str)
 
     return this_method
 
@@ -437,31 +669,43 @@ def get_fit_shortmethod(this_method, fname):
 ##  Paths and directories  ##
 #############################
 
+def enum_folder(mypath):
+# Adds a sequential number to the path
+    # Remove end slash and last digit
+    if mypath[-1] == "/":
+        mypath = mypath[0:-1]
+    if (mypath[-1] == "0") or (mypath[-1] == "1"):
+        mypath = mypath[0:-1]
+
+    count = 1
+    mypath+="1"
+    # Rename until file number is not found
+    while(os.path.exists(mypath)):
+        # Remove number at the end
+        idx = len(str(count))
+        count+=1
+        mypath = mypath[0:-idx] + str(count)
+
+    os.makedirs(mypath)
+    return mypath
+
 def create_folder(outdir, title, overwrite = False, enumerate = False):
-# Create folder with path outdir and title
-# Overwrite recreates the file. If not, enumerate will add a number at the end
-# By default, if file exists, nothing is done
-    outdir2 = os.path.join(outdir,title)
+# Create folder with outdir and title
+# Overwrite recreates the file. Else, enumerate will add
+# a number at the end.
+    outpath = os.path.join(outdir,title)
 
-    if overwrite:
-        os.makedirs(outdir2)
-        print("  [myStyle] %s created."%outdir2)
+    exists = os.path.exists(outpath)
+    if exists and (not overwrite):
+        info_msg("myStyle", "%s already exists!"%outpath)
     else:
-        if not os.path.exists(outdir2):
-            os.makedirs(outdir2)
-            print("  [myStyle] %s created."%outdir2)
-        elif enumerate:
-            i = 1
-            outdir2 = outdir2[0:-1] + str(i) + outdir2[-1]
-            while(os.path.exists(outdir2)):
-                    outdir2 = outdir2[0:-2] + str(i) + outdir2[-1]
-                    i+=1
-            os.mkdir(outdir2)
-            print("  [myStyle] %s created."%outdir2)
+        if enumerate:
+            outpath = enum_folder(outpath)
         else:
-            print("  [myStyle] %s already exists!."%outdir2)
+            os.makedirs(outpath)
+        info_msg("myStyle", "%s created."%outpath)
 
-    return outdir2
+    return outpath
 
 def get_folder(initial_path, name_folder, pre_cut = "", cuts = "", post_cut = "", use_JLab = True, save_folder = True):
 # def get_folder(initial_path, name_folder, cuts = "", extra_path = "", use_JLab = True, save_folder = True):
@@ -493,7 +737,7 @@ def get_folder(initial_path, name_folder, pre_cut = "", cuts = "", post_cut = ""
 
 def get_file(name_file, targ_binning = "", bin_code = "", extension = "root"):
 # Return file name with format <name_file>_<targ_binning>-<bin_code>.<extension>
-#   e.g.: Correction_Fe_10B1-Q0N0Z0.root
+#   e.g.: Correction_Fe_10B1-Q0N0Z0.png
     this_file = name_file
     if targ_binning:
         this_file+= "_"+get_name_format(targ_binning, False)
@@ -687,7 +931,9 @@ def draw_topL(text_bold = "", text = "", xl=0.0, yb=0.0):
 # shifted to the right by xl and up by yb
     upLeft_text = ROOT.TLatex()
     upLeft_text.SetTextSize(tsize-4)
-    upLeft_text.DrawLatexNDC(2*marg+0.005+xl,1-marg+0.01+yb,"#bf{%s} %s"%(text_bold,text))
+    href = 2*marg+0.005+xl
+    vref = 1-marg+0.01+yb
+    upLeft_text.DrawLatexNDC(href,vref,"#bf{%s} %s"%(text_bold,text))
 
 def draw_topR(text_bold = "", text = "", xr=0.0, yb=0.0):
 # Draw text at top right corner of the pad, with reference point
@@ -695,7 +941,9 @@ def draw_topR(text_bold = "", text = "", xr=0.0, yb=0.0):
     upRight_text = ROOT.TLatex()
     upRight_text.SetTextSize(tsize-4)
     upRight_text.SetTextAlign(31)
-    upRight_text.DrawLatexNDC(1-marg-0.005-xr,1-marg+0.01+yb,"#bf{%s} %s"%(text_bold,text))
+    href = 1-marg-0.005-xr
+    vref = 1-marg+0.01+yb
+    upRight_text.DrawLatexNDC(href,vref,"#bf{%s} %s"%(text_bold,text))
 
 def draw_preliminary(text = "", xl=0.0, yb=0.0):
 # Draw top left label "Preliminary", with reference point shifted
@@ -750,31 +998,42 @@ def get_bintxt(bin_name="A0B1", bin_type=0):
 ##  Plot markers and colors  ##
 ###############################
 
-def get_color(color_blind = True):
-# Get list with color-blind friendly (by default) colors (7 in the pallete)
-    colors_list = [416+2, 432+2, 600, 880, 632, 400+2, 600-3]
-    ## [#kGreen+2, #kCyan+2, #kBlue, #kViolet, #kRed, #kYellow+2, #kBlue-3]
-    if color_blind:
-        color_RGB = [[51,34,136],[51,187,238],[17,119,51],[153,153,51],[204,102,119],[136,34,85],[128,128,128]]
-        # [indigo, cyan, green, olive, rose, wine]
-        
-        for i in range(0,len(colors_list)):
-            colors_list[i] = ROOT.TColor.GetColor(color_RGB[i][0],color_RGB[i][1],color_RGB[i][2])
+def rgb_to_root(r ,g ,b ):
+# Translate color from RGB format to inner ROOT format
+    this_color = ROOT.TColor.GetColor(r,g,b)
+    return this_color
 
-    return colors_list
+def get_color(color_blind = True):
+# Get list with 7-color pallete (colorblind friendly by default)
+    # [#kGreen+2, #kCyan+2, #kBlue, #kViolet,
+    #  #kRed, #kYellow+2, #kBlue-3]
+    list_color_regular = [416+2, 432+2, 600, 880, 632, 400+2, 600-3]
+
+    # [indigo, cyan, green, olive, rose, wine]
+    list_color_blind = [rgb_to_root(51,34,136), rgb_to_root(51,187,238),
+                        rgb_to_root(17,119,51), rgb_to_root(153,153,51),
+                        rgb_to_root(204,102,119), rgb_to_root(136,34,85),
+                        rgb_to_root(128,128,128)]
+
+    this_pallete = list_color_blind if color_blind else list_color_regular
+
+    return this_pallete
 
 def get_marker(filled = False):
 # Get list with 6 shapes for markers, hollow by default
-    ## [circle, square, triangle, diamond, star-inverse, inverse-triangle]
-    marker_list = [24, 25, 26, 27, 30, 32] # Hollow option
-    if filled:
-        marker_list = [20, 21, 22, 33, 29, 23] # Filled option
+# [circle, square, triangle, diamond, star-inverse, inverse-triangle]
+    marker_hollow = [24, 25, 26, 27, 30, 32]
+    marker_filled = [20, 21, 22, 33, 29, 23]
 
-    return marker_list
+    this_marker = marker_hollow if not filled else marker_filled
+
+    return this_marker
 
 # Dictionary with a color associated to each target
-color_target = {'C': get_color()[0], 'Fe': get_color()[2], 'Pb': get_color()[3], 'D': get_color()[4],
-                'DC': get_color()[1], 'DFe': get_color()[5], 'DPb': get_color()[6]}
+color_target = {'C': get_color()[0], 'Fe': get_color()[2],
+                'Pb': get_color()[3], 'D': get_color()[4],
+                'DC': get_color()[1], 'DFe': get_color()[5],
+                'DPb': get_color()[6]}
 
 
 ################################
