@@ -1,12 +1,10 @@
-from ROOT import TFile,TTree,TCanvas,TH1D,TH1F,TH2D,TH2F,TLatex,TMath,TColor,TLegend,TEfficiency,TGraphAsymmErrors,gROOT,gPad,TF1,gStyle,kBlack,kWhite,TH1
+from ROOT import TFile,TTree,TCanvas,TH1D,TH1F,TH2D,TH2F,TLatex,TMath,TColor,\
+TLegend,TEfficiency,TGraphAsymmErrors,gROOT,gPad,TF1,gStyle,kBlack,kWhite,TH1
 import ROOT
 import os
 import optparse
 import myStyle as ms
 import myNameFormat as nf
-
-gROOT.SetBatch( True )
-gStyle.SetOptFit(1011)
 
 ## Defining Style
 ms.force_style()
@@ -14,17 +12,21 @@ ms.force_style()
 
 # Construct the argument parser
 parser = optparse.OptionParser("usage: %prog [options]\n")
-# parser.add_option('-x','--xlength', dest='xlength', default = 4.0, help="X axis range [-x, x]")
-# parser.add_option('-y','--ylength', dest='ylength', default = 200.0, help="Y axis upper limit")
-parser.add_option('-D', dest='Dataset', default = "", help="Dataset in format <targ>_<binType>_<Ndims>")
-parser.add_option('-J', dest='isJLab', action='store_true', default = False, help="Use folder from JLab_cluster")
-parser.add_option('-i', dest='inputCuts', default = "", help="Add input cuts Xf_Yb_...")
-parser.add_option('-o', dest='outputCuts', default = "", help="Add output cuts FE_Z_P_...")
+parser.add_option('-D', dest='Dataset', default = "",
+                  help="Dataset in format <targ>_<binType>_<Ndims>")
+parser.add_option('-J', dest='isJLab', action='store_true', default = False,
+                  help="Use folder from JLab_cluster")
+parser.add_option('-i', dest='inputCuts', default = "",
+                  help="Add input cuts Xf_Yb_...")
+parser.add_option('-o', dest='outputCuts', default = "",
+                  help="Add output cuts FE_Z_P_...")
 
-parser.add_option('-A', dest='saveAll', action='store_true', default = False, help="Save All plots")
-parser.add_option('-O', dest='Overwrite', action='store_true', default = False, help="Overwrite if file already exists")
+parser.add_option('-A', dest='saveAll', action='store_true', default = False,
+                  help="Save All plots")
+parser.add_option('-O', dest='Overwrite', action='store_true', default = False,
+                  help="Overwrite if file already exists")
 
-# input format->  <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
+# input: <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
 
 dataset = options.Dataset
@@ -73,7 +75,7 @@ canvas = ms.create_canvas()
 outputfile = TFile(out_obj.get_path(True),"RECREATE")
 phi_axis_title = ms.axis_label('I',"LatexUnit") # "#phi_{PQ} (deg)"
 
-ROOT.TGaxis.SetExponentOffset(-0.07, 0.0, "y")
+gStyle.SetTitleYOffset(1.2)
 
 for i,info in enumerate(l_bincodes):
     for p,proj in enumerate(l_Proj1DTHnSparse):

@@ -930,6 +930,9 @@ def get_summary_fullpath(name_meth, cuts = "", dataset = "", extension = "root",
 def force_style(use_colz = False):
 # Define Style for plots with uniform margins and text format
 # use_colz option gives a special margin set to see the color bar
+    ROOT.gROOT.SetBatch(True)
+    ROOT.gStyle.SetOptFit(1011)
+
     ROOT.gStyle.SetPadTopMargin(marg)    #0.05
     ROOT.gStyle.SetPadRightMargin(marg)  #0.05
     ROOT.gStyle.SetPadBottomMargin(2*marg)  #0.16
@@ -947,12 +950,12 @@ def force_style(use_colz = False):
     ROOT.gStyle.SetTitleFont(font,"z")
 
     ROOT.gStyle.SetTextSize(tsize)
-    ROOT.gStyle.SetLabelSize(tsize-4,"x")
-    ROOT.gStyle.SetTitleSize(tsize,"x")
-    ROOT.gStyle.SetLabelSize(tsize-4,"y")
-    ROOT.gStyle.SetTitleSize(tsize,"y")
-    ROOT.gStyle.SetLabelSize(tsize-4,"z")
-    ROOT.gStyle.SetTitleSize(tsize,"z")
+    ROOT.gStyle.SetLabelSize(tsize-9,"x")
+    ROOT.gStyle.SetTitleSize(tsize-3,"x")
+    ROOT.gStyle.SetLabelSize(tsize-9,"y")
+    ROOT.gStyle.SetTitleSize(tsize-3,"y")
+    ROOT.gStyle.SetLabelSize(tsize-9,"z")
+    ROOT.gStyle.SetTitleSize(tsize-3,"z")
 
     ROOT.gStyle.SetLegendFont(font)
     ROOT.gStyle.SetLegendTextSize(tsize)
@@ -968,6 +971,9 @@ def force_style(use_colz = False):
 
     ROOT.gStyle.SetGridColor(921)
     ROOT.gStyle.SetGridStyle()
+
+    # Move exponent in y-axis to the left
+    ROOT.TGaxis.SetExponentOffset(-0.07, 0.0, "y")
 
     ROOT.gROOT.ForceStyle()
 
