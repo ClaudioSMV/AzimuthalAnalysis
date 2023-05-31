@@ -60,7 +60,7 @@ for this_var in list_vars:
     if (not inputfile.Get("res%s"%this_var)):
         continue
 
-    this_key = ms.varname2key[this_var]
+    this_key = ms.get_var_init(this_var, False)
     this_axis = ms.axis_label(this_key, "LatexUnit")
     this_ltex = ms.axis_label(this_key, "Latex")
     this_unit = ms.axis_label(this_key, "Unit")

@@ -8,47 +8,85 @@ list_reco_shrt = ["Reco", "RMmc", "RMre"]
 
 def idx_rec(acc_method):
     this_idx = -1
-    if "Reco" in acc_method:
-        this_idx = 0
-    elif "mc" in acc_method:
+    if "mc" in acc_method:
         this_idx = 1
-    elif "re" in acc_method:
+    elif ("_re" in acc_method) or ("rc" in acc_method):
         this_idx = 2
+    elif "Reco" in acc_method:
+        this_idx = 0
 
-    if (acc_method is not "") and (this_idx == -1):
+    if ("raw" not in acc_method.lower()) and (acc_method is not "")\
+       and (this_idx == -1):
         error_str = "Acceptance method is not found. Try Reco, "\
                     "RMmc, or RMre."
         ms.error_msg("Name", error_str)
     
     return this_idx
 
+def get_acc_meth(meth_str, length):
+    if "raw" not in meth_str.lower():
+        idx = idx_rec(meth_str)
+        if (idx<0):
+            acc_meth = ""
+        else:
+            if "l" in length.lower():
+                acc_meth = list_reco_long[idx]
+            elif "s" in length.lower():
+                acc_meth = list_reco_shrt[idx]
+    else:
+        acc_meth = "Raw"
+
+    return acc_meth
 
 class naming_format:
-    def __init__(self, name, target, n_bin, n_dim = 0, cuts = "",
+    def __init__(self, name, target, n_bin = 10, n_dim = 0, cuts = "",
                  acc_method = "", bin_code = "", extension = "root",
                  inputfile_type = "", is_JLab = True, in_output = False,
                  hist_tag = ""):
         self.name = name
+        # Accept (target)_(nbin)_(ndim) format as shortcut
+        if len(target.split("_"))>1:
+            d_tg = ms.get_name_dict(target)
+            target = d_tg["targ"]
+            n_bin = d_tg["n_bin"]
+            n_dim = d_tg["n_dim"]
         self.target = target
         self.n_bin = n_bin
         self.n_dim = n_dim
+
         self.cuts = ms.get_cut_final(cuts, name, in_output)
         self.fit_method = ms.get_fit_method(cuts,False)
-        idx_r = idx_rec(acc_method)
-        self.acc_method_long = list_reco_long[idx_r] if acc_method else ""
-        self.acc_method_shrt = list_reco_shrt[idx_r] if acc_method else ""
+
+        self.acc_method_long = get_acc_meth(acc_method, "L")
+        self.acc_method_shrt = get_acc_meth(acc_method, "S")
+
         self.bin_code = bin_code # Useful for saving png or pdfs
         self.extension = extension
         self.inputfile_type = inputfile_type # For Hist2D: hsim or data
         self.is_JLab = is_JLab
         self.hist_tag = hist_tag # Useful for pre-generated output files
 
+
+    def updt_acc_method(self, new_meth):
+        self.acc_method_long = get_acc_meth(new_meth, "L")
+        self.acc_method_shrt = get_acc_meth(new_meth, "S")
+
+    def updt_bin_code(self, new_bincode):
+        self.bin_code = new_bincode
+
+    def updt_extension(self, new_extension):
+        self.extension = new_extension
+
+
     def get_file_name(self):
-        # (name)_(target)_(n_bin)B(n_dim)-(fit)-(bin_code).(ext)
+        # (name)_(target)_(n_bin)B(n_dim)-(acc_meth)-(fit)-(bin_code).(ext)
         # Correction_Fe_10B1-Q0N0Z0.png
         file_name = "%s_%s_%sB"%(self.name, self.target, self.n_bin)
         if self.n_dim:
             file_name+= "%s"%(self.n_dim)
+
+        if self.acc_method_shrt:
+            file_name+= "-%s"%(self.acc_method_shrt)
 
         if self.fit_method:
             file_name+= "-%s"%(self.fit_method)
@@ -152,21 +190,27 @@ class naming_format:
 
         return folder
 
-    def get_path(self):
+    def get_path(self, create = False):
         folder = self.get_folder_name()
         file = self.get_file_name()
 
+        if create:
+            ms.create_folder(folder)
+
         return folder + file
-    
+
     def get_path_from_output(self):
         folder = self.get_folder_name_from_output()
         file = self.get_file_name_from_output()
 
         return folder + file
-    
-    def get_path_summary(self):
+
+    def get_path_summary(self, create = False):
         folder = self.get_folder_name_summary()
         file = self.get_file_name_summary()
+
+        if create:
+            ms.create_folder(folder)
 
         return folder + file
 
@@ -180,7 +224,7 @@ class naming_format:
             hname+= "_%s"%(self.bin_code)
         
         return hname
-    
+
     def get_hist_name_from_output(self):
         if self.name is "Acceptance":
             hname = "histAcc_"

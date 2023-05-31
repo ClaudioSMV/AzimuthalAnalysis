@@ -77,8 +77,9 @@ for h in list_of_hists:
             tmp_txt = h.GetName().split("2D_")[1] # "Q2_PQ_gene" or "Xb_Q2_goodPi_reco"
             tmp_txt = tmp_txt.split("_") # [Q2, PQ, gene] or [Xb, Q2, goodPi, reco]
 
-            var1 = ms.varname2key[tmp_txt[0]] # "Q2" -> 'Q' or "Xb" -> 'X'
-            var2 = ms.varname2key[tmp_txt[1]] # "PQ" -> 'I' or "Q2" -> 'Q'
+            # Get initial of variables for shorter label
+            var1 = ms.get_var_init(tmp_txt[0], False)
+            var2 = ms.get_var_init(tmp_txt[1], False)
             type_hist = correct_prefix[tmp_txt[-1]]
 
             out_pref = short_prefix[tmp_txt[-1]]

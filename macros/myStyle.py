@@ -28,26 +28,45 @@ tsize=38
 ##  File name and format  ##
 ############################
 
-def get_name_dict(nameFormat):
-# Create dictionary from input: <targ>_<nBin>_<nDim>
-# with output: {"Target": <targ>, "BinningType": <nBin>, "NDims": <nDim>}
-    targetDict = {}
-    targetList = nameFormat.split("_")
-    targetDict["Target"] = targetList[0]
-    targetDict["BinningType"] = int(targetList[1])
-    if (len(targetList)==2):
-        targetList.append(0)
-    targetDict["NDims"] = int(targetList[2])
+def get_targ_input(targ_str):
+# Transform <targ>_<nBin>_<nDim> input into list
+    l_targ = targ_str.split("_")
+    # Remove empty elements
+    while("" in l_targ):
+        l_targ.remove("")
+    # Add target default name
+    if l_targ[0] not in color_target:
+        l_targ.insert(0, "None")
+    # Transform nBin element into int
+    l_targ[1] = int(l_targ[1])
+    # Add and transform nDim element (using 1 as default number)
+    if len(l_targ) == 2:
+        l_targ.append(1)
+    l_targ[2] = int(l_targ[2])
 
-    return targetDict
+    # Kill if formating didn't work
+    if len(l_targ) > 3:
+        error_msg("Input", "Format <targ>_<nBin>_<nDim> was not followed!")
 
-def get_name_format(nameFormat, isAcc = False):
-# Give string with name formatted using input: <targ>_<nBin>_<nDim>
-# with output: "<targ>_<nBin>B<nDim>"
-    formDict = get_name_dict(nameFormat)
-    fileName = "%s_%iB"%(formDict["Target"],formDict["BinningType"])
-    if (not isAcc) and formDict["NDims"]:
-        fileName+="%i"%(formDict["NDims"])
+    return l_targ
+
+def get_name_dict(format):
+# Create dictionary from <targ>_<nBin>_<nDim> input
+    l_input = get_targ_input(format)
+    d_targ = {
+        "Target": l_input[0], "targ": l_input[0],
+        "BinningType": l_input[1], "nBin": l_input[1], "n_bin": l_input[1],
+        "NDims": l_input[2], "nDim": l_input[2], "n_dim": l_input[2],
+    }
+
+    return d_targ
+
+def get_name_format(format, isAcc = False):
+# Use <targ>_<nBin>_<nDim> and receive "<targ>_<nBin>B<nDim>" as output
+    d_format = get_name_dict(format)
+    fileName = "%s_%iB"%(d_format["Target"],d_format["nBin"])
+    if (not isAcc) and d_format["nDim"]:
+        fileName+="%i"%(d_format["nDim"])
 
     return fileName
 
@@ -114,6 +133,9 @@ d_cut_cor = {
     "FErr": "FE", "FullError": "FE", "Fe": "FE", "FE": "FE",
     "AccQlt": "AQ", "AccQuality": "AQ", "AQ": "AQ",
     "rmNpheElH": "Pe", "PheElH": "Pe", "PE": "Pe", "Pe": "Pe",
+}
+
+d_cut_xax = {
     "Z": "Zx", "Zx": "Zx",
     "P": "Px", "Px": "Px",
 }
@@ -138,6 +160,7 @@ d_fit_met = {
 d_cuts = {}
 d_cuts.update(d_cut_acc)
 d_cuts.update(d_cut_cor)
+d_cuts.update(d_cut_xax)
 d_cuts.update(d_cut_fit)
 d_cuts.update(d_cut_sum)
 d_cuts.update(d_fit_met)
@@ -166,6 +189,9 @@ d_cut_fin_acc = {
 
 d_cut_fin_cor = {
     "FE": "Err", "AQ": "AQ", "Pe": "rmTheLine",
+}
+
+d_cut_fin_xax = {
     "Zx": "Zx", "Px": "Px",
 }
 
@@ -184,6 +210,7 @@ d_fit_fin_met = {
 d_cuts_final = {}
 d_cuts_final.update(d_cut_fin_acc)
 d_cuts_final.update(d_cut_fin_cor)
+d_cuts_final.update(d_cut_fin_xax)
 d_cuts_final.update(d_cut_fin_fit)
 d_cuts_final.update(d_cut_fin_sum)
 d_cuts_final.update(d_fit_fin_met)
@@ -198,6 +225,9 @@ d_cut_leg_acc = {
 
 d_cut_leg_cor = {
     "FE": "", "AQ": "", "Pe": "N_{phe}^{el} #neq N_{phe}^{h}",
+}
+
+d_cut_leg_xax = {
     "Zx": "", "Px": "",
 }
 
@@ -216,6 +246,7 @@ d_fit_leg_met = {
 d_cuts_legend = {}
 d_cuts_legend.update(d_cut_leg_acc)
 d_cuts_legend.update(d_cut_leg_cor)
+d_cuts_legend.update(d_cut_leg_xax)
 d_cuts_legend.update(d_cut_leg_fit)
 d_cuts_legend.update(d_cut_leg_sum)
 d_cuts_legend.update(d_fit_leg_met)
@@ -332,11 +363,32 @@ cutMasterKey+= "MD0"
 ##  Format cut names  NEW ##
 ############################
 
+def get_l_cuts(cut_str):
+# Return list with internal/short names
+    l_mycuts = cut_str.split("_")
+    # Remove empty entries from input
+    while("" in l_mycuts):
+        l_mycuts.remove("")
+
+    # Save input entries with their short name
+    for c,cut in enumerate(l_mycuts):
+        if cut in d_cuts:
+            l_mycuts[c] = d_cuts[cut]
+        # Send error if input doesn't exist
+        else:
+            err_txt = "\"%s\" cut not found in any list."%(cut)
+            error_msg("Cut", err_txt)
+
+    # Remove repeated elements
+    l_mycuts = list(set(l_mycuts))
+
+    return l_mycuts
+
 def get_cut_final(cut_str = "", among_these = "all", is_output = False):
 # Transform str with cuts as in "Aa_Bb_Cccc" into a str with final names
 
     ref_list = list(l_cuts)
-    # Create list with unwanted cuts to remove from reference list
+    # Create list with possible cuts only (say, our universe of options)
     unwanted_cuts = []
     if is_output:
         unwanted_cuts.extend(l_cut_sum)
@@ -362,24 +414,17 @@ def get_cut_final(cut_str = "", among_these = "all", is_output = False):
         if ("sum" not in among_these.lower()) or is_higher_cut:
             unwanted_cuts.extend(l_cut_sum)
             is_higher_cut = True
+    unwanted_cuts = list(set(unwanted_cuts))
 
     # Remove selected elements from reference
     for uc in unwanted_cuts:
         ref_list.remove(uc)
 
-    l_mycuts = cut_str.split("_")
-    # Remove empty entries from input
-    while("" in l_mycuts):
-        l_mycuts.remove("")
+    # Get list with internal/short names no repeated
+    l_mycuts = get_l_cuts(cut_str)
 
-    # Save input entries with their short name
-    for c,cut in enumerate(l_mycuts):
-        if cut in d_cuts:
-            l_mycuts[c] = d_cuts[cut]
-        # Send error if input doesn't exist
-        else:
-            err_txt = "\"%s\" cut not found in any list."%(cut)
-            error_msg("Cut", err_txt)
+    # Check that only one xaxis is used (just in case)
+    _xaxis = get_xaxis(cut_str)
 
     l_cutfin = []
     # Save proper name in final list
@@ -514,7 +559,8 @@ def create_phi_hist(th1_input, name, do_shift):
             this_xmin -= bin_width/2.
             this_xmax -= bin_width/2.
 
-    h_tmp = ROOT.TH1D(name,";%s;Counts"%(axis_label('I',"LatexUnit")), this_nbin, this_xmin, this_xmax)
+    ax_name = ";%s;Counts"%(axis_label('I',"LatexUnit"))
+    h_tmp = ROOT.TH1D(name,ax_name, this_nbin, this_xmin, this_xmax)
 
     # Fill histogram bin by bin
     for i in range(1,this_nbin+1):
@@ -550,26 +596,24 @@ def create_phi_hist(th1_input, name, do_shift):
 
     return h_tmp
 
-def get_bincode_list(bin_vars, this_binList):
-# Create a list with the short code str to identify each kinematic bin; e.g. a bin of Q2,Nu,Zh
-# will integrate Pt2, so code will be QaNbZc with a,b,c some integer corresponding to the bin
-#   bin_vars: str with initial of the vars used; this_binList: list with bins limits
-    output_list = []
-    # Change second electron variable if necessary
+def get_bincode_list(bin_vars, l_binning):
+# Create bincode list with the initials in <bin_vars> ("QNZ" for Q2,Nu,Zh)
+# and <l_binning> being the binning used
     template = ["Q","","Z","P"]
     template[1] = "N" if ("X" not in bin_vars) else "X"
     nbins = [1,1,1,1]
 
-    # Get total number of bins per variable and remove integrated ones
+    # Get total number of bins per variable (remove integrated ones)
     for v,var in enumerate(template):
         if var not in bin_vars:
             template[v] = ""
         else:
-            this_bin = len(this_binList[var]) - 1
+            this_bin = len(l_binning[var]) - 1
             nbins[v] = this_bin
 
+    output_list = []
     totalsize = nbins[0]*nbins[1]*nbins[2]*nbins[3]
-    # Fill list beginning with all bins zero and up to the total nbins per variable
+    # Create str with bincode and save it in list
     for i in range(totalsize):
         total_tmp = totalsize
         i_tmp = i
@@ -665,6 +709,35 @@ def get_fit_shortmethod(this_method, fname):
 
     return this_ext
 
+def get_xaxis(cut_str):
+# Return str with short-name of the xaxis used
+# Remember: integrated variables are given by nDim
+    this_xax = ""
+
+    # Get list with internal names
+    l_cuts = get_l_cuts(cut_str)
+
+    unique = True
+    for x in l_cut_xaxis:
+        if (x in l_cuts) and unique:
+            this_xax = x
+            unique = False
+        elif (x in l_cuts) and not unique:
+            error_msg("xaxis", "Only one variable is supported! Try Zx or Px.")
+
+    return this_xax
+
+def get_var_init(my_str, is_cut):
+# Get initial of the str given
+    my_var = get_xaxis(my_str) if is_cut else my_str
+    if my_var in d_var_initial:
+        my_init = d_var_initial[my_var]
+    else:
+        error_msg("bincode", "Initial letter for code not found :(.")
+
+    return my_init
+
+
 #############################
 ##  Paths and directories  ##
 #############################
@@ -689,11 +762,13 @@ def enum_folder(mypath):
     os.makedirs(mypath)
     return mypath
 
-def create_folder(outdir, title, overwrite = False, enumerate = False):
+def create_folder(outdir, title = "", overwrite = False, enumerate = False):
 # Create folder with outdir and title
 # Overwrite recreates the file. Else, enumerate will add
 # a number at the end.
-    outpath = os.path.join(outdir,title)
+    outpath = outdir
+    if title:
+        outpath = os.path.join(outdir,title)
 
     exists = os.path.exists(outpath)
     if exists and (not overwrite):
@@ -921,6 +996,15 @@ def get_padcenter(use_colz = False):
 
     return center
 
+def create_canvas():
+    canvas = ROOT.TCanvas("cv","cv",1000,800)
+    canvas.SetGrid(0,1)
+    # gPad.SetTicks(1,1)
+    ROOT.TH1.SetDefaultSumw2()
+    ROOT.gStyle.SetOptStat(0)
+
+    return canvas
+
 
 #############################
 ##  Draw top text/summary  ##
@@ -1044,9 +1128,10 @@ color_target = {'C': get_color()[0], 'Fe': get_color()[2],
 all_dicts = list(bn.Bin_List)
 
 # Short name of each kinematic variable of interest
-varname2key = {
-    "Q2":'Q', "Nu":'N', "Zh":'Z', "Pt2":'P', "PhiPQ":'I', "Xb":'X',
-    "Pt":'P', "PQ":'I'
+d_var_initial = {
+    "Q2":'Q', "Qx":'Q', "Nu":'N', "Nx":'N', "Zh":'Z', "Zx":'Z',
+    "Pt2":'P', "Pt":'P', "Px":'P', "Xb":'X', "Xx": 'X',
+    "PhiPQ":'I', "PQ":'I',
 }
 
 # Dictionary with axis title per variable
