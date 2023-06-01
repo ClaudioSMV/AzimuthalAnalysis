@@ -386,7 +386,6 @@ def get_l_cuts(cut_str):
 
 def get_cut_final(cut_str = "", among_these = "all", is_output = False):
 # Transform str with cuts as in "Aa_Bb_Cccc" into a str with final names
-
     ref_list = list(l_cuts)
     # Create list with possible cuts only (say, our universe of options)
     unwanted_cuts = []
@@ -763,23 +762,27 @@ def enum_folder(mypath):
     return mypath
 
 def create_folder(outdir, title = "", overwrite = False, enumerate = False):
-# Create folder with outdir and title
-# Overwrite recreates the file. Else, enumerate will add
-# a number at the end.
+# Create folder: outdir/title. Enumerate will add a number at the end.
     outpath = outdir
     if title:
         outpath = os.path.join(outdir,title)
 
     exists = os.path.exists(outpath)
-    if exists and (not overwrite):
-        info_msg("myStyle", "%s already exists!"%outpath)
+    if exists and not enumerate:
+        msg = "already exists."
+        if (not overwrite):
+            msg+= " Not overwritten!"
+            error_msg("Create_folder", "%s %s"%(outpath, msg))
+        else:
+            msg+= " Recreating!"
     else:
         if enumerate:
             outpath = enum_folder(outpath)
         else:
             os.makedirs(outpath)
-        info_msg("myStyle", "%s created."%outpath)
+        msg = "created."
 
+    info_msg("myStyle", "%s %s"%(outpath, msg))
     return outpath
 
 def get_folder(initial_path, name_folder, pre_cut = "", cuts = "", post_cut = "", use_JLab = True, save_folder = True):

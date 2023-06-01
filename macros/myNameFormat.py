@@ -6,16 +6,16 @@ import myStyle as ms
 list_reco_long = ["Reconstru", "ReMtch_mc", "ReMtch_re"]
 list_reco_shrt = ["Reco", "RMmc", "RMre"]
 
-def idx_rec(acc_method):
+def idx_rec(acc_meth):
     this_idx = -1
-    if "mc" in acc_method:
+    if "mc" in acc_meth:
         this_idx = 1
-    elif ("_re" in acc_method) or ("rc" in acc_method):
+    elif ("_re" in acc_meth) or ("rc" in acc_meth) or ("RMre" in acc_meth):
         this_idx = 2
-    elif "Reco" in acc_method:
+    elif "Reco" in acc_meth:
         this_idx = 0
 
-    if ("raw" not in acc_method.lower()) and (acc_method is not "")\
+    if ("raw" not in acc_meth.lower()) and (acc_meth is not "")\
        and (this_idx == -1):
         error_str = "Acceptance method is not found. Try Reco, "\
                     "RMmc, or RMre."
@@ -142,7 +142,7 @@ class naming_format:
 
         return file_name
     
-    def get_folder_name(self):
+    def get_folder_name(self, create = False, overwrite = False):
     # initial_path/JLab_cluster/name_folder/n_bin/cuts/target/
     # e.g.: ../macros/plots/ JLab_cluster/ Correction/ 10B1/ FErr_AccQlt/ Fe/
 
@@ -155,6 +155,9 @@ class naming_format:
         folder+= "%sB%s/"%(self.n_bin, self.n_dim)
         folder+= "%s/"%(self.cuts) if self.cuts else "NoCuts/"
         folder+= "%s/"%(self.target)
+
+        if create:
+            ms.create_folder(folder, overwrite=overwrite)
 
         return folder
 
@@ -174,7 +177,7 @@ class naming_format:
 
         return folder
 
-    def get_folder_name_summary(self):
+    def get_folder_name_summary(self, create = False, overwrite = False):
     # initial_path/JLab_cluster/name_folder/nbin/cuts/
     # e.g.: ../macros/plots/ JLab_cluster/ Summary/NormB/ 10B1/ FErr_AccQlt/
 
@@ -188,14 +191,14 @@ class naming_format:
         folder+= "%sB%s/"%(self.n_bin, self.n_dim)
         folder+= "%s/"%(self.cuts) if self.cuts else "NoCuts/"
 
+        if create:
+            ms.create_folder(folder, overwrite=overwrite)
+
         return folder
 
-    def get_path(self, create = False):
-        folder = self.get_folder_name()
+    def get_path(self, create = False, overwrite = False):
+        folder = self.get_folder_name(create, overwrite)
         file = self.get_file_name()
-
-        if create:
-            ms.create_folder(folder)
 
         return folder + file
 
@@ -205,17 +208,16 @@ class naming_format:
 
         return folder + file
 
-    def get_path_summary(self, create = False):
-        folder = self.get_folder_name_summary()
+    def get_path_summary(self, create = False, overwrite = False):
+        folder = self.get_folder_name_summary(create, overwrite)
         file = self.get_file_name_summary()
-
-        if create:
-            ms.create_folder(folder)
 
         return folder + file
 
 
     def get_hist_name(self):
+        # h(name)_(acc_meth)_(bincode)
+        # hCorrection_Reco_Q0N0Z0
         hname = "h%s"%(self.name)
 
         if self.acc_method_shrt:
@@ -246,3 +248,11 @@ class naming_format:
             hname = self.hist_tag
 
         return hname
+
+
+    def get_l_fitnames(self):
+        l_fnames = ["crossSectionR"]
+        if (self.fit_method == "LR"):
+            l_fnames.append("crossSectionL")
+
+        return l_fnames

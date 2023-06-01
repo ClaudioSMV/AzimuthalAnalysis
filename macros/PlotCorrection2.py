@@ -31,12 +31,13 @@ options, args = parser.parse_args()
 
 dataset = options.Dataset
 isJLab = options.isJLab
+ovr = options.Overwrite
 saveAll = options.saveAll
-
-d_bin = ms.get_name_dict(dataset)
 
 input_cuts = options.inputCuts
 plots_cuts = options.inputCuts +"_"+ options.outputCuts
+
+d_bin = ms.get_name_dict(dataset)
 
 in_obj = nf.naming_format("Correction", dataset, cuts=input_cuts,
                           is_JLab=isJLab, in_output=True)
@@ -44,7 +45,7 @@ inputfile = TFile(in_obj.get_path_from_output(),"READ")
 
 out_obj = nf.naming_format("Correction", dataset, cuts=plots_cuts,
                           is_JLab=isJLab)
-# outputfile = TFile(out_obj.get_path(),"READ")
+# outputfile = TFile(out_obj.get_path(True),"RECREATE")
 
 # Retrieve THnSparse
 l_in_hname = ["Corr_Reconstru", "Corr_ReMtch_mc", "Corr_ReMtch_re", "Raw_data"]
@@ -72,7 +73,7 @@ for th in l_inTHnSparse:
 
 # Create and save output
 canvas = ms.create_canvas()
-outputfile = TFile(out_obj.get_path(True),"RECREATE")
+outputfile = TFile(out_obj.get_path(True, ovr),"RECREATE")
 phi_axis_title = ms.axis_label('I',"LatexUnit") # "#phi_{PQ} (deg)"
 
 gStyle.SetTitleYOffset(1.2)
@@ -83,6 +84,12 @@ for i,info in enumerate(l_bincodes):
             continue
 
         this_proj = proj[i]
+
+        out_obj.updt_acc_method(l_in_hname[p])
+        out_obj.updt_bin_code(info)
+        out_obj.updt_extension("png")
+
+        this_proj.SetName(out_obj.get_hist_name())
 
         x_min = this_proj.GetXaxis().GetXmin()
         x_max = this_proj.GetXaxis().GetXmax()
@@ -111,10 +118,6 @@ for i,info in enumerate(l_bincodes):
         ms.draw_targetinfo(ms.get_name_format(dataset), "Data")
         ms.draw_bininfo(info, d_bin["nBin"])
 
-        out_obj.updt_acc_method(l_in_hname[p])
-        out_obj.updt_bin_code(info)
-        out_obj.updt_extension("png")
-
         canvas.SaveAs(out_obj.get_path())
 
         this_proj.Write()
@@ -123,4 +126,3 @@ for i,info in enumerate(l_bincodes):
 
 ms.info_msg("Correction", "Correction plots saved!\n")
 outputfile.Close()
-
