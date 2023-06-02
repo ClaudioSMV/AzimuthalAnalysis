@@ -256,3 +256,11 @@ class naming_format:
             l_fnames.append("crossSectionL")
 
         return l_fnames
+
+    def get_matrix_name(self, name, number):
+        # M(name)(number)_(acc_meth)_(bincode)
+        # Mcov1_Reco_Q0N0Z0
+        tail = "_%s_%s"%(self.acc_method_shrt, self.bin_code)
+        name_M = "M%s%i%s"%(name, number, tail)
+
+        return name_M

@@ -304,11 +304,10 @@ for h in l_hists:
             this_fopts+= "+"
 
         fit_matrix = hist_corr.Fit(l_ffit_names[i], this_fopts, "")
-        tail = "_%s_%s"%(cor_meth, bincode)
-        name_cov = "covM%i%s"%(i, tail)
+        name_cov = out_obj.get_matrix_name("cov", i)
         fit_matrix.GetCovarianceMatrix().Write(name_cov)
 
-        name_corr = "corrM%i%s"%(i, tail)
+        name_corr = out_obj.get_matrix_name("corr", i)
         fit_matrix.GetCorrelationMatrix().Write(name_corr)
 
         ## Draw chi2 info
