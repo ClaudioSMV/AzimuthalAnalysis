@@ -101,27 +101,32 @@ def get_fit_functions(h_out, l_fname, fit_meth, opts):
     ## Option: Skip peak's bin (Problematic)
     peak_Lend, peak_Rend = 0.0, 0.0
     if (opt_sk0):
-        if (fit_meth == "LR"):
-            bin_peak = h_out.FindBin(0.0)
-            # if Nbins odd then; else;
-            peak_Lend = h_out.GetBinLowEdge(bin_peak-1)
-            peak_Rend = h_out.GetBinLowEdge(bin_peak+1)
-            if ((Nbins%2) == 1):
-                peak_Lend = h_out.GetBinLowEdge(bin_peak)
-        elif (fit_meth == "Fd"):
-            # peak_Lend = 0.0 # useless
-            peak_Rend = h_out.GetBinLowEdge(2)
-        elif (fit_meth == "Sh"):
-            # if Nbins odd then; else;
-            peak_Lend = h_out.GetBinLowEdge(Nbins)
-            peak_Rend = h_out.GetBinLowEdge(2)
-            if ((Nbins%2) == 1):
-                peak_Lend = h_out.GetBinLowEdge(Nbins+1)
-        # elif (fit_meth == "Ff"):
+        # Define peak bin as the one containing zero when using odd nbins
+        # and as both pre-and-post bins to zero with even nbins
+        bin_peak = h_out.FindBin(0.0)
+        d_peak_end_odd = {
+            "LR": [bin_peak, bin_peak+1], "Fd": [0, 2],
+            "Sh": [Nbins+1, 2], "Ff": [0, 0],
+        }
+        d_peak_end_even = {
+            "LR": [bin_peak-1, bin_peak+1], "Fd": [0, 2],
+            "Sh": [Nbins, 2], "Ff": [0, 0],
+        }
+
+        bin_odd = ((Nbins%2) == 1)
+
+        # Define limits of the peak for the fit function
+        if bin_odd:
+            peak_Lend = h_out.GetBinLowEdge(d_peak_end_odd[fit_meth][0])
+            peak_Rend = h_out.GetBinLowEdge(d_peak_end_odd[fit_meth][1])
+        else:
+            peak_Lend = h_out.GetBinLowEdge(d_peak_end_even[fit_meth][0])
+            peak_Rend = h_out.GetBinLowEdge(d_peak_end_even[fit_meth][1])
 
     xmin_out = h_out.GetBinLowEdge(1)
     xmax_out = h_out.GetBinLowEdge(Nbins+1)
     list_limits = []
+    # Define limits of the fit functions
     ## for [Right, Left*]
     for i,func in enumerate(l_fname):
         this_xmin, this_xmax = xmin_out, xmax_out
@@ -147,6 +152,7 @@ def get_fit_functions(h_out, l_fname, fit_meth, opts):
         the_func+= "+ [3]*sin(TMath::Pi()*x/180.0)"
 
     tf1_fit = []
+    # Create TF1 and return
     ## for [Right, Left*]
     for i,fname in enumerate(l_fname):
         this_xmin = list_limits[i][0]

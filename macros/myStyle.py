@@ -396,19 +396,22 @@ def get_cut_final(cut_str = "", among_these = "all", is_output = False):
         unwanted_cuts.extend(l_cut_xaxis)
         if "acc" in among_these.lower():
             unwanted_cuts.extend(l_cut_cor)
+    elif "closure" in among_these.lower():
+        unwanted_cuts.extend(l_cut_fit)
+        unwanted_cuts.extend(l_fit_met)
+        unwanted_cuts.extend(l_cut_sum)
+        unwanted_cuts.remove("Sh")
     elif among_these is not "all":
         is_higher_cut = False
         if ("acc" in among_these.lower()) or is_higher_cut:
             unwanted_cuts.extend(l_cut_cor)
             unwanted_cuts.extend(l_cut_xaxis)
             is_higher_cut = True
-        if ("cor" in among_these.lower()) or is_higher_cut:
+        if ("corr" in among_these.lower()) or is_higher_cut:
             unwanted_cuts.extend(l_cut_fit)
             unwanted_cuts.extend(l_fit_met)
-            is_higher_cut = True
-        if ("closure" in among_these.lower()) or is_higher_cut:
-            unwanted_cuts.extend(l_cut_fit)
-            unwanted_cuts.extend(l_fit_met)
+            if not is_higher_cut:
+                unwanted_cuts.remove("Sh")
             is_higher_cut = True
         if ("sum" not in among_these.lower()) or is_higher_cut:
             unwanted_cuts.extend(l_cut_sum)
