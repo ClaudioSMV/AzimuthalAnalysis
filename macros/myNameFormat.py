@@ -38,6 +38,34 @@ def get_acc_meth(meth_str, length):
 
     return acc_meth
 
+def get_hist_dict(hname):
+    # h(name)_(acc_meth)_(bincode)
+    # hCorrection_Reco_Q0N0Z0
+    d_att = {}
+    l_att = hname.split("_")
+
+    d_att["hname"] = l_att[0][1:]
+    d_att["hmeth"] = l_att[1]
+    d_att["hbincode"] = l_att[2]
+
+    return d_att
+
+def get_hist_hname(full_name):
+    d_att = get_hist_dict(full_name)
+
+    return d_att["hname"]
+
+def get_hist_hmeth(full_name):
+    d_att = get_hist_dict(full_name)
+
+    return d_att["hmeth"]
+
+def get_hist_hbincode(full_name):
+    d_att = get_hist_dict(full_name)
+
+    return d_att["hbincode"]
+
+
 class naming_format:
     def __init__(self, name, target, n_bin = 10, n_dim = 0, cuts = "",
                  acc_method = "", bin_code = "", extension = "root",
@@ -66,6 +94,11 @@ class naming_format:
         self.is_JLab = is_JLab
         self.hist_tag = hist_tag # Useful for pre-generated output files
 
+    def updt_name(self, new_name, add = False):
+        name = self.name + new_name
+        if not add:
+            name = new_name
+        self.name = name
 
     def updt_acc_method(self, new_meth):
         self.acc_method_long = get_acc_meth(new_meth, "L")
@@ -246,6 +279,18 @@ class naming_format:
                 hname = "True"
         else:
             hname = self.hist_tag
+
+        return hname
+
+    def get_hist_name_summary(self, ffit, par):
+        # h(name)(ffit)p(par)_(acc_meth)_(bincode)
+        # hCorrection0p1_Reco_Q0N0Z0
+        hname = "h%s%ip%i"%(self.name, ffit, par)
+
+        if self.acc_method_shrt:
+            hname+= "_%s"%(self.acc_method_shrt)
+        if self.bin_code:
+            hname+= "_%s"%(self.bin_code)
 
         return hname
 

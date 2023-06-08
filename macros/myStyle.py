@@ -598,35 +598,42 @@ def create_phi_hist(th1_input, name, do_shift):
 
     return h_tmp
 
-def get_bincode_list(bin_vars, l_binning):
+def get_plot_initials(nbin, cuts):
+    binstr = "Q"
+    binstr+= "N" if "X" not in all_dicts[nbin] else "X"
+    binstr+= get_var_init(cuts, True) # Z or P
+
+    return binstr
+
+def get_bincode_nbins(nbin, initials):
+    nbins = []
+    # Get total number of bins per variable (remove integrated ones)
+    for v,var in enumerate(initials):
+        this_bin = len(all_dicts[nbin][var]) - 1
+        nbins.append(this_bin)
+
+    return nbins
+
+def get_bincode_list(nbin, cuts):
 # Create bincode list with the initials in <bin_vars> ("QNZ" for Q2,Nu,Zh)
 # and <l_binning> being the binning used
-    template = ["Q","","Z","P"]
-    template[1] = "N" if ("X" not in bin_vars) else "X"
-    nbins = [1,1,1,1]
-
-    # Get total number of bins per variable (remove integrated ones)
-    for v,var in enumerate(template):
-        if var not in bin_vars:
-            template[v] = ""
-        else:
-            this_bin = len(l_binning[var]) - 1
-            nbins[v] = this_bin
+    vars_init = get_plot_initials(nbin, cuts)
+    l_nbins = get_bincode_nbins(nbin, vars_init)
 
     output_list = []
-    totalsize = nbins[0]*nbins[1]*nbins[2]*nbins[3]
+    totalsize = 1
+    for nb in l_nbins:
+        totalsize*=nb
     # Create str with bincode and save it in list
     for i in range(totalsize):
         total_tmp = totalsize
         i_tmp = i
         txt_tmp = ""
-        for v,var in enumerate(template):
-            if (var==""):
-                continue
-            total_tmp /= nbins[v]
+        for v,var in enumerate(vars_init):
+            total_tmp /= l_nbins[v]
             index = i_tmp/(total_tmp)
-            i_tmp -= index*total_tmp
-            txt_tmp += "%s%i"%(var, index)
+            i_tmp-= index*total_tmp
+            txt_tmp+= "%s%i"%(var, index)
         output_list.append(txt_tmp)
 
     # Output would be ["Q0N0Z0", "Q0N0Z1", ..., "Q3N3Z9"]

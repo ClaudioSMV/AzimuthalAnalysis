@@ -58,13 +58,8 @@ for hname in l_in_hname:
 l_in_pref = ["Corrected", "Corr GMmc", "Corr GMre"] + ["Raw data"]
 limits = ms.all_dicts[d_bin["nBin"]]
 
-binstr = "Q"
-binstr+= "N" if "X" not in limits else "X"
-binstr+= ms.get_var_init(plots_cuts, True) # Z or P
-
-
 # Create list with projections
-l_bincodes = ms.get_bincode_list(binstr, limits)
+l_bincodes = ms.get_bincode_list(d_bin["nBin"], plots_cuts)
 l_Proj1DTHnSparse = []
 use_shift = (ms.get_fit_method(plots_cuts, False) == "Sh")
 for th in l_inTHnSparse:
