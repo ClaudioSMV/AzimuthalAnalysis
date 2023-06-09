@@ -32,9 +32,8 @@ def get_matrixelement(matrix, row, col):
     return this_matrix[index]
 
 def get_fit_pars(hist):
-# Return dictionary with fit function name and two lists: made of parameters
-# and their associated errors, per fit function
-    # histogram = file.Get(hist_name)
+# Return list with dictionaries saving fit function name and two lists:
+# made of parameters and their associated errors, per fit function
     fits_results = []
     # Run over all fit functions associated with the histogram
     list_functions = hist.GetListOfFunctions()
@@ -44,7 +43,7 @@ def get_fit_pars(hist):
         fpars = []
         ferrs = []
 
-        # Check if the function is a TF1 fit function
+        # Check if the element is a TF1 fit function
         if not isinstance(ffit, ROOT.TF1):
             continue
 
@@ -62,14 +61,13 @@ def get_fit_pars(hist):
 
     return fits_results
 
-
-
 def get_input_info(l_keys):
 # Retrieve fit information from list of keys, returning a tuple with:
 # n fit functions, n fit parameters, set of correction methods,
 # dictionary with fit parameters, and dictionary with covariance matrices
     s_meth = set()
     nfit, npar = 0, 0
+    first_entry = True
     # Get list with fit parameters and covariance matrices
     d_pfit = {} # {hname: [{fname, [fpars (parv)], [ferrs (pare)]}]}
     d_covm = {} # {bincode_meth: [matrices]}
@@ -86,9 +84,10 @@ def get_input_info(l_keys):
             d_pfit[kname] = dict_pars
 
             # Save number of fits and parameters once only
-            if (nfit == 0) and (npar == 0):
+            if first_entry:
                 nfit = len(dict_pars)
                 npar = len(dict_pars[0]["parv"])
+                first_entry = False
         
         # Save covariance matrices
         else:
@@ -99,7 +98,7 @@ def get_input_info(l_keys):
             mname = nf.get_hist_hname(kname)
             mmeth = nf.get_hist_hmeth(kname)
             mbincode = nf.get_hist_hbincode(kname)
-
+            # Get set with all correction methods used
             s_meth.add(mmeth)
 
             fnumb = int(mname[-1])
@@ -116,6 +115,8 @@ def get_input_info(l_keys):
     return (nfit, npar, s_meth, d_pfit, d_covm)
 
 def get_values(l_l_val, l_l_err, l_covm):
+# Obtain list of values and errors for the type of interest to plot
+# (Pars, Norm, Ratio, etc.)
     l_newval, l_newerr = [], []
     l_val, l_err, covm = l_l_val[0], l_l_err[0], l_covm[0]
 
@@ -135,9 +136,8 @@ def get_values(l_l_val, l_l_err, l_covm):
 
     return l_newval, l_newerr
 
-
-# l_tp_nameS = ["par", "norm", "ratio"]
 def value_norm(l_val, l_err, covm, iidx, nidx = 0):
+# Calculate normalized parameters (using nidx term as reference)
     ival, ierr = l_val[iidx], l_err[iidx]
     nval, nerr = l_val[nidx], l_err[nidx]
     new_val = ival / nval
@@ -147,6 +147,8 @@ def value_norm(l_val, l_err, covm, iidx, nidx = 0):
     return (new_val, new_err)
 
 def value_ratio(l_val, l_err, covm, l_valD, l_errD, covmD, iidx, nidx = 0):
+# Calculate ratio of solid over Deuterium parameters
+# (using nidx term as reference to normalize)
     val, err = value_norm(l_val, l_err, covm, iidx, nidx)
     valD, errD = value_norm(l_valD, l_errD, covmD, iidx, nidx)
 
@@ -222,14 +224,11 @@ if d_tp_bool["ratio"]:
                              is_JLab=isJLab)
     Dfile = TFile(D_obj.get_path(),"READ")
 
-    # Retrieve info from input
+    # Retrieve info from D input
     l_keysD = Dfile.GetListOfKeys()
     _, _, _, d_pfitD, d_covmD = get_input_info(l_keysD)
 
     Dfile.Close()
-
-# print(d_pfit)
-# print(d_covm)
 
 l_bincodes = ms.get_bincode_list(d_bin["nBin"],input_cuts)
 totalsize = len(l_bincodes)
