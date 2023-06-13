@@ -578,20 +578,26 @@ def create_phi_hist(th1_input, name, do_shift):
         the_bin = i
         if (do_shift):
             # Move the left half to the right of the right half
-            if (this_nbin%2 == 0): # Even  e.g. with 6 bins, first right bin is 4
+            # Even  e.g. with 6 bins, first right bin is 4
+            if (this_nbin%2 == 0):
                 if (bin_L_edge < 0.0):
-                    the_bin = i + central_bin -1 #  e.g. 1,2,3 bins will be 4,5,6
+                    the_bin = i + central_bin -1
+                    # e.g. 1,2,3 bins will be 4,5,6
                 else:
-                    the_bin = i - central_bin + 1 # e.g. 4,5,6 bins will be 1,2,3
-
-            elif (this_nbin%2 == 1): # Odd e.g. with 5 bins, center is 3
+                    the_bin = i - central_bin + 1
+                    # e.g. 4,5,6 bins will be 1,2,3
+            # Odd e.g. with 5 bins, center is 3
+            elif (this_nbin%2 == 1):
                 if (bin_center < 0.0):
-                    the_bin = i + central_bin #     e.g. 1,2 bins will be 4,5
+                    the_bin = i + central_bin
+                    # e.g. 1,2 bins will be 4,5
                 else:
-                    the_bin = i - central_bin + 1 # e.g. 3,4,5 bins will be 1,2,3
+                    the_bin = i - central_bin + 1
+                    # e.g. 3,4,5 bins will be 1,2,3
                 # Note in this case the distribution does not start at zero,
                 # but at a negative number
-        # Skip bins that are empty (if not, they will count as an entry with zero value)
+        # Skip bins that are empty to avoid counting them as an entry
+        # with zero value
         if (this_value != 0):
             h_tmp.SetBinContent(the_bin, this_value)
             h_tmp.SetBinError(the_bin, this_error)
