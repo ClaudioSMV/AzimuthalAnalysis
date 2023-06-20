@@ -605,6 +605,7 @@ def create_phi_hist(th1_input, name, do_shift):
     return h_tmp
 
 def get_plot_initials(nbin, cuts):
+# Get string with initials of the bincode
     binstr = "Q"
     binstr+= "N" if "X" not in all_dicts[nbin] else "X"
     binstr+= get_var_init(cuts, True) # Z or P
@@ -612,6 +613,7 @@ def get_plot_initials(nbin, cuts):
     return binstr
 
 def get_bincode_nbins(nbin, initials):
+# Return list with number of bins for this configuration
     nbins = []
     # Get total number of bins per variable (remove integrated ones)
     for v,var in enumerate(initials):
@@ -620,9 +622,19 @@ def get_bincode_nbins(nbin, initials):
 
     return nbins
 
+def get_bincode_nbins_dict(nbin, initials):
+# Return dictionary with number of bins for this configuration
+    nbins = {}
+    # Get total number of bins per variable (remove integrated ones)
+    for v,var in enumerate(initials):
+        this_bin = len(all_dicts[nbin][var]) - 1
+        nbins[var] = this_bin
+
+    return nbins
+
 def get_bincode_list(nbin, cuts):
-# Create bincode list with the initials in <bin_vars> ("QNZ" for Q2,Nu,Zh)
-# and <l_binning> being the binning used
+# Create bincode list with the nbin configuration and using variables defined
+# in cuts (say, Zh or Pt2 bins)
     vars_init = get_plot_initials(nbin, cuts)
     l_nbins = get_bincode_nbins(nbin, vars_init)
 
