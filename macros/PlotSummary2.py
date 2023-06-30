@@ -85,6 +85,10 @@ def draw_axes(canvas, href, targ):
         pad.cd(0)
         haxis.Draw("AXIS")
         gPad.RedrawAxis("g")
+
+        px, py = sf.get_pad_coord(pad.GetName())
+        # Draw axes info
+        axis_txt = draw_bin_aside(px, py)
     
     return haxis
 
@@ -146,7 +150,9 @@ def fill_canvas(canvas, dict_th1):
     
     return l_hist
 
-def create_legend(pad_name, def_position = True):
+def create_legend(kname, def_position = True):
+    plx, ply = 2, 0
+    pad_name = sf.pad_name(kname, plx, ply)
     pad = gROOT.FindObject(pad_name)
     pad.cd(0)
     x1, x2 = sf.x_pad(0.1), sf.x_pad(0.9)
@@ -181,6 +187,32 @@ def create_legend(pad_name, def_position = True):
     legend.Draw()
 
     return legend
+
+def draw_bin_aside(x, y):
+# Check if x,y correspond to one of the boundary pads and write the bin info
+    x,y = int(x), int(y)
+    pady_drawx = 0
+    padx_drawy = npx - 1
+
+    if (x != padx_drawy) and (y != pady_drawx):
+        return 0
+
+    text = ROOT.TLatex()
+    text.SetTextSize(tsize-14)
+    text.SetTextAlign(23)
+
+    # Draw bin info in x-axis
+    if (y == pady_drawx):
+        title = ms.get_bintxt("%s%s"%(vpx,x), d_bin["nBin"])
+        text.DrawLatexNDC(sf.x_pad(0.50),sf.y_pad(-0.20), title)
+
+    # Draw bin info in y-axis
+    if (x == padx_drawy):
+        text.SetTextAngle(90)
+        title = ms.get_bintxt("%s%s"%(vpy,y), d_bin["nBin"])
+        text.DrawLatexNDC(sf.x_pad(1.05),sf.y_pad(0.5), title)
+
+    return text
 
 
 def draw_line(hist):
@@ -305,10 +337,8 @@ for cv in l_canvas:
         l_l_hist.append(l_hist)
 
     cv.cd(0)
-    # Define pad with legend and draw
-    plx, ply = 2, 0
-    plegend = sf.pad_name(kname, plx, ply)
-    legend = create_legend(plegend, True)
+    # Draw legend
+    legend = create_legend(kname, True)
 
     cv.cd(0)
     # Define canvas style

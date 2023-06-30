@@ -10,6 +10,13 @@ def pad_name(info, x,y):
 
     return name
 
+def get_pad_coord(name):
+# Obtain pair of coordinates for the pad x,y
+    l_parts = name.split("_")
+    x, y = l_parts[-2], l_parts[-1]
+
+    return x, y
+
 def canvas_partition(canvas, nx, ny, lMarg, rMarg, bMarg, tMarg, extra_name=""):
 # Separate canvas in nx by ny pads
     ## Labelling xy:
