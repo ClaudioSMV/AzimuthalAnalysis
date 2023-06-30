@@ -7,6 +7,7 @@ import optparse
 import copy
 import myStyle as ms
 import myNameFormat as nf
+import mySumFunctions as sf
 
 ## Defining Style
 ms.force_style()
@@ -140,9 +141,14 @@ def value_norm(l_val, l_err, covm, iidx, nidx = 0):
 # Calculate normalized parameters (using nidx term as reference)
     ival, ierr = l_val[iidx], l_err[iidx]
     nval, nerr = l_val[nidx], l_err[nidx]
-    new_val = ival / nval
+    # Remember the factor 1/2 to match the definition
+    weight = 1./2
+    new_val = weight * (ival / nval)
     cov_val = get_matrixelement(covm, nidx, iidx)
     new_err = calculate_errdivision(ival, ierr, nval, nerr, cov_val)
+    # The next line is right! Leave it commented out to check previous results
+    # with the old definition (previous line)
+    # new_err = weight * calculate_errdivision(ival, ierr, nval, nerr, cov_val)
 
     return (new_val, new_err)
 
@@ -156,7 +162,6 @@ def value_ratio(l_val, l_err, covm, l_valD, l_errD, covmD, iidx, nidx = 0):
     new_err = calculate_errdivision(val, err, valD, errD)
 
     return (new_val, new_err)
-
 
 
 # Construct the argument parser
@@ -192,18 +197,7 @@ d_bin = ms.get_name_dict(dataset)
 m_fit = ms.get_fit_method(plots_cuts)
 
 # Define type of plot
-d_tp_bool = {"par": False, "norm": False, "ratio": False}
-l_tp_nameS = ["par", "norm", "ratio"]
-l_tp_nameL = ["Parameters", "Norm", "Ratio"]
-
-# Select type of plot
-for t,sname in enumerate(l_tp_nameS):
-    if sname in par_type.lower():
-        d_tp_bool[sname] = True
-        tp_idx = t
-        break
-my_tp_nameS = l_tp_nameS[tp_idx]
-my_tp_nameL = l_tp_nameL[tp_idx]
+d_tp_bool, my_tp_nameS, my_tp_nameL = sf.get_parameters_type(par_type)
 
 # Define Input
 in_obj = nf.naming_format("Fit", dataset, cuts=input_cuts,
@@ -237,6 +231,10 @@ out_obj = nf.naming_format(my_tp_nameL, dataset, cuts=plots_cuts,
                            is_JLab=isJLab)
 # outputfile = TFile(out_obj.get_path(True, ovr),"RECREATE")
 
+# Get x-axis variable information
+my_xvar = ms.get_xaxis(input_cuts)
+my_xvar_init = ms.d_var_initial[my_xvar]
+
 # Create final plots with dictionary to store final hists per method
 d_hfinal = {}
 for sm in s_meth:
@@ -255,6 +253,7 @@ for sm in s_meth:
             d_hfinal[kname].append(this_hist)
 
 # Create output
+out_obj.updt_acc_method("")
 canvas = ms.create_canvas()
 outputfile = TFile(out_obj.get_path(True, ovr),"RECREATE")
 
@@ -297,10 +296,6 @@ for fullname in d_pfit:
             hfin.SetBinContent(fbin, value)
             hfin.SetBinError(fbin, error)
 
-y_limit = [[-4.0e4, 10.0e5], [-1.2, 1.2], [0.001, 2.399]]
-ymin = y_limit[tp_idx][0]
-ymax = y_limit[tp_idx][1]
-
 # Save and write histograms
 for kname in d_hfinal:
     tmeth, tfidx = kname[:-1], kname[-1:]
@@ -310,6 +305,10 @@ for kname in d_hfinal:
         plot_obj.updt_acc_method(tmeth)
         plot_obj.updt_bin_code("")
         plot_obj.updt_extension("png")
+
+        # Define y limits
+        y_limit = sf.get_parameters_limits(d_tp_bool, i, my_xvar_init)
+        ymin, ymax = y_limit
 
         hf.SetLineWidth(2)
         hf.SetLineColor(ROOT.kBlue)
@@ -324,7 +323,7 @@ for kname in d_hfinal:
         canvas.SaveAs(out_obj.get_folder_name() + plot_obj.get_file_name())
         canvas.Clear()
 
-print("  [%s] Made it to the end!\n"%(my_tp_nameL))
+ms.info_msg(my_tp_nameL, "Made it to the end!\n")
 outputfile.Write()
 outputfile.Close()
 inputfile.Close()

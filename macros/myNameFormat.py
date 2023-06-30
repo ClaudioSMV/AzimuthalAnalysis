@@ -184,7 +184,7 @@ class naming_format:
         return folder
 
     def get_folder_name_summary(self, create = False, overwrite = False):
-    # initial_path/JLab_cluster/name_folder/nbin/cuts/
+    # initial_path/JLab_cluster/Summary/name_folder/(nbin)B(nDim)/cuts/
     # e.g.: ../macros/plots/ JLab_cluster/ Summary/NormB/ 10B1/ FErr_AccQlt/
 
         folder = "../macros/plots/"
@@ -307,6 +307,7 @@ def get_hist_summary_dict(hname):
     d_att["hname"] = d_tmp["hname"][0:-3]
     d_att["hffit"] = d_tmp["hname"][-3]
     d_att["hnpar"] = d_tmp["hname"][-1]
+    d_att["hfullname"] = d_tmp["hname"]
     if "hmeth" in d_tmp:
         d_att["hmeth"] = d_tmp["hmeth"]
     if "hbincode" in d_tmp:
@@ -330,6 +331,16 @@ def get_hist_hbincode(full_name):
     d_att = get_hist_dict(full_name)
 
     return d_att["hbincode"]
+
+def get_hist_hfullname(full_name):
+    d_att = get_hist_summary_dict(full_name)
+    summary_name = "%s%sp%s"%(d_att["hname"], d_att["hffit"], d_att["hnpar"])
+    if summary_name != d_att["hfullname"]:
+        err_txt = "Wrong naming function! Use get_hist_hname() or "\
+                  "make sure it is a summary naming format"
+        ms.error_msg("Naming", err_txt)
+
+    return d_att["hfullname"]
 
 def get_hist_hffit(full_name):
     d_att = get_hist_summary_dict(full_name)
