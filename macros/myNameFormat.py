@@ -38,33 +38,6 @@ def get_acc_meth(meth_str, length):
 
     return acc_meth
 
-def get_hist_dict(hname):
-    # h(name)_(acc_meth)_(bincode)
-    # hCorrection_Reco_Q0N0Z0
-    d_att = {}
-    l_att = hname.split("_")
-
-    d_att["hname"] = l_att[0][1:]
-    d_att["hmeth"] = l_att[1]
-    d_att["hbincode"] = l_att[2]
-
-    return d_att
-
-def get_hist_hname(full_name):
-    d_att = get_hist_dict(full_name)
-
-    return d_att["hname"]
-
-def get_hist_hmeth(full_name):
-    d_att = get_hist_dict(full_name)
-
-    return d_att["hmeth"]
-
-def get_hist_hbincode(full_name):
-    d_att = get_hist_dict(full_name)
-
-    return d_att["hbincode"]
-
 
 class naming_format:
     def __init__(self, name, target, n_bin = 10, n_dim = 0, cuts = "",
@@ -163,7 +136,7 @@ class naming_format:
     
     def get_file_name_summary(self):
         # (n_bin)B(n_dim)_(cuts)-(corr_meth)-(name).(ext)
-        # 10B1_FErr_AccQlt_P_Fold-D-Reco-NormB.pdf
+        # 10B1_FErr_AccQlt_P_Fold-Reco-NormB.pdf
         file_name = "%sB%s"%(self.n_bin, self.n_dim)
 
         if self.cuts:
@@ -211,7 +184,7 @@ class naming_format:
         return folder
 
     def get_folder_name_summary(self, create = False, overwrite = False):
-    # initial_path/JLab_cluster/name_folder/nbin/cuts/
+    # initial_path/JLab_cluster/Summary/name_folder/(nbin)B(nDim)/cuts/
     # e.g.: ../macros/plots/ JLab_cluster/ Summary/NormB/ 10B1/ FErr_AccQlt/
 
         folder = "../macros/plots/"
@@ -309,3 +282,72 @@ class naming_format:
         name_M = "M%s%i%s"%(name, number, tail)
 
         return name_M
+
+
+def get_hist_dict(hname):
+    # h(name)_(acc_meth)_(bincode)
+    # hCorrection_Reco_Q0N0Z0
+    d_att = {}
+    l_att = hname.split("_")
+
+    d_att["hname"] = l_att[0][1:]
+    if len(l_att) > 1:
+        d_att["hmeth"] = l_att[1]
+    if len(l_att) > 2:
+        d_att["hbincode"] = l_att[2]
+
+    return d_att
+
+def get_hist_summary_dict(hname):
+    # h(name)(ffit)p(par)_(acc_meth)_(bincode)
+    # hCorrection0p1_Reco_Q0N0Z0
+    d_att = {}
+    d_tmp = get_hist_dict(hname)
+
+    d_att["hname"] = d_tmp["hname"][0:-3]
+    d_att["hffit"] = d_tmp["hname"][-3]
+    d_att["hnpar"] = d_tmp["hname"][-1]
+    d_att["hfullname"] = d_tmp["hname"]
+    if "hmeth" in d_tmp:
+        d_att["hmeth"] = d_tmp["hmeth"]
+    if "hbincode" in d_tmp:
+        d_att["hbincode"] = d_tmp["hbincode"]
+
+    return d_att
+
+def get_hist_hname(full_name):
+    d_att = get_hist_dict(full_name)
+    if d_att["hname"][-2] == "p":
+        d_att = get_hist_summary_dict(full_name)
+
+    return d_att["hname"]
+
+def get_hist_hmeth(full_name):
+    d_att = get_hist_dict(full_name)
+
+    return d_att["hmeth"]
+
+def get_hist_hbincode(full_name):
+    d_att = get_hist_dict(full_name)
+
+    return d_att["hbincode"]
+
+def get_hist_hfullname(full_name):
+    d_att = get_hist_summary_dict(full_name)
+    summary_name = "%s%sp%s"%(d_att["hname"], d_att["hffit"], d_att["hnpar"])
+    if summary_name != d_att["hfullname"]:
+        err_txt = "Wrong naming function! Use get_hist_hname() or "\
+                  "make sure it is a summary naming format"
+        ms.error_msg("Naming", err_txt)
+
+    return d_att["hfullname"]
+
+def get_hist_hffit(full_name):
+    d_att = get_hist_summary_dict(full_name)
+
+    return d_att["hffit"]
+
+def get_hist_hnpar(full_name):
+    d_att = get_hist_summary_dict(full_name)
+
+    return d_att["hnpar"]

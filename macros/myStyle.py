@@ -604,7 +604,16 @@ def create_phi_hist(th1_input, name, do_shift):
 
     return h_tmp
 
+def get_l_limits(nbin, init):
+# Return list with limits for the specific variable
+    my_dict = all_dicts[nbin]
+    if init not in my_dict:
+        error_msg("Limits", "Variable not found :(")
+
+    return my_dict[init]
+
 def get_plot_initials(nbin, cuts):
+# Get string with initials of the bincode
     binstr = "Q"
     binstr+= "N" if "X" not in all_dicts[nbin] else "X"
     binstr+= get_var_init(cuts, True) # Z or P
@@ -612,6 +621,7 @@ def get_plot_initials(nbin, cuts):
     return binstr
 
 def get_bincode_nbins(nbin, initials):
+# Return list with number of bins for this configuration
     nbins = []
     # Get total number of bins per variable (remove integrated ones)
     for v,var in enumerate(initials):
@@ -620,9 +630,19 @@ def get_bincode_nbins(nbin, initials):
 
     return nbins
 
+def get_bincode_nbins_dict(nbin, initials):
+# Return dictionary with number of bins for this configuration
+    nbins = {}
+    # Get total number of bins per variable (remove integrated ones)
+    for v,var in enumerate(initials):
+        this_bin = len(all_dicts[nbin][var]) - 1
+        nbins[var] = this_bin
+
+    return nbins
+
 def get_bincode_list(nbin, cuts):
-# Create bincode list with the initials in <bin_vars> ("QNZ" for Q2,Nu,Zh)
-# and <l_binning> being the binning used
+# Create bincode list with the nbin configuration and using variables defined
+# in cuts (say, Zh or Pt2 bins)
     vars_init = get_plot_initials(nbin, cuts)
     l_nbins = get_bincode_nbins(nbin, vars_init)
 
@@ -645,6 +665,24 @@ def get_bincode_list(nbin, cuts):
     # Output would be ["Q0N0Z0", "Q0N0Z1", ..., "Q3N3Z9"]
     return output_list
 
+def get_bincode_varidx(bincode, init):
+# Return index number associated to init var in bincode
+# i.e. in "Q0N2Z4", init="Z" will return 4, and init="Q" will return 0
+    init = d_var_initial[init]
+    if init not in bincode:
+        error_msg("Bincode", "Variable not found in bincode :(")
+    idx_char = bincode.index(init)
+    varidx = int(bincode[idx_char+1])
+
+    return varidx
+
+def get_bincode_varbin(bincode, init):
+# Return bin number associated to init var in bincode
+# i.e. in "Q0N2Z4", init="Z" will return 5, and init="Q" will return 1
+    varbin = get_bincode_varidx(bincode, init) + 1
+
+    return varbin
+
 def get_sparseproj1d_list(thnSparse, list_binstr, shift):
 # Create list of phi 1d hist from thnSparse for each bin defined in
 # list_binstr (list of bincodes)
@@ -664,9 +702,11 @@ def get_sparseproj1d_list(thnSparse, list_binstr, shift):
                 continue
 
             # Get letter location and add 1 to get the number location
-            idx_letter = bincode.index(letter)
-            pos = int(bincode[idx_letter+1])
-            thnSparse.GetAxis(l).SetRange(pos+1, pos+1)
+            # idx_letter = bincode.index(letter)
+            # pos = int(bincode[idx_letter+1])
+            # thnSparse.GetAxis(l).SetRange(pos+1, pos+1)
+            vbin = get_bincode_varbin(bincode, letter)
+            thnSparse.GetAxis(l).SetRange(vbin, vbin)
             # Note that if range is not changed, projection
             # will integrate over that axis!
 
@@ -1021,8 +1061,8 @@ def get_padcenter(use_colz = False):
 
     return center
 
-def create_canvas():
-    canvas = ROOT.TCanvas("cv","cv",1000,800)
+def create_canvas(cname = "cv"):
+    canvas = ROOT.TCanvas(cname,"cv",1000,800)
     canvas.SetGrid(0,1)
     # gPad.SetTicks(1,1)
     ROOT.TH1.SetDefaultSumw2()
@@ -1154,9 +1194,9 @@ all_dicts = list(bn.Bin_List)
 
 # Short name of each kinematic variable of interest
 d_var_initial = {
-    "Q2":'Q', "Qx":'Q', "Nu":'N', "Nx":'N', "Zh":'Z', "Zx":'Z',
-    "Pt2":'P', "Pt":'P', "Px":'P', "Xb":'X', "Xx": 'X',
-    "PhiPQ":'I', "PQ":'I',
+    "Q2":'Q', "Qx":'Q', "Q": 'Q', "Nu":'N', "Nx":'N', "N":'N',
+    "Zh":'Z', "Zx":'Z', "Z":'Z', "Pt2":'P', "Pt":'P', "Px":'P', "P":'P',
+    "Xb":'X', "Xx": 'X', "X": 'X', "PhiPQ":'I', "PQ":'I', "I": 'I',
 }
 
 # Dictionary with axis title per variable
