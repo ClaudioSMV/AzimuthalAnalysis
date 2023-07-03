@@ -124,21 +124,28 @@ fi
 # Run python macros
 cd ../
 for t in "${TAR_LIST[@]}"; do
-    # python PlotCorrection2.py   -D ${t}_${BINNAME}_${BINNDIM} -i $PREV_CUT\
-    #                             -o $CORR_CUT $OPTS $OPTCOR
-    # python PlotFit2.py          -D ${t}_${BINNAME}_${BINNDIM} -i $CORR_CUT\
-    #                             -o $FITS_CUT $OPTS
-    # python PlotParameters2.py   -D ${t}_${BINNAME}_${BINNDIM} -i $FITS_CUT\
-    #                             -o $FITS_CUT $OPTS -t par
+    echo -e "  >> Getting parameters of $t target\n"
+    python PlotCorrection2.py   -D ${t}_${BINNAME}_${BINNDIM} -i $PREV_CUT\
+                                -o $CORR_CUT $OPTS $OPTCOR
+    python PlotFit2.py          -D ${t}_${BINNAME}_${BINNDIM} -i $CORR_CUT\
+                                -o $FITS_CUT $OPTS
+    python PlotParameters2.py   -D ${t}_${BINNAME}_${BINNDIM} -i $FITS_CUT\
+                                -o $FITS_CUT $OPTS -t par
     python PlotParameters2.py   -D ${t}_${BINNAME}_${BINNDIM} -i $FITS_CUT\
                                 -o $FITS_CUT $OPTS -t norm
 done
 
 if [[ ${TARNAME} == "All" ]]; then
-    echo "  >> Getting ratios"
+    echo -e "  >> Getting ratios\n"
     STLIST=('C' 'Fe' 'Pb')
     for t in "${STLIST[@]}"; do
         python PlotParameters2.py   -D ${t}_${BINNAME}_${BINNDIM} -i $FITS_CUT\
                                     -o $FITS_CUT $OPTS -t ratio
     done
+
+    echo -e "  >> Getting summary\n"
+    python PlotSummary2.py   -D ${BINNAME}_${BINNDIM} -i $FITS_CUT\
+                             -o $SUMM_CUT $OPTS -t norm
+    python PlotSummary2.py   -D ${BINNAME}_${BINNDIM} -i $FITS_CUT\
+                             -o $SUMM_CUT $OPTS -t ratio
 fi
