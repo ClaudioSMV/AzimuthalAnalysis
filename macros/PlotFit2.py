@@ -265,7 +265,6 @@ for h in l_hists:
 
     if "TH1D" not in obj_type:
         continue
-
     hname = h.GetName()
     if "raw" in hname.lower():
         continue

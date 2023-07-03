@@ -80,15 +80,20 @@ def draw_axes(canvas, href, targ):
         if isinstance(primitive, ROOT.TPad):
             pads.append(primitive)
 
-    # Draw axes in pads
+    # Define figures to add in every pad
     for pad in pads:
         pad.cd(0)
+        # Draw axes
         haxis.Draw("AXIS")
         gPad.RedrawAxis("g")
 
+        # Draw explicit x and y bin range
         px, py = sf.get_pad_coord(pad.GetName())
-        # Draw axes info
         axis_txt = draw_bin_aside(px, py)
+
+        # Draw reference line at 1 for ratio
+        if d_tp_bool["ratio"]:
+            line = draw_line(haxis)
     
     return haxis
 
@@ -225,7 +230,9 @@ def draw_line(hist):
     xmin = hist.GetXaxis().GetXmin()
     xmax = hist.GetXaxis().GetXmax()
     line1.DrawLine(xmin,1.0, xmax,1.0)
-        
+
+    return line1
+
 
 # Construct the argument parser
 parser = optparse.OptionParser("usage: %prog [options]\n")

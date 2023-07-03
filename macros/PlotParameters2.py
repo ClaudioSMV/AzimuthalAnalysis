@@ -145,10 +145,7 @@ def value_norm(l_val, l_err, covm, iidx, nidx = 0):
     weight = 1./2
     new_val = weight * (ival / nval)
     cov_val = get_matrixelement(covm, nidx, iidx)
-    new_err = calculate_errdivision(ival, ierr, nval, nerr, cov_val)
-    # The next line is right! Leave it commented out to check previous results
-    # with the old definition (previous line)
-    # new_err = weight * calculate_errdivision(ival, ierr, nval, nerr, cov_val)
+    new_err = weight * calculate_errdivision(ival, ierr, nval, nerr, cov_val)
 
     return (new_val, new_err)
 
