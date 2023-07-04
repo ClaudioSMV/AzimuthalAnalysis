@@ -193,6 +193,7 @@ def create_legend(kname, def_position = True):
 
     return legend
 
+# Define extra stylistic functions
 def draw_bin_aside(x, y):
 # Check if x,y correspond to one of the boundary pads and write the bin info
     x,y = int(x), int(y)
@@ -218,7 +219,6 @@ def draw_bin_aside(x, y):
         text.DrawLatexNDC(sf.x_pad(1.05),sf.y_pad(0.5), title)
 
     return text
-
 
 def draw_line(hist):
 # Draw line at 1.0
@@ -279,9 +279,7 @@ d_tp_bool, my_tp_nameS, my_tp_nameL = sf.get_parameters_type(par_type)
 
 # Define Input
 l_inputfile = []
-l_solid = ["C", "Fe", "Pb"]
-# TODO: Add selection with cuts changing this list to D targets, for instance
-l_tar_input = list(l_solid)
+l_tar_input = ms.summary_targ_type(plots_cuts)
 first = True
 for tar in l_tar_input:
     temp_dset = "%s_%s"%(tar, dataset)
@@ -350,7 +348,8 @@ for cv in l_canvas:
     cv.cd(0)
     # Define canvas style
     ms.draw_summary("%s"%(my_tp_nameL))
-    ms.draw_targetinfo("Solid targets", "Data")
+    top_label_text = ms.summary_targ_type_legend(plots_cuts)
+    ms.draw_targetinfo(top_label_text, "Data")
 
     out_obj.updt_name(nf.get_hist_hfullname(kname))
     out_obj.updt_acc_method(nf.get_hist_hmeth(kname))

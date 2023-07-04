@@ -149,6 +149,11 @@ d_cut_sum = {
     "MixD": "MD", "MD": "MD",
 }
 
+d_cut_tar = {
+    "solid": "sl", "sl": "sl", "Sl": "sl",
+    "liquid": "lq", "Lq": "lq", "liq": "lq", "lq": "lq",
+}
+
 d_fit_met = {
     "Shift": "Sh", "Sh": "Sh",
     "Fold": "Fd", "Fd": "Fd",
@@ -163,6 +168,7 @@ d_cuts.update(d_cut_cor)
 d_cuts.update(d_cut_xax)
 d_cuts.update(d_cut_fit)
 d_cuts.update(d_cut_sum)
+d_cuts.update(d_cut_tar)
 d_cuts.update(d_fit_met)
 
 
@@ -202,6 +208,9 @@ d_cut_fin_fit = {
 d_cut_fin_sum = {
     "MD": "mergeD",
 }
+d_cut_fin_tar = {
+    "sl": "Sol", "lq": "Liq",
+}
 
 d_fit_fin_met = {
     "Sh": "Shift", "Fd": "Fold", "LR": "LR", "Ff": "FullRng",
@@ -213,6 +222,7 @@ d_cuts_final.update(d_cut_fin_cor)
 d_cuts_final.update(d_cut_fin_xax)
 d_cuts_final.update(d_cut_fin_fit)
 d_cuts_final.update(d_cut_fin_sum)
+d_cuts_final.update(d_cut_fin_tar)
 d_cuts_final.update(d_fit_fin_met)
 
 
@@ -238,6 +248,9 @@ d_cut_leg_fit = {
 d_cut_leg_sum = {
     "MD": "Merge all D",
 }
+d_cut_leg_tar = {
+    "sl": "Solid targets", "lq": "Liquid targets",
+}
 
 d_fit_leg_met = {
     "Sh": "Shift", "Fd": "Fold", "LR": "LR", "Ff": "Full range",
@@ -249,10 +262,12 @@ d_cuts_legend.update(d_cut_leg_cor)
 d_cuts_legend.update(d_cut_leg_xax)
 d_cuts_legend.update(d_cut_leg_fit)
 d_cuts_legend.update(d_cut_leg_sum)
+d_cuts_legend.update(d_cut_leg_tar)
 d_cuts_legend.update(d_fit_leg_met)
 
 
 # Save cuts in this order
+l_cut_tar = ["sl", "lq",]
 l_cut_xaxis = ["Zx", "Px",]
 l_fit_met = ["Sh", "Fd", "LR", "Ff",]
 l_cut_acc = ["Xf", "XT", "DS", "BS", "PF", "MM", "M2",]
@@ -261,6 +276,7 @@ l_cut_fit = ["Fs", "NP",]
 l_cut_sum = ["MD",]
 
 l_cuts = []
+l_cuts.extend(l_cut_tar)
 l_cuts.extend(l_cut_xaxis)
 l_cuts.extend(l_fit_met)
 l_cuts.extend(l_cut_acc)
@@ -268,6 +284,44 @@ l_cuts.extend(l_cut_cor)
 l_cuts.extend(l_cut_fit)
 l_cuts.extend(l_cut_sum)
 
+
+def summary_targ_type(cut_str):
+# Return list with list of targets to run over, based on l_cut_tar
+    l_targtype = []
+    l_solid = ["C", "Fe", "Pb"]
+    l_liquid = ["DC", "DFe", "DPb"]
+    d_lists = {"sl": l_solid, "lq": l_liquid}
+
+    # Get list with internal names
+    l_cuts = get_l_cuts(cut_str)
+
+    unique = True
+    for x in l_cut_tar:
+        if (x in l_cuts) and unique:
+            l_targtype = list(d_lists[x])
+            unique = False
+        elif (x in l_cuts) and not unique:
+            error_msg("targ_type", "Only solid or liquid sets are supported!")
+
+    if not l_targtype:
+        error_msg("targ_type", "Choose one set of targets to use in summary.")
+
+    return l_targtype
+
+def summary_targ_type_legend(cut_str):
+# Return text to use in legend or top label
+    # Get list with internal names
+    l_cuts = get_l_cuts(cut_str)
+
+    unique = True
+    for cut in d_cut_leg_tar:
+        if (cut in l_cuts) and unique:
+            targ_legend = d_cut_leg_tar[cut]
+            unique = False
+        elif (cut in l_cuts) and not unique:
+            error_msg("targ_type", "Only solid or liquid sets are supported!")
+
+    return targ_legend
 
 #################################
 ##  Cuts and dictionaries  OLD ##
@@ -725,30 +779,28 @@ def get_sparseproj1d_list(thnSparse, list_binstr, shift):
 ###########################
 
 def get_fit_method(cut_str, use_default = True):
-# Return str with short-name of the fit method chosen in output_str
-    this_method = ""
+# Return string with fit method string name
+    str_fit = ""
+    # Get list with internal names
+    l_cuts = get_l_cuts(cut_str)
 
-    final_cut_str = get_cut_long2final(cut_str)
     error1_str = "More than one fit method selected.\n"\
-                "  Please, choose only one (Ff -Full is default)."
-    # For each fit method available...
-    for fm in dict_fit_short2long:
-        fname = dict_fit_short2long[fm]
+                "  Please, choose only one (Ff -Full- is default)."
+    unique = True
+    for fmeth in l_fit_met:
+        if (fmeth in l_cuts) and unique:
+            str_fit = fmeth
+            unique = False
+        elif (fmeth in l_cuts) and not unique:
+            error_msg("fit_method", error1_str)
 
-        # ... look if it exists in the cuts list
-        if fname in final_cut_str:
-            # Send error if another method is already used
-            if this_method:
-                error_msg("FitMethod", error1_str)
-            this_method = fm
-
-    # Set default method if none is given
-    if (use_default and not this_method):
-        this_method = "Ff"
+    # In case no fit name was given and default is selected
+    if unique and use_default:
+        str_fit = "Ff"
         info_str = "No fit method introduced. Using Full as default."
-        info_msg("FitMethod", info_str)
+        info_msg("fit_method", info_str)
 
-    return this_method
+    return str_fit
 
 def get_fit_shortmethod(this_method, fname):
 # Return new short-name for method to be used in the name of a file

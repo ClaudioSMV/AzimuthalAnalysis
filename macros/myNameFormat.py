@@ -283,7 +283,7 @@ class naming_format:
 
         return name_M
 
-
+# Get name parts
 def get_hist_dict(hname):
     # h(name)_(acc_meth)_(bincode)
     # hCorrection_Reco_Q0N0Z0

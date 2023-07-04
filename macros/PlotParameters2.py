@@ -191,7 +191,6 @@ input_cuts = options.inputCuts
 plots_cuts = options.inputCuts +"_"+ options.outputCuts
 
 d_bin = ms.get_name_dict(dataset)
-m_fit = ms.get_fit_method(plots_cuts)
 
 # Define type of plot
 d_tp_bool, my_tp_nameS, my_tp_nameL = sf.get_parameters_type(par_type)

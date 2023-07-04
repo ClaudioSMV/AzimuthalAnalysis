@@ -36,10 +36,11 @@ CORR_CLIST=('Zx' 'Px' 'Sh')
 FITS_CLIST=('Fs' 'NP')
 METH_CLIST=('Fd' 'LR' 'Ff' 'Sh')
 SUMM_CLIST=('MD')
+STAR_CLIST=('sl' 'lq')
 # OPTS_CLIST=('-O' '-A')
 
 ALL_CLIST=(${PREV_CLIST[@]} ${CORR_CLIST[@]} ${FITS_CLIST[@]} ${METH_CLIST[@]}\
-           ${SUMM_CLIST[@]})
+           ${SUMM_CLIST[@]} ${STAR_CLIST[@]})
 
 #####
 # Cuts
@@ -86,6 +87,9 @@ for cut in "${ALL_CLIST[@]}"; do
         fi
         # Summary
         if [[ " ${SUMM_CLIST[@]} " =~ " ${cut} " || $PASS == "T" ]]; then
+            SUMM_CUT="${SUMM_CUT}_${cut}"
+            PASS="T"
+        elif [[ " ${STAR_CLIST[@]} " =~ " ${cut} " || $PASS == "T" ]]; then
             SUMM_CUT="${SUMM_CUT}_${cut}"
             PASS="T"
         fi

@@ -61,7 +61,7 @@ limits = ms.all_dicts[d_bin["nBin"]]
 # Create list with projections
 l_bincodes = ms.get_bincode_list(d_bin["nBin"], plots_cuts)
 l_Proj1DTHnSparse = []
-use_shift = (ms.get_fit_method(plots_cuts, False) == "Sh")
+use_shift = (ms.get_fit_method(plots_cuts, True) == "Sh")
 for th in l_inTHnSparse:
     list_proj = ms.get_sparseproj1d_list(th, l_bincodes, use_shift)
     l_Proj1DTHnSparse.append(list_proj)
