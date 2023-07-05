@@ -33,7 +33,7 @@ fi
 ###
 PREV_CLIST=('Xf' 'XT' 'DS' 'BS' 'PF' 'MM' 'M2' 'FE' 'AQ' 'Pe')
 CORR_CLIST=('Zx' 'Px' 'Sh')
-FITS_CLIST=('Fs' 'NP')
+FITS_CLIST=('Fs' 'NP' 'Nm')
 METH_CLIST=('Fd' 'LR' 'Ff' 'Sh')
 SUMM_CLIST=('MD')
 STAR_CLIST=('sl' 'lq')

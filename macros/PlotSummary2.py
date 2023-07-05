@@ -280,6 +280,9 @@ d_tp_bool, my_tp_nameS, my_tp_nameL = sf.get_parameters_type(par_type)
 # Define Input
 l_inputfile = []
 l_tar_input = ms.summary_targ_type(plots_cuts)
+# Skip ratio plot of liquid target
+if (d_tp_bool["ratio"] and ("D" in l_tar_input[0])):
+    ms.error_msg("Ratio", "Skip deuterium for ratio.")
 first = True
 for tar in l_tar_input:
     temp_dset = "%s_%s"%(tar, dataset)

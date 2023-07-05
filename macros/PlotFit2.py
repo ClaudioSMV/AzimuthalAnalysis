@@ -283,11 +283,15 @@ for h in l_hists:
     if not fit_work:
         continue
 
-    # Get corrected histogram
+    # Normalize distribution before perform fit
+    if ("Nm" in ms.get_l_cuts(plots_cuts)):
+        hist.Scale(1.0 / hist.Integral("width"))
+
+    # Get corrected histogram with proper axes depending on method
     hist_corr = get_corrected_hist(hist, out_obj.get_hist_name(), m_fit)
 
     hist_corr.SetMinimum(0.0001)
-    hist_corr.SetMaximum(hist_corr.GetMaximum()*1.4)
+    hist_corr.SetMaximum(1.4 * hist_corr.GetMaximum())
     hist_corr.Draw("hist axis")
 
     # Return list of TF1 with the proper range
@@ -315,7 +319,7 @@ for h in l_hists:
         }
 
         xpos_tex = d_pos_tex[m_fit][i] if m_fit in d_pos_tex else 0.0
-        ypos_tex = 1.1*hist.GetMaximum()
+        ypos_tex = 1.1 * hist.GetMaximum()
 
         info_chi2 = get_chi2ndf(fitfunc, xpos_tex,ypos_tex, "%s%i"%(m_fit,i))
         l_chi2.append(info_chi2)

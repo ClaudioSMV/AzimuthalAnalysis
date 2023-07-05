@@ -143,6 +143,7 @@ d_cut_xax = {
 d_cut_fit = {
     "useSin": "Fs", "FitSin": "Fs", "Fs": "Fs",
     "NPeak": "NP", "NP": "NP",
+    "Norm": "Nm", "Normalize": "Nm", "Nm": "Nm",
 }
 
 d_cut_sum = {
@@ -202,7 +203,7 @@ d_cut_fin_xax = {
 }
 
 d_cut_fin_fit = {
-    "Fs": "fSin", "NP": "NP",
+    "Fs": "fSin", "NP": "NP", "Nm": "PreNorm",
 }
 
 d_cut_fin_sum = {
@@ -243,6 +244,7 @@ d_cut_leg_xax = {
 
 d_cut_leg_fit = {
     "Fs": "Fit with Sin(x)", "NP": "Skip central peak",
+    "Nm": "Previously normalized",
 }
 
 d_cut_leg_sum = {
@@ -272,7 +274,7 @@ l_cut_xaxis = ["Zx", "Px",]
 l_fit_met = ["Sh", "Fd", "LR", "Ff",]
 l_cut_acc = ["Xf", "XT", "DS", "BS", "PF", "MM", "M2",]
 l_cut_cor = ["FE", "AQ", "Pe",]
-l_cut_fit = ["Fs", "NP",]
+l_cut_fit = ["Fs", "NP", "Nm",]
 l_cut_sum = ["MD",]
 
 l_cuts = []

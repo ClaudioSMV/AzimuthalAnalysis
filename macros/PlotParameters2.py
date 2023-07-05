@@ -125,35 +125,54 @@ def get_values(l_l_val, l_l_err, l_covm):
         val = l_val[i]
         err = l_err[i]
 
-        if d_tp_bool["norm"]:
-            val, err = value_norm(l_val, l_err, covm, i)
+        # Boolean of the parameter type required
+        par_norm, par_ratio = d_tp_bool["norm"], d_tp_bool["ratio"]
+        # Check if distribution was normalized before perform fit
+        is_prenormalized = ("Nm" in ms.get_l_cuts(input_cuts))
 
-        elif d_tp_bool["ratio"]:
+        if par_norm:
+            val, err = value_norm(l_val, l_err, covm, i,\
+                                  pre_norm=is_prenormalized)
+
+        elif par_ratio:
             l_valD, l_errD, covmD = l_l_val[1], l_l_err[1], l_covm[1]
-            val, err = value_ratio(l_val, l_err, covm, l_valD, l_errD, covmD, i)
+            val, err = value_ratio(l_val, l_err, covm, l_valD, l_errD, covmD,\
+                                   i, pre_norm=is_prenormalized)
 
         l_newval.append(val)
         l_newerr.append(err)
 
     return l_newval, l_newerr
 
-def value_norm(l_val, l_err, covm, iidx, nidx = 0):
+# Define functions to re-scale or manipulate parameter values
+# to give correct output
+def value_norm(l_val, l_err, covm, iidx, nidx = 0, pre_norm = False):
 # Calculate normalized parameters (using nidx term as reference)
     ival, ierr = l_val[iidx], l_err[iidx]
     nval, nerr = l_val[nidx], l_err[nidx]
-    # Remember the factor 1/2 to match the definition
-    weight = 1./2
-    new_val = weight * (ival / nval)
-    cov_val = get_matrixelement(covm, nidx, iidx)
-    new_err = weight * calculate_errdivision(ival, ierr, nval, nerr, cov_val)
+    covval = get_matrixelement(covm, nidx, iidx)
+
+    if not pre_norm:
+        # Remember the factor 1/2 to match the definition
+        weight = 1./2
+        new_val = weight * (ival / nval)
+        new_err = weight * calculate_errdivision(ival, ierr, nval, nerr, covval)
+    else:
+        # Prenormalization should give p1 = B/2piA, so to be consistent
+        # with the <cos\phi> = B/2A definition, a pi factor is added
+        # NOTE: The variable is saved in degrees instead of radians, so
+        # the corresponding factor is added
+        new_val = 180. * ival
+        new_err = 180. * ierr
 
     return (new_val, new_err)
 
-def value_ratio(l_val, l_err, covm, l_valD, l_errD, covmD, iidx, nidx = 0):
+def value_ratio(l_val, l_err, covm, l_valD, l_errD, covmD, iidx, nidx = 0,
+                pre_norm = False):
 # Calculate ratio of solid over Deuterium parameters
 # (using nidx term as reference to normalize)
-    val, err = value_norm(l_val, l_err, covm, iidx, nidx)
-    valD, errD = value_norm(l_valD, l_errD, covmD, iidx, nidx)
+    val, err = value_norm(l_val, l_err, covm, iidx, nidx, pre_norm)
+    valD, errD = value_norm(l_valD, l_errD, covmD, iidx, nidx, pre_norm)
 
     new_val = val / valD
     new_err = calculate_errdivision(val, err, valD, errD)
@@ -274,7 +293,9 @@ for fullname in d_pfit:
         l_pare = dict["pare"]
         cov_matrix = d_covm[kmatrix][ifit]
 
+        # Get parameters, errors, and covariance matrices in list
         l_l_parv, l_l_pare, l_cov = [l_parv], [l_pare], [cov_matrix]
+        # Add a second list with D info to get ratio
         if d_tp_bool["ratio"]:
             l_l_parv.append(d_pfitD[fullname][ifit]["parv"])
             l_l_pare.append(d_pfitD[fullname][ifit]["pare"])
@@ -303,7 +324,8 @@ for kname in d_hfinal:
         plot_obj.updt_extension("png")
 
         # Define y limits
-        y_limit = sf.get_parameters_limits(d_tp_bool, i, my_xvar_init)
+        # y_limit = sf.get_parameters_limits(d_tp_bool, i, my_xvar_init)
+        y_limit = [hf.GetMinimum() - 0.1, hf.GetMaximum() + 0.1]
         ymin, ymax = y_limit
 
         hf.SetLineWidth(2)
