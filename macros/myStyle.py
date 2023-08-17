@@ -303,10 +303,12 @@ def summary_targ_type(cut_str):
             l_targtype = list(d_lists[x])
             unique = False
         elif (x in l_cuts) and not unique:
-            error_msg("targ_type", "Only solid or liquid sets are supported!")
+            this_msg = "Only solid (sl) or liquid (lq) sets are supported!"
+            error_msg("targ_type", this_msg)
 
     if not l_targtype:
-        error_msg("targ_type", "Choose one set of targets to use in summary.")
+        this_msg = "Choose one set of targets: solid (sl) or liquid (lq)."
+        error_msg("targ_type", this_msg)
 
     return l_targtype
 

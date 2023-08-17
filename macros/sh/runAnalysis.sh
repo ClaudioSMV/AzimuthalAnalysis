@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Kill script if any macro ends in an error
+set -e
+
 #####
 # Input
 ###
@@ -20,9 +23,9 @@ fi
 # Main
 ###
 TAR_LIST=(${TARNAME})
-if [[ ${TARNAME} == "S" ]]; then
+if [[ ${TARNAME} == "S" || ${TARNAME} == "Solid" ]]; then
     TAR_LIST=('C' 'Fe' 'Pb') # 'D'
-elif [[ ${TARNAME} == "DS" ]]; then
+elif [[ ${TARNAME} == "DS" || ${TARNAME} == "Liquid" ]]; then
     TAR_LIST=('DC' 'DFe' 'DPb')
 elif [[ ${TARNAME} == "All" ]]; then
     TAR_LIST=('DC' 'DFe' 'DPb' 'C' 'Fe' 'Pb')
