@@ -32,6 +32,16 @@ def get_matrixelement(matrix, row, col):
 
     return this_matrix[index]
 
+def use_deuterium_default(ref_matrix):
+# Return 3-elements list with [value], [error], and covariance matrix
+# with default-empty values
+    rval = [0] * ref_matrix.GetNrows()
+    rerr = [0] * ref_matrix.GetNrows()
+    # Create empty matrix with the same number of columns and rows as reference
+    rcov = ROOT.TMatrix(ref_matrix.GetNrows(), ref_matrix.GetNcols())
+
+    return [rval, rerr, rcov]
+
 def get_fit_pars(hist):
 # Return list with dictionaries saving fit function name and two lists:
 # made of parameters and their associated errors, per fit function
@@ -155,8 +165,15 @@ def value_norm(l_val, l_err, covm, iidx, nidx = 0, pre_norm = False):
     if not pre_norm:
         # Remember the factor 1/2 to match the definition
         weight = 1./2
-        new_val = weight * (ival / nval)
-        new_err = weight * calculate_errdivision(ival, ierr, nval, nerr, covval)
+
+        # Avoid division error
+        if nval == 0:
+            new_val = 0.0
+            new_err = 0.0
+        else:
+            new_val = weight * (ival / nval)
+            new_err = calculate_errdivision(ival, ierr, nval, nerr, covval)
+            new_err = weight * new_err
     else:
         # Prenormalization should give p1 = B/2piA, so to be consistent
         # with the <cos\phi> = B/2A definition, a pi factor is added
@@ -174,8 +191,13 @@ def value_ratio(l_val, l_err, covm, l_valD, l_errD, covmD, iidx, nidx = 0,
     val, err = value_norm(l_val, l_err, covm, iidx, nidx, pre_norm)
     valD, errD = value_norm(l_valD, l_errD, covmD, iidx, nidx, pre_norm)
 
-    new_val = val / valD
-    new_err = calculate_errdivision(val, err, valD, errD)
+    # Avoid division error
+    if valD == 0:
+        new_val = 0.0
+        new_err = 0.0
+    else:
+        new_val = val / valD
+        new_err = calculate_errdivision(val, err, valD, errD)
 
     return (new_val, new_err)
 
@@ -295,11 +317,20 @@ for fullname in d_pfit:
 
         # Get parameters, errors, and covariance matrices in list
         l_l_parv, l_l_pare, l_cov = [l_parv], [l_pare], [cov_matrix]
-        # Add a second list with D info to get ratio
+        # Add a second list with D info to get ratio if required
         if d_tp_bool["ratio"]:
-            l_l_parv.append(d_pfitD[fullname][ifit]["parv"])
-            l_l_pare.append(d_pfitD[fullname][ifit]["pare"])
-            l_cov.append(d_covmD[kmatrix][ifit])
+            # Save default info if fit didn't work
+            if fullname not in d_pfitD:
+                rval, rerr, rcov = use_deuterium_default(cov_matrix)
+                ms.info_msg("Ratio", "Empty fit for deuterium (%s)"%fullname)
+            else:
+                rval = d_pfitD[fullname][ifit]["parv"]
+                rerr = d_pfitD[fullname][ifit]["pare"]
+                rcov = d_covmD[kmatrix][ifit]
+
+            l_l_parv.append(rval)
+            l_l_pare.append(rerr)
+            l_cov.append(rcov)
 
         f_par, f_err = get_values(l_l_parv, l_l_pare, l_cov)
 

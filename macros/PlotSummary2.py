@@ -26,7 +26,7 @@ def get_required_ffit(cuts):
 
     return r_ffit
 
-def get_input_info(l_keys, ffit):
+def get_input_info(l_keys):
 # Retrieve fit information from list of keys, returning a tuple with:
 # list of names, list fit parameters, list correction methods
     l_kname = []
@@ -37,8 +37,6 @@ def get_input_info(l_keys, ffit):
         obj_type = key.ReadObj().Class_Name()
         kname = key.GetName()
         if "TH1D" not in obj_type:
-            continue
-        if ffit not in nf.get_hist_hffit(kname):
             continue
 
         l_kname.append(kname)
@@ -272,7 +270,6 @@ m_fit = ms.get_fit_method(input_cuts)
 # Revisit this. Maybe plots_cuts might work better / be more general
 initials = ms.get_plot_initials(d_bin["nBin"], input_cuts)
 d_init_nbins = ms.get_bincode_nbins_dict(d_bin["nBin"], initials)
-my_ffit = get_required_ffit(plots_cuts)
 
 # Define type of plot
 d_tp_bool, my_tp_nameS, my_tp_nameL = sf.get_parameters_type(par_type)
@@ -292,7 +289,7 @@ for tar in l_tar_input:
 
     if first:
         l_keys = inputfile.GetListOfKeys()
-        l_kname, l_npar, l_meth = get_input_info(l_keys, my_ffit)
+        l_kname, l_npar, l_meth = get_input_info(l_keys)
         first = False
 
     l_inputfile.append(inputfile)
