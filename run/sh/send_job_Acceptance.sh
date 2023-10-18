@@ -11,7 +11,7 @@ BINNAME=${INPUTARRAY[1]}
 CUTLIST=${INPUTARRAY[2]}
 
 if [[ -z $TARNAME ]]; then
-    cat ../../macros/ScriptHelp.sh
+    cat help_send.sh
     exit
 fi
 

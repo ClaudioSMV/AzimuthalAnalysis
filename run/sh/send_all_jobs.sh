@@ -10,8 +10,8 @@ USEMTHD=${INPUTARRAY[0]}
 BINNAME=${INPUTARRAY[1]}
 CUTLIST=${INPUTARRAY[2]}
 
-if [[ -z $USEMTHD ]]; then
-    cat ../../macros/ScriptHelp.sh
+if [[ -z $USEMTHD || ($USEMTHD == "-h") ]]; then
+    cat help_send.sh
     exit
 fi
 
@@ -26,6 +26,10 @@ ACC_CUT=""
 COR_CUT=""
 
 UND=""
+
+###############################################################
+#  Define explicitly each cut that is used in the root files  #
+###############################################################
 
 ### Acceptance cuts
 if [[ $CUTLIST == *"Xf"* ]]; then

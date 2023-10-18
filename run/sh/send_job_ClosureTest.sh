@@ -13,7 +13,7 @@ FRACACC=${INPUTARRAY[3]}
 CUTLIST=${INPUTARRAY[4]}
 
 if [[ -z $TARNAME ]]; then
-    cat ../../macros/ScriptHelp.sh
+    cat help_send.sh
     exit
 fi
 

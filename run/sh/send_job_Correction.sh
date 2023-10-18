@@ -12,7 +12,7 @@ BINNDIM=${INPUTARRAY[2]}
 CUTLIST=${INPUTARRAY[3]}
 
 if [[ -z $TARNAME ]]; then
-    cat ../../macros/ScriptHelp.sh
+    cat help_send.sh
     exit
 fi
 

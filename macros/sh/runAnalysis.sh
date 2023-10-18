@@ -14,8 +14,8 @@ BINNDIM=${INPUTARRAY[2]}
 CUTINFO=${INPUTARRAY[3]}
 CUTINFO="_${CUTINFO}"
 
-if [[ -z $TARNAME ]]; then
-    cat ScriptHelp.sh
+if [[ -z $TARNAME || ($TARNAME == "-h") ]]; then
+    cat help_script.sh
     exit
 fi
 
@@ -53,6 +53,9 @@ CORR_CUT="_"
 FITS_CUT="_"
 SUMM_CUT="_"
 
+#########################################
+##              Exit zone              ##
+#########################################
 # Check at least one fit method is used!
 GOTMETH="F"
 for method in "${METH_CLIST[@]}"; do
@@ -65,7 +68,9 @@ if [[ $GOTMETH == "F" ]]; then
     exit
 fi
 
-# Fill cut selection
+#########################################
+##         Fill cut selections         ##
+#########################################
 for cut in "${ALL_CLIST[@]}"; do
     PASS="F"
     # Check cut was called
@@ -93,7 +98,7 @@ for cut in "${ALL_CLIST[@]}"; do
             SUMM_CUT="${SUMM_CUT}_${cut}"
             PASS="T"
         elif [[ " ${STAR_CLIST[@]} " =~ " ${cut} " || $PASS == "T" ]]; then
-            SUMM_CUT="${SUMM_CUT}_${cut}"
+            # SUMM_CUT="${SUMM_CUT}_${cut}"
             PASS="T"
         fi
 
@@ -120,7 +125,7 @@ if [[ -n $CUTINFO ]]; then
     exit
 fi
 
-# Debug
+# # Debug
 # echo ${TAR_LIST[@]}
 # echo $PREV_CUT
 # echo $CORR_CUT
@@ -132,13 +137,13 @@ fi
 cd ../
 for t in "${TAR_LIST[@]}"; do
     echo -e "  >> Getting parameters of $t target\n"
-    python PlotCorrection2.py   -D ${t}_${BINNAME}_${BINNDIM} -i $PREV_CUT\
+    python Plot_Correction.py   -D ${t}_${BINNAME}_${BINNDIM} -i $PREV_CUT\
                                 -o $CORR_CUT $OPTS $OPTCOR
-    python PlotFit2.py          -D ${t}_${BINNAME}_${BINNDIM} -i $CORR_CUT\
+    python Plot_Fit.py          -D ${t}_${BINNAME}_${BINNDIM} -i $CORR_CUT\
                                 -o $FITS_CUT $OPTS
-    python PlotParameters2.py   -D ${t}_${BINNAME}_${BINNDIM} -i $FITS_CUT\
+    python Plot_Parameters.py   -D ${t}_${BINNAME}_${BINNDIM} -i $FITS_CUT\
                                 -o $FITS_CUT $OPTS -t par
-    python PlotParameters2.py   -D ${t}_${BINNAME}_${BINNDIM} -i $FITS_CUT\
+    python Plot_Parameters.py   -D ${t}_${BINNAME}_${BINNDIM} -i $FITS_CUT\
                                 -o $FITS_CUT $OPTS -t norm
 done
 
@@ -146,13 +151,16 @@ if [[ ${TARNAME} == "All" ]]; then
     echo -e "  >> Getting ratios\n"
     STLIST=('C' 'Fe' 'Pb')
     for t in "${STLIST[@]}"; do
-        python PlotParameters2.py   -D ${t}_${BINNAME}_${BINNDIM} -i $FITS_CUT\
+        python Plot_Parameters.py   -D ${t}_${BINNAME}_${BINNDIM} -i $FITS_CUT\
                                     -o $FITS_CUT $OPTS -t ratio
     done
 
-    echo -e "  >> Getting summary\n"
-    python PlotSummary2.py   -D ${BINNAME}_${BINNDIM} -i $FITS_CUT\
-                             -o $SUMM_CUT $OPTS -t norm
-    python PlotSummary2.py   -D ${BINNAME}_${BINNDIM} -i $FITS_CUT\
-                             -o $SUMM_CUT $OPTS -t ratio
+    # Draw summary plot for liquid and solid set of targets
+    for target_set in "${STAR_CLIST[@]}"; do
+        echo -e "  >> Getting summary ${target_set} set\n"
+        python Plot_Summary.py  -D ${BINNAME}_${BINNDIM} -i $FITS_CUT\
+                                -o ${SUMM_CUT}_$target_set $OPTS -t norm
+        python Plot_Summary.py  -D ${BINNAME}_${BINNDIM} -i $FITS_CUT\
+                                -o ${SUMM_CUT}_$target_set $OPTS -t ratio
+    done
 fi

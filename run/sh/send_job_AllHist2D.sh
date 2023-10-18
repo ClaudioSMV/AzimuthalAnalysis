@@ -11,7 +11,7 @@ CUTLIST=${INPUTARRAY[1]}
 NBINACC=${INPUTARRAY[2]}
 
 if [[ -z $VARNAME ]]; then
-    cat ../../macros/ScriptHelp.sh
+    cat help_send.sh
     exit
 fi
 
