@@ -43,7 +43,7 @@ class naming_format:
     def __init__(self, name, target, n_bin = 10, n_dim = 0, cuts = "",
                  acc_method = "", bin_code = "", extension = "root",
                  inputfile_type = "", is_JLab = True, in_output = False,
-                 hist_tag = ""):
+                 hist_tag = "", fraction = 0):
         self.name = name
         # Accept (target)_(nbin)_(ndim) format as shortcut
         if len(target.split("_"))>1:
@@ -66,6 +66,7 @@ class naming_format:
         self.inputfile_type = inputfile_type # For Hist2D: hsim or data
         self.is_JLab = is_JLab
         self.hist_tag = hist_tag # Useful for pre-generated output files
+        self.fraction = fraction # Fraction in Closure Test
 
     def updt_name(self, new_name, add = False):
         name = self.name + new_name
@@ -83,7 +84,7 @@ class naming_format:
     def updt_extension(self, new_extension):
         self.extension = new_extension
 
-
+    ########################## File naming ###########################
     def get_file_name(self):
         # (name)_(target)_(n_bin)B(n_dim)-(acc_meth)-(fit)-(bin_code).(ext)
         # Correction_Fe_10B1-Q0N0Z0.png
@@ -148,6 +149,7 @@ class naming_format:
 
         return file_name
     
+    ######################### Folder naming ##########################
     def get_folder_name(self, create = False, overwrite = False):
     # initial_path/JLab_cluster/name_folder/n_bin/cuts/target/
     # e.g.: ../macros/plots/ JLab_cluster/ Correction/ 10B1/ FErr_AccQlt/ Fe/
@@ -157,8 +159,10 @@ class naming_format:
         if self.is_JLab:
             folder+="JLab_cluster/"
 
-        folder+= "%s/"%(self.name)
-        folder+= "%sB%s/"%(self.n_bin, self.n_dim)
+        folder+= "%s"%(self.name)
+        if self.fraction:
+            folder+= "%ip"%(self.fraction)
+        folder+= "/%sB%s/"%(self.n_bin, self.n_dim)
         folder+= "%s/"%(self.cuts) if self.cuts else "NoCuts/"
         folder+= "%s/"%(self.target)
 
@@ -176,6 +180,8 @@ class naming_format:
             folder+="JLab_cluster/"
 
         fname = "%s"%(self.name)
+        if self.fraction:
+            fname+= "%ip"%(self.fraction)
         if self.cuts:
             fname+= "_%s"%(self.cuts)
 
@@ -202,6 +208,7 @@ class naming_format:
 
         return folder
 
+    ########################## Path naming ###########################
     def get_path(self, create = False, overwrite = False):
         folder = self.get_folder_name(create, overwrite)
         file = self.get_file_name()
@@ -220,7 +227,7 @@ class naming_format:
 
         return folder + file
 
-
+    ######################## Histogram naming ########################
     def get_hist_name(self):
         # h(name)_(acc_meth)_(bincode)
         # hCorrection_Reco_Q0N0Z0
@@ -267,7 +274,7 @@ class naming_format:
 
         return hname
 
-
+    ############################# Others #############################
     def get_l_fitnames(self):
         l_fnames = ["crossSectionR"]
         if (self.fit_method == "LR"):
@@ -283,7 +290,9 @@ class naming_format:
 
         return name_M
 
-# Get name parts
+
+####################### Get info from a title ########################
+
 def get_hist_dict(hname):
     # h(name)_(acc_meth)_(bincode)
     # hCorrection_Reco_Q0N0Z0
