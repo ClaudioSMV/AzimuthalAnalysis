@@ -3,30 +3,18 @@ import os
 import Bins as bn
 
 
-###############################
-##  Define global variables  ##
-###############################
+################################################################################
+##                              Global variables                              ##
+################################################################################
 
 marg=0.05
 font=43 # Helvetica
 tsize=38
 
 
-####################
-##      Info      ##
-##  Names format  ##
-####################
-
-####
-# Acceptance_%s_B%i.root      ; <Target>,<_binIndex>
-# Corrected_%s_B%i_%iD.root   ; <Target>,<_binIndex>,<_binNdims>
-# ClosureTest_%s_B%i_%iD.root ; <Target>,<_binIndex>,<_binNdims>
-####
-
-
-############################
-##  File name and format  ##
-############################
+################################################################################
+##                         Name and input code format                         ##
+################################################################################
 
 def get_targ_input(targ_str):
 # Transform <targ>_<nBin>_<nDim> input into list
@@ -96,9 +84,9 @@ def add_str_before_ext(path, before_dot, other_extension = "root"):
     return new_path + before_dot + "." + other_extension
 
 
-##########################
-##  Messages functions  ##
-##########################
+################################################################################
+##                              Inline messages                               ##
+################################################################################
 
 def error_msg(function, text):
     msg_str = "  [!|%s] "%(function)
@@ -114,56 +102,53 @@ def info_msg(function, text):
     print(msg_str)
 
 
-#################################
-##  Cuts and dictionaries  NEW ##
-#################################
+################################################################################
+##                        *NEW* Cuts and dictionaries                         ##
+################################################################################
 
-# Transform a long named cut into a short tag
+################  Transform a long cut's name into a short tag  ################
 d_cut_acc = {
-    "XF": "Xf", "Xf": "Xf",
-    "XT_TFR": "XT", "XTFR": "XT", "Xt": "XT", "XT": "XT",
-    "DeltaSector": "DS", "DSect": "DS", "DSctr": "DS", "DS": "DS",
-    "BadSector": "BS", "rmBadSector": "BS", "BS": "BS",
-    "PionFiducial": "PF", "PiFiducial": "PF", "Pf": "PF", "PF": "PF",
+    "XF": "Xf", "Xf": "Xf", "CFR": "Xf",
+    "XT_TFR": "XT", "XTFR": "XT", "Xt": "XT", "XT": "XT", "TFR": "XT",
+    "DeltaSector": "DS", "DSect": "DS", "DSctr": "DS", "DS": "DS",\
+    "DSect0": "DS",
+    "BadSector": "BS", "rmBadSector": "BS", "BS": "BS", "rS": "BS",\
+    "NoBadSec": "BS",
+    "PionFiducial": "PF", "PiFiducial": "PF", "Pf": "PF", "PF": "PF",\
+    "PFid": "PF", "PiFid": "PF",
     "MirrorMatch": "MM", "MMtch": "MM", "MM": "MM",
-    "MirrorMatch2": "M2", "MMtch2": "M2", "M2": "M2",
+    "MirrorMatch2": "M2", "MMtch2": "M2", "M2": "M2", "MM2": "M2",
 }
-
 d_cut_cor = {
-    "FErr": "FE", "FullError": "FE", "Fe": "FE", "FE": "FE",
+    "FErr": "FE", "FullError": "FE", "Fe": "FE", "FE": "FE", "Err": "FE",
     "AccQlt": "AQ", "AccQuality": "AQ", "AQ": "AQ",
-    "rmNpheElH": "Pe", "PheElH": "Pe", "PE": "Pe", "Pe": "Pe",
+    "rmNpheElH": "Pe", "PheElH": "Pe", "PE": "Pe", "Pe": "Pe",\
+    "rmTheLine": "Pe", "dfNphe": "Pe",
 }
-
 d_cut_xax = {
     "Z": "Zx", "Zx": "Zx",
     "P": "Px", "Px": "Px",
 }
-
 d_cut_fit = {
-    "useSin": "Fs", "FitSin": "Fs", "Fs": "Fs",
+    "useSin": "Fs", "FitSin": "Fs", "Fs": "Fs", "fSin": "Fs",
     "NPeak": "NP", "NP": "NP",
-    "Norm": "Nm", "Normalize": "Nm", "Nm": "Nm",
+    "Norm": "Nm", "Normalize": "Nm", "Nm": "Nm", "PreNorm": "Nm"
 }
-
 d_cut_sum = {
-    "MixD": "MD", "MD": "MD",
+    "MixD": "MD", "MD": "MD", "mergeD": "MD",
 }
-
 d_cut_tar = {
-    "solid": "sl", "sl": "sl", "Sl": "sl",
-    "liquid": "lq", "Lq": "lq", "liq": "lq", "lq": "lq",
+    "solid": "sl", "sl": "sl", "Sl": "sl", "Sol": "sl",
+    "liquid": "lq", "Lq": "lq", "liq": "lq", "lq": "lq", "Liq": "lq",
 }
-
 d_fit_met = {
     "Shift": "Sh", "Sh": "Sh",
     "Fold": "Fd", "Fd": "Fd",
     "LR": "LR",
-    "Fullfit": "Ff", "FFit": "Ff", "Ff": "Ff",
+    "Fullfit": "Ff", "FFit": "Ff", "Ff": "Ff", "FullRng": "Ff",
 }
 
-# Merge all dictionaries into one
-d_cuts = {}
+d_cuts = {} # Merge all dictionaries into one
 d_cuts.update(d_cut_acc)
 d_cuts.update(d_cut_cor)
 d_cuts.update(d_cut_xax)
@@ -173,51 +158,45 @@ d_cuts.update(d_cut_tar)
 d_cuts.update(d_fit_met)
 
 
-# Get the label given to each cut in output folder
+##################  From short tag to /Output/ folder's tags  ##################
 d_cut_out_acc = {
     "Xf": "Xf", "XT": "XTFR", "DS": "DSect0", "BS": "NoBadSec",
     "PF": "PiFid", "MM": "MMtch", "M2": "MMtch2",
 }
-
 d_cut_out_cor = {
     "FE": "FErr", "AQ": "AccQlt", "Pe": "dfNphe",
 }
 
-d_cuts_output = {}
+d_cuts_output = {} # Merge all dictionaries into one
 d_cuts_output.update(d_cut_out_acc)
 d_cuts_output.update(d_cut_out_cor)
 
 
-# Get final names from short tags
+################  From short tag to /Plot-Final/ folder's tags  ################
 d_cut_fin_acc = {
     "Xf": "CFR", "XT": "TFR", "DS": "DS", "BS": "rS", "PF": "PFid",
     "MM": "MM", "M2": "MM2",
 }
-
 d_cut_fin_cor = {
     "FE": "Err", "AQ": "AQ", "Pe": "rmTheLine",
 }
-
 d_cut_fin_xax = {
     "Zx": "Zx", "Px": "Px",
 }
-
 d_cut_fin_fit = {
     "Fs": "fSin", "NP": "NP", "Nm": "PreNorm",
 }
-
 d_cut_fin_sum = {
     "MD": "mergeD",
 }
 d_cut_fin_tar = {
     "sl": "Sol", "lq": "Liq",
 }
-
 d_fit_fin_met = {
     "Sh": "Shift", "Fd": "Fold", "LR": "LR", "Ff": "FullRng",
 }
 
-d_cuts_final = {}
+d_cuts_final = {} # Merge all dictionaries into one
 d_cuts_final.update(d_cut_fin_acc)
 d_cuts_final.update(d_cut_fin_cor)
 d_cuts_final.update(d_cut_fin_xax)
@@ -227,38 +206,33 @@ d_cuts_final.update(d_cut_fin_tar)
 d_cuts_final.update(d_fit_fin_met)
 
 
-# Get cuts in legend style
+######################  From short tag to legend's title  ######################
 d_cut_leg_acc = {
     "Xf": "#X_f CFR", "XT": "#X_f TFR", "DS": "#Delta Sect #neq 0",
     "BS": "No bad Sect", "PF": "Fidual cut #pi",
     "MM": "Mirror Matching", "M2": "Mirror Matching 2",
 }
-
 d_cut_leg_cor = {
     "FE": "", "AQ": "", "Pe": "N_{phe}^{el} #neq N_{phe}^{h}",
 }
-
 d_cut_leg_xax = {
     "Zx": "", "Px": "",
 }
-
 d_cut_leg_fit = {
     "Fs": "Fit with Sin(x)", "NP": "Skip central peak",
     "Nm": "Previously normalized",
 }
-
 d_cut_leg_sum = {
     "MD": "Merge all D",
 }
 d_cut_leg_tar = {
     "sl": "Solid targets", "lq": "Liquid targets",
 }
-
 d_fit_leg_met = {
     "Sh": "Shift", "Fd": "Fold", "LR": "LR", "Ff": "Full range",
 }
 
-d_cuts_legend = {}
+d_cuts_legend = {} # Merge all dictionaries into one
 d_cuts_legend.update(d_cut_leg_acc)
 d_cuts_legend.update(d_cut_leg_cor)
 d_cuts_legend.update(d_cut_leg_xax)
@@ -268,7 +242,7 @@ d_cuts_legend.update(d_cut_leg_tar)
 d_cuts_legend.update(d_fit_leg_met)
 
 
-# Save cuts in this order
+######################  List with cuts in correct order  #######################
 l_cut_tar = ["sl", "lq",]
 l_cut_xaxis = ["Zx", "Px",]
 l_fit_met = ["Sh", "Fd", "LR", "Ff",]

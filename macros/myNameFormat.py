@@ -68,6 +68,7 @@ class naming_format:
         self.hist_tag = hist_tag # Useful for pre-generated output files
         self.fraction = fraction # Fraction in Closure Test
 
+    ############################  Update info  #############################
     def updt_name(self, new_name, add = False):
         name = self.name + new_name
         if not add:
@@ -84,7 +85,7 @@ class naming_format:
     def updt_extension(self, new_extension):
         self.extension = new_extension
 
-    ########################## File naming ###########################
+    ############################  File naming  #############################
     def get_file_name(self):
         # (name)_(target)_(n_bin)B(n_dim)-(acc_meth)-(fit)-(bin_code).(ext)
         # Correction_Fe_10B1-Q0N0Z0.png
@@ -149,7 +150,7 @@ class naming_format:
 
         return file_name
     
-    ######################### Folder naming ##########################
+    ###########################  Folder naming  ############################
     def get_folder_name(self, create = False, overwrite = False):
     # initial_path/JLab_cluster/name_folder/n_bin/cuts/target/
     # e.g.: ../macros/plots/ JLab_cluster/ Correction/ 10B1/ FErr_AccQlt/ Fe/
@@ -208,7 +209,7 @@ class naming_format:
 
         return folder
 
-    ########################## Path naming ###########################
+    ############################  Path naming  #############################
     def get_path(self, create = False, overwrite = False):
         folder = self.get_folder_name(create, overwrite)
         file = self.get_file_name()
@@ -227,7 +228,7 @@ class naming_format:
 
         return folder + file
 
-    ######################## Histogram naming ########################
+    ##########################  Histogram naming  ##########################
     def get_hist_name(self):
         # h(name)_(acc_meth)_(bincode)
         # hCorrection_Reco_Q0N0Z0
@@ -274,7 +275,7 @@ class naming_format:
 
         return hname
 
-    ############################# Others #############################
+    ###############################  Others  ###############################
     def get_l_fitnames(self):
         l_fnames = ["crossSectionR"]
         if (self.fit_method == "LR"):
@@ -291,7 +292,7 @@ class naming_format:
         return name_M
 
 
-####################### Get info from a title ########################
+###########################  Get info from a title  ############################
 
 def get_hist_dict(hname):
     # h(name)_(acc_meth)_(bincode)
