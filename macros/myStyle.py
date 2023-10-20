@@ -11,6 +11,18 @@ marg=0.05
 font=43 # Helvetica
 tsize=38
 
+def get_margin():
+# Return margin value
+    return marg
+
+def get_font():
+# Return font value
+    return font
+
+def get_size():
+# Return size of text value
+    return tsize
+
 
 ################################################################################
 ##                         Name and input code format                         ##
@@ -301,9 +313,9 @@ def summary_targ_type_legend(cut_str):
 
     return targ_legend
 
-#################################
-##  Cuts and dictionaries  OLD ##
-#################################
+################################################################################
+##                        *OLD* Cuts and dictionaries                         ##
+################################################################################
 ### Input name
 ########
 ## From python macro input to internal/input code
@@ -391,12 +403,12 @@ cutMasterKey+= "Sh0Fs0NP0Fd0LR0Ff0"
 cutMasterKey+= "MD0"
 
 
-############################
-##  Format cut names  NEW ##
-############################
+################################################################################
+##                             *NEW* Format cuts                              ##
+################################################################################
 
 def get_l_cuts(cut_str):
-# Return list with internal/short names
+# Return list with short cut tags
     l_mycuts = cut_str.split("_")
     # Remove empty entries from input
     while("" in l_mycuts):
@@ -410,7 +422,6 @@ def get_l_cuts(cut_str):
         else:
             err_txt = "\"%s\" cut not found in any list."%(cut)
             error_msg("Cut", err_txt)
-
     # Remove repeated elements
     l_mycuts = list(set(l_mycuts))
 
@@ -479,9 +490,9 @@ def get_cut_final(cut_str = "", among_these = "all", is_output = False):
     return final_str
 
 
-############################
-##  Format cut names  OLD ##
-############################
+################################################################################
+##                             *OLD* Format cuts                              ##
+################################################################################
 
 def get_cut_str2list(this_cut_str):
 # Transform a str of cuts separated by "_" to a list
@@ -566,75 +577,9 @@ def get_cut_str2finallist(cut_str):
     return this_finallist
 
 
-################################
-##  Set study dimensionality  ##
-################################
-
-def create_phi_hist(th1_input, name, do_shift):
-# Create a copy of a 1d histogram for phi_PQ
-# By default, it uses x-axis within [-180, 180]
-# Option do_shift plots within [0, 360]
-    this_xmin = th1_input.GetXaxis().GetXmin() # -180.
-    this_xmax = th1_input.GetXaxis().GetXmax() #  180.
-    this_nbin = th1_input.GetNbinsX()
-
-    if (do_shift):
-        # if (this_nbin%2 == 0): # Even (0. is in a bin edge) (default)
-        this_xmin =   0.
-        this_xmax = 360.
-        central_bin = int(this_nbin/2)+1
-        # Note that if nbin is Even, central_bin is the bin at the right of the
-        # central one; if it is Odd, central_bin is the real central one;
-
-        if (this_nbin%2 == 1): # Odd (0. is in the middle of a bin)
-            bin_width = th1_input.GetBinWidth(central_bin)
-
-            # Slightly shift edges so that bins are correct
-            this_xmin -= bin_width/2.
-            this_xmax -= bin_width/2.
-
-    ax_name = ";%s;Counts"%(axis_label('I',"LatexUnit"))
-    h_tmp = ROOT.TH1D(name,ax_name, this_nbin, this_xmin, this_xmax)
-
-    # Fill histogram bin by bin
-    for i in range(1,this_nbin+1):
-        this_value = th1_input.GetBinContent(i)
-        this_error = th1_input.GetBinError(i)
-        # if (this_value == 0):
-        #     print("    %s : Value: %i"%(name,this_value))
-        #     this_value = 0.0
-        #     this_error = 0.0
-        bin_L_edge = th1_input.GetBinLowEdge(i)
-        bin_center = th1_input.GetBinCenter(i)
-
-        the_bin = i
-        if (do_shift):
-            # Move the left half to the right of the right half
-            # Even  e.g. with 6 bins, first right bin is 4
-            if (this_nbin%2 == 0):
-                if (bin_L_edge < 0.0):
-                    the_bin = i + central_bin -1
-                    # e.g. 1,2,3 bins will be 4,5,6
-                else:
-                    the_bin = i - central_bin + 1
-                    # e.g. 4,5,6 bins will be 1,2,3
-            # Odd e.g. with 5 bins, center is 3
-            elif (this_nbin%2 == 1):
-                if (bin_center < 0.0):
-                    the_bin = i + central_bin
-                    # e.g. 1,2 bins will be 4,5
-                else:
-                    the_bin = i - central_bin + 1
-                    # e.g. 3,4,5 bins will be 1,2,3
-                # Note in this case the distribution does not start at zero,
-                # but at a negative number
-        # Skip bins that are empty to avoid counting them as an entry
-        # with zero value
-        if (this_value != 0):
-            h_tmp.SetBinContent(the_bin, this_value)
-            h_tmp.SetBinError(the_bin, this_error)
-
-    return h_tmp
+################################################################################
+##                      Bincode and variables' functions                      ##
+################################################################################
 
 def get_l_limits(nbin, init):
 # Return list with limits for the specific variable
@@ -715,6 +660,77 @@ def get_bincode_varbin(bincode, init):
 
     return varbin
 
+
+################################################################################
+##                         Histograms and projections                         ##
+################################################################################
+
+def create_phi_hist(th1_input, name, do_shift):
+# Create a copy of a 1d histogram for phi_PQ
+# By default, it uses x-axis within [-180, 180]
+# Option do_shift plots within [0, 360]
+    this_xmin = th1_input.GetXaxis().GetXmin() # -180.
+    this_xmax = th1_input.GetXaxis().GetXmax() #  180.
+    this_nbin = th1_input.GetNbinsX()
+
+    if (do_shift):
+        # if (this_nbin%2 == 0): # Even (0. is in a bin edge) (default)
+        this_xmin =   0.
+        this_xmax = 360.
+        central_bin = int(this_nbin/2)+1
+        # Note that if nbin is Even, central_bin is the bin at the right of the
+        # central one; if it is Odd, central_bin is the real central one;
+
+        if (this_nbin%2 == 1): # Odd (0. is in the middle of a bin)
+            bin_width = th1_input.GetBinWidth(central_bin)
+
+            # Slightly shift edges so that bins are correct
+            this_xmin -= bin_width/2.
+            this_xmax -= bin_width/2.
+
+    ax_name = ";%s;Counts"%(axis_label('I',"LatexUnit"))
+    h_tmp = ROOT.TH1D(name,ax_name, this_nbin, this_xmin, this_xmax)
+
+    # Fill histogram bin by bin
+    for i in range(1,this_nbin+1):
+        this_value = th1_input.GetBinContent(i)
+        this_error = th1_input.GetBinError(i)
+        # if (this_value == 0):
+        #     print("    %s : Value: %i"%(name,this_value))
+        #     this_value = 0.0
+        #     this_error = 0.0
+        bin_L_edge = th1_input.GetBinLowEdge(i)
+        bin_center = th1_input.GetBinCenter(i)
+
+        the_bin = i
+        if (do_shift):
+            # Move the left half to the right of the right half
+            # Even  e.g. with 6 bins, first right bin is 4
+            if (this_nbin%2 == 0):
+                if (bin_L_edge < 0.0):
+                    the_bin = i + central_bin -1
+                    # e.g. 1,2,3 bins will be 4,5,6
+                else:
+                    the_bin = i - central_bin + 1
+                    # e.g. 4,5,6 bins will be 1,2,3
+            # Odd e.g. with 5 bins, center is 3
+            elif (this_nbin%2 == 1):
+                if (bin_center < 0.0):
+                    the_bin = i + central_bin
+                    # e.g. 1,2 bins will be 4,5
+                else:
+                    the_bin = i - central_bin + 1
+                    # e.g. 3,4,5 bins will be 1,2,3
+                # Note in this case the distribution does not start at zero,
+                # but at a negative number
+        # Skip bins that are empty to avoid counting them as an entry
+        # with zero value
+        if (this_value != 0):
+            h_tmp.SetBinContent(the_bin, this_value)
+            h_tmp.SetBinError(the_bin, this_error)
+
+    return h_tmp
+
 def get_sparseproj1d_list(thnSparse, list_binstr, shift):
 # Create list of phi 1d hist from thnSparse for each bin defined in
 # list_binstr (list of bincodes)
@@ -752,9 +768,9 @@ def get_sparseproj1d_list(thnSparse, list_binstr, shift):
     return this_outlist
 
 
-###########################
-##  Get fit information  ##
-###########################
+################################################################################
+##                            Fit method functions                            ##
+################################################################################
 
 def get_fit_method(cut_str, use_default = True):
 # Return string with fit method string name
@@ -794,6 +810,11 @@ def get_fit_shortmethod(this_method, fname):
 
     return this_ext
 
+
+################################################################################
+##                            Extract x-axis info                             ##
+################################################################################
+
 def get_xaxis(cut_str):
 # Return str with short-name of the xaxis used
 # Remember: integrated variables are given by nDim
@@ -823,9 +844,9 @@ def get_var_init(my_str, is_cut):
     return my_init
 
 
-#############################
-##  Paths and directories  ##
-#############################
+################################################################################
+##                        *OLD* Paths and directories                         ##
+################################################################################
 
 def enum_folder(mypath):
 # Adds a sequential number to the path
@@ -1012,9 +1033,9 @@ def get_summary_fullpath(name_meth, cuts = "", dataset = "", extension = "root",
     return this_folder+this_file
 
 
-#######################################
-##  Define style and pad parameters  ##
-#######################################
+################################################################################
+##                                Define style                                ##
+################################################################################
 
 def force_style(use_colz = False):
 # Define Style for plots with uniform margins and text format
@@ -1073,19 +1094,8 @@ def force_style(use_colz = False):
         ROOT.gStyle.SetTitleYOffset(1.3)
         ROOT.gROOT.ForceStyle()
 
-def get_margin():
-# Return margin value
-    return marg
-
-def get_font():
-# Return font value
-    return font
-
-def get_size():
-# Return size of text value
-    return tsize
-
-def get_padcenter(use_colz = False):
+# TODO: Add a generalized padcenter
+def get_padcenter(use_colz = False, mleft = 0, mright = 0):
 # Return pad center value as ratio wrt total pad length
     center = 0.5 if use_colz else (1 + marg)/2
 
@@ -1101,9 +1111,10 @@ def create_canvas(cname = "cv"):
     return canvas
 
 
-#############################
-##  Draw top text/summary  ##
-#############################
+################################################################################
+##                          Header and top messages                           ##
+################################################################################
+# TODO: Add idea with new positions!
 
 def draw_topL(text_bold = "", text = "", xl=0.0, yb=0.0):
 # Draw text at top left corner of the pad, with reference point
@@ -1173,9 +1184,9 @@ def get_bintxt(bin_name="A0B1", bin_type=0):
     return tmp_txt
 
 
-###############################
-##  Plot markers and colors  ##
-###############################
+################################################################################
+##                            Markers and colors!                             ##
+################################################################################
 
 def rgb_to_root(r ,g ,b ):
 # Translate color from RGB format to inner ROOT format
@@ -1184,8 +1195,7 @@ def rgb_to_root(r ,g ,b ):
 
 def get_color(color_blind = True):
 # Get list with 7-color pallete (colorblind friendly by default)
-    # [#kGreen+2, #kCyan+2, #kBlue, #kViolet,
-    #  #kRed, #kYellow+2, #kBlue-3]
+    # [#kGreen+2, #kCyan+2, #kBlue, #kViolet, #kRed, #kYellow+2, #kBlue-3]
     list_color_regular = [416+2, 432+2, 600, 880, 632, 400+2, 600-3]
 
     # [indigo, cyan, green, olive, rose, wine]
@@ -1215,9 +1225,9 @@ color_target = {'C': get_color()[0], 'Fe': get_color()[2],
                 'DPb': get_color()[6]}
 
 
-################################
-##  Binning and dictionaries  ##
-################################
+################################################################################
+##                          Binning and dictionaries                          ##
+################################################################################
 
 # Copy dictionaries of bins from Bins.py
 all_dicts = list(bn.Bin_List)
