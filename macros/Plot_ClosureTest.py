@@ -23,6 +23,51 @@ def get_projection_list(infile, list_hname, list_bincode):
 
     return list_projections
 
+def fill_th1(dict_th1, hclosure):
+    for b in range(1, hclosure.GetXaxis().GetNbins()+1):
+        value = hclosure.GetBinContent(b)
+        error = hclosure.GetBinError(b)
+
+        dict_th1["CT_value"].Fill(value)
+        dict_th1["CT_error"].Fill(error)
+        if (value!=0):
+            dict_th1["CT_error_base100"].Fill(100.*error/value)
+        else:
+            hname = hclosure.GetName()
+            print(" >> %s - Bin %i is empty :c"%(hname,b))
+
+def draw_th1(dict_th1, canvas, output_obj):
+    var_initials = ms.get_plot_initials(output_obj.n_bin, output_obj.cuts)
+    var_txt = ""
+    for v in var_initials:
+        var_txt+= "%s, "%ms.axis_label(v, "Latex")
+    var_txt = var_txt[:-2]
+    top_text = {
+        "CT_value": "ClosureTest (%s)"%var_txt,
+        "CT_error": "Closure error (%s)"%var_txt,
+        "CT_error_base100": "Closure error %% (%s)"%var_txt,
+    }
+
+    for quantity, th1 in dict_th1.items():
+        th1.SetLineColor(kBlack)
+        th1.SetTitleOffset(1.3,"y")
+        th1.Draw()
+
+        ms.draw_summary(top_text[quantity])
+        ms.draw_targetinfo(output_obj.target, "Simulation")
+        save_path = "%s%s.png"%(output_obj.get_folder_name(), th1.GetName())
+        canvas.SaveAs(save_path)
+        th1.Write()
+        canvas.Clear()
+
+def get_dict_with_summary(dict_list_th1, idx):
+    this_dict = {}
+    for key,th1list in dict_list_th1.items():
+        this_dict[key] = th1list[idx]
+
+    return this_dict
+
+
 # Construct the argument parser
 parser = optparse.OptionParser("usage: %prog [options]\n")
 parser.add_option('-D', dest='Dataset', default = "",
@@ -64,27 +109,7 @@ out_obj = nf.naming_format("ClosureTest", dataset, cuts=plots_cuts,
                           is_JLab=isJLab, fraction=fracAcc)
 # outputfile = TFile(out_obj.get_path(True),"RECREATE")
 
-# # Retrieve corrected THnSparse
-# l_input_corr_hname = ["Corr_Reconstru", "Corr_ReMtch_mc", "Corr_ReMtch_re"]
-# l_input_true_hname = ["True", "True_PionReco"]
-# l_inTHnSparse = []
-# for hname in (l_input_corr_hname + l_input_true_hname):
-#     tmp_thSparse = inputfile.Get(hname)
-#     l_inTHnSparse.append(tmp_thSparse)
-
-# l_input_corr_type = ["Corrected", "Corr GMmc", "Corr GMre"]
-# # l_input_true_type = ["True", "True_PionReco"]
-# # limits = ms.all_dicts[d_bin["nBin"]]
-
-# # Create list with projections
-# l_bincodes = ms.get_bincode_list(d_bin["nBin"], plots_cuts)
-# l_Proj1DTHnSparse = []
-# # use_shift = (ms.get_fit_method(plots_cuts, True) == "Sh")
-# for th in l_inTHnSparse:
-#     list_proj = ms.get_sparseproj1d_list(th, l_bincodes) #, use_shift)
-#     l_Proj1DTHnSparse.append(list_proj)
-
-#########################  Make projections  #########################
+##############################  Make projections  ##############################
 l_bincodes = ms.get_bincode_list(d_bin["nBin"], plots_cuts)
 
 # Corrected projections
@@ -92,29 +117,36 @@ l_input_corr_hname = ["Corr_Reconstru"]
 if saveAll:
     l_input_corr_hname+= ["Corr_ReMtch_mc", "Corr_ReMtch_re"]
 l_input_corr_type = ["Corrected", "Corr GMmc", "Corr GMre"]
-l_projectedSparse_corr = get_projection_list(inputfile, l_input_corr_hname, l_bincodes)
+l_projHist_corr = get_projection_list(inputfile, l_input_corr_hname, l_bincodes)
 
 # Thrown projections
 l_input_true_hname = ["True", "True_PionReco"]
 l_input_true_type = ["", "PiReco"]
-l_projectedSparse_true = get_projection_list(inputfile, l_input_true_hname, l_bincodes)        
+l_projHist_true = get_projection_list(inputfile, l_input_true_hname, l_bincodes)
 
-####################  Summary Closure Test info  #####################
-l_summary = {"CT_value": [], "CT_error": [], "CT_error_base100": []}
-for reco_meth in l_input_corr_hname:
-    tmp_name = "Summary-CT%ip-Value-%s"%(fracAcc, reco_meth)
-    th1_CT_value = TH1D(tmp_name, ";Closure value;Counts", 100, 0.21, 1.79)
-    l_summary["CT_value"].append(th1_CT_value)
+#########################  Summary Closure Test info  ##########################
+l_summary_dict = []
+for thrown in ["", "_P"]:
+    this_summary = {"CT_value": [], "CT_error": [], "CT_error_base100": []}
+    for reco_meth in l_input_corr_hname:
+        mname = nf.get_acc_meth(reco_meth, "S")
+        tmp_name = "Summary-CT%s%ip-Value-%s"%(thrown, fracAcc, mname)
+        tmp_axes = ";Closure value;Counts"
+        th1_CT_value = TH1D(tmp_name, tmp_axes, 100, 0.21, 1.79)
+        this_summary["CT_value"].append(th1_CT_value)
 
-    tmp_name = "Summary-CT%ip-Error-%s"%(fracAcc, reco_meth)
-    th1_CT_err = TH1D(tmp_name, ";Closure error;Counts", 100, 0.01, 0.79)
-    l_summary["CT_error"].append(th1_CT_err)
+        tmp_name = "Summary-CT%s%ip-Error-%s"%(thrown, fracAcc, mname)
+        tmp_axes = ";Closure error;Counts"
+        th1_CT_err = TH1D(tmp_name, tmp_axes, 100, 0.01, 0.79)
+        this_summary["CT_error"].append(th1_CT_err)
 
-    tmp_name = "Summary-CT%ip-Err100-%s"%(fracAcc, reco_meth)
-    th1_CT_err100 = TH1D(tmp_name, ";Closure error %;Counts", 100, 0.0, 100.0)
-    l_summary["CT_error_base100"].append(th1_CT_err100)
+        tmp_name = "Summary-CT%s%ip-Err100-%s"%(thrown, fracAcc, mname)
+        tmp_axes = ";Closure error %;Counts"
+        th1_CT_err100 = TH1D(tmp_name, tmp_axes, 100, 0.0, 100.0)
+        this_summary["CT_error_base100"].append(th1_CT_err100)
+    l_summary_dict.append(this_summary)
 
-# Create and save output
+###########################  Create and fill canvas  ###########################
 canvas = ms.create_canvas()
 canvas.SetGrid(0,1)
 TH1.SetDefaultSumw2()
@@ -132,12 +164,15 @@ htemp.SetMaximum(1.7)
 htemp.GetXaxis().SetTitle(phi_axis_title)
 htemp.GetYaxis().SetTitle("Corr / True")
 
-for idx,info in enumerate(l_bincodes):
-    # TODO: Check why the PiReco plots are empty!
-    for j,l_thrown in enumerate(l_projectedSparse_true):
-        den = l_thrown[idx]
-        for i,l_corr in enumerate(l_projectedSparse_corr):
+# NOTE: PiReco thrown ClosureTest gives an idea of how many extra events are
+# reconstructed (i.e. no real ones)
+for j,l_thrown in enumerate(l_projHist_true):
+    dsummaries_list = l_summary_dict[j]
+    for i,l_corr in enumerate(l_projHist_corr):
+        dsummary = get_dict_with_summary(dsummaries_list, i)
+        for idx,info in enumerate(l_bincodes):
             num = l_corr[idx]
+            den = l_thrown[idx]
 
             plot_obj = copy.copy(out_obj)
             plot_obj.updt_name(l_input_true_type[j], add=True)
@@ -161,7 +196,12 @@ for idx,info in enumerate(l_bincodes):
             canvas.SaveAs(out_obj.get_folder_name() + plot_obj.get_file_name())
 
             hClosure.Write()
+
+            # Fill summary th1
+            fill_th1(dsummary, hClosure)
             canvas.Clear()
+        # Draw and save summary th1s
+        draw_th1(dsummary, canvas, out_obj)
 
 ms.info_msg("Closure Test", "Plots saved!\n")
 outputfile.Close()
