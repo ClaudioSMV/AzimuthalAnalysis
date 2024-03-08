@@ -23,6 +23,9 @@ def get_size():
 # Return size of text value
     return tsize
 
+def get_pad_center(mleft=2*marg, mright=marg):
+    center = 1/2. + mleft/2. - mright/2.
+    return center
 
 ################################################################################
 ##                         Name and input code format                         ##
@@ -807,7 +810,10 @@ def draw_topL(text_bold = "", text = "", xl=0.0, yb=0.0):
     upLeft_text.SetTextSize(tsize-4)
     href = 2*marg+0.005+xl
     vref = 1-marg+0.01+yb
-    upLeft_text.DrawLatexNDC(href,vref,"#bf{%s} %s"%(text_bold,text))
+    top_txt = "#bf{%s}"%(text_bold)
+    if text:
+        top_txt+= " %s"%(text)
+    upLeft_text.DrawLatexNDC(href, vref, top_txt)
 
 def draw_topR(text_bold = "", text = "", xr=0.0, yb=0.0):
 # Draw text at top right corner of the pad, with reference point
@@ -817,17 +823,34 @@ def draw_topR(text_bold = "", text = "", xr=0.0, yb=0.0):
     upRight_text.SetTextAlign(31)
     href = 1-marg-0.005-xr
     vref = 1-marg+0.01+yb
-    upRight_text.DrawLatexNDC(href,vref,"#bf{%s} %s"%(text_bold,text))
+    top_txt = "#bf{%s}"%(text_bold)
+    if text:
+        top_txt+= " %s"%(text)
+    upRight_text.DrawLatexNDC(href, vref, top_txt)
 
-def draw_preliminary(text = "", xl=0.0, yb=0.0):
+def draw_preliminary(text = "", xl = 0.0, yb = 0.0,
+                     lmarg = 2*marg, rmarg = marg,
+                     bmarg = 2*marg, tmarg = marg):
 # Draw top left label "Preliminary", with reference point shifted
 # to the right by xl and up by yb
-    draw_topL(text, "Preliminary", xl, yb)
+    # TODO: Write only the bold text at the top and add a new layer with the CLAS PRELIMINARY with Alpha~ 0.4 (opacity)
+    preliminar_msg = ROOT.TLatex()
+    preliminar_msg.SetTextSize(tsize+10)
+    preliminar_msg.SetTextAlign(22)
+    preliminar_msg.SetTextAngle(45)
+    preliminar_msg.SetTextColor(ROOT.kGray)
+    preliminar_msg.SetTextColorAlpha(ROOT.kGray, 0.4)
+    xcenter = get_pad_center(lmarg, rmarg)
+    ycenter = get_pad_center(bmarg, tmarg)
+    preliminar_msg.DrawLatexNDC(xcenter, ycenter, "#bf{%s}"%("  CLAS preliminary  "*2))
+    if text:
+        draw_topL(text, xl=xl, yb=yb)
 
 def draw_summary(text = "", xl=0.0, yb=0.0):
 # Draw top left label "Summary", with reference point shifted
 # to the right by xl and up by yb
-    draw_topL(text, "Summary", xl, yb)
+    # draw_topL(text, "Summary", xl, yb)
+    draw_topL(text, "", xl, yb)
 
 def draw_targetinfo(target="X", fileType="SimOrData"):
 # Draw top right label with target and "simulation" or "data" info

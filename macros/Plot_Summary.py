@@ -273,6 +273,9 @@ d_init_nbins = ms.get_bincode_nbins_dict(d_bin["nBin"], initials)
 
 # Define type of plot
 d_tp_bool, my_tp_nameS, my_tp_nameL = sf.get_parameters_type(par_type)
+top_msg = {
+    "Norm": "Normalized parameter", "Ratio": "Ratio solid-deuterium"
+}
 
 # Define Input
 l_inputfile = []
@@ -347,7 +350,11 @@ for cv in l_canvas:
 
     cv.cd(0)
     # Define canvas style
-    ms.draw_summary("%s"%(my_tp_nameL))
+    top_txt = my_tp_nameL
+    if top_txt in top_msg:
+        top_txt = top_msg[top_txt]
+    ms.draw_summary(top_txt)
+    ms.draw_preliminary()
     top_label_text = ms.summary_targ_type_legend(plots_cuts)
     ms.draw_targetinfo(top_label_text, "Data")
 
