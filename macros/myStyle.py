@@ -833,7 +833,6 @@ def draw_preliminary(text = "", xl = 0.0, yb = 0.0,
                      bmarg = 2*marg, tmarg = marg):
 # Draw top left label "Preliminary", with reference point shifted
 # to the right by xl and up by yb
-    # TODO: Write only the bold text at the top and add a new layer with the CLAS PRELIMINARY with Alpha~ 0.4 (opacity)
     preliminar_msg = ROOT.TLatex()
     preliminar_msg.SetTextSize(tsize+10)
     preliminar_msg.SetTextAlign(22)
@@ -842,7 +841,8 @@ def draw_preliminary(text = "", xl = 0.0, yb = 0.0,
     preliminar_msg.SetTextColorAlpha(ROOT.kGray, 0.4)
     xcenter = get_pad_center(lmarg, rmarg)
     ycenter = get_pad_center(bmarg, tmarg)
-    preliminar_msg.DrawLatexNDC(xcenter, ycenter, "#bf{%s}"%("  CLAS preliminary  "*2))
+    msg = "#bf{%s}"%("  CLAS preliminary  "*2)
+    preliminar_msg.DrawLatexNDC(xcenter, ycenter, msg)
     if text:
         draw_topL(text, xl=xl, yb=yb)
 
@@ -859,17 +859,21 @@ def draw_targetinfo(target="X", fileType="SimOrData"):
     else:
         draw_topR("%s target, %s"%(target,fileType),"")
 
-def draw_bininfo(bin_name="A0B1", bin_type=0, xR=0, yT=0):
+def draw_bininfo(bin_name="A0B1", bin_type=0, xR=0, yT=0,
+                 lmarg = 2*marg, rmarg = marg,
+                 bmarg = 2*marg, tmarg = marg):
 # Draw bin info such as: "0.1 GeV < nu < 1.0 GeV"
-# below top text banner w.r.t. TopRight point (xR, yT)
     text = ROOT.TLatex()
     text.SetTextSize(tsize-4)
-    text.SetTextAlign(33)
     title = get_bintxt(bin_name, bin_type)
-    if (xR==0 and yT==0):
-        text.DrawLatexNDC(1-marg-0.005,1-marg-0.01,title)
-    else:
-        text.DrawLatexNDC(xR,yT,title)
+
+    # Draw w.r.t. center or TopRight point (xR, yT)
+    align = 23 if not xR else 33
+    text.SetTextAlign(align)
+    xcenter = get_pad_center(lmarg, rmarg) if not xR else xR
+    ycenter = 1 - tmarg - 0.02 if not yT else yT
+
+    text.DrawLatexNDC(xcenter, ycenter, title)
 
 def get_bintxt(bin_name="A0B1", bin_type=0):
 # Get text with bin info such as: "0.1 GeV < nu < 1.0 GeV" to be written using
