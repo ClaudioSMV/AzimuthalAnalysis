@@ -41,11 +41,17 @@ def draw_th1(dict_th1, canvas, output_obj):
     var_txt = ""
     for v in var_initials:
         var_txt+= "%s, "%ms.axis_label(v, "Latex")
-    var_txt = var_txt[:-2]
+    var_txt = "Bins of (%s)"%(var_txt[:-2])
+    # var_txt = var_txt[:-2]
+    # top_text = {
+    #     "CT_value": "Closure test (%s)"%var_txt,
+    #     "CT_error": "Closure error (%s)"%var_txt,
+    #     "CT_error_base100": "Closure error %% (%s)"%var_txt,
+    # }
     top_text = {
-        "CT_value": "ClosureTest (%s)"%var_txt,
-        "CT_error": "Closure error (%s)"%var_txt,
-        "CT_error_base100": "Closure error %% (%s)"%var_txt,
+        "CT_value": "Closure test",
+        "CT_error": "Closure error",
+        "CT_error_base100": "Closure error %%",
     }
 
     for quantity, th1 in dict_th1.items():
@@ -53,7 +59,8 @@ def draw_th1(dict_th1, canvas, output_obj):
         th1.SetTitleOffset(1.3,"y")
         th1.Draw()
 
-        ms.draw_summary(top_text[quantity])
+        ms.draw_summary(top_text[quantity], xl=0.01)
+        ms.draw_preliminary(var_txt, xl=0.01, yb=-0.08)
         ms.draw_targetinfo(output_obj.target, "Simulation")
         save_path = "%s%s.png"%(output_obj.get_folder_name(), th1.GetName())
         canvas.SaveAs(save_path)
@@ -153,7 +160,7 @@ TH1.SetDefaultSumw2()
 outputfile = TFile(out_obj.get_path(True, ovr),"RECREATE")
 phi_axis_title = ms.axis_label('I',"LatexUnit") # "#phi_{PQ} (deg)"
 
-gStyle.SetTitleYOffset(1.2)
+gStyle.SetTitleYOffset(1.3)
 
 # Define axes histogram to be used
 htemp = TH1F("htemp","",1,-180.,180.)
@@ -188,8 +195,10 @@ for j,l_thrown in enumerate(l_projHist_true):
             hClosure.Draw("hist e same")
 
             pre_title = "ClosureTest %i%% %s"%(fracAcc, l_input_corr_type[i])
+            pre_title = "Closure test"
             ms.draw_preliminary(pre_title)
-            ms.draw_targetinfo(ms.get_name_format(dataset), "Simulation")
+            # ms.draw_targetinfo(ms.get_name_format(dataset), "Simulation")
+            ms.draw_targetinfo(ms.get_name_dict(dataset)["Target"], "Simulation")
             ms.draw_bininfo(info, d_bin["nBin"])
 
             gPad.RedrawAxis("g")
