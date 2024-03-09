@@ -110,7 +110,8 @@ for i,info in enumerate(l_bincodes):
 
         # legend.Draw();
         ms.draw_preliminary(l_in_pref[p])
-        ms.draw_targetinfo(ms.get_name_format(dataset), "Data")
+        # ms.draw_targetinfo(ms.get_name_format(dataset), "Data")
+        ms.draw_targetinfo(ms.get_name_dict(dataset)["Target"], "Data")
         ms.draw_bininfo(info, d_bin["nBin"])
 
         canvas.SaveAs(out_obj.get_path())

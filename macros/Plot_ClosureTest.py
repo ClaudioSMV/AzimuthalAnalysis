@@ -192,6 +192,7 @@ for j,l_thrown in enumerate(l_projHist_true):
             hClosure.SetLineColor(kBlack)
 
             htemp.Draw("AXIS")
+            gPad.RedrawAxis("g")
             hClosure.Draw("hist e same")
 
             pre_title = "ClosureTest %i%% %s"%(fracAcc, l_input_corr_type[i])
@@ -201,7 +202,6 @@ for j,l_thrown in enumerate(l_projHist_true):
             ms.draw_targetinfo(ms.get_name_dict(dataset)["Target"], "Simulation")
             ms.draw_bininfo(info, d_bin["nBin"])
 
-            gPad.RedrawAxis("g")
             canvas.SaveAs(out_obj.get_folder_name() + plot_obj.get_file_name())
 
             hClosure.Write()
