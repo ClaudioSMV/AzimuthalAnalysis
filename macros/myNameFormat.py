@@ -137,7 +137,7 @@ class naming_format:
         return this_file
     
     def get_file_name_summary(self):
-        # (n_bin)B(n_dim)_(cuts)-(corr_meth)-(name).(ext)
+        # (n_bin)B(n_dim)_(cuts)-(corr_meth)-(name)_(bin).(ext)
         # 10B1_FErr_AccQlt_P_Fold-Reco-NormB.pdf
         file_name = "%sB%s"%(self.n_bin, self.n_dim)
 
@@ -146,7 +146,10 @@ class naming_format:
         if self.acc_method_shrt:
             file_name+= "-%s"%(self.acc_method_shrt)
 
-        file_name+= "-%s.%s"%(self.name, self.extension)
+        file_name+= "-%s"%(self.name)
+        if self.bin_code:
+            file_name+= "_%s"%(self.bin_code)
+        file_name+= ".%s"%(self.extension)
 
         return file_name
     
