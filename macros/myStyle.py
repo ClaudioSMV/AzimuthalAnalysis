@@ -436,7 +436,8 @@ def get_cut_final(initial_str = "", stage = "", is_output = False):
         vars_tag = non_integrated_vars(in_cut, show_msg=True, versus_x_format=vs_x_format)
         # Add "bins of" info in correct position
         if vars_tag:
-            list_final_cuts.insert(0, vars_tag)
+            if not is_output:
+                list_final_cuts.insert(0, vars_tag)
             list_inserted_cuts.remove(in_cut)
 
     # Send a warning if at least one inserted cut is still not used
