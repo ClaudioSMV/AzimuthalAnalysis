@@ -432,13 +432,23 @@ def get_cut_final(initial_str = "", stage = "", is_output = False):
 
     # Select the non-integrated variables ("bins of")
     vs_x_format = True if ("sum" in stage) else False
-    for in_cut in list_inserted_cuts:
-        vars_tag = non_integrated_vars(in_cut, show_msg=True, versus_x_format=vs_x_format)
+    list_vars = []
+    for in_cut in list(list_inserted_cuts):
+        vars_set = non_integrated_vars(in_cut, versus_x_format=vs_x_format)
         # Add "bins of" info in correct position
-        if vars_tag:
+        if vars_set:
             if not is_output:
-                list_final_cuts.insert(0, vars_tag)
+                list_final_cuts.insert(0, vars_set)
+                list_vars.append(vars_set)
             list_inserted_cuts.remove(in_cut)
+    # Break if more than one set of variables is selected!
+    if len(list_vars) > 1:
+        er_msg = "Only ONE list of vars is supported! You introduced %s"%list_vars
+        error_msg("Input-vars", er_msg)
+    # If no set of variables is introduced send error!
+    elif (not list_vars) and (not is_output):
+        er_msg = "No list of vars introduced! Use, for example, QNZ."
+        error_msg("Input-vars", er_msg)
 
     # Send a warning if at least one inserted cut is still not used
     # (i.e. it's not in the reference list, it's not vars info, etc)
