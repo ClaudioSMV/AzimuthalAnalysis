@@ -140,10 +140,6 @@ d_cut_cor = {
     "rmNpheElH": "Pe", "PheElH": "Pe", "PE": "Pe", "Pe": "Pe",\
     "rmTheLine": "Pe", "dfNphe": "Pe",
 }
-d_cut_xax = {
-    "Z": "Zx", "Zx": "Zx",
-    "P": "Px", "Px": "Px",
-}
 d_cut_fit = {
     "useSin": "Fs", "FitSin": "Fs", "Fs": "Fs", "fSin": "Fs",
     "NPeak": "NP", "NP": "NP",
@@ -166,7 +162,6 @@ d_fit_met = {
 d_cuts = {} # Merge all dictionaries into one
 d_cuts.update(d_cut_acc)
 d_cuts.update(d_cut_cor)
-d_cuts.update(d_cut_xax)
 d_cuts.update(d_cut_fit)
 d_cuts.update(d_cut_sum)
 d_cuts.update(d_cut_tar)
@@ -195,9 +190,6 @@ d_cut_fin_acc = {
 d_cut_fin_cor = {
     "FE": "Err", "AQ": "AQ", "Pe": "rmTheLine",
 }
-d_cut_fin_xax = {
-    "Zx": "Zx", "Px": "Px",
-}
 d_cut_fin_fit = {
     "Fs": "fSin", "NP": "NP", "Nm": "PreNorm",
 }
@@ -214,7 +206,6 @@ d_fit_fin_met = {
 d_cuts_final = {} # Merge all dictionaries into one
 d_cuts_final.update(d_cut_fin_acc)
 d_cuts_final.update(d_cut_fin_cor)
-d_cuts_final.update(d_cut_fin_xax)
 d_cuts_final.update(d_cut_fin_fit)
 d_cuts_final.update(d_cut_fin_sum)
 d_cuts_final.update(d_cut_fin_tar)
@@ -229,9 +220,6 @@ d_cut_leg_acc = {
 }
 d_cut_leg_cor = {
     "FE": "", "AQ": "", "Pe": "N_{phe}^{el} #neq N_{phe}^{h}",
-}
-d_cut_leg_xax = {
-    "Zx": "", "Px": "",
 }
 d_cut_leg_fit = {
     "Fs": "Fit with Sin(x)", "NP": "Skip central peak",
@@ -250,7 +238,6 @@ d_fit_leg_met = {
 d_cuts_legend = {} # Merge all dictionaries into one
 d_cuts_legend.update(d_cut_leg_acc)
 d_cuts_legend.update(d_cut_leg_cor)
-d_cuts_legend.update(d_cut_leg_xax)
 d_cuts_legend.update(d_cut_leg_fit)
 d_cuts_legend.update(d_cut_leg_sum)
 d_cuts_legend.update(d_cut_leg_tar)
@@ -259,7 +246,6 @@ d_cuts_legend.update(d_fit_leg_met)
 
 ######################  List with cuts in correct order  #######################
 l_cut_tar = ["sl", "lq",]
-l_cut_xaxis = ["Zx", "Px",]
 l_fit_met = ["Sh", "Fd", "LR", "Ff",]
 l_cut_acc = ["Xf", "XT", "DS", "BS", "PF", "MM", "M2",]
 l_cut_cor = ["FE", "AQ", "Pe",]
@@ -268,7 +254,6 @@ l_cut_sum = ["MD",]
 
 l_cuts = []
 l_cuts.extend(l_cut_tar)
-l_cuts.extend(l_cut_xaxis)
 l_cuts.extend(l_fit_met)
 l_cuts.extend(l_cut_acc)
 l_cuts.extend(l_cut_cor)
@@ -276,132 +261,203 @@ l_cuts.extend(l_cut_fit)
 l_cuts.extend(l_cut_sum)
 
 
-def summary_targ_type(cut_str):
-# Return list with list of targets to run over, based on l_cut_tar
-    l_targtype = []
-    l_solid = ["C", "Fe", "Pb"]
-    l_liquid = ["DC", "DFe", "DPb"]
-    d_lists = {"sl": l_solid, "lq": l_liquid}
+def get_list_summary_targets(cut_str, get_legend = False):
+# Return list with targets used in liquid or solid set
+    d_lists = {"sl": ["C", "Fe", "Pb"], "lq": ["DC", "DFe", "DPb"]}
 
     # Get list with internal names
-    l_cuts = get_l_cuts(cut_str)
+    list_cuts = get_list_cuts_short(cut_str)
+    # Create list with "sl" or "lq" if existing
+    list_target_set = [tar for tar in list_cuts if tar in d_lists]
+    # Break if no set is selected
+    if not list_target_set:
+        err_msg = "Choose one set of targets: solid (sl) or liquid (lq)."
+        error_msg("targ_type", err_msg)
+    # Break if more than one set is selected 77
+    elif len(list_target_set) > 1:
+        err_msg = "Only ONE set is supported! Solid (sl) or liquid (lq)."
+        error_msg("Target-set summary", err_msg)
 
-    unique = True
-    for x in l_cut_tar:
-        if (x in l_cuts) and unique:
-            l_targtype = list(d_lists[x])
-            unique = False
-        elif (x in l_cuts) and not unique:
-            this_msg = "Only solid (sl) or liquid (lq) sets are supported!"
-            error_msg("targ_type", this_msg)
+    target_set = list_target_set[0]
+    output = d_lists[target_set] if not get_legend else d_cut_leg_tar[target_set]
 
-    if not l_targtype:
-        this_msg = "Choose one set of targets: solid (sl) or liquid (lq)."
-        error_msg("targ_type", this_msg)
-
-    return l_targtype
-
-def summary_targ_type_legend(cut_str):
-# Return text to use in legend or top label
-    # Get list with internal names
-    l_cuts = get_l_cuts(cut_str)
-
-    unique = True
-    for cut in d_cut_leg_tar:
-        if (cut in l_cuts) and unique:
-            targ_legend = d_cut_leg_tar[cut]
-            unique = False
-        elif (cut in l_cuts) and not unique:
-            error_msg("targ_type", "Only solid or liquid sets are supported!")
-
-    return targ_legend
+    return output
 
 
 ################################################################################
 ##                                Format cuts                                 ##
 ################################################################################
 
-def get_l_cuts(cut_str):
-# Return list with short cut tags
-    l_mycuts = cut_str.split("_")
-    # Remove empty entries from input
-    while("" in l_mycuts):
-        l_mycuts.remove("")
+def get_list_cuts_short(initial_cut_str):
+# Transform initial string with selected cuts into a list using the
+# internal/short names
+    list_cuts = initial_cut_str.split("_")
+    # Remove empty elements
+    while("" in list_cuts):
+        list_cuts.remove("")
 
-    # Save input entries with their short name
-    for c,cut in enumerate(l_mycuts):
+    # Update list_cuts to have only internal/short names
+    list_short = []
+    for cut in list_cuts:
+        # Check if the cut name is in the dictionary with all the possible
+        # names and variations of existing cuts
         if cut in d_cuts:
-            l_mycuts[c] = d_cuts[cut]
-        # Send error if input doesn't exist
-        else:
+            list_short.append(d_cuts[cut])
+        # Send error if the cut is NOT the bin info (non-integrated vars)!
+        elif non_integrated_vars(cut, show_msg=False) is "":
             err_txt = "\"%s\" cut not found in any list."%(cut)
             error_msg("Cut", err_txt)
-    # Remove repeated elements
-    l_mycuts = list(set(l_mycuts))
+        # Or add in case it IS the bin info
+        else:
+            list_short.insert(0, cut)
+    # Remove repeated elements if existing
+    list_cuts = list(set(list_short))
 
-    return l_mycuts
+    return list_cuts
 
-def get_cut_final(cut_str = "", among_these = "all", is_output = False):
-# Transform str with cuts as in "Aa_Bb_Cccc" into a str with final names
+def non_integrated_vars(single_str, show_msg = True, versus_x_format= False):
+# Selects the variables that are not integrated in the study, with input in
+# the form bXYZ, where XYZ could be any combination of (Q,N,Z,P), using three
+# or less of them!
+    # Make sure the format is correct
+    good_format = (single_str[0] is "b")
+    if good_format:
+        # Confirm all remaining letters are valid vars
+        for letter in single_str[1:]:
+            if letter not in var_label:
+                good_format = False
+        if (not good_format) and show_msg:
+            msg_txt = "Wrong non-integrated vars format \"%s\""%(single_str)
+            info_msg("Bin_vars", msg_txt)
+    elif show_msg:
+        msg_txt = "Cut is not vars-related, wrong format! (%s)"%(single_str)
+        info_msg("Bin_vars", msg_txt)
+
+    # Select correct output format if input format was fulfilled
+    if good_format:
+        temp_str = ""
+        # Maintain order given and add extra info of VS and x-axis (for Summary)
+        if versus_x_format:
+            # Transforms QZ --> QxZ; ZP --> ZxP (bins of Z and function of P)
+            temp_str = "%sx%s"%(single_str[-2], single_str[-1])
+            # If there is one letter before, then QNZ --> QvNxZ; QZP --> QvZxP
+            # Which means: 2d bins of Q and Z, as function of P, for instance
+            if len(single_str[1:]) == 3:
+                temp_str = "%sv%s"%(single_str[1], temp_str)
+        # Else change single_str to use default order [Q,N,X,Z,P]
+        else:
+            for letter in ["Q","N","X","Z","P"]:
+                if letter not in single_str[1:]:
+                    continue
+                temp_str+= letter
+        single_str = str(temp_str)
+
+    # Return string with the vars if format is ok. Empty string if not!
+    kinematic_vars = single_str if good_format else ""
+
+    return kinematic_vars
+
+def get_cut_final(initial_str = "", stage = "", is_output = False):
+# Obtain final string with cuts following a specific order according to
+# the stage we are (Correction, Fit, Closure Test, etc.) or following a
+# different convention (defined for /output/)
+# initial_str should be like "Aa_Bb_Cccc"
+    stage = stage.lower()
+    # Create "reference list" (ref_list) with ALL the existing cuts in order
     ref_list = list(l_cuts)
-    # Create list with possible cuts only (say, our universe of options)
+    # Create "forbidden list" (unwanted_cuts) with cuts that are not possible
+    # at this stage or in output
     unwanted_cuts = []
     if is_output:
+        # Omit all cuts coming after processing (i.e. from correction and later)
+        unwanted_cuts.extend(l_cut_tar)
+        # unwanted_cuts.extend(l_cut_xaxis)
+        unwanted_cuts.extend(l_fit_met)
+        unwanted_cuts.extend(l_cut_fit)
         unwanted_cuts.extend(l_cut_sum)
-        unwanted_cuts.extend(l_cut_fit)
-        unwanted_cuts.extend(l_fit_met)
-        unwanted_cuts.extend(l_cut_xaxis)
-        if "acc" in among_these.lower():
+        if "acc" in stage:
             unwanted_cuts.extend(l_cut_cor)
-    elif "closure" in among_these.lower():
-        unwanted_cuts.extend(l_cut_fit)
+    elif (not is_output) and ("closure" in stage):
+        # Omit all cuts that are not part of Closure test
+        unwanted_cuts.extend(l_cut_tar)
         unwanted_cuts.extend(l_fit_met)
+        unwanted_cuts.extend(l_cut_fit)
         unwanted_cuts.extend(l_cut_sum)
         unwanted_cuts.remove("Sh")
-    elif among_these is not "all":
-        is_higher_cut = False
-        if ("acc" in among_these.lower()) or is_higher_cut:
+    else:
+        higher_stage = False
+        if ("acc" in stage) or higher_stage:
             unwanted_cuts.extend(l_cut_cor)
-            unwanted_cuts.extend(l_cut_xaxis)
-            is_higher_cut = True
-        if ("corr" in among_these.lower()) or is_higher_cut:
+            # unwanted_cuts.extend(l_cut_xaxis)
+            higher_stage = True
+        if ("corr" in stage) or higher_stage:
             unwanted_cuts.extend(l_cut_fit)
             unwanted_cuts.extend(l_fit_met)
-            if not is_higher_cut:
+            if not higher_stage:
                 unwanted_cuts.remove("Sh")
-            is_higher_cut = True
-        if ("sum" not in among_these.lower()) or is_higher_cut:
+            higher_stage = True
+        if ("sum" not in stage) or higher_stage:
+            unwanted_cuts.extend(l_cut_tar)
             unwanted_cuts.extend(l_cut_sum)
-            is_higher_cut = True
+            higher_stage = True
+    # Remove duplicated cuts if existing
     unwanted_cuts = list(set(unwanted_cuts))
+    # Remove selected elements from reference, thus using
+    # the "real" reference of this stage
+    for ucut in unwanted_cuts:
+        ref_list.remove(ucut)
 
-    # Remove selected elements from reference
-    for uc in unwanted_cuts:
-        ref_list.remove(uc)
+    # Get list with cuts inserted (this uses the internal/short names)
+    list_inserted_cuts = get_list_cuts_short(initial_str)
 
-    # Get list with internal/short names no repeated
-    l_mycuts = get_l_cuts(cut_str)
+    # Remove input cuts that don't apply at this stage
+    wrong_stage = [icut for icut in unwanted_cuts if icut in list_inserted_cuts]
+    for ucut in wrong_stage:
+        list_inserted_cuts.remove(ucut)
+    if wrong_stage:
+        inf_txt = "Cuts not used at this stage: %s."%(wrong_stage)
+        info_msg("Input-cut", inf_txt)
 
-    # Check that only one xaxis is used (just in case)
-    _xaxis = get_xaxis(cut_str)
-
-    l_cutfin = []
-    # Save proper name in final list
+    # Save list with final-name cuts in the reference order
+    list_final_cuts = []
     for possible_cut in ref_list:
-        if possible_cut in l_mycuts:
-            ftag = d_cuts_final[possible_cut]
-            if is_output:
-                ftag = d_cuts_output[possible_cut]
-            l_cutfin.append(ftag)
-            l_mycuts.remove(possible_cut)
+        if possible_cut not in list_inserted_cuts:
+            continue
+        final_name = d_cuts_final[possible_cut]
+        if is_output:
+            # If in /output/ use the correct dictionary
+            final_name = d_cuts_output[possible_cut]
+        list_final_cuts.append(final_name)
+        list_inserted_cuts.remove(possible_cut)
 
-    # Send warning if an existing cut is not in the sublist
-    if len(l_mycuts) > 0:
-        inf_txt = "Elements not used as cuts: %s."%(l_mycuts)
+    # Select the non-integrated variables ("bins of")
+    vs_x_format = True if ("sum" in stage) else False
+    for in_cut in list_inserted_cuts:
+        vars_tag = non_integrated_vars(in_cut, show_msg=True, versus_x_format=vs_x_format)
+        # Add "bins of" info in correct position
+        if vars_tag:
+            list_final_cuts.insert(0, vars_tag)
+            list_inserted_cuts.remove(in_cut)
+
+    # Send a warning if at least one inserted cut is still not used
+    # (i.e. it's not in the reference list, it's not vars info, etc)
+    if list_inserted_cuts:
+        inf_txt = "Elements not used as cuts: %s."%(list_inserted_cuts)
         info_msg("Cut", inf_txt)
 
-    final_str = "_".join(l_cutfin)
+    # Return final-name cuts in the reference order as a single string
+    final_str = "_".join(list_final_cuts)
     return final_str
+
+def cut_is_included(cut_name, full_str):
+# Check if cut_name is part of the full_str input
+    # Get list with internal names
+    list_cuts = get_list_cuts_short(full_str)
+    # Get cut_name in internal/short form
+    cut_name = d_cuts[cut_name]
+    is_included = (cut_name in list_cuts)
+
+    return is_included
 
 
 ################################################################################
@@ -600,28 +656,24 @@ def get_sparseproj1d_list(thnSparse, list_binstr, shift):
 ################################################################################
 
 def get_fit_method(cut_str, use_default = True):
-# Return string with fit method string name
-    str_fit = ""
+# Return string with fit method introduced in cut_str
     # Get list with internal names
-    l_cuts = get_l_cuts(cut_str)
-
-    error1_str = "More than one fit method selected.\n"\
-                "  Please, choose only one (Ff -Full- is default)."
-    unique = True
-    for fmeth in l_fit_met:
-        if (fmeth in l_cuts) and unique:
-            str_fit = fmeth
-            unique = False
-        elif (fmeth in l_cuts) and not unique:
-            error_msg("fit_method", error1_str)
-
-    # In case no fit name was given and default is selected
-    if unique and use_default:
-        str_fit = "Ff"
+    list_cuts = get_list_cuts_short(cut_str)
+    # Create list with all cuts introduced if existing
+    list_fits = [fit for fit in list_cuts if fit in l_fit_met]
+    # Break if more than one fit method is selected!
+    if len(list_fits) > 1:
+        er_msg = "Only ONE fit method is supported! You introduced %s"%list_fits
+        error_msg("fit_method", er_msg)
+    # If no fit method is introduced use default if selected
+    if (not list_fits) and use_default:
+        list_fits.append("Ff")
         info_str = "No fit method introduced. Using Full as default."
         info_msg("fit_method", info_str)
 
-    return str_fit
+    fit_selected = list_fits[0]
+
+    return fit_selected
 
 def get_fit_shortmethod(this_method, fname):
 # Return new short-name for method to be used in the name of a file
@@ -643,22 +695,23 @@ def get_fit_shortmethod(this_method, fname):
 ################################################################################
 
 def get_xaxis(cut_str):
-# Return str with short-name of the xaxis used
-# Remember: integrated variables are given by nDim
-    this_xax = ""
-
+# Return initial of the xaxis used
     # Get list with internal names
-    l_cuts = get_l_cuts(cut_str)
+    list_cuts = get_list_cuts_short(cut_str)
+    # Create list with all of the cuts with the correct non-integrated format
+    list_variables = [niv for niv in list_cuts if non_integrated_vars(niv, show_msg=False, versus_x_format=True)]
+    # Break if more than one binning is selected!
+    if len(list_variables) > 1:
+        er_msg = "Only ONE x-axis selection is supported! You put %s"%list_variables
+        error_msg("xaxis", er_msg)
+    # If no correct binning introduced, error!
+    if not list_variables:
+        info_str = "No x-axis selection introduced! Format example: QNZ."
+        error_msg("xaxis", info_str)
 
-    unique = True
-    for x in l_cut_xaxis:
-        if (x in l_cuts) and unique:
-            this_xax = x
-            unique = False
-        elif (x in l_cuts) and not unique:
-            error_msg("xaxis", "Only one variable is supported! Try Zx or Px.")
+    selected_axis = list_variables[0][-1]
 
-    return this_xax
+    return selected_axis
 
 def get_var_init(my_str, is_cut):
 # Get initial of the str given
@@ -781,12 +834,16 @@ def force_style(use_colz = False):
         ROOT.gStyle.SetTitleYOffset(1.3)
         ROOT.gROOT.ForceStyle()
 
-# TODO: Add a generalized padcenter
-def get_padcenter(use_colz = False, mleft = 0, mright = 0):
-# Return pad center value as ratio wrt total pad length
-    center = 0.5 if use_colz else (1 + marg)/2
-
-    return center
+def change_margins(get=False, mtop=marg, mright=marg, mbot=2*marg, mleft=2*marg):
+# Define new margins and get their values if needed
+    ROOT.gStyle.SetPadTopMargin(mtop)
+    ROOT.gStyle.SetPadRightMargin(mright)
+    ROOT.gStyle.SetPadBottomMargin(mbot)
+    ROOT.gStyle.SetPadLeftMargin(mleft)
+    ROOT.gROOT.ForceStyle()
+    # Return margin values only if needed
+    if get:
+        return [mtop, mright, mbot, mleft]
 
 def create_canvas(cname = "cv"):
     canvas = ROOT.TCanvas(cname,"cv",1000,800)

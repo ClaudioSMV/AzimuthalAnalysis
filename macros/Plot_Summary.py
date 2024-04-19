@@ -300,7 +300,7 @@ top_msg = {
 
 # Define Input
 l_inputfile = []
-l_tar_input = ms.summary_targ_type(plots_cuts)
+l_tar_input = ms.get_list_summary_targets(plots_cuts)
 # Skip ratio plot of liquid target
 if (d_tp_bool["ratio"] and ("D" in l_tar_input[0])):
     ms.error_msg("Ratio", "Skip deuterium for ratio.")
@@ -387,7 +387,7 @@ for cv in l_canvas:
         top_txt = top_msg[top_txt]
     ms.draw_summary(top_txt)
     ms.draw_preliminary()
-    top_label_text = ms.summary_targ_type_legend(plots_cuts)
+    top_label_text = ms.get_list_summary_targets(plots_cuts, get_legend=True)
     ms.draw_targetinfo(top_label_text, "Data")
 
     out_obj.updt_name(nf.get_hist_hfullname(kname))

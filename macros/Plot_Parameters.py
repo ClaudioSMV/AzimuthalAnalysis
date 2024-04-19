@@ -138,7 +138,7 @@ def get_values(l_l_val, l_l_err, l_covm):
         # Boolean of the parameter type required
         par_norm, par_ratio = d_tp_bool["norm"], d_tp_bool["ratio"]
         # Check if distribution was normalized before perform fit
-        is_prenormalized = ("Nm" in ms.get_l_cuts(input_cuts))
+        is_prenormalized = ms.cut_is_included("Nm", input_cuts)
 
         if par_norm:
             val, err = value_norm(l_val, l_err, covm, i,\

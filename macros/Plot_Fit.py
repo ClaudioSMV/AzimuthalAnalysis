@@ -92,8 +92,8 @@ def get_fit_functions(h_out, l_fname, fit_meth, opts):
     # elif (fit_meth == "Ff"):
 
     # Define options: ["Fs", "NP",]
-    opt_sk0 = ("NP" in ms.get_l_cuts(opts))
-    opt_sin = ("Fs" in ms.get_l_cuts(opts))
+    opt_sk0 = ms.cut_is_included("NP", opts)
+    opt_sin = ms.cut_is_included("Fs", opts)
 
     # Set limits
     Nbins = h_out.GetXaxis().GetNbins()
@@ -284,7 +284,7 @@ for h in l_hists:
         continue
 
     # Normalize distribution before perform fit
-    if ("Nm" in ms.get_l_cuts(plots_cuts)):
+    if ms.cut_is_included("Nm", plots_cuts):
         hist.Scale(1.0 / hist.Integral("width"))
 
     # Get corrected histogram with proper axes depending on method
