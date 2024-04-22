@@ -116,6 +116,34 @@ def info_msg(function, text):
 
     print(msg_str)
 
+def only_one_element_msg(list_elements, stage_title, stage_text,
+                         example = "", show_wrong_input = False,
+                         empty_2nd_bool = True, default_value = "",
+                         is_error = False):
+    # Send warning only if there is a default value
+    if (not list_elements) and default_value:
+        msg = "No %s introduced. "%(stage_text)
+        msg+= "Using %s as default!"%(default_value)
+        is_error = False
+    # Break if no element in list
+    elif (not list_elements) and empty_2nd_bool:
+        msg = "Choose one %s."%(stage_text)
+        if example:
+            msg+= " Ex. %s"%(example)
+    # Break if more than one element in list
+    elif len(list_elements) > 1:
+        msg = "Only ONE %s is supported!"%(stage_text)
+        if show_wrong_input:
+            msg+= " You introduced %s."%(list_elements)
+        if example:
+            msg+= " Ex. %s."%(example)
+
+    # Print message
+    if (not list_elements) or (len(list_elements) > 1):
+        if is_error:
+            error_msg(stage_title, msg)
+        else:
+            info_msg(stage_title, msg)
 
 ################################################################################
 ##                           Cuts and dictionaries                            ##
@@ -269,15 +297,8 @@ def get_list_summary_targets(cut_str, get_legend = False):
     list_cuts = get_list_cuts_short(cut_str)
     # Create list with "sl" or "lq" if existing
     list_target_set = [tar for tar in list_cuts if tar in d_lists]
-    # Break if no set is selected
-    if not list_target_set:
-        err_msg = "Choose one set of targets: solid (sl) or liquid (lq)."
-        error_msg("targ_type", err_msg)
-    # Break if more than one set is selected 77
-    elif len(list_target_set) > 1:
-        err_msg = "Only ONE set is supported! Solid (sl) or liquid (lq)."
-        error_msg("Target-set summary", err_msg)
-
+    only_one_element_msg(list_target_set, "Target-set summary", "set of targets",
+                         example="Solid (sl) or liquid (lq)", is_error=True)
     target_set = list_target_set[0]
     output = d_lists[target_set] if not get_legend else d_cut_leg_tar[target_set]
 
@@ -315,7 +336,7 @@ def get_list_cuts_short(initial_cut_str):
 
     return list_cuts
 
-def non_integrated_vars(single_str, show_msg = True, versus_x_format= False):
+def non_integrated_vars(single_str, show_msg = False, versus_x_format= False):
 # Selects the variables that are not integrated in the study, with input in
 # the form bXYZ, where XYZ could be any combination of (Q,N,Z,P), using three
 # or less of them!
@@ -432,23 +453,11 @@ def get_cut_final(initial_str = "", stage = "", is_output = False):
 
     # Select the non-integrated variables ("bins of")
     vs_x_format = True if ("sum" in stage) else False
-    list_vars = []
-    for in_cut in list(list_inserted_cuts):
-        vars_set = non_integrated_vars(in_cut, versus_x_format=vs_x_format)
-        # Add "bins of" info in correct position
-        if vars_set:
-            if not is_output:
-                list_final_cuts.insert(0, vars_set)
-                list_vars.append(vars_set)
-            list_inserted_cuts.remove(in_cut)
-    # Break if more than one set of variables is selected!
-    if len(list_vars) > 1:
-        er_msg = "Only ONE list of vars is supported! You introduced %s"%list_vars
-        error_msg("Input-vars", er_msg)
-    # If no set of variables is introduced send error!
-    elif (not list_vars) and (not is_output):
-        er_msg = "No list of vars introduced! Use, for example, QNZ."
-        error_msg("Input-vars", er_msg)
+    temp_cut_str = "_".join(list_inserted_cuts)
+    vars_set = get_non_integrated_vars(temp_cut_str, show_msg=(not is_output), versus_x_format=vs_x_format)
+    if not is_output:
+        list_final_cuts.insert(0, vars_set)
+    list_inserted_cuts.remove(get_non_integrated_vars(temp_cut_str, return_original_name=True))
 
     # Send a warning if at least one inserted cut is still not used
     # (i.e. it's not in the reference list, it's not vars info, etc)
@@ -470,12 +479,28 @@ def cut_is_included(cut_name, full_str):
 
     return is_included
 
+def get_non_integrated_vars(cut_str, show_msg = False, versus_x_format = False,
+                            return_original_name = False):
+# Return string with the non-integrated variables in the format required
+    # Get list with internal names
+    list_cuts = get_list_cuts_short(cut_str)
+    # Create list with all cuts introduced if existing
+    list_vars_set = [cut for cut in list_cuts if non_integrated_vars(cut, show_msg=show_msg)]
+    only_one_element_msg(list_vars_set, "Input-vars", "list of vars",
+                         example="bQNZ", is_error=True, show_wrong_input=True)
+
+    set_of_variables = non_integrated_vars(list_vars_set[0], versus_x_format=versus_x_format)
+    if return_original_name:
+        set_of_variables = list_vars_set[0]
+
+    return set_of_variables
+
 
 ################################################################################
 ##                      Bincode and variables' functions                      ##
 ################################################################################
 
-def get_l_limits(nbin, init):
+def get_bins_limits(nbin, init):
 # Return list with limits for the specific variable
     my_dict = all_dicts[nbin]
     if init not in my_dict:
@@ -505,54 +530,69 @@ def get_bincode_nbins_dict(nbin, initials):
 # Return dictionary with number of bins for this configuration
     nbins = {}
     # Get total number of bins per variable (remove integrated ones)
-    for v,var in enumerate(initials):
+    for var in initials:
         this_bin = len(all_dicts[nbin][var]) - 1
         nbins[var] = this_bin
 
     return nbins
 
-def get_bincode_list(nbin, cuts):
-# Create bincode list with the nbin configuration and using variables defined
-# in cuts (say, Zh or Pt2 bins)
-    vars_init = get_plot_initials(nbin, cuts)
-    l_nbins = get_bincode_nbins(nbin, vars_init)
+def get_bincode_info(nbin, cut_str):
+# Returns non-integrated variables, each number of bins, and their limits
+    # Get non-integrated variable set
+    vars_set = get_non_integrated_vars(cut_str, show_msg=False)
+    # Get number of bins of each non-integrated variable
+    dictionary_nbins_per_var = get_bincode_nbins_dict(nbin, vars_set)
+    # Get list of bin limits of each non-integrated variable
+    dictionary_limits_per_var = {var: get_bins_limits(nbin, var) for var in vars_set}
 
-    output_list = []
-    totalsize = 1
-    for nb in l_nbins:
-        totalsize*=nb
-    # Create str with bincode and save it in list
-    for i in range(totalsize):
-        total_tmp = totalsize
-        i_tmp = i
-        txt_tmp = ""
-        for v,var in enumerate(vars_init):
-            total_tmp /= l_nbins[v]
-            index = i_tmp/(total_tmp)
-            i_tmp-= index*total_tmp
-            txt_tmp+= "%s%i"%(var, index)
-        output_list.append(txt_tmp)
+    return vars_set, dictionary_nbins_per_var, dictionary_limits_per_var
 
-    # Output would be ["Q0N0Z0", "Q0N0Z1", ..., "Q3N3Z9"]
+def get_bincode_list(nbin, cut_str):
+# Create list with all bincode combinations of the nbin configuration given
+    # Retrieve bins info of the non-integrated variables selected
+    vars_set, dict_nbins, _ = get_bincode_info(nbin, cut_str)
+
+    # Go over sorted non-integrated variables set to fill output_list
+    output_list = [""]
+    for var in vars_set:
+        var_nbins = dict_nbins[var]
+
+        # Create a temporary list with the indices associated to this variable only
+        list_idx_this_var = []
+        for i in range(0, var_nbins):
+            str_bin = str(var) + str(i)
+            list_idx_this_var.append(str_bin)
+
+        # Update output extending current elements with the new variable info
+        new_list_first_idx = len(output_list)
+        for str_var in list(output_list):
+            for str_idx in list(list_idx_this_var):
+                output_list.append(str_var + str_idx)
+
+        # Remove old (incomplete) elements from the list
+        output_list = output_list[new_list_first_idx:]
+
+    # Elements should be sorted, but re-sorting just in case!
+    output_list.sort()
+
+    # Output in the form ["Q0N0Z0", "Q0N0Z1", ..., "Q3N3Z9"]
     return output_list
 
-def get_bincode_varidx(bincode, init):
-# Return index number associated to init var in bincode
-# i.e. in "Q0N2Z4", init="Z" will return 4, and init="Q" will return 0
-    init = d_var_initial[init]
-    if init not in bincode:
-        error_msg("Bincode", "Variable not found in bincode :(")
-    idx_char = bincode.index(init)
-    varidx = int(bincode[idx_char+1])
+def get_bincode_varidx(bincode, var_initial):
+# Get number of the bin that the variable <init> has in the bincode given
+# ex. in "Q0N2Z4", init="Z" will return 4, and init="Q" will return 0
+    # Make sure initial is actually the correct initial
+    var_initial = d_var_initial[var_initial]
+    # Get position of the first digit after the requested initial
+    digit1 = bincode.index(var_initial) + 1
+    # Get position of the last digit
+    digit2 = digit1 + 1
+    while(bincode[digit2].isdigit()):
+        digit2+= 1
+    # Extract index and transform into an int
+    number_idx = int(bincode[digit1: digit2])
 
-    return varidx
-
-def get_bincode_varbin(bincode, init):
-# Return bin number associated to init var in bincode
-# i.e. in "Q0N2Z4", init="Z" will return 5, and init="Q" will return 1
-    varbin = get_bincode_varidx(bincode, init) + 1
-
-    return varbin
+    return number_idx
 
 
 ################################################################################
@@ -647,7 +687,7 @@ def get_sparseproj1d_list(thnSparse, list_binstr, shift):
             # idx_letter = bincode.index(letter)
             # pos = int(bincode[idx_letter+1])
             # thnSparse.GetAxis(l).SetRange(pos+1, pos+1)
-            vbin = get_bincode_varbin(bincode, letter)
+            vbin = get_bincode_varidx(bincode, letter) + 1
             thnSparse.GetAxis(l).SetRange(vbin, vbin)
             # Note that if range is not changed, projection
             # will integrate over that axis!
@@ -672,15 +712,12 @@ def get_fit_method(cut_str, use_default = True):
     list_cuts = get_list_cuts_short(cut_str)
     # Create list with all cuts introduced if existing
     list_fits = [fit for fit in list_cuts if fit in l_fit_met]
-    # Break if more than one fit method is selected!
-    if len(list_fits) > 1:
-        er_msg = "Only ONE fit method is supported! You introduced %s"%list_fits
-        error_msg("fit_method", er_msg)
+    only_one_element_msg(list_fits, "fit_method", "fit method",
+                         is_error=True, show_wrong_input=True,
+                         default_value="Ff")
     # If no fit method is introduced use default if selected
     if (not list_fits) and use_default:
         list_fits.append("Ff")
-        info_str = "No fit method introduced. Using Full as default."
-        info_msg("fit_method", info_str)
 
     fit_selected = list_fits[0]
 
@@ -710,16 +747,12 @@ def get_xaxis(cut_str):
     # Get list with internal names
     list_cuts = get_list_cuts_short(cut_str)
     # Create list with all of the cuts with the correct non-integrated format
-    list_variables = [niv for niv in list_cuts if non_integrated_vars(niv, show_msg=False, versus_x_format=True)]
-    # Break if more than one binning is selected!
-    if len(list_variables) > 1:
-        er_msg = "Only ONE x-axis selection is supported! You put %s"%list_variables
-        error_msg("xaxis", er_msg)
-    # If no correct binning introduced, error!
-    if not list_variables:
-        info_str = "No x-axis selection introduced! Format example: QNZ."
-        error_msg("xaxis", info_str)
+    list_variables = [niv for niv in list_cuts if non_integrated_vars(niv, versus_x_format=True)]
 
+    only_one_element_msg(list_variables, "xaxis", "x-axis selection",
+                         is_error=True, show_wrong_input=True, example="QNZ")
+
+    # Return x-axis variable only
     selected_axis = list_variables[0][-1]
 
     return selected_axis

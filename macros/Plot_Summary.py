@@ -50,7 +50,7 @@ def draw_axes(canvas, href, targ, one_bin = False):
     npar = nf.get_hist_hnpar(canvas.GetName())
 
     # Define y limits
-    y_limit = sf.get_parameters_limits(d_tp_bool, npar, my_xvar_init)
+    y_limit = sf.get_parameters_limits(d_tp_bool, npar, my_xvar)
     ymin, ymax = y_limit
 
     # Create histogram with correct axes
@@ -120,7 +120,7 @@ def create_d_th1(hvalues, href, l_bincodes, padx_var, pady_var, xaxis_var):
         value = hvalues.GetBinContent(hvalues_bin)
         error = hvalues.GetBinError(hvalues_bin)
         # Fill pad histogram
-        hbin = ms.get_bincode_varbin(bincode, xaxis_var)
+        hbin = ms.get_bincode_varidx(bincode, xaxis_var) + 1
         this_hist = d_pad[pcoord]
         this_hist.SetBinContent(hbin, value)
         this_hist.SetBinError(hbin, error)
@@ -288,9 +288,8 @@ plots_cuts = options.inputCuts +"_"+ options.outputCuts
 d_bin = ms.get_name_dict(dataset)
 m_fit = ms.get_fit_method(input_cuts)
 
-# Revisit this. Maybe plots_cuts might work better / be more general
-initials = ms.get_plot_initials(d_bin["nBin"], input_cuts)
-d_init_nbins = ms.get_bincode_nbins_dict(d_bin["nBin"], initials)
+_, dict_nbins, dict_limits = ms.get_bincode_info(d_bin["nBin"], input_cuts)
+vars_set_formatted = ms.get_non_integrated_vars(input_cuts, versus_x_format=True)
 
 # Define type of plot
 d_tp_bool, my_tp_nameS, my_tp_nameL = sf.get_parameters_type(par_type)
@@ -322,24 +321,24 @@ for tar in l_tar_input:
 out_obj = nf.naming_format(my_tp_nameL, dataset, cuts=plots_cuts,
                            is_JLab=isJLab)
 # outputfile = TFile(out_obj.get_path_summary(True, ovr),"RECREATE")
-# TODO: Check how to generalize this for new binning with integrated Q, N, etc.
 
-# Define number of pads and their coordinates
-vpx = "Q"
-vpy = "N" if "N" in d_init_nbins else "X"
-npx = d_init_nbins[vpx]
-npy = d_init_nbins[vpy]
+# TODO: Clean this selection and generalize
+# Define number of pads and their coordinates (format QvNxZ)
+vpx = vars_set_formatted[0]
+vpy = vars_set_formatted[2]
+npx = dict_nbins[vpx]
+npy = dict_nbins[vpy]
 if single_bin:
     npx, npy = 1, 1
 l_canvas = sf.create_l_canvas(l_kname, npx, npy)
 
 # Create generic/standard histogram to use in each pad
 my_xvar = ms.get_xaxis(input_cuts)
-my_xvar_init = ms.d_var_initial[my_xvar]
-my_xaxis = ms.axis_label(my_xvar_init,"LatexUnit")
-x_limits = ms.get_l_limits(d_bin["nBin"], my_xvar_init)
+my_xaxis = ms.axis_label(my_xvar,"LatexUnit")
+x_nbins = dict_nbins[my_xvar]
+x_limits = dict_limits[my_xvar]
 x_title = ";%s;"%(my_xaxis)
-h_tmp = TH1D("h_tmp", x_title, len(x_limits)-1, array('d',x_limits))
+h_tmp = TH1D("h_tmp", x_title, x_nbins, array('d',x_limits))
 
 # Fill canvases
 l_bincodes = ms.get_bincode_list(d_bin["nBin"], input_cuts)
