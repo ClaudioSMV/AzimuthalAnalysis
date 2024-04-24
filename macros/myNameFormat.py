@@ -56,8 +56,8 @@ class naming_format:
         self.n_dim = n_dim
 
         self.cuts = ms.get_cut_final(cuts, name, in_output)
-        self.fit_method = ms.get_fit_method(cuts,False)
-
+        self.fit_method = ms.get_fit_method(cuts, use_default=False,
+                                            show_warn=False)
         self.acc_method_long = get_acc_meth(acc_method, "L")
         self.acc_method_shrt = get_acc_meth(acc_method, "S")
 

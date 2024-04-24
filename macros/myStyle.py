@@ -325,7 +325,7 @@ def get_list_cuts_short(initial_cut_str):
         if cut in d_cuts:
             list_short.append(d_cuts[cut])
         # Send error if the cut is NOT the bin info (non-integrated vars)!
-        elif non_integrated_vars(cut, show_msg=False) is "":
+        elif not check_vars_format(cut):
             err_txt = "\"%s\" cut not found in any list."%(cut)
             error_msg("Cut", err_txt)
         # Or add in case it IS the bin info
@@ -335,48 +335,6 @@ def get_list_cuts_short(initial_cut_str):
     list_cuts = list(set(list_short))
 
     return list_cuts
-
-def non_integrated_vars(single_str, show_msg = False, versus_x_format= False):
-# Selects the variables that are not integrated in the study, with input in
-# the form bXYZ, where XYZ could be any combination of (Q,N,Z,P), using three
-# or less of them!
-    # Make sure the format is correct
-    good_format = (single_str[0] is "b")
-    if good_format:
-        # Confirm all remaining letters are valid vars
-        for letter in single_str[1:]:
-            if letter not in var_label:
-                good_format = False
-        if (not good_format) and show_msg:
-            msg_txt = "Wrong non-integrated vars format \"%s\""%(single_str)
-            info_msg("Bin_vars", msg_txt)
-    elif show_msg:
-        msg_txt = "Cut is not vars-related, wrong format! (%s)"%(single_str)
-        info_msg("Bin_vars", msg_txt)
-
-    # Select correct output format if input format was fulfilled
-    if good_format:
-        temp_str = ""
-        # Maintain order given and add extra info of VS and x-axis (for Summary)
-        if versus_x_format:
-            # Transforms QZ --> QxZ; ZP --> ZxP (bins of Z and function of P)
-            temp_str = "%sx%s"%(single_str[-2], single_str[-1])
-            # If there is one letter before, then QNZ --> QvNxZ; QZP --> QvZxP
-            # Which means: 2d bins of Q and Z, as function of P, for instance
-            if len(single_str[1:]) == 3:
-                temp_str = "%sv%s"%(single_str[1], temp_str)
-        # Else change single_str to use default order [Q,N,X,Z,P]
-        else:
-            for letter in ["Q","N","X","Z","P"]:
-                if letter not in single_str[1:]:
-                    continue
-                temp_str+= letter
-        single_str = str(temp_str)
-
-    # Return string with the vars if format is ok. Empty string if not!
-    kinematic_vars = single_str if good_format else ""
-
-    return kinematic_vars
 
 def get_cut_final(initial_str = "", stage = "", is_output = False):
 # Obtain final string with cuts following a specific order according to
@@ -452,12 +410,16 @@ def get_cut_final(initial_str = "", stage = "", is_output = False):
         list_inserted_cuts.remove(possible_cut)
 
     # Select the non-integrated variables ("bins of")
-    vs_x_format = True if ("sum" in stage) else False
-    temp_cut_str = "_".join(list_inserted_cuts)
-    vars_set = get_non_integrated_vars(temp_cut_str, show_msg=(not is_output), versus_x_format=vs_x_format)
     if not is_output:
+        vs_x_format = True if ("sum" in stage) else False
+        temp_cut_str = "_".join(list_inserted_cuts)
+        vars_set = get_non_integrated_vars(temp_cut_str, warn_bad_format=True,
+                                           versus_x_format=vs_x_format)
         list_final_cuts.insert(0, vars_set)
-    list_inserted_cuts.remove(get_non_integrated_vars(temp_cut_str, return_original_name=True))
+    # Remove non-integrated variables ("bins of") from the list
+    for cut in list(list_inserted_cuts):
+        if check_vars_format(cut):
+            list_inserted_cuts.remove(cut)
 
     # Send a warning if at least one inserted cut is still not used
     # (i.e. it's not in the reference list, it's not vars info, etc)
@@ -479,21 +441,61 @@ def cut_is_included(cut_name, full_str):
 
     return is_included
 
-def get_non_integrated_vars(cut_str, show_msg = False, versus_x_format = False,
+def get_non_integrated_vars(cut_str, warn_bad_format = False, versus_x_format = False,
                             return_original_name = False):
 # Return string with the non-integrated variables in the format required
     # Get list with internal names
     list_cuts = get_list_cuts_short(cut_str)
     # Create list with all cuts introduced if existing
-    list_vars_set = [cut for cut in list_cuts if non_integrated_vars(cut, show_msg=show_msg)]
+    list_vars_set = [cut for cut in list_cuts if check_vars_format(cut, warn_bad_format)]
     only_one_element_msg(list_vars_set, "Input-vars", "list of vars",
                          example="bQNZ", is_error=True, show_wrong_input=True)
 
-    set_of_variables = non_integrated_vars(list_vars_set[0], versus_x_format=versus_x_format)
+    set_of_variables = format_non_integrated_vars(list_vars_set[0],
+                                                versus_x_format=versus_x_format)
     if return_original_name:
         set_of_variables = list_vars_set[0]
 
     return set_of_variables
+
+def check_vars_format(single_str, warn_bad_format = False):
+# Check if single_str has the correct format of non-integrated vars (ex. bQNZ)
+    # Make sure the format is correct
+    good_format = (single_str[0] is "b")
+    if good_format:
+        # Confirm all remaining letters are valid vars
+        for letter in single_str[1:]:
+            if letter not in var_label:
+                good_format = False
+        if (not good_format) and warn_bad_format:
+            msg_txt = "Wrong non-integrated vars format \"%s\""%(single_str)
+            info_msg("Bin_vars", msg_txt)
+    elif warn_bad_format:
+        msg_txt = "Cut is not vars-related, wrong format! (%s)"%(single_str)
+        info_msg("Bin_vars", msg_txt)
+
+    return good_format
+
+def format_non_integrated_vars(single_str, versus_x_format= False):
+# Return single_str with the format required (bQZN-->QNZ or bQPZ-->QvPxZ)
+    formatted_str = ""
+    # Maintain order given and add extra info of VS and x-axis (for Summary)
+    if versus_x_format:
+        # Transforms QZ --> QxZ; ZP --> ZxP (bins of Z and function of P)
+        formatted_str = "%sx%s"%(single_str[-2], single_str[-1])
+        # If there is one letter before, then QNZ --> QvNxZ; QZP --> QvZxP
+        # Which means: 2d bins of Q and Z, as function of P, for instance
+        if len(single_str[1:]) == 3:
+            formatted_str = "%sv%s"%(single_str[1], formatted_str)
+    # Else change single_str to use default order [Q,N,X,Z,P]
+    else:
+        for letter in ["Q","N","X","Z","P"]:
+            if letter not in single_str[1:]:
+                continue
+            formatted_str+= letter
+    kinematic_vars = str(formatted_str)
+
+    return kinematic_vars
 
 
 ################################################################################
@@ -539,7 +541,7 @@ def get_bincode_nbins_dict(nbin, initials):
 def get_bincode_info(nbin, cut_str):
 # Returns non-integrated variables, each number of bins, and their limits
     # Get non-integrated variable set
-    vars_set = get_non_integrated_vars(cut_str, show_msg=False)
+    vars_set = get_non_integrated_vars(cut_str)
     # Get number of bins of each non-integrated variable
     dictionary_nbins_per_var = get_bincode_nbins_dict(nbin, vars_set)
     # Get list of bin limits of each non-integrated variable
@@ -584,13 +586,16 @@ def get_bincode_varidx(bincode, var_initial):
     # Make sure initial is actually the correct initial
     var_initial = d_var_initial[var_initial]
     # Get position of the first digit after the requested initial
-    digit1 = bincode.index(var_initial) + 1
+    n1 = bincode.index(var_initial) + 1
     # Get position of the last digit
-    digit2 = digit1 + 1
-    while(bincode[digit2].isdigit()):
-        digit2+= 1
+    n2 = int(n1)
+    imax = len(bincode) - 1
+    while(bincode[n2].isdigit()):
+        if n2 == imax:
+            break
+        n2+= 1
     # Extract index and transform into an int
-    number_idx = int(bincode[digit1: digit2])
+    number_idx = int(bincode[n1:]) if n2 == imax else int(bincode[n1: n2])
 
     return number_idx
 
@@ -599,127 +604,95 @@ def get_bincode_varidx(bincode, var_initial):
 ##                         Histograms and projections                         ##
 ################################################################################
 
-def create_phi_hist(th1_input, name, do_shift):
-# Create a copy of a 1d histogram for phi_PQ
-# By default, it uses x-axis within [-180, 180]
-# Option do_shift plots within [0, 360]
-    this_xmin = th1_input.GetXaxis().GetXmin() # -180.
-    this_xmax = th1_input.GetXaxis().GetXmax() #  180.
-    this_nbin = th1_input.GetNbinsX()
+def copy_histogram_phiPQ(th1, new_name, shift_center = False):
+# Create a copy of a 1d projection of phi_PQ. By default, x-axis limits
+# are [-180, 180], but <shift_center> change them to [0, 360]
+    # General variables ([-180, 180] always, but retrieving just in case)
+    xmin = th1.GetXaxis().GetXmin() # -180.
+    xmax = th1.GetXaxis().GetXmax() #  180.
+    nbins = th1.GetNbinsX()
 
-    if (do_shift):
-        # if (this_nbin%2 == 0): # Even (0. is in a bin edge) (default)
-        this_xmin =   0.
-        this_xmax = 360.
-        central_bin = int(this_nbin/2)+1
-        # Note that if nbin is Even, central_bin is the bin at the right of the
-        # central one; if it is Odd, central_bin is the real central one;
+    # Redifine limits if shifting center
+    if (shift_center):
+        # Set limits to be [0, 360]. If required, slightly change these numbers
+        # so that the position of the bins is correct
+        central_bin = th1.FindBin(0.0)
+        left_edge = th1.GetBinLowEdge(central_bin)
+        xmin = 0.0 + left_edge
+        xmax = 360. + left_edge
 
-        if (this_nbin%2 == 1): # Odd (0. is in the middle of a bin)
-            bin_width = th1_input.GetBinWidth(central_bin)
-
-            # Slightly shift edges so that bins are correct
-            this_xmin -= bin_width/2.
-            this_xmax -= bin_width/2.
-
-    ax_name = ";%s;Counts"%(axis_label('I',"LatexUnit"))
-    h_tmp = ROOT.TH1D(name,ax_name, this_nbin, this_xmin, this_xmax)
+    axis_name = ";%s;Counts"%(axis_label('I',"LatexUnit"))
+    hist_phiPQ = ROOT.TH1D(new_name, axis_name, nbins, xmin, xmax)
 
     # Fill histogram bin by bin
-    for i in range(1,this_nbin+1):
-        this_value = th1_input.GetBinContent(i)
-        this_error = th1_input.GetBinError(i)
-        # if (this_value == 0):
-        #     print("    %s : Value: %i"%(name,this_value))
-        #     this_value = 0.0
-        #     this_error = 0.0
-        bin_L_edge = th1_input.GetBinLowEdge(i)
-        bin_center = th1_input.GetBinCenter(i)
+    for i in range(1, nbins+1):
+        value = th1.GetBinContent(i)
+        error = th1.GetBinError(i)
 
-        the_bin = i
-        if (do_shift):
-            # Move the left half to the right of the right half
-            # Even  e.g. with 6 bins, first right bin is 4
-            if (this_nbin%2 == 0):
-                if (bin_L_edge < 0.0):
-                    the_bin = i + central_bin -1
-                    # e.g. 1,2,3 bins will be 4,5,6
-                else:
-                    the_bin = i - central_bin + 1
-                    # e.g. 4,5,6 bins will be 1,2,3
-            # Odd e.g. with 5 bins, center is 3
-            elif (this_nbin%2 == 1):
-                if (bin_center < 0.0):
-                    the_bin = i + central_bin
-                    # e.g. 1,2 bins will be 4,5
-                else:
-                    the_bin = i - central_bin + 1
-                    # e.g. 3,4,5 bins will be 1,2,3
-                # Note in this case the distribution does not start at zero,
-                # but at a negative number
-        # Skip bins that are empty to avoid counting them as an entry
-        # with zero value
-        if (this_value != 0):
-            h_tmp.SetBinContent(the_bin, this_value)
-            h_tmp.SetBinError(the_bin, this_error)
+        bin_phiPQ = i
+        if (shift_center):
+            # Move bins of the first half after the second half
+            if i < central_bin:
+                bin_phiPQ = i + (nbins - central_bin) + 1
+            # And vice versa
+            else:
+                bin_phiPQ = i - central_bin + 1
 
-    return h_tmp
+        # Skip bins that are empty to avoid counting them as a zero value entry
+        if (value != 0):
+            hist_phiPQ.SetBinContent(bin_phiPQ, value)
+            hist_phiPQ.SetBinError(bin_phiPQ, error)
 
-def get_sparseproj1d_list(thnSparse, list_binstr, shift):
-# Create list of phi 1d hist from thnSparse for each bin defined in
-# list_binstr (list of bincodes)
-    this_outlist = []
-    template = ["Q","","Z","P"]
-    template[1] = "N" if ("X" not in list_binstr[0]) else "X"
+    return hist_phiPQ
 
-    # Remove integrated variables (not in bincode)
-    for l,letter in enumerate(template):
-        if letter not in list_binstr[0]:
-            template[l] = ""
 
-    # Run over all n-dimensional bins
-    for bincode in list_binstr:
-        for l,letter in enumerate(template):
-            if not letter:
-                continue
+def create_sparse_1Dprojection(thSparse, bincode, shift = False):
+    # ["Q","N" or "X","Z","P"]
+    variables = ["Q","N","Z","P"]
+    if ("X" in bincode):
+        variables[1] = "X"
 
-            # Get letter location and add 1 to get the number location
-            # idx_letter = bincode.index(letter)
-            # pos = int(bincode[idx_letter+1])
-            # thnSparse.GetAxis(l).SetRange(pos+1, pos+1)
-            vbin = get_bincode_varidx(bincode, letter) + 1
-            thnSparse.GetAxis(l).SetRange(vbin, vbin)
-            # Note that if range is not changed, projection
-            # will integrate over that axis!
+    # Set bins per axis
+    for i,var in enumerate(variables):
+        if var not in bincode:
+            continue
+        # Get bin number of non-integrated variables (+1 because of convention)
+        var_bin = get_bincode_varidx(bincode, var) + 1
+        # Change range to get a single bin in a non-integrated variable
+        # If not changed, the variable is integrated!
+        thSparse.GetAxis(i).SetRange(var_bin, var_bin)
 
-        proj_tmp = thnSparse.Projection(4)
-        proj_tmp.SetName("proj_tmp")
-        final_name = thnSparse.GetName()+"_"+bincode
-        this_hist = create_phi_hist(proj_tmp, final_name, shift)
-        this_outlist.append(this_hist)
-        proj_tmp.Delete()
+    # Make projection over PhiPQ
+    projection = thSparse.Projection(4)
+    projection.SetName("projection_temp")
+    final_name = "%s_%s"%(thSparse.GetName(), bincode)
 
-    return this_outlist
+    # Create a copy of the projection
+    histogram_phiPQ = copy_histogram_phiPQ(projection, final_name, shift)
+    projection.Delete()
+
+    return histogram_phiPQ
 
 
 ################################################################################
 ##                            Fit method functions                            ##
 ################################################################################
 
-def get_fit_method(cut_str, use_default = True):
+def get_fit_method(cut_str, use_default = True, show_warn = True):
 # Return string with fit method introduced in cut_str
     # Get list with internal names
     list_cuts = get_list_cuts_short(cut_str)
     # Create list with all cuts introduced if existing
-    list_fits = [fit for fit in list_cuts if fit in l_fit_met]
-    only_one_element_msg(list_fits, "fit_method", "fit method",
-                         is_error=True, show_wrong_input=True,
-                         default_value="Ff")
+    list_fits = [cut for cut in list_cuts if cut in l_fit_met]
+    if show_warn:
+        only_one_element_msg(list_fits, "fit_method", "fit method",
+                             is_error=True, show_wrong_input=True,
+                             default_value="Ff")
     # If no fit method is introduced use default if selected
     if (not list_fits) and use_default:
         list_fits.append("Ff")
 
-    fit_selected = list_fits[0]
+    fit_selected = list_fits[0] if list_fits else ""
 
     return fit_selected
 
@@ -747,15 +720,14 @@ def get_xaxis(cut_str):
     # Get list with internal names
     list_cuts = get_list_cuts_short(cut_str)
     # Create list with all of the cuts with the correct non-integrated format
-    list_variables = [niv for niv in list_cuts if non_integrated_vars(niv, versus_x_format=True)]
-
+    list_variables = [niv for niv in list_cuts if check_vars_format(niv)]
     only_one_element_msg(list_variables, "xaxis", "x-axis selection",
                          is_error=True, show_wrong_input=True, example="QNZ")
 
     # Return x-axis variable only
-    selected_axis = list_variables[0][-1]
+    x_axis = format_non_integrated_vars(list_variables[0], versus_x_format=True)[-1]
 
-    return selected_axis
+    return x_axis
 
 def get_var_init(my_str, is_cut):
 # Get initial of the str given
