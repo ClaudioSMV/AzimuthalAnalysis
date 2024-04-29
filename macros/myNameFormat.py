@@ -96,7 +96,7 @@ class naming_format:
         if self.acc_method_shrt:
             file_name+= "-%s"%(self.acc_method_shrt)
 
-        if self.fit_method:
+        if ("corr" not in self.name.lower()) or (self.fit_method is "Sh"):
             file_name+= "-%s"%(self.fit_method)
 
         if self.bin_code:
