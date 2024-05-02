@@ -266,7 +266,20 @@ class naming_format:
 
         return hname
 
+    # TODO: Remove probably
     def get_hist_name_summary(self, ffit, par):
+        # h(name)(ffit)p(par)_(acc_meth)_(bincode)
+        # hCorrection0p1_Reco_Q0N0Z0
+        hname = "h%s%ip%i"%(self.name, ffit, par)
+
+        if self.acc_method_shrt:
+            hname+= "_%s"%(self.acc_method_shrt)
+        if self.bin_code:
+            hname+= "_%s"%(self.bin_code)
+
+        return hname
+
+    def get_hist_name_parameters(self, ffit, par):
         # h(name)(ffit)p(par)_(acc_meth)_(bincode)
         # hCorrection0p1_Reco_Q0N0Z0
         hname = "h%s%ip%i"%(self.name, ffit, par)
@@ -286,13 +299,16 @@ class naming_format:
 
         return l_fnames
 
-    def get_matrix_name(self, name, number):
-        # M(name)(number)_(acc_meth)_(bincode)
-        # Mcov1_Reco_Q0N0Z0
-        tail = "_%s_%s"%(self.acc_method_shrt, self.bin_code)
-        name_M = "M%s%i%s"%(name, number, tail)
+    def get_matrix_name(self, name, f_idx = 0, fit_function_name = ""):
+        # M(name)(number)_(acc_meth)_(bincode). Ex. Mcov1_Reco_Q0N0Z0
+        # Get index using the fit name if given
+        if fit_function_name:
+            f_idx = self.get_l_fitnames().index(fit_function_name)
 
-        return name_M
+        matrix_name = "M%s%i"%(name, f_idx)
+        matrix_name+= "_%s_%s"%(self.acc_method_shrt, self.bin_code)
+
+        return matrix_name
 
 
 ###########################  Get info from a title  ############################
