@@ -168,9 +168,6 @@ if bin_set:
     input_cuts+= "_b%s"%bin_set
     plots_cuts+= "_b%s"%bin_set
 
-fit_method = ms.get_fit_method(plots_cuts)
-# d_bin = ms.get_name_dict(dataset)
-
 in_obj = nf.naming_format("Correction", dataset, cuts=input_cuts,
                           is_JLab=isJLab)
 inputfile = TFile(in_obj.get_path(),"READ")
@@ -179,6 +176,7 @@ out_obj = nf.naming_format("Fit", dataset, cuts=plots_cuts,
                           is_JLab=isJLab)
 
 # Get dataset info
+fit_method = ms.get_fit_method(plots_cuts)
 dataset_info = ms.get_name_dict(dataset)
 nbin_dataset = dataset_info["nBin"]
 target = dataset_info["Target"]
