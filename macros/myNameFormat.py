@@ -279,14 +279,14 @@ class naming_format:
 
         return hname
 
-    def get_hist_name_parameters(self, ffit, par):
+    def get_hist_name_parameters(self, ffit, par, show_bincode = True):
         # h(name)(ffit)p(par)_(acc_meth)_(bincode)
         # hCorrection0p1_Reco_Q0N0Z0
         hname = "h%s%ip%i"%(self.name, ffit, par)
 
         if self.acc_method_shrt:
             hname+= "_%s"%(self.acc_method_shrt)
-        if self.bin_code:
+        if self.bin_code and show_bincode:
             hname+= "_%s"%(self.bin_code)
 
         return hname

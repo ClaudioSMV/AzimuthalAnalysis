@@ -45,9 +45,8 @@ def fill_parameters_histogram(name_obj, fit, dictionary_hist, covariance_matrix,
     n_parameters = fit.GetNpar()
     function_idx = 0 if "R" in fit.GetName() else 1
     for p in range(n_parameters):
-        hname_pars = name_obj.get_hist_name_parameters(function_idx, par=p)
-        hname_pars = nf.get_hist_hfullname(hname_pars)
-
+        hname_pars = name_obj.get_hist_name_parameters(function_idx, par=p,
+                                                       show_bincode=False)
         # Create histograms if not in dictionary!
         if hname_pars not in dictionary_hist:
             # Create histogram with bincodes in x-axis to fill with parameters
