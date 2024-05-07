@@ -342,6 +342,9 @@ def get_cut_final(initial_str = "", stage = "", is_output = False):
 # different convention (defined for /output/)
 # initial_str should be like "Aa_Bb_Cccc"
     stage = stage.lower()
+    # Select summary stage if using one of these names
+    if ("asymmetry" in stage) or ("ratio" in stage):
+        stage = "summary"
     # Create "reference list" (ref_list) with ALL the existing cuts in order
     ref_list = list(l_cuts)
     # Create "forbidden list" (unwanted_cuts) with cuts that are not possible
@@ -938,7 +941,7 @@ def draw_bininfo(bin_name="A0B1", bin_type=0, xR=0, yT=0,
 # Draw bin info such as: "0.1 GeV < nu < 1.0 GeV"
     text = ROOT.TLatex()
     text.SetTextSize(tsize-4)
-    title = get_bintxt(bin_name, bin_type)
+    title = get_bincode_explicit_range(bin_name, bin_type)
 
     # Draw w.r.t. center or TopRight point (xR, yT)
     align = 23 if not xR else 33
@@ -948,25 +951,27 @@ def draw_bininfo(bin_name="A0B1", bin_type=0, xR=0, yT=0,
 
     text.DrawLatexNDC(xcenter, ycenter, title)
 
-def get_bintxt(bin_name="A0B1", bin_type=0):
-# Get text with bin info such as: "0.1 GeV < nu < 1.0 GeV" to be written using
-# bin_name in bincode format and bin_type from the binning dictionary
-    tmp_txt = ""
+def get_bincode_explicit_range(bincode, nbin):
+# Get formatted side text according to nbin limits
+# Ex. "N0" -> "0.1 GeV < nu < 1.0 GeV"
+    side_text = []
+    variables = ["Q","N","Z","P"]
+    if ("X" in bincode):
+        variables[1] = "X"
 
-    this_dict = all_dicts[bin_type]
-    list_letters = bin_name[0::2]
-    list_numbers = bin_name[1::2]
+    dictionary_limits = all_dicts[nbin]
+    for var in variables:
+        if var not in bincode:
+            continue
+        idx = get_bincode_varidx(bincode, var)
+        value_min = dictionary_limits[var][idx]
+        value_max = dictionary_limits[var][idx + 1]
+        var_latex = axis_label(var, 'Latex')
+        info = "%.2f #leq %s < %.2f"%(value_min, var_latex, value_max)
+        side_text.append(info)
+    side_text = "; ".join(side_text)
 
-    for l,letter in enumerate(list_letters):
-        num_index = int(list_numbers[l]) # 0 , 1
-        vmin = this_dict[letter][num_index] # 0 , 1
-        vmax = this_dict[letter][num_index+1] # 1 , 2
-        tmp_txt+="%.2f < %s < %.2f"%(vmin, axis_label(letter,'Latex'), vmax)
-        if l<(len(list_letters)-1):
-            tmp_txt+="; "
-
-    return tmp_txt
-
+    return side_text
 
 ################################################################################
 ##                            Markers and colors!                             ##
