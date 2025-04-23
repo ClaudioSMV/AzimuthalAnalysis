@@ -37,6 +37,7 @@ def fill_th1(dict_th1, hclosure):
             print(" >> %s - Bin %i is empty :c"%(hname,b))
 
 def draw_th1(dict_th1, canvas, output_obj):
+    # TODO: Update this to use .cut or sth and extract non-integrated vars info
     var_initials = ms.get_plot_initials(output_obj.n_bin, output_obj.cuts)
     var_txt = ""
     for v in var_initials:
