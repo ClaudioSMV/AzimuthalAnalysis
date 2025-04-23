@@ -3,21 +3,23 @@ from ROOT import TH1I,TH1D,TH1F,TH2D,TH2F,TEfficiency,TGraphAsymmErrors,\
 import ctypes ## Needed to get pointer values
 import myStyle as ms
 
+mgn = ms.get_margin()
 
-def pad_name(info, x,y):
+def pad_name(title, x, y):
 # Create name of the pad using its coordinate position x,y
-    name = "%s_%i_%i"%(info,x,y)
+    name = "%s_%i_%i"%(title, x, y)
 
     return name
 
 def get_pad_coord(name):
 # Obtain pair of coordinates for the pad x,y
-    l_parts = name.split("_")
-    x, y = l_parts[-2], l_parts[-1]
+    list_elements = name.split("_")
+    x, y = list_elements[-2], list_elements[-1]
 
-    return x, y
+    return int(x), int(y)
 
-def canvas_partition(canvas, nx, ny, lMarg, rMarg, bMarg, tMarg, extra_name=""):
+def canvas_partition(canvas, nx, ny, lMarg = 2*mgn, rMarg = mgn,
+                     bMarg = 2*mgn, tMarg = mgn, extra_name=""):
 # Separate canvas in nx by ny pads
     ## Labelling xy:
     ##  ------------
@@ -114,7 +116,6 @@ def y_pad(y):
 
     return (y*fh+bm*ph)/ph
 
-mgn = ms.get_margin()
 def create_l_canvas(l_names, nx, ny, lMarg = 2*mgn, rMarg = mgn,
                     bMarg = 2*mgn, tMarg = mgn):
 # Create list of canvases, each with a partition of nx by ny subpads
@@ -126,21 +127,17 @@ def create_l_canvas(l_names, nx, ny, lMarg = 2*mgn, rMarg = mgn,
 
     return l_canvas
 
-def yaxis_label(par, ntype, tar):
-# ntype -> l_tp_nameS = ["par", "norm", "ratio"]
-    d_func = {"0": "1", "1": "cos#phi", "2": "cos2#phi", "3": "sin#phi"}
-    tar = "A" if "D" not in tar else "D"
+def get_yaxis_label(parameter_idx, y_axis_type, is_solid_target):
+# y_axis_type is "asymmetry" or "ratio"
+    index_to_symbol = {"0": "1", "1": "cos#phi",
+                       "2": "cos2#phi", "3": "sin#phi"}
+    target = "A" if is_solid_target else "D"
 
-    my_axis = "#LT%s#GT_{e%s}"%(d_func[par], tar)
+    axis_label = "#LT%s#GT_{e%s}"%(index_to_symbol[parameter_idx], target)
+    if "ratio" in y_axis_type.lower():
+        axis_label+= "/#LT%s#GT_{eD}"%(index_to_symbol[parameter_idx])
 
-    if "par" in ntype:
-        d_axis = {"0": "A", "1": "B", "2": "C", "3": "D"}
-        my_axis = "%s [A.U.]"%(d_axis[par])
-
-    elif "ratio" in ntype:
-        my_axis+= "/#LT%s#GT_{eD}"%(d_func[par])
-
-    return my_axis
+    return axis_label
 
 def get_parameters_type(input_opt):
 # Return dictionary with boolean of type selected and short and long name of
@@ -164,40 +161,3 @@ def get_parameters_type(input_opt):
     my_tp_nameL = l_tp_nameL[tp_idx]
 
     return d_tp_bool, my_tp_nameS, my_tp_nameL
-
-def get_parameters_limits(d_bools, par, xvar_init):
-# Give y-axis limits for summary plot depending on the type and parameter
-    par = str(par)
-
-    # Limits for Zh
-    type_par_Z = {"0": [-4.0e4, 10.0e5], "1": [-4.0e4, 10.0e5],
-                "2": [-4.0e4, 10.0e5], "3": [-4.0e4, 10.0e5]}
-    type_norm_Z = {"0": [0.0, 2.0], "1": [-0.599,0.099],
-                 "2": [-0.299,0.099], "3": [-0.599,0.599]}
-    type_ratio_Z = {"0": [0.0, 2.0], "1": [0.201,1.799],
-                 "2": [0.001,1.999], "3": [0.001,1.999]}
-
-    d_limits_Z = {"par": type_par_Z, "norm": type_norm_Z,
-                  "ratio": type_ratio_Z}
-    
-    # Limits for Pt
-    type_par_P = {"0": [-4.0e4, 10.0e5], "1": [-4.0e4, 10.0e5],
-                "2": [-4.0e4, 10.0e5], "3": [-4.0e4, 10.0e5]}
-    type_norm_P = {"0": [0.0, 2.0], "1": [-0.299,0.049],
-                 "2": [-0.049,0.099], "3": [-0.599,0.599]}
-    type_ratio_P = {"0": [0.0, 2.0], "1": [0.301, 1.299],
-                 "2": [0.001,1.999], "3": [0.001,1.999]}
-
-    d_limits_P = {"par": type_par_P, "norm": type_norm_P,
-                  "ratio": type_ratio_P}
-    
-    d_limits_var = {"Z": d_limits_Z, "P": d_limits_P}
-
-    d_limits = d_limits_var[xvar_init]
-    for tp in d_limits:
-        if not d_bools[tp]:
-            continue
-        d_par = d_limits[tp]
-        limits = d_par[par]
-
-        return limits

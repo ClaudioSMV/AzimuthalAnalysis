@@ -116,6 +116,34 @@ def info_msg(function, text):
 
     print(msg_str)
 
+def only_one_element_msg(list_elements, stage_title, stage_text,
+                         example = "", show_wrong_input = False,
+                         empty_2nd_bool = True, default_value = "",
+                         is_error = False):
+    # Send warning only if there is a default value
+    if (not list_elements) and default_value:
+        msg = "No %s introduced. "%(stage_text)
+        msg+= "Using %s as default!"%(default_value)
+        is_error = False
+    # Break if no element in list
+    elif (not list_elements) and empty_2nd_bool:
+        msg = "Choose one %s."%(stage_text)
+        if example:
+            msg+= " Ex. %s"%(example)
+    # Break if more than one element in list
+    elif len(list_elements) > 1:
+        msg = "Only ONE %s is supported!"%(stage_text)
+        if show_wrong_input:
+            msg+= " You introduced %s."%(list_elements)
+        if example:
+            msg+= " Ex. %s."%(example)
+
+    # Print message
+    if (not list_elements) or (len(list_elements) > 1):
+        if is_error:
+            error_msg(stage_title, msg)
+        else:
+            info_msg(stage_title, msg)
 
 ################################################################################
 ##                           Cuts and dictionaries                            ##
@@ -140,10 +168,6 @@ d_cut_cor = {
     "rmNpheElH": "Pe", "PheElH": "Pe", "PE": "Pe", "Pe": "Pe",\
     "rmTheLine": "Pe", "dfNphe": "Pe",
 }
-d_cut_xax = {
-    "Z": "Zx", "Zx": "Zx",
-    "P": "Px", "Px": "Px",
-}
 d_cut_fit = {
     "useSin": "Fs", "FitSin": "Fs", "Fs": "Fs", "fSin": "Fs",
     "NPeak": "NP", "NP": "NP",
@@ -166,7 +190,6 @@ d_fit_met = {
 d_cuts = {} # Merge all dictionaries into one
 d_cuts.update(d_cut_acc)
 d_cuts.update(d_cut_cor)
-d_cuts.update(d_cut_xax)
 d_cuts.update(d_cut_fit)
 d_cuts.update(d_cut_sum)
 d_cuts.update(d_cut_tar)
@@ -195,9 +218,6 @@ d_cut_fin_acc = {
 d_cut_fin_cor = {
     "FE": "Err", "AQ": "AQ", "Pe": "rmTheLine",
 }
-d_cut_fin_xax = {
-    "Zx": "Zx", "Px": "Px",
-}
 d_cut_fin_fit = {
     "Fs": "fSin", "NP": "NP", "Nm": "PreNorm",
 }
@@ -214,7 +234,6 @@ d_fit_fin_met = {
 d_cuts_final = {} # Merge all dictionaries into one
 d_cuts_final.update(d_cut_fin_acc)
 d_cuts_final.update(d_cut_fin_cor)
-d_cuts_final.update(d_cut_fin_xax)
 d_cuts_final.update(d_cut_fin_fit)
 d_cuts_final.update(d_cut_fin_sum)
 d_cuts_final.update(d_cut_fin_tar)
@@ -229,9 +248,6 @@ d_cut_leg_acc = {
 }
 d_cut_leg_cor = {
     "FE": "", "AQ": "", "Pe": "N_{phe}^{el} #neq N_{phe}^{h}",
-}
-d_cut_leg_xax = {
-    "Zx": "", "Px": "",
 }
 d_cut_leg_fit = {
     "Fs": "Fit with Sin(x)", "NP": "Skip central peak",
@@ -250,7 +266,6 @@ d_fit_leg_met = {
 d_cuts_legend = {} # Merge all dictionaries into one
 d_cuts_legend.update(d_cut_leg_acc)
 d_cuts_legend.update(d_cut_leg_cor)
-d_cuts_legend.update(d_cut_leg_xax)
 d_cuts_legend.update(d_cut_leg_fit)
 d_cuts_legend.update(d_cut_leg_sum)
 d_cuts_legend.update(d_cut_leg_tar)
@@ -259,7 +274,6 @@ d_cuts_legend.update(d_fit_leg_met)
 
 ######################  List with cuts in correct order  #######################
 l_cut_tar = ["sl", "lq",]
-l_cut_xaxis = ["Zx", "Px",]
 l_fit_met = ["Sh", "Fd", "LR", "Ff",]
 l_cut_acc = ["Xf", "XT", "DS", "BS", "PF", "MM", "M2",]
 l_cut_cor = ["FE", "AQ", "Pe",]
@@ -268,7 +282,6 @@ l_cut_sum = ["MD",]
 
 l_cuts = []
 l_cuts.extend(l_cut_tar)
-l_cuts.extend(l_cut_xaxis)
 l_cuts.extend(l_fit_met)
 l_cuts.extend(l_cut_acc)
 l_cuts.extend(l_cut_cor)
@@ -276,139 +289,223 @@ l_cuts.extend(l_cut_fit)
 l_cuts.extend(l_cut_sum)
 
 
-def summary_targ_type(cut_str):
-# Return list with list of targets to run over, based on l_cut_tar
-    l_targtype = []
-    l_solid = ["C", "Fe", "Pb"]
-    l_liquid = ["DC", "DFe", "DPb"]
-    d_lists = {"sl": l_solid, "lq": l_liquid}
+def get_list_summary_targets(cut_str, get_legend = False):
+# Return list with targets used in liquid or solid set
+    d_lists = {"sl": ["C", "Fe", "Pb"], "lq": ["DC", "DFe", "DPb"]}
 
     # Get list with internal names
-    l_cuts = get_l_cuts(cut_str)
+    list_cuts = get_list_cuts_short(cut_str)
+    # Create list with "sl" or "lq" if existing
+    list_target_set = [tar for tar in list_cuts if tar in d_lists]
+    only_one_element_msg(list_target_set, "Target-set summary", "set of targets",
+                         example="Solid (sl) or liquid (lq)", is_error=True)
+    target_set = list_target_set[0]
+    output = d_lists[target_set] if not get_legend else d_cut_leg_tar[target_set]
 
-    unique = True
-    for x in l_cut_tar:
-        if (x in l_cuts) and unique:
-            l_targtype = list(d_lists[x])
-            unique = False
-        elif (x in l_cuts) and not unique:
-            this_msg = "Only solid (sl) or liquid (lq) sets are supported!"
-            error_msg("targ_type", this_msg)
-
-    if not l_targtype:
-        this_msg = "Choose one set of targets: solid (sl) or liquid (lq)."
-        error_msg("targ_type", this_msg)
-
-    return l_targtype
-
-def summary_targ_type_legend(cut_str):
-# Return text to use in legend or top label
-    # Get list with internal names
-    l_cuts = get_l_cuts(cut_str)
-
-    unique = True
-    for cut in d_cut_leg_tar:
-        if (cut in l_cuts) and unique:
-            targ_legend = d_cut_leg_tar[cut]
-            unique = False
-        elif (cut in l_cuts) and not unique:
-            error_msg("targ_type", "Only solid or liquid sets are supported!")
-
-    return targ_legend
+    return output
 
 
 ################################################################################
 ##                                Format cuts                                 ##
 ################################################################################
 
-def get_l_cuts(cut_str):
-# Return list with short cut tags
-    l_mycuts = cut_str.split("_")
-    # Remove empty entries from input
-    while("" in l_mycuts):
-        l_mycuts.remove("")
+def get_list_cuts_short(initial_cut_str):
+# Transform initial string with selected cuts into a list using the
+# internal/short names
+    list_cuts = initial_cut_str.split("_")
+    # Remove empty elements
+    while("" in list_cuts):
+        list_cuts.remove("")
 
-    # Save input entries with their short name
-    for c,cut in enumerate(l_mycuts):
+    # Update list_cuts to have only internal/short names
+    list_short = []
+    for cut in list_cuts:
+        # Check if the cut name is in the dictionary with all the possible
+        # names and variations of existing cuts
         if cut in d_cuts:
-            l_mycuts[c] = d_cuts[cut]
-        # Send error if input doesn't exist
-        else:
+            list_short.append(d_cuts[cut])
+        # Send error if the cut is NOT the bin info (non-integrated vars)!
+        elif not check_vars_format(cut):
             err_txt = "\"%s\" cut not found in any list."%(cut)
             error_msg("Cut", err_txt)
-    # Remove repeated elements
-    l_mycuts = list(set(l_mycuts))
+        # Or add in case it IS the bin info
+        else:
+            list_short.insert(0, cut)
+    # Remove repeated elements if existing
+    list_cuts = list(set(list_short))
 
-    return l_mycuts
+    return list_cuts
 
-def get_cut_final(cut_str = "", among_these = "all", is_output = False):
-# Transform str with cuts as in "Aa_Bb_Cccc" into a str with final names
+def get_cut_final(initial_str = "", stage = "", is_output = False):
+# Obtain final string with cuts following a specific order according to
+# the stage we are (Correction, Fit, Closure Test, etc.) or following a
+# different convention (defined for /output/)
+# initial_str should be like "Aa_Bb_Cccc"
+    stage = stage.lower()
+    # Select summary stage if using one of these names
+    if ("asymmetry" in stage) or ("ratio" in stage):
+        stage = "summary"
+    # Create "reference list" (ref_list) with ALL the existing cuts in order
     ref_list = list(l_cuts)
-    # Create list with possible cuts only (say, our universe of options)
+    # Create "forbidden list" (unwanted_cuts) with cuts that are not possible
+    # at this stage or in output
     unwanted_cuts = []
     if is_output:
+        # Omit all cuts coming after processing (i.e. from correction and later)
+        unwanted_cuts.extend(l_cut_tar)
+        # unwanted_cuts.extend(l_cut_xaxis)
+        unwanted_cuts.extend(l_fit_met)
+        unwanted_cuts.extend(l_cut_fit)
         unwanted_cuts.extend(l_cut_sum)
-        unwanted_cuts.extend(l_cut_fit)
-        unwanted_cuts.extend(l_fit_met)
-        unwanted_cuts.extend(l_cut_xaxis)
-        if "acc" in among_these.lower():
+        if "acc" in stage:
             unwanted_cuts.extend(l_cut_cor)
-    elif "closure" in among_these.lower():
-        unwanted_cuts.extend(l_cut_fit)
+    elif (not is_output) and ("closure" in stage):
+        # Omit all cuts that are not part of Closure test
+        unwanted_cuts.extend(l_cut_tar)
         unwanted_cuts.extend(l_fit_met)
+        unwanted_cuts.extend(l_cut_fit)
         unwanted_cuts.extend(l_cut_sum)
         unwanted_cuts.remove("Sh")
-    elif among_these is not "all":
-        is_higher_cut = False
-        if ("acc" in among_these.lower()) or is_higher_cut:
+    else:
+        higher_stage = False
+        if ("acc" in stage) or higher_stage:
             unwanted_cuts.extend(l_cut_cor)
-            unwanted_cuts.extend(l_cut_xaxis)
-            is_higher_cut = True
-        if ("corr" in among_these.lower()) or is_higher_cut:
+            # unwanted_cuts.extend(l_cut_xaxis)
+            higher_stage = True
+        if ("corr" in stage) or higher_stage:
             unwanted_cuts.extend(l_cut_fit)
             unwanted_cuts.extend(l_fit_met)
-            if not is_higher_cut:
+            if not higher_stage:
                 unwanted_cuts.remove("Sh")
-            is_higher_cut = True
-        if ("sum" not in among_these.lower()) or is_higher_cut:
+            higher_stage = True
+        if ("sum" not in stage) or higher_stage:
+            unwanted_cuts.extend(l_cut_tar)
             unwanted_cuts.extend(l_cut_sum)
-            is_higher_cut = True
+            higher_stage = True
+    # Remove duplicated cuts if existing
     unwanted_cuts = list(set(unwanted_cuts))
+    # Remove selected elements from reference, thus using
+    # the "real" reference of this stage
+    for ucut in unwanted_cuts:
+        ref_list.remove(ucut)
 
-    # Remove selected elements from reference
-    for uc in unwanted_cuts:
-        ref_list.remove(uc)
+    # Get list with cuts inserted (this uses the internal/short names)
+    list_inserted_cuts = get_list_cuts_short(initial_str)
 
-    # Get list with internal/short names no repeated
-    l_mycuts = get_l_cuts(cut_str)
+    # Remove input cuts that don't apply at this stage
+    wrong_stage = [icut for icut in unwanted_cuts if icut in list_inserted_cuts]
+    for ucut in wrong_stage:
+        list_inserted_cuts.remove(ucut)
+    if wrong_stage:
+        inf_txt = "Cuts not used at this stage: %s."%(wrong_stage)
+        info_msg("Input-cut", inf_txt)
 
-    # Check that only one xaxis is used (just in case)
-    _xaxis = get_xaxis(cut_str)
-
-    l_cutfin = []
-    # Save proper name in final list
+    # Save list with final-name cuts in the reference order
+    list_final_cuts = []
     for possible_cut in ref_list:
-        if possible_cut in l_mycuts:
-            ftag = d_cuts_final[possible_cut]
-            if is_output:
-                ftag = d_cuts_output[possible_cut]
-            l_cutfin.append(ftag)
-            l_mycuts.remove(possible_cut)
+        if possible_cut not in list_inserted_cuts:
+            continue
+        final_name = d_cuts_final[possible_cut]
+        if is_output:
+            # If in /output/ use the correct dictionary
+            final_name = d_cuts_output[possible_cut]
+        list_final_cuts.append(final_name)
+        list_inserted_cuts.remove(possible_cut)
 
-    # Send warning if an existing cut is not in the sublist
-    if len(l_mycuts) > 0:
-        inf_txt = "Elements not used as cuts: %s."%(l_mycuts)
+    # Select the non-integrated variables ("bins of")
+    if not is_output:
+        vs_x_format = True if ("sum" in stage) else False
+        temp_cut_str = "_".join(list_inserted_cuts)
+        vars_set = get_non_integrated_vars(temp_cut_str, warn_bad_format=True,
+                                           versus_x_format=vs_x_format)
+        list_final_cuts.insert(0, vars_set)
+    # Remove non-integrated variables ("bins of") from the list
+    for cut in list(list_inserted_cuts):
+        if check_vars_format(cut):
+            list_inserted_cuts.remove(cut)
+
+    # Send a warning if at least one inserted cut is still not used
+    # (i.e. it's not in the reference list, it's not vars info, etc)
+    if list_inserted_cuts:
+        inf_txt = "Elements not used as cuts: %s."%(list_inserted_cuts)
         info_msg("Cut", inf_txt)
 
-    final_str = "_".join(l_cutfin)
+    # Return final-name cuts in the reference order as a single string
+    final_str = "_".join(list_final_cuts)
     return final_str
+
+def cut_is_included(cut_name, full_str):
+# Check if cut_name is part of the full_str input
+    # Get list with internal names
+    list_cuts = get_list_cuts_short(full_str)
+    # Get cut_name in internal/short form
+    cut_name = d_cuts[cut_name]
+    is_included = (cut_name in list_cuts)
+
+    return is_included
+
+def get_non_integrated_vars(cut_str, warn_bad_format = False, versus_x_format = False,
+                            return_original_name = False):
+# Return string with the non-integrated variables in the format required
+    # Get list with internal names
+    list_cuts = get_list_cuts_short(cut_str)
+    # Create list with all cuts introduced if existing
+    list_vars_set = [cut for cut in list_cuts if check_vars_format(cut, warn_bad_format)]
+    only_one_element_msg(list_vars_set, "Input-vars", "list of vars",
+                         example="bQNZ", is_error=True, show_wrong_input=True)
+
+    set_of_variables = format_non_integrated_vars(list_vars_set[0],
+                                                versus_x_format=versus_x_format)
+    if return_original_name:
+        set_of_variables = list_vars_set[0]
+
+    return set_of_variables
+
+def check_vars_format(single_str, warn_bad_format = False):
+# Check if single_str has the correct format of non-integrated vars (ex. bQNZ)
+    # Make sure the format is correct
+    good_format = (single_str[0] is "b")
+    if good_format:
+        # Confirm all remaining letters are valid vars
+        for letter in single_str[1:]:
+            if letter not in var_label:
+                good_format = False
+        if (not good_format) and warn_bad_format:
+            msg_txt = "Wrong non-integrated vars format \"%s\""%(single_str)
+            info_msg("Bin_vars", msg_txt)
+    elif warn_bad_format:
+        msg_txt = "Cut is not vars-related, wrong format! (%s)"%(single_str)
+        info_msg("Bin_vars", msg_txt)
+
+    return good_format
+
+def format_non_integrated_vars(single_str, versus_x_format= False):
+# Return single_str with the format required (bQZN-->QNZ or bQPZ-->QvPxZ)
+    formatted_str = ""
+    # Maintain order given and add extra info of VS and x-axis (for Summary)
+    if versus_x_format:
+        # Transforms QZ --> QxZ; ZP --> ZxP (bins of Z and function of P)
+        formatted_str = "%sx%s"%(single_str[-2], single_str[-1])
+        # If there is one letter before, then QNZ --> QvNxZ; QZP --> QvZxP
+        # Which means: 2d bins of Q and Z, as function of P, for instance
+        if len(single_str[1:]) == 3:
+            formatted_str = "%sv%s"%(single_str[1], formatted_str)
+    # Else change single_str to use default order [Q,N,X,Z,P]
+    else:
+        for letter in ["Q","N","X","Z","P"]:
+            if letter not in single_str[1:]:
+                continue
+            formatted_str+= letter
+    kinematic_vars = str(formatted_str)
+
+    return kinematic_vars
 
 
 ################################################################################
 ##                      Bincode and variables' functions                      ##
 ################################################################################
 
-def get_l_limits(nbin, init):
+def get_bins_limits(nbin, init):
 # Return list with limits for the specific variable
     my_dict = all_dicts[nbin]
     if init not in my_dict:
@@ -438,190 +535,169 @@ def get_bincode_nbins_dict(nbin, initials):
 # Return dictionary with number of bins for this configuration
     nbins = {}
     # Get total number of bins per variable (remove integrated ones)
-    for v,var in enumerate(initials):
+    for var in initials:
         this_bin = len(all_dicts[nbin][var]) - 1
         nbins[var] = this_bin
 
     return nbins
 
-def get_bincode_list(nbin, cuts):
-# Create bincode list with the nbin configuration and using variables defined
-# in cuts (say, Zh or Pt2 bins)
-    vars_init = get_plot_initials(nbin, cuts)
-    l_nbins = get_bincode_nbins(nbin, vars_init)
+def get_bincode_info(nbin, cut_str):
+# Returns non-integrated variables, each number of bins, and their limits
+    # Get non-integrated variable set
+    vars_set = get_non_integrated_vars(cut_str)
+    # Get number of bins of each non-integrated variable
+    dictionary_nbins_per_var = get_bincode_nbins_dict(nbin, vars_set)
+    # Get list of bin limits of each non-integrated variable
+    dictionary_limits_per_var = {var: get_bins_limits(nbin, var) for var in vars_set}
 
-    output_list = []
-    totalsize = 1
-    for nb in l_nbins:
-        totalsize*=nb
-    # Create str with bincode and save it in list
-    for i in range(totalsize):
-        total_tmp = totalsize
-        i_tmp = i
-        txt_tmp = ""
-        for v,var in enumerate(vars_init):
-            total_tmp /= l_nbins[v]
-            index = i_tmp/(total_tmp)
-            i_tmp-= index*total_tmp
-            txt_tmp+= "%s%i"%(var, index)
-        output_list.append(txt_tmp)
+    return vars_set, dictionary_nbins_per_var, dictionary_limits_per_var
 
-    # Output would be ["Q0N0Z0", "Q0N0Z1", ..., "Q3N3Z9"]
+def get_bincode_list(nbin, cut_str):
+# Create list with all bincode combinations of the nbin configuration given
+    # Retrieve bins info of the non-integrated variables selected
+    vars_set, dict_nbins, _ = get_bincode_info(nbin, cut_str)
+
+    # Go over sorted non-integrated variables set to fill output_list
+    output_list = [""]
+    for var in vars_set:
+        var_nbins = dict_nbins[var]
+
+        # Create a temporary list with the indices associated to this variable only
+        list_idx_this_var = []
+        for i in range(0, var_nbins):
+            str_bin = str(var) + str(i)
+            list_idx_this_var.append(str_bin)
+
+        # Update output extending current elements with the new variable info
+        new_list_first_idx = len(output_list)
+        for str_var in list(output_list):
+            for str_idx in list(list_idx_this_var):
+                output_list.append(str_var + str_idx)
+
+        # Remove old (incomplete) elements from the list
+        output_list = output_list[new_list_first_idx:]
+
+    # Elements should be sorted, but re-sorting just in case!
+    output_list.sort()
+
+    # Output in the form ["Q0N0Z0", "Q0N0Z1", ..., "Q3N3Z9"]
     return output_list
 
-def get_bincode_varidx(bincode, init):
-# Return index number associated to init var in bincode
-# i.e. in "Q0N2Z4", init="Z" will return 4, and init="Q" will return 0
-    init = d_var_initial[init]
-    if init not in bincode:
-        error_msg("Bincode", "Variable not found in bincode :(")
-    idx_char = bincode.index(init)
-    varidx = int(bincode[idx_char+1])
+def get_bincode_varidx(bincode, var_initial):
+# Get number of the bin that the variable <init> has in the bincode given
+# ex. in "Q0N2Z4", init="Z" will return 4, and init="Q" will return 0
+    # Make sure initial is actually the correct initial
+    var_initial = d_var_initial[var_initial]
+    # Get position of the first digit after the requested initial
+    n1 = bincode.index(var_initial) + 1
+    # Get position of the last digit
+    n2 = int(n1)
+    imax = len(bincode) - 1
+    while(bincode[n2].isdigit()):
+        if n2 == imax:
+            break
+        n2+= 1
+    # Extract index and transform into an int
+    number_idx = int(bincode[n1:]) if n2 == imax else int(bincode[n1: n2])
 
-    return varidx
-
-def get_bincode_varbin(bincode, init):
-# Return bin number associated to init var in bincode
-# i.e. in "Q0N2Z4", init="Z" will return 5, and init="Q" will return 1
-    varbin = get_bincode_varidx(bincode, init) + 1
-
-    return varbin
+    return number_idx
 
 
 ################################################################################
 ##                         Histograms and projections                         ##
 ################################################################################
 
-def create_phi_hist(th1_input, name, do_shift):
-# Create a copy of a 1d histogram for phi_PQ
-# By default, it uses x-axis within [-180, 180]
-# Option do_shift plots within [0, 360]
-    this_xmin = th1_input.GetXaxis().GetXmin() # -180.
-    this_xmax = th1_input.GetXaxis().GetXmax() #  180.
-    this_nbin = th1_input.GetNbinsX()
+def copy_histogram_phiPQ(th1, new_name, shift_center = False):
+# Create a copy of a 1d projection of phi_PQ. By default, x-axis limits
+# are [-180, 180], but <shift_center> change them to [0, 360]
+    # General variables ([-180, 180] always, but retrieving just in case)
+    xmin = th1.GetXaxis().GetXmin() # -180.
+    xmax = th1.GetXaxis().GetXmax() #  180.
+    nbins = th1.GetNbinsX()
 
-    if (do_shift):
-        # if (this_nbin%2 == 0): # Even (0. is in a bin edge) (default)
-        this_xmin =   0.
-        this_xmax = 360.
-        central_bin = int(this_nbin/2)+1
-        # Note that if nbin is Even, central_bin is the bin at the right of the
-        # central one; if it is Odd, central_bin is the real central one;
+    # Redifine limits if shifting center
+    if (shift_center):
+        # Set limits to be [0, 360]. If required, slightly change these numbers
+        # so that the position of the bins is correct
+        central_bin = th1.FindBin(0.0)
+        left_edge = th1.GetBinLowEdge(central_bin)
+        xmin = 0.0 + left_edge
+        xmax = 360. + left_edge
 
-        if (this_nbin%2 == 1): # Odd (0. is in the middle of a bin)
-            bin_width = th1_input.GetBinWidth(central_bin)
-
-            # Slightly shift edges so that bins are correct
-            this_xmin -= bin_width/2.
-            this_xmax -= bin_width/2.
-
-    ax_name = ";%s;Counts"%(axis_label('I',"LatexUnit"))
-    h_tmp = ROOT.TH1D(name,ax_name, this_nbin, this_xmin, this_xmax)
+    axis_name = ";%s;Counts"%(axis_label('I',"LatexUnit"))
+    hist_phiPQ = ROOT.TH1D(new_name, axis_name, nbins, xmin, xmax)
 
     # Fill histogram bin by bin
-    for i in range(1,this_nbin+1):
-        this_value = th1_input.GetBinContent(i)
-        this_error = th1_input.GetBinError(i)
-        # if (this_value == 0):
-        #     print("    %s : Value: %i"%(name,this_value))
-        #     this_value = 0.0
-        #     this_error = 0.0
-        bin_L_edge = th1_input.GetBinLowEdge(i)
-        bin_center = th1_input.GetBinCenter(i)
+    for i in range(1, nbins+1):
+        value = th1.GetBinContent(i)
+        error = th1.GetBinError(i)
 
-        the_bin = i
-        if (do_shift):
-            # Move the left half to the right of the right half
-            # Even  e.g. with 6 bins, first right bin is 4
-            if (this_nbin%2 == 0):
-                if (bin_L_edge < 0.0):
-                    the_bin = i + central_bin -1
-                    # e.g. 1,2,3 bins will be 4,5,6
-                else:
-                    the_bin = i - central_bin + 1
-                    # e.g. 4,5,6 bins will be 1,2,3
-            # Odd e.g. with 5 bins, center is 3
-            elif (this_nbin%2 == 1):
-                if (bin_center < 0.0):
-                    the_bin = i + central_bin
-                    # e.g. 1,2 bins will be 4,5
-                else:
-                    the_bin = i - central_bin + 1
-                    # e.g. 3,4,5 bins will be 1,2,3
-                # Note in this case the distribution does not start at zero,
-                # but at a negative number
-        # Skip bins that are empty to avoid counting them as an entry
-        # with zero value
-        if (this_value != 0):
-            h_tmp.SetBinContent(the_bin, this_value)
-            h_tmp.SetBinError(the_bin, this_error)
+        bin_phiPQ = i
+        if (shift_center):
+            # Move bins of the first half after the second half
+            if i < central_bin:
+                bin_phiPQ = i + (nbins - central_bin) + 1
+            # And vice versa
+            else:
+                bin_phiPQ = i - central_bin + 1
 
-    return h_tmp
+        # Skip bins that are empty to avoid counting them as a zero value entry
+        if (value != 0):
+            hist_phiPQ.SetBinContent(bin_phiPQ, value)
+            hist_phiPQ.SetBinError(bin_phiPQ, error)
 
-def get_sparseproj1d_list(thnSparse, list_binstr, shift):
-# Create list of phi 1d hist from thnSparse for each bin defined in
-# list_binstr (list of bincodes)
-    this_outlist = []
-    template = ["Q","","Z","P"]
-    template[1] = "N" if ("X" not in list_binstr[0]) else "X"
+    return hist_phiPQ
 
-    # Remove integrated variables (not in bincode)
-    for l,letter in enumerate(template):
-        if letter not in list_binstr[0]:
-            template[l] = ""
 
-    # Run over all n-dimensional bins
-    for bincode in list_binstr:
-        for l,letter in enumerate(template):
-            if not letter:
-                continue
+def create_sparse_1Dprojection(thSparse, bincode, shift = False):
+    # ["Q","N" or "X","Z","P"]
+    variables = ["Q","N","Z","P"]
+    if ("X" in bincode):
+        variables[1] = "X"
 
-            # Get letter location and add 1 to get the number location
-            # idx_letter = bincode.index(letter)
-            # pos = int(bincode[idx_letter+1])
-            # thnSparse.GetAxis(l).SetRange(pos+1, pos+1)
-            vbin = get_bincode_varbin(bincode, letter)
-            thnSparse.GetAxis(l).SetRange(vbin, vbin)
-            # Note that if range is not changed, projection
-            # will integrate over that axis!
+    # Set bins per axis
+    for i,var in enumerate(variables):
+        if var not in bincode:
+            continue
+        # Get bin number of non-integrated variables (+1 because of convention)
+        var_bin = get_bincode_varidx(bincode, var) + 1
+        # Change range to get a single bin in a non-integrated variable
+        # If not changed, the variable is integrated!
+        thSparse.GetAxis(i).SetRange(var_bin, var_bin)
 
-        proj_tmp = thnSparse.Projection(4)
-        proj_tmp.SetName("proj_tmp")
-        final_name = thnSparse.GetName()+"_"+bincode
-        this_hist = create_phi_hist(proj_tmp, final_name, shift)
-        this_outlist.append(this_hist)
-        proj_tmp.Delete()
+    # Make projection over PhiPQ
+    projection = thSparse.Projection(4)
+    projection.SetName("projection_temp")
+    final_name = "%s_%s"%(thSparse.GetName(), bincode)
 
-    return this_outlist
+    # Create a copy of the projection
+    histogram_phiPQ = copy_histogram_phiPQ(projection, final_name, shift)
+    projection.Delete()
+
+    return histogram_phiPQ
 
 
 ################################################################################
 ##                            Fit method functions                            ##
 ################################################################################
 
-def get_fit_method(cut_str, use_default = True):
-# Return string with fit method string name
-    str_fit = ""
+def get_fit_method(cut_str, use_default = True, show_warn = True):
+# Return string with fit method introduced in cut_str
     # Get list with internal names
-    l_cuts = get_l_cuts(cut_str)
+    list_cuts = get_list_cuts_short(cut_str)
+    # Create list with all cuts introduced if existing
+    list_fits = [cut for cut in list_cuts if cut in l_fit_met]
+    if show_warn:
+        only_one_element_msg(list_fits, "fit_method", "fit method",
+                             is_error=True, show_wrong_input=True,
+                             default_value="Ff")
+    # If no fit method is introduced use default if selected
+    if (not list_fits) and use_default:
+        list_fits.append("Ff")
 
-    error1_str = "More than one fit method selected.\n"\
-                "  Please, choose only one (Ff -Full- is default)."
-    unique = True
-    for fmeth in l_fit_met:
-        if (fmeth in l_cuts) and unique:
-            str_fit = fmeth
-            unique = False
-        elif (fmeth in l_cuts) and not unique:
-            error_msg("fit_method", error1_str)
+    fit_selected = list_fits[0] if list_fits else ""
 
-    # In case no fit name was given and default is selected
-    if unique and use_default:
-        str_fit = "Ff"
-        info_str = "No fit method introduced. Using Full as default."
-        info_msg("fit_method", info_str)
-
-    return str_fit
+    return fit_selected
 
 def get_fit_shortmethod(this_method, fname):
 # Return new short-name for method to be used in the name of a file
@@ -643,22 +719,18 @@ def get_fit_shortmethod(this_method, fname):
 ################################################################################
 
 def get_xaxis(cut_str):
-# Return str with short-name of the xaxis used
-# Remember: integrated variables are given by nDim
-    this_xax = ""
-
+# Return initial of the xaxis used
     # Get list with internal names
-    l_cuts = get_l_cuts(cut_str)
+    list_cuts = get_list_cuts_short(cut_str)
+    # Create list with all of the cuts with the correct non-integrated format
+    list_variables = [niv for niv in list_cuts if check_vars_format(niv)]
+    only_one_element_msg(list_variables, "xaxis", "x-axis selection",
+                         is_error=True, show_wrong_input=True, example="QNZ")
 
-    unique = True
-    for x in l_cut_xaxis:
-        if (x in l_cuts) and unique:
-            this_xax = x
-            unique = False
-        elif (x in l_cuts) and not unique:
-            error_msg("xaxis", "Only one variable is supported! Try Zx or Px.")
+    # Return x-axis variable only
+    x_axis = format_non_integrated_vars(list_variables[0], versus_x_format=True)[-1]
 
-    return this_xax
+    return x_axis
 
 def get_var_init(my_str, is_cut):
 # Get initial of the str given
@@ -781,12 +853,16 @@ def force_style(use_colz = False):
         ROOT.gStyle.SetTitleYOffset(1.3)
         ROOT.gROOT.ForceStyle()
 
-# TODO: Add a generalized padcenter
-def get_padcenter(use_colz = False, mleft = 0, mright = 0):
-# Return pad center value as ratio wrt total pad length
-    center = 0.5 if use_colz else (1 + marg)/2
-
-    return center
+def change_margins(get=False, mtop=marg, mright=marg, mbot=2*marg, mleft=2*marg):
+# Define new margins and get their values if needed
+    ROOT.gStyle.SetPadTopMargin(mtop)
+    ROOT.gStyle.SetPadRightMargin(mright)
+    ROOT.gStyle.SetPadBottomMargin(mbot)
+    ROOT.gStyle.SetPadLeftMargin(mleft)
+    ROOT.gROOT.ForceStyle()
+    # Return margin values only if needed
+    if get:
+        return [mtop, mright, mbot, mleft]
 
 def create_canvas(cname = "cv"):
     canvas = ROOT.TCanvas(cname,"cv",1000,800)
@@ -865,7 +941,7 @@ def draw_bininfo(bin_name="A0B1", bin_type=0, xR=0, yT=0,
 # Draw bin info such as: "0.1 GeV < nu < 1.0 GeV"
     text = ROOT.TLatex()
     text.SetTextSize(tsize-4)
-    title = get_bintxt(bin_name, bin_type)
+    title = get_bincode_explicit_range(bin_name, bin_type)
 
     # Draw w.r.t. center or TopRight point (xR, yT)
     align = 23 if not xR else 33
@@ -875,25 +951,27 @@ def draw_bininfo(bin_name="A0B1", bin_type=0, xR=0, yT=0,
 
     text.DrawLatexNDC(xcenter, ycenter, title)
 
-def get_bintxt(bin_name="A0B1", bin_type=0):
-# Get text with bin info such as: "0.1 GeV < nu < 1.0 GeV" to be written using
-# bin_name in bincode format and bin_type from the binning dictionary
-    tmp_txt = ""
+def get_bincode_explicit_range(bincode, nbin):
+# Get formatted side text according to nbin limits
+# Ex. "N0" -> "0.1 GeV < nu < 1.0 GeV"
+    side_text = []
+    variables = ["Q","N","Z","P"]
+    if ("X" in bincode):
+        variables[1] = "X"
 
-    this_dict = all_dicts[bin_type]
-    list_letters = bin_name[0::2]
-    list_numbers = bin_name[1::2]
+    dictionary_limits = all_dicts[nbin]
+    for var in variables:
+        if var not in bincode:
+            continue
+        idx = get_bincode_varidx(bincode, var)
+        value_min = dictionary_limits[var][idx]
+        value_max = dictionary_limits[var][idx + 1]
+        var_latex = axis_label(var, 'Latex')
+        info = "%.2f #leq %s < %.2f"%(value_min, var_latex, value_max)
+        side_text.append(info)
+    side_text = "; ".join(side_text)
 
-    for l,letter in enumerate(list_letters):
-        num_index = int(list_numbers[l]) # 0 , 1
-        vmin = this_dict[letter][num_index] # 0 , 1
-        vmax = this_dict[letter][num_index+1] # 1 , 2
-        tmp_txt+="%.2f < %s < %.2f"%(vmin, axis_label(letter,'Latex'), vmax)
-        if l<(len(list_letters)-1):
-            tmp_txt+="; "
-
-    return tmp_txt
-
+    return side_text
 
 ################################################################################
 ##                            Markers and colors!                             ##

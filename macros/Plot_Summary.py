@@ -16,238 +16,16 @@ gStyle.SetOptFit(1011)
 ## Defining Style
 ms.force_style()
 # font=ms.get_font()
-tsize=ms.get_size()
+tsize = ms.get_size()
+mg = ms.get_margin()
 
+def propagate_error_division(v1, e1, v2, e2, cov = 0):
+# Propagate error using proper formula with covariance included
+    r1 = e1/v1
+    r2 = e2/v2
+    error_value = TMath.Abs(v1/v2)*TMath.Sqrt(r1*r1 + r2*r2 - 2*cov/(v1*v2))
 
-def get_required_ffit(cuts):
-    r_ffit = "0"
-    if "Left" in cuts:
-        r_ffit = "1"
-
-    return r_ffit
-
-def get_input_info(l_keys):
-# Retrieve fit information from list of keys, returning a tuple with:
-# list of names, list fit parameters, list correction methods
-    l_kname = []
-    s_npar = set()
-    s_meth = set()
-
-    for key in l_keys:
-        obj_type = key.ReadObj().Class_Name()
-        kname = key.GetName()
-        if "TH1D" not in obj_type:
-            continue
-
-        l_kname.append(kname)
-        s_npar.add(nf.get_hist_hnpar(kname))
-        s_meth.add(nf.get_hist_hmeth(kname))
-
-    return (l_kname, list(s_npar), list(s_meth))
-
-def draw_axes(canvas, href, targ, one_bin = False):
-# ["par", "norm", "ratio"]
-    npar = nf.get_hist_hnpar(canvas.GetName())
-
-    # Define y limits
-    y_limit = sf.get_parameters_limits(d_tp_bool, npar, my_xvar_init)
-    ymin, ymax = y_limit
-
-    # Create histogram with correct axes
-    b1 = href.GetBinCenter(1)
-    bN = href.GetBinCenter(href.GetXaxis().GetNbins())
-    xtitle = href.GetXaxis().GetTitle()
-    ytitle = sf.yaxis_label(npar, my_tp_nameS, targ)
-    htitle = ";%s;%s"%(xtitle, ytitle)
-    haxis = TH1D("haxis", htitle, 1, b1-0.05, bN+0.05)
-
-    haxis.SetMinimum(ymin)
-    haxis.SetMaximum(ymax)
-    haxis.SetLabelSize(tsize-20,"xy")
-    haxis.SetTitleSize(tsize-16,"xy")
-    haxis.SetTitleOffset(1.0,"x")
-    haxis.SetTitleOffset(1.8,"y")
-    if one_bin:
-        haxis.SetLabelSize(tsize-9,"xy")
-        haxis.SetTitleSize(tsize-3,"xy")
-        haxis.SetTitleOffset(1.2,"y")
-
-    canvas.cd(0)
-    # Get the list of primitives drawn in the canvas
-    primitives = canvas.GetListOfPrimitives()
-
-    # Loop over the list to retrieve the pads
-    pads = []
-    for primitive in primitives:
-        if isinstance(primitive, ROOT.TPad):
-            pads.append(primitive)
-
-    # Define figures to add in every pad
-    for pad in pads:
-        pad.cd(0)
-        # Draw axes
-        haxis.Draw("AXIS")
-        gPad.RedrawAxis("g")
-
-        # Draw explicit x and y bin range
-        px, py = sf.get_pad_coord(pad.GetName())
-        axis_txt = draw_bin_aside(px, py, one_bin)
-
-        # Draw reference line at 1 for ratio
-        if d_tp_bool["ratio"]:
-            line = draw_line(haxis)
-    
-    return haxis
-
-def create_d_th1(hvalues, href, l_bincodes, padx_var, pady_var, xaxis_var):
-# Create dictionary with pad indices associated to histogram
-# as in: {(x,y) : hist}
-    d_pad = {}
-    kname, targ = hvalues.GetName().split("-")
-    for bincode in l_bincodes:
-        # Get pad indices
-        idx_x = ms.get_bincode_varidx(bincode, padx_var)
-        idx_y = ms.get_bincode_varidx(bincode, pady_var)
-        pcoord = (idx_x, idx_y)
-        if pcoord not in d_pad:
-            # Uses same name as pad
-            new_name = sf.pad_name(kname, idx_x, idx_y)
-            new_name+= "-%s"%(targ)
-            htemp = href.Clone(new_name)
-            d_pad[pcoord] = htemp
-        # Retrieve values from input
-        hvalues_bin = hvalues.GetXaxis().FindBin(bincode)
-        value = hvalues.GetBinContent(hvalues_bin)
-        error = hvalues.GetBinError(hvalues_bin)
-        # Fill pad histogram
-        hbin = ms.get_bincode_varbin(bincode, xaxis_var)
-        this_hist = d_pad[pcoord]
-        this_hist.SetBinContent(hbin, value)
-        this_hist.SetBinError(hbin, error)
-
-    return d_pad
-
-def fill_canvas(canvas, dict_th1, one_bin = False):
-# Draw each histogram in its respective pad with proper color
-    l_hist = []
-    canvas.cd(0)
-    for px,py in dict_th1:
-        hist = dict_th1[(px,py)]
-        pname, targ = hist.GetName().split("-")
-        if one_bin:
-            pname = "%s0_0"%(pname[:-3])
-        pad = gROOT.FindObject(pname)
-        pad.cd(0)
-        pad.SetGrid(0,1) # Is it needed?
-
-        # Choose style
-        hist.SetLineWidth(2)
-        hist.SetLineColor(ms.color_target[targ])
-        hist.SetMarkerStyle(4)
-        hist.SetMarkerColor(ms.color_target[targ])
-        if one_bin:
-            hist.SetLineWidth(4)
-            hist.SetMarkerSize(2)
-
-        # gPad.RedrawAxis("g")
-        hist.Draw("hist L X0 SAME")
-        # Draw error bars too
-        hist.Draw("e X0 SAME")
-
-        l_hist.append(hist)
-    
-    return l_hist
-
-def create_legend(kname, def_position = True, one_bin = False):
-    plx, ply = 2, 0
-    pad_name = sf.pad_name(kname, plx, ply)
-    if one_bin:
-        pad_name = "%s0_0"%(pad_name[:-3])
-    pad = gROOT.FindObject(pad_name)
-    pad.cd(0)
-    x1, x2 = sf.x_pad(0.1), sf.x_pad(0.9)
-    y1, y2 = sf.y_pad(0.8), sf.y_pad(1.0)
-    if not def_position:
-        x1, x2 = sf.x_pad(0.1), sf.x_pad(0.9)
-        y1, y2 = sf.y_pad(0.7), sf.y_pad(0.9)
-    if one_bin:
-        x1, x2 = sf.x_pad(0.1), sf.x_pad(0.9)
-        y1, y2 = sf.y_pad(0.01), sf.y_pad(0.21)
-
-    text_size = tsize-14 if not one_bin else tsize-5
-    legend = TLegend(x1, y1, x2, y2)
-    legend.SetBorderSize(0)
-    legend.SetTextFont(ms.get_font())
-    legend.SetTextSize(text_size)
-    legend.SetFillStyle(0)
-    legend.SetTextAlign(22)
-    legend.SetNColumns(3)
-
-    # Get the list of primitives in the pad
-    primitives = pad.GetListOfPrimitives()
-    # Filter and extract the histograms from the list
-    histograms = {}
-    for obj in primitives:
-        if isinstance(obj, ROOT.TH1) and ("haxis" not in obj.GetName()):
-            _, targ = obj.GetName().split("-")
-            if targ in histograms:
-                continue
-            histograms[targ] = obj
-    # Print the list of histograms
-    for targ in l_tar_input:
-        hist = histograms[targ]
-        legend.AddEntry(hist, targ)
-    
-    legend.Draw()
-
-    return legend
-
-# Define extra stylistic functions
-def draw_bin_aside(x, y, one_bin = False):
-# Check if x,y correspond to one of the boundary pads and write the bin info
-    x,y = int(x), int(y)
-    pady_drawx = 0
-    padx_drawy = npx - 1
-
-    if (x != padx_drawy) and (y != pady_drawx) and (not one_bin):
-        return 0
-
-    text = ROOT.TLatex()
-    text.SetTextSize(tsize-14)
-    text.SetTextAlign(23)
-
-    # Draw bin info if showing one bin only
-    if one_bin:
-        text.SetTextSize(tsize-5)
-        ms.draw_bininfo(one_bin, d_bin["nBin"], yT=0.95)
-
-    # Draw bin info in x-axis
-    if (not one_bin and y == pady_drawx):
-        title = ms.get_bintxt("%s%s"%(vpx,x), d_bin["nBin"])
-        y_pc =-0.20 if not one_bin else -0.05
-        text.DrawLatexNDC(sf.x_pad(0.50),sf.y_pad(y_pc), title)
-
-    # Draw bin info in y-axis
-    if (not one_bin and x == padx_drawy):
-        text.SetTextAngle(90)
-        title = ms.get_bintxt("%s%s"%(vpy,y), d_bin["nBin"])
-        x_pc = 1.05 if not one_bin else 1.0
-        text.DrawLatexNDC(sf.x_pad(x_pc),sf.y_pad(0.50), title)
-
-    return text
-
-def draw_line(hist):
-# Draw line at 1.0
-    line1 = ROOT.TLine(0.0,1.0, 1.0,1.0)
-    line1.SetLineColorAlpha(ROOT.kRed, 0.5)
-    line1.SetLineWidth(1)
-    line1.SetLineStyle(9)
-
-    xmin = hist.GetXaxis().GetXmin()
-    xmax = hist.GetXaxis().GetXmax()
-    line1.DrawLine(xmin,1.0, xmax,1.0)
-
-    return line1
+    return error_value
 
 
 # Construct the argument parser
@@ -256,6 +34,8 @@ parser.add_option('-D', dest='Dataset', default = "",
                   help="Dataset in format <binType>_<Ndims>")
 parser.add_option('-J', dest='isJLab', action='store_true', default = False,
                   help="Use folder from JLab_cluster")
+parser.add_option('-b', dest='nonIntegratedVars', default = "",
+                  help="Add non-integratedd bins like in QNZ")
 parser.add_option('-i', dest='inputCuts', default = "",
                   help="Add input cuts Xf_Yb_Z/P...")
 parser.add_option('-o', dest='outputCuts', default = "",
@@ -267,131 +47,312 @@ parser.add_option('-o', dest='outputCuts', default = "",
 #                   help="Draw only solid targets (default adds D)")
 # parser.add_option('-a', dest='allDSplit', action='store_true', default = False,
 #                   help="Draw only deuterium for different solid targets")
-parser.add_option('-t', dest='type', default = "parameters",
-                  help="Choose parameter type: Pars, Norm, Ratio")
+# parser.add_option('-t', dest='type', default = "parameters",
+#                   help="Choose parameter type: Pars, Norm, Ratio")
+parser.add_option('-r', dest='ratio', action='store_true', default = False,
+            help="Show ratio solid/deuterium. Default: individual asymmetry")
 parser.add_option('-O', dest='Overwrite', action='store_true', default = False,
                   help="Overwrite if file already exists")
-parser.add_option('-b', '--bin', dest='single_bin', default = "",
+parser.add_option('-s', '--single_bin', dest='single_bin', default = "",
                   help="Draw only one single bin (Format Q0N0)")
 
 options, args = parser.parse_args()
 
 dataset = options.Dataset
 isJLab = options.isJLab
-par_type = options.type
 ovr = options.Overwrite
-single_bin = options.single_bin
 
+single_bin = options.single_bin
+bin_set = options.nonIntegratedVars
 input_cuts = options.inputCuts
 plots_cuts = options.inputCuts +"_"+ options.outputCuts
+if bin_set:
+    input_cuts+= "_b%s"%bin_set
+    plots_cuts+= "_b%s"%bin_set
+is_ratio = options.ratio
 
-d_bin = ms.get_name_dict(dataset)
-m_fit = ms.get_fit_method(input_cuts)
+# Get dataset info
+fit_method = ms.get_fit_method(input_cuts)
+dataset_info = ms.get_name_dict(dataset)
+nbin_dataset = dataset_info["nBin"]
+list_targets = ms.get_list_summary_targets(plots_cuts)
 
-# Revisit this. Maybe plots_cuts might work better / be more general
-initials = ms.get_plot_initials(d_bin["nBin"], input_cuts)
-d_init_nbins = ms.get_bincode_nbins_dict(d_bin["nBin"], initials)
+# Differentiate solid from liquid set
+is_solid_set = ms.cut_is_included("sl", plots_cuts)
+legend_title_set = ms.get_list_summary_targets(plots_cuts, get_legend=True)
 
-# Define type of plot
-d_tp_bool, my_tp_nameS, my_tp_nameL = sf.get_parameters_type(par_type)
-top_msg = {
-    "Norm": "Normalized parameter", "Ratio": "Ratio solid-deuterium"
-}
+# Differentiate asymmetry from ratio
+output_name = "Asymmetry" if not is_ratio else "Ratio"
+top_msg = "Asymmetry parameter" if not is_ratio else "Ratio solid-deuterium"
 
-# Define Input
-l_inputfile = []
-l_tar_input = ms.summary_targ_type(plots_cuts)
-# Skip ratio plot of liquid target
-if (d_tp_bool["ratio"] and ("D" in l_tar_input[0])):
-    ms.error_msg("Ratio", "Skip deuterium for ratio.")
-first = True
-for tar in l_tar_input:
-    temp_dset = "%s_%s"%(tar, dataset)
-    in_obj = nf.naming_format(my_tp_nameL, temp_dset, cuts=input_cuts,
-                            is_JLab=isJLab)
+if is_ratio:
+    # Send error if trying to plot ratio with Deuterium
+    if (not is_solid_set):
+        err_txt = "Ratio doesn't make sense with D. Skipping!"
+        ms.error_msg("Summary_ratio", err_txt)
+    # Remove solid info for ratio (redundant)
+    if ms.cut_is_included("sl", plots_cuts):
+        input_cuts = input_cuts.replace("sl", "")
+        plots_cuts = plots_cuts.replace("sl", "")
+
+_, dict_nbins, dict_limits = ms.get_bincode_info(nbin_dataset, input_cuts)
+vars_VS_x_format = ms.get_non_integrated_vars(input_cuts, versus_x_format=True)
+
+# Define inputs in a list
+list_inputfile = []
+list_inputfile_D = []
+for i,target in enumerate(list_targets):
+    dataset_tmp = "%s_%s"%(target, dataset)
+    in_obj = nf.naming_format("Parameters", dataset_tmp, cuts=input_cuts,
+                          is_JLab=isJLab)
     inputfile = TFile(in_obj.get_path(),"READ")
 
-    if first:
-        l_keys = inputfile.GetListOfKeys()
-        l_kname, l_npar, l_meth = get_input_info(l_keys)
-        first = False
+    # Extract saved histogram names to use later
+    if i is 0:
+        list_hnames = []
+        for key in inputfile.GetListOfKeys():
+            if "TH1" not in key.ReadObj().Class_Name():
+                continue
+            key_name = key.GetName()
+            # Skip "bare" parameters
+            if "Parameter" in key_name:
+                continue
+            list_hnames.append(key_name)
+    list_inputfile.append(inputfile)
 
-    l_inputfile.append(inputfile)
+    # Fill input with Deuterium info to get ratios
+    if is_ratio:
+        dataset_tmp = "D%s_%s"%(target, dataset)
+        in_obj = nf.naming_format("Parameters", dataset_tmp, cuts=input_cuts,
+                            is_JLab=isJLab)
+        inputfile = TFile(in_obj.get_path(),"READ")
+        list_inputfile_D.append(inputfile)
 
-# Create canvases
-out_obj = nf.naming_format(my_tp_nameL, dataset, cuts=plots_cuts,
+out_obj = nf.naming_format(output_name, dataset, cuts=plots_cuts,
                            is_JLab=isJLab)
-# outputfile = TFile(out_obj.get_path_summary(True, ovr),"RECREATE")
-# TODO: Check how to generalize this for new binning with integrated Q, N, etc.
 
-# Define number of pads and their coordinates
-vpx = "Q"
-vpy = "N" if "N" in d_init_nbins else "X"
-npx = d_init_nbins[vpx]
-npy = d_init_nbins[vpy]
+# Create template histogram with correct x-axis
+x_axis_var = ms.get_xaxis(input_cuts)
+x_axis_title = ms.axis_label(x_axis_var, "LatexUnit")
+x_axis_nbins = dict_nbins[x_axis_var]
+x_axis_limits = dict_limits[x_axis_var]
+haxis_title = ";%s;"%x_axis_title
+htemplate = TH1D("htemplate", haxis_title, x_axis_nbins, array('d',x_axis_limits))
+y_axis_limits = [[0.0, 2.0], [-0.599,0.099], [-0.299,0.099], [-0.599,0.599]]
+if is_ratio:
+    y_axis_limits = [[0.0, 2.0], [0.201,1.799], [0.001,1.999], [0.001,1.999]]
+
+# Define number of pads and their coordinates (format QvNxZ)
+vars_VS = vars_VS_x_format[:-2]
+var_padx = vars_VS[0]
+var_pady = vars_VS[-1] if len(vars_VS) > 1 else ""
+npx = dict_nbins[vars_VS[0]]
+npy = dict_nbins[vars_VS[-1]] if len(vars_VS) > 1 else 1
 if single_bin:
     npx, npy = 1, 1
-l_canvas = sf.create_l_canvas(l_kname, npx, npy)
 
-# Create generic/standard histogram to use in each pad
-my_xvar = ms.get_xaxis(input_cuts)
-my_xvar_init = ms.d_var_initial[my_xvar]
-my_xaxis = ms.axis_label(my_xvar_init,"LatexUnit")
-x_limits = ms.get_l_limits(d_bin["nBin"], my_xvar_init)
-x_title = ";%s;"%(my_xaxis)
-h_tmp = TH1D("h_tmp", x_title, len(x_limits)-1, array('d',x_limits))
+# Draw and save full canvas for each of the histograms with the parameters info
+for name_idx, hname in enumerate(list_hnames):
+    # Create canvas of NxN
+    cv = ms.create_canvas("Pad%i"%name_idx)
+    sf.canvas_partition(cv, npx, npy, extra_name="Pad")
 
-# Fill canvases
-l_bincodes = ms.get_bincode_list(d_bin["nBin"], input_cuts)
-if single_bin:
-    # <single_bin> should be something like "Q1N2"
-    l_temp = []
-    for code in l_bincodes:
-        if single_bin not in code:
-            continue
-        l_temp.append(code)
-    l_bincodes = l_temp
+    # Access to pads and create list
+    pads = [pad for pad in cv.GetListOfPrimitives() if isinstance(pad, ROOT.TPad)]
 
-for cv in l_canvas:
-    cv.cd(0)
-    # Get input histograms
-    kname = cv.GetName()
-    first = True
-    l_l_hist = []
-    for i,file in enumerate(l_inputfile):
-        hist = file.Get(kname)
-        itarg = l_tar_input[i]
-        # Avoid overwriting warning
-        hist.SetName("%s-%s"%(kname,itarg))
+    # Save histograms to be drawn in each pad, using key of the pad position
+    all_histograms = {}
+    for pad in pads:
+        pad_name = pad.GetName()
+        list_histogram_per_target = []
+        for i,target in enumerate(list_targets):
+            hist_name = pad_name.replace("Pad", "%st%i"%(hname, i))
+            hist_cloned = htemplate.Clone(hist_name)
+            # Define style of the cloned histogram!
+            color_targ = ms.color_target[target]
+            line_width = 2 if not single_bin else 4
+            hist_cloned.SetLineWidth(line_width)
+            hist_cloned.SetLineColor(color_targ)
+            hist_cloned.SetMarkerStyle(4)
+            marker_size = 1 if not single_bin else 2
+            hist_cloned.SetMarkerSize(marker_size)
+            hist_cloned.SetMarkerColor(color_targ)
+            list_histogram_per_target.append(hist_cloned)
+        (x, y) = sf.get_pad_coord(pad_name)
+        all_histograms[(x, y)] = list_histogram_per_target
 
-        # Draw same axes in every pad
-        if first:
-            h_axis = draw_axes(cv, h_tmp, itarg, single_bin)
-            first = False
+    # Loop over targets to fill histograms
+    for i,target in enumerate(list_targets):
+        # Get histogram with parameter/asymmetry info
+        hparameters = list_inputfile[i].Get(hname)
+        hpars_nbins = hparameters.GetXaxis().GetNbins()
+        # Run over parameter values
+        for b in range(1, hpars_nbins + 1):
+            bincode = hparameters.GetXaxis().GetBinLabel(b)
+            # Get indices of the pad to fill given a bincode
+            idx_x = ms.get_bincode_varidx(bincode, var_padx)
+            idx_y = ms.get_bincode_varidx(bincode, var_pady) if var_pady else 0
+            # Check we take only the required bincode if ploting one bin only
+            if single_bin:
+                # Skip if X-AXIS is not correct
+                sidx_x = ms.get_bincode_varidx(single_bin, var_padx)
+                if "%s%i"%(var_padx, sidx_x) not in bincode:
+                    continue
+                if var_pady:
+                    # Skip if Y-AXIS is not correct, if existing
+                    sidx_y = ms.get_bincode_varidx(single_bin, var_pady)
+                    if "%s%i"%(var_pady, sidx_y) not in bincode:
+                        continue
+                idx_x, idx_y = 0, 0
 
-        # Get histograms
-        d_padth1 = create_d_th1(hist, h_tmp, l_bincodes, vpx, vpy, my_xvar)
+            # Retrieve histogram and bin to fill
+            histogram_to_fill = all_histograms[(idx_x, idx_y)][i]
+            bin_to_fill = ms.get_bincode_varidx(bincode, x_axis_var) + 1
 
-        # Draw histograms
-        l_hist = fill_canvas(cv, d_padth1, single_bin)
-        l_l_hist.append(l_hist)
+            # Retrieve values
+            value = hparameters.GetBinContent(b)
+            error = hparameters.GetBinError(b)
+            if is_ratio:
+                hparameters_D = list_inputfile_D[i].Get(hname)
+                b_D = hparameters_D.GetXaxis().FindBin(bincode)
+                value_D = hparameters_D.GetBinContent(b_D)
+                error_D = hparameters_D.GetBinError(b_D)
+                # Get ratio values!
+                value_ratio = value / value_D
+                error_ratio = propagate_error_division(value, error, value_D, error_D)
+                # Update variable to save
+                value = value_ratio
+                error = error_ratio
+            # Fill histogram!
+            histogram_to_fill.SetBinContent(bin_to_fill, value)
+            histogram_to_fill.SetBinError(bin_to_fill, error)
 
-    cv.cd(0)
-    # Draw legend
-    legend = create_legend(kname, True, single_bin)
+    # Define axis histogram
+    idx_parameter = nf.get_hist_hnpar(hname)
+    xmin = (x_axis_limits[0] + x_axis_limits[1])/2. - 0.05
+    xmax = (x_axis_limits[-2] + x_axis_limits[-1])/2. + 0.05
+    haxis = TH1D("haxis", haxis_title, 1, xmin, xmax)
+    #     # Limits for Zh
+    #     type_norm_Z = {"0": [0.0, 2.0], "1": [-0.599,0.099],
+    #                  "2": [-0.299,0.099], "3": [-0.599,0.599]}
+    #     type_ratio_Z = {"0": [0.0, 2.0], "1": [0.201,1.799],
+    #                  "2": [0.001,1.999], "3": [0.001,1.999]}
+    #     # Limits for Pt
+    #     type_norm_P = {"0": [0.0, 2.0], "1": [-0.299,0.049],
+    #                  "2": [-0.049,0.099], "3": [-0.599,0.599]}
+    #     type_ratio_P = {"0": [0.0, 2.0], "1": [0.301, 1.299],
+    #                  "2": [0.001,1.999], "3": [0.001,1.999]}
+    ymin, ymax = y_axis_limits[int(idx_parameter)]
+    haxis.SetMinimum(ymin)
+    haxis.SetMaximum(ymax)
+    label_size = (tsize - 20) if not single_bin else (tsize - 9)
+    title_size = (tsize - 16) if not single_bin else (tsize - 3)
+    y_offset = 1.8 if not single_bin else 1.2
+    haxis.SetLabelSize(label_size, "xy")
+    haxis.SetTitleSize(title_size, "xy")
+    haxis.SetTitleOffset(1.0, "x")
+    haxis.SetTitleOffset(y_offset, "y")
+    ytitle = sf.get_yaxis_label(idx_parameter, output_name, is_solid_set)
+    haxis.GetYaxis().SetTitle(ytitle)
 
+    # Now that we get all histograms filled for all targets, let's draw them
+    for i, pad in enumerate(pads):
+        pad.cd(0)
+        pad.SetGrid(0,1)
+        pad_name = pad.GetName()
+        x, y = sf.get_pad_coord(pad_name)
+        # Draw axes!
+        haxis.Draw("AXIS")
+        gPad.RedrawAxis("g")
+        # Draw reference line for ratio
+        if is_ratio:
+            ref_line = ROOT.TLine(0.0, 1.0, 1.0, 1.0)
+            ref_line.SetLineColorAlpha(ROOT.kRed, 0.5)
+            ref_line.SetLineWidth(1)
+            ref_line.SetLineStyle(9)
+            xmin = haxis.GetXaxis().GetXmin()
+            xmax = haxis.GetXaxis().GetXmax()
+            ref_line.DrawLine(xmin, 1.0, xmax, 1.0)
+
+        # Draw parameters/asymmetry histograms
+        list_histogram_per_target = all_histograms[(x, y)]
+        for j, target in enumerate(list_targets):
+            histogram = list_histogram_per_target[j]
+            histogram.Draw("hist L X0 SAME")
+            # Add correct error bars
+            histogram.Draw("e X0 SAME")
+
+        # Draw VS bin info
+        if single_bin:
+            ms.draw_bininfo(single_bin, nbin_dataset, yT=0.95)
+        else:
+            bin_info = ROOT.TLatex()
+            info_size = (tsize - 14)
+            bin_info.SetTextSize(info_size)
+            bin_info.SetTextAlign(23)
+            # X direction
+            is_bot_row = (y is 0)
+            if is_bot_row:
+                bincode_X = "%s%i"%(var_padx, x)
+                bin_infoX = ms.get_bincode_explicit_range(bincode_X, nbin_dataset)
+                y_pc =-0.20
+                bin_info.DrawLatexNDC(sf.x_pad(0.50), sf.y_pad(y_pc), bin_infoX)
+            # Y direction
+            is_right_col = (x is (npx - 1))
+            if is_right_col and var_pady:
+                bin_info.SetTextAngle(90)
+                bincode_Y = "%s%i"%(var_pady, y)
+                bin_infoY = ms.get_bincode_explicit_range(bincode_Y, nbin_dataset)
+                x_pc = 1.05
+                bin_info.DrawLatexNDC(sf.x_pad(x_pc),sf.y_pad(0.50), bin_infoY)
+
+        # Run at the end only
+        if i is (len(pads) - 1):
+            coord = "%i_%i"%(x, y)
+
+            # Create and draw legend
+            px_legend = (npx - 1) if not single_bin else 0
+            py_legend = 0
+            coord_legend = "%i_%i"%(px_legend, py_legend)
+            pad_legend_name = pad_name.replace(coord, coord_legend)
+            pad_legend = gROOT.FindObject(pad_legend_name)
+            pad_legend.cd(0)
+            # TODO: Add specific position for certain plots
+            # x1, x2 = sf.x_pad(0.1), sf.x_pad(0.9)
+            # y1, y2 = sf.y_pad(0.8), sf.y_pad(1.0)
+            # if not def_position:
+            #     x1, x2 = sf.x_pad(0.1), sf.x_pad(0.9)
+            #     y1, y2 = sf.y_pad(0.7), sf.y_pad(0.9)
+            # if one_bin:
+            #     x1, x2 = sf.x_pad(0.1), sf.x_pad(0.9)
+            #     y1, y2 = sf.y_pad(0.01), sf.y_pad(0.21)
+            x1, x2 = sf.x_pad(0.1), sf.x_pad(0.9)
+            y1, y2 = sf.y_pad(0.8), sf.y_pad(1.0)
+            if single_bin:
+                x1, x2 = sf.x_pad(0.1), sf.x_pad(0.9)
+                y1, y2 = sf.y_pad(0.01), sf.y_pad(0.21)
+            legend = TLegend(x1, y1, x2, y2)
+            legend.SetBorderSize(0)
+            legend.SetTextFont(ms.get_font())
+            legend.SetTextSize(title_size)
+            legend.SetFillStyle(0)
+            legend.SetTextAlign(22)
+            legend.SetNColumns(3)
+            for j, target in enumerate(list_targets):
+                histogram = list_histogram_per_target[j]
+                legend.AddEntry(histogram, target)
+            legend.Draw()
+
+    # Draw final messages in canvas
     cv.cd(0)
     # Define canvas style
-    top_txt = my_tp_nameL
-    if top_txt in top_msg:
-        top_txt = top_msg[top_txt]
-    ms.draw_summary(top_txt)
+    ms.draw_summary(top_msg)
     ms.draw_preliminary()
-    top_label_text = ms.summary_targ_type_legend(plots_cuts)
-    ms.draw_targetinfo(top_label_text, "Data")
+    ms.draw_targetinfo(legend_title_set, "Data")
 
-    out_obj.updt_name(nf.get_hist_hfullname(kname))
-    out_obj.updt_acc_method(nf.get_hist_hmeth(kname))
+    new_name = nf.get_hist_hfullname(hname).replace("Asymmetry", output_name)
+    out_obj.updt_name(new_name)
+    out_obj.updt_acc_method(nf.get_hist_hmeth(hname))
     out_obj.updt_bin_code("")
     if single_bin:
         out_obj.updt_bin_code(single_bin)
@@ -401,9 +362,10 @@ for cv in l_canvas:
     # out_obj.get_file_name_summary()
 
     # Avoid memory leak warning
-    h_axis.Delete()
+    haxis.Delete()
     legend.Delete()
 
 # Close input files
-for file in l_inputfile:
+for file in list_inputfile:
     file.Close()
+ms.info_msg("Summary", "Summary plots drawn!\n")

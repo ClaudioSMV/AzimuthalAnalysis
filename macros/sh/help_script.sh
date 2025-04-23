@@ -17,11 +17,17 @@
 #  <binDim> = (1: All bins use irregular as defined;                           #
 #              2: Regular bins in Zh, Pt2, and PhiPQ;                          #
 #              3: Regular bins in Pt2, and PhiPQ;)                             #
+#  <BIN>     = Format "XYZ" (See instructions below)                           #
+#                                                                              #
 #  <cuts>    = Format "AA_BB_CC" (See list below)                              #
 #                                                                              #
 #  <fAcc>    = Fraction of stats used in calculation of Acc                    #
 #              (from 0-100, ex: 50, 70...)                                     #
 #  <plotHist2d> = "DeltaSector", "CherenkovCounter", "NpheVs";                 #
+#                                                                              #
+# ----------------------------------- BIN ------------------------------------ #
+#  Bins are formatted as the two/three variables of interest IN ORDER.         #
+#  Last is the x-axis of the summary plot! Ex. QNZ, QNP, NPZ, etc.             #
 #                                                                              #
 # ----------------------------------- CUTS ----------------------------------- #
 #  "Xf": Use Xf>0 (CFR);   "XT": Use Xf<0 (TFR);                               #
@@ -29,7 +35,6 @@
 #  "PF": Pi+ fiducial cut;   "MM": Mirror Match*;   "M2": MM2**;               #
 #  "FE": Use FullError;   "AQ": Acc Quality < 10%;                             #
 #  "Pe": Removes events with NpheEl==Nphe;                                     #
-#  "Zx": x-axis is Zh;   "Px": x-axis is Pt2;                                  #
 #  "Fs": Add Sin(x) term in fit;   "NP": Removes peak from fit;                #
 #  "Nm": Normalize distribution BEFORE fit;                                    #
 #  "MD": Mix D info is ratios;                                                 #
@@ -46,13 +51,13 @@
 #  "-A": Use all Acc/Corr types of calculate acceptance;                       #
 #                                                                              #
 # --------------------------------- EXAMPLE ---------------------------------- #
-#  EG: ./runAnalysis.sh  All  10  1  Zx_FE_AQ_Fd_sl                            #
+#  EG: ./runAnalysis.sh  All  10  1  QNZ FE_AQ_Fd                              #
 #      ./runClosureTest.sh  All  10  1  Zx  50                                 #
 #      ./RunAllHist2D.sh DeltaSector Zx_FE_Fd 10                               #
 #                                                                              #
 # ------------------------------- From ~/macro ------------------------------- #
 #                                                                              #
-# runAnalysis       : <target> <binN> <binDim> <cuts>                          #
+# runAnalysis       : <target> <binN> <binDim> <BIN> <cuts>                    #
 # runClosureTest    : <target> <binN> <binDim> <cuts> <fAcc>                   #
 #                                                                              #
 ################################################################################

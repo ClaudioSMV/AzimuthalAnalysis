@@ -56,8 +56,8 @@ class naming_format:
         self.n_dim = n_dim
 
         self.cuts = ms.get_cut_final(cuts, name, in_output)
-        self.fit_method = ms.get_fit_method(cuts,False)
-
+        self.fit_method = ms.get_fit_method(cuts, use_default=False,
+                                            show_warn=False)
         self.acc_method_long = get_acc_meth(acc_method, "L")
         self.acc_method_shrt = get_acc_meth(acc_method, "S")
 
@@ -96,7 +96,7 @@ class naming_format:
         if self.acc_method_shrt:
             file_name+= "-%s"%(self.acc_method_shrt)
 
-        if self.fit_method:
+        if ("corr" not in self.name.lower()) or (self.fit_method is "Sh"):
             file_name+= "-%s"%(self.fit_method)
 
         if self.bin_code:
@@ -266,6 +266,7 @@ class naming_format:
 
         return hname
 
+    # TODO: Remove probably
     def get_hist_name_summary(self, ffit, par):
         # h(name)(ffit)p(par)_(acc_meth)_(bincode)
         # hCorrection0p1_Reco_Q0N0Z0
@@ -278,6 +279,18 @@ class naming_format:
 
         return hname
 
+    def get_hist_name_parameters(self, ffit, par, show_bincode = True):
+        # h(name)(ffit)p(par)_(acc_meth)_(bincode)
+        # hCorrection0p1_Reco_Q0N0Z0
+        hname = "h%s%ip%i"%(self.name, ffit, par)
+
+        if self.acc_method_shrt:
+            hname+= "_%s"%(self.acc_method_shrt)
+        if self.bin_code and show_bincode:
+            hname+= "_%s"%(self.bin_code)
+
+        return hname
+
     ###############################  Others  ###############################
     def get_l_fitnames(self):
         l_fnames = ["crossSectionR"]
@@ -286,13 +299,16 @@ class naming_format:
 
         return l_fnames
 
-    def get_matrix_name(self, name, number):
-        # M(name)(number)_(acc_meth)_(bincode)
-        # Mcov1_Reco_Q0N0Z0
-        tail = "_%s_%s"%(self.acc_method_shrt, self.bin_code)
-        name_M = "M%s%i%s"%(name, number, tail)
+    def get_matrix_name(self, name, f_idx = 0, fit_function_name = ""):
+        # M(name)(number)_(acc_meth)_(bincode). Ex. Mcov1_Reco_Q0N0Z0
+        # Get index using the fit name if given
+        if fit_function_name:
+            f_idx = self.get_l_fitnames().index(fit_function_name)
 
-        return name_M
+        matrix_name = "M%s%i"%(name, f_idx)
+        matrix_name+= "_%s_%s"%(self.acc_method_shrt, self.bin_code)
+
+        return matrix_name
 
 
 ###########################  Get info from a title  ############################
