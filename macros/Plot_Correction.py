@@ -1,128 +1,99 @@
-from ROOT import TFile,TTree,TCanvas,TH1D,TH1F,TH2D,TH2F,TLatex,TMath,TColor,\
-TLegend,TEfficiency,TGraphAsymmErrors,gROOT,gPad,TF1,gStyle,kBlack,kWhite,TH1
-import ROOT
-import os
+import sys; sys.path.append('lib')
+from ROOT import TFile, TH1F, kBlack
 import optparse
-import myStyle as ms
-import myNameFormat as nf
+from lib_style import force_style, create_canvas, draw_preliminary, draw_targetinfo,\
+    draw_bininfo
+from lib_cuts import get_list_of_bincodes
+from lib_info_tag import convert_info_tag_str_to_list
+from lib_error import info_msg
+import lib_histograms as hi
+import lib_naming as naming
 
-## Defining Style
-ms.force_style()
-gStyle.SetTitleYOffset(1.2)
-
+force_style() # Defining Style
+# gStyle.SetTitleYOffset(1.2)
 
 # Construct the argument parser
 parser = optparse.OptionParser("usage: %prog [options]\n")
-parser.add_option('-D', dest='Dataset', default = "",
-                  help="Dataset in format <targ>_<binType>_<Ndims>")
-parser.add_option('-J', dest='isJLab', action='store_true', default = False,
-                  help="Use folder from JLab_cluster")
-parser.add_option('-b', dest='nonIntegratedVars', default = "",
-                  help="Add non-integratedd bins like in QNZ")
-parser.add_option('-i', dest='inputCuts', default = "",
-                  help="Add input cuts Xf_Yb_...")
-parser.add_option('-o', dest='outputCuts', default = "",
-                  help="Add output cuts FE_Z_P_...")
+parser.add_option('-D', dest='Dataset', help="Dataset format: <targ>_<binType>_<Ndims>")
+parser.add_option('-L', dest='run_local', action='store_true', default = False,
+                  help="Run local files (Default uses folder from JLab_cluster)")
+parser.add_option('-B', dest='bin_vars', default = "",
+                  help="Work with these non-integratedd variables. Ex.: QNZ")
+parser.add_option('-C', dest='cuts', default = "", help="Add input cuts FE_AQ_Xf_Yb_...")
+parser.add_option('-s', dest='shift', action='store_true', default = False,
+                  help="Moves x-axis to make shift fit later")
 
 parser.add_option('-A', dest='save_all', action='store_true', default = False,
                   help="Save All plots")
 parser.add_option('-O', dest='Overwrite', action='store_true', default = False,
                   help="Overwrite if file already exists")
-
-# input: <target>_<binningType number>_<non-integrated dimensions> ; ex: Fe_0_2
 options, args = parser.parse_args()
 
 dataset = options.Dataset
-isJLab = options.isJLab
-ovr = options.Overwrite
-save_all = options.save_all
+run_local = options.run_local
+binvars = options.bin_vars
 
-bin_set = options.nonIntegratedVars
-input_cuts = options.inputCuts
-plots_cuts = options.inputCuts +"_"+ options.outputCuts
-if bin_set:
-    plots_cuts+= "_b%s"%bin_set
+in_obj = naming.processed_files_format("Correction", dataset, cuts=options.cuts,
+                                       run_local=run_local)
+inputfile = TFile(in_obj.get_file(), "READ")
 
-in_obj = nf.naming_format("Correction", dataset, cuts=input_cuts,
-                          is_JLab=isJLab, in_output=True)
-inputfile = TFile(in_obj.get_path_from_output(),"READ")
+out_obj = naming.analysis_format("Correction", dataset, binvars, cuts=options.cuts,
+                                 run_local=run_local, fit_method="Sh"*options.shift)
+outputfile_name = out_obj.get_file_root_files(options.Overwrite, True)
 
-out_obj = nf.naming_format("Correction", dataset, cuts=plots_cuts,
-                          is_JLab=isJLab)
+reco_methods = ["Reconstru", "Raw"]
+if options.save_all: # Save regular correction method and raw data only
+    reco_methods = ["Reconstru", "ReMtch_mc", "ReMtch_re", "Raw"]
+input_hnames = [in_obj.get_histogram_name(method) for method in reco_methods]
+input_histograms = [inputfile.Get(name) for name in input_hnames]
 
-# Get dataset info
-dataset_info = ms.get_name_dict(dataset)
-nbin_dataset = dataset_info["nBin"]
-target = dataset_info["Target"]
-
-# Retrieve THnSparse from input file
-list_hname = ["Corr_Reconstru", "Corr_ReMtch_mc", "Corr_ReMtch_re", "Raw_data"]
-list_thnSparse = [inputfile.Get(hname) for hname in list_hname]
-
-# long/old name: ["Corrected", "Corr GoodGen_mc", "Corr GoodGen_re", "Raw data"]
-list_title = ["Corrected", "Corr GMmc", "Corr GMre"] + ["Raw data"]
-
-# Remove extra correction methods if needed (i.e. keep first and last elements)
-if not save_all:
-    list_hname = list_hname[::3]
-    list_thnSparse = list_thnSparse[::3]
-    list_title = list_title[::3]
-
-# Create list with projections
-list_bincodes = ms.get_bincode_list(nbin_dataset, plots_cuts)
-use_shift = (ms.cut_is_included("Sh", plots_cuts))
-list_projections = []
-for ths in list_thnSparse:
-    list_histograms = [ms.create_sparse_1Dprojection(ths, bc, use_shift) for bc in list_bincodes]
-    list_projections.append(list_histograms)
+list_of_bincodes = get_list_of_bincodes(dataset, binvars)
+list_of_projections_per_method = []
+for (i, hist) in enumerate(input_histograms):
+    projections_per_method = []
+    for bincode in list_of_bincodes:
+        name = out_obj.get_name_histogram(reco_methods[i], bincode)
+        projection = hi.create_1D_projection_from_sparse(hist, name, bincode,
+                                                         shift=options.shift)
+        projections_per_method.append(projection)
+    list_of_projections_per_method.append(projections_per_method)
 
 # Create canvas
-canvas = ms.create_canvas()
-outputfile = TFile(out_obj.get_path(True, ovr),"RECREATE")
+canvas = create_canvas()
+outputfile = TFile(outputfile_name, "RECREATE")
+target, nbin, _ = convert_info_tag_str_to_list(dataset)
 
-# Draw and save histograms with the correct style
-axis_title_phi = ms.axis_label('I',"LatexUnit") # "#phi_{PQ} (deg)"
-for m,list_hprojection_method in enumerate(list_projections):
-    # Update output object to get correct name
-    out_obj.updt_acc_method(list_hname[m])
-    out_obj.updt_extension("png")
-
-    title_method = list_title[m]
-    for bc,hist_projection in enumerate(list_hprojection_method):
-        # Update output object to get correct name
-        bincode = list_bincodes[bc]
-        out_obj.updt_bin_code(bincode)
-        hist_projection.SetName(out_obj.get_hist_name())
-
+for (i, list_projections) in enumerate(list_of_projections_per_method):
+    for (j, projection) in enumerate(list_projections):
+        bincode = list_of_bincodes[j]
+        reco_method = reco_methods[i]
         # Create temporary histogram with required axis style
-        xmin = hist_projection.GetXaxis().GetXmin()
-        xmax = hist_projection.GetXaxis().GetXmax()
-        ymax = hist_projection.GetMaximum() * 1.2
-
-        htemp = TH1F("htemp", "", 1, xmin, xmax)
-        htemp.SetStats(0)
-        htemp.SetMinimum(0.0001)
-        htemp.SetMaximum(ymax)
-        # htemp.SetLineColor(kBlack)
-        htemp.GetXaxis().SetTitle(axis_title_phi)
-        htemp.GetYaxis().SetMaxDigits(3)
-        htemp.GetYaxis().SetTitle("Counts")
-        htemp.Draw("AXIS")
+        xmin, xmax = projection.GetXaxis().GetXmin(), projection.GetXaxis().GetXmax()
+        ymax = projection.GetMaximum() * 1.2 # Make every distribution fully visible!
+        haxes = TH1F("haxes", "", 1, xmin, xmax)
+        haxes.SetStats(0)
+        haxes.SetMinimum(0.0001)
+        haxes.SetMaximum(ymax)
+        haxes.GetXaxis().SetTitle(projection.GetXaxis().GetTitle())
+        haxes.GetYaxis().SetMaxDigits(3)
+        haxes.GetYaxis().SetTitle(projection.GetYaxis().GetTitle())
+        haxes.Draw("AXIS")
 
         # Draw projection
-        hist_projection.SetLineColor(kBlack)
+        projection.SetLineColor(kBlack)
         # gPad.RedrawAxis("g")
-        hist_projection.Draw("hist e same")
+        projection.Draw("hist e same")
 
-        ms.draw_preliminary(title_method)
-        # ms.draw_targetinfo(target + nbin_dataset, "Data")
-        ms.draw_targetinfo(target, "Data")
-        ms.draw_bininfo(bincode, nbin_dataset)
+        # Draw annotations
+        draw_preliminary(reco_method)
+        # draw_targetinfo("%s_%i"%(target, nbin), "Data")
+        draw_targetinfo(target, "Data")
+        draw_bininfo(bincode, nbin=nbin)
 
-        canvas.SaveAs(out_obj.get_path())
-        hist_projection.Write()
-        htemp.Delete()
+        canvas.SaveAs(out_obj.get_file_plots(reco_method, bincode))
+        projection.Write()
+        haxes.Delete()
         canvas.Clear()
 
-ms.info_msg("Correction", "Correction plots saved!\n")
+info_msg("Correction", "Correction plots saved!\n")
 outputfile.Close()
