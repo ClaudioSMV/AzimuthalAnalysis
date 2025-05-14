@@ -1,7 +1,6 @@
 from lib_style import axes_title
 from lib_constants import get_variables_order
-from lib_naming import extract_indices_dict
-from lib_cuts import format_output_binvars, extract_indices_dict
+from lib_cuts import extract_indices_dict
 from ROOT import TH1D
 
                               #############################
@@ -20,8 +19,6 @@ def create_phipq_copy(input_phipq, new_name, shift_center = False):
         xmax = 360. + input_phipq.GetBinLowEdge(central_bin)
 
     axes_tag = axes_title("I", "Counts", x_is_variable=True)
-    if (new_name[0] == "+"):
-        new_name = input_phipq.GetName() + "_" + new_name[1:]
     histogram_new_phipq = TH1D(new_name, axes_tag, nbins, xmin, xmax)
 
     # Fill histogram bin by bin
@@ -50,8 +47,8 @@ def create_1D_projection_from_sparse(input_histogram, new_name, bincode, shift =
         input_histogram.GetAxis(axis_idx).SetRange(bin, bin) # Just that bin!
 
     projection = input_histogram.Projection(4) # phipq axis
-    projection.SetName(new_name)
-    final_phipq = create_phipq_copy(projection, "+%s"(bincode), shift)
+    # projection.SetName(new_name)
+    final_phipq = create_phipq_copy(projection, new_name, shift)
     projection.Delete()
 
     return final_phipq

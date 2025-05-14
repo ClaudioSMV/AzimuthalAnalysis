@@ -9,7 +9,7 @@ FONT = 43 # Helvetica
 SIZE_TEXT = 38
 SIZE_TITLE = SIZE_TEXT - 3
 SIZE_LABEL = SIZE_TEXT - 9
-OFFSET_TITLE = {"X": 1.0, "Y": 1.0}
+OFFSET_TITLE = {"X": 1.0, "Y": 1.2}
 
 
                              ###############################
@@ -77,7 +77,7 @@ def get_variables_order(reference, use_only_reference = True):
                 if var in reference:
                     chosen = var
                     break
-        if (use_only_reference) and (chosen not in reference):
+        if use_only_reference and (chosen not in reference):
             continue
         final_string += chosen
 
@@ -99,8 +99,6 @@ cuts_StoL = {
     # Used at Summary stage
     "MD": "mergeD",
     "sl": "Sol", "lq": "Liq",
-    # Fit methods
-    "Sh": "Shift", "Fd": "Fold", "LR": "LR", "Ff": "FullRng",
 }
 
 cuts_StoL_processed_files = {
@@ -124,14 +122,12 @@ cuts_legend = {
     # Used at Summary stage
     "MD": "Merge all D",
     "sl": "Solid targets", "lq": "Liquid targets",
-    # Fit methods
-    "Sh": "Shift", "Fd": "Fold", "LR": "LR", "Ff": "Full range",
 }
 
-                               ###########################
-#################################          CUTS         ##################################
-#################################  List with cut order  ##################################
-                               ###########################
+                            ##################################
+##############################          CUTS & FITS         ##############################
+##############################  List with ordered elements  ##############################
+                            ##################################
 
 ordered_stages = ["Acceptance", "Correction", "Fit", "Summary"]
 
@@ -143,6 +139,13 @@ ordered_cuts_per_stage = [
     ("Fit", ["Fs", "NP", "Nm",]),
     ("Summary", ["MD",]),
 ]
+
+fit_methods = {
+    "Sh": {"Name": "Shift", "Legend": "Shift"},
+    "Fd": {"Name": "Fold", "Legend": "Fold"},
+    "Ff": {"Name": "Full", "Legend": "Full range"},
+    "Wg": {"Name": "Wings", "Legend": "Wings", "Sides": ["Left", "Right"]},
+}
 
                                ###########################
 #################################         SUMMARY       ##################################

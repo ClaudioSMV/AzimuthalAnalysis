@@ -86,14 +86,14 @@ def draw_annotation(txt_bold = "", txt = "", where = "L", xoff = 0.005, yoff = 0
     to_draw.SetTextSize(SIZE_TEXT-4)
     if "R" in where:
         to_draw.SetTextAlign(31)
-    xpoint = MARGINS["L"] + xoff if "L" in where else 1 - MARGINS["L"] - xoff
+    xpoint = MARGINS["L"] + xoff if "L" in where else 1 - MARGINS["R"] - xoff
     ypoint = 1 - MARGINS["T"] + yoff
     this_text = "#bf{%s}"%(txt_bold)
     if txt:
         this_text += " %s"%(txt)
     to_draw.DrawLatexNDC(xpoint, ypoint, this_text)
 
-def draw_preliminary(text = "", xoff = 0.005, yoff = 0.001):
+def draw_preliminary(text = "", xoff = 0.005, yoff = 0.01):
 # Draw watermark to show that these are preliminary results.
     preliminar_msg = TLatex()
     preliminar_msg.SetTextSize(SIZE_TEXT+10)
@@ -108,7 +108,7 @@ def draw_preliminary(text = "", xoff = 0.005, yoff = 0.001):
     if text:
         draw_annotation(text, where="L", xoff=xoff, yoff=yoff)
 
-def draw_summary(text = "", xoff = 0.005, yoff = 0.001):
+def draw_summary(text = "", xoff = 0.005, yoff = 0.01):
 # Draw top left annotation indicating "Summary"
     # draw_annotation(text, "Summary", where="L", xoff=xoff, yoff=yoff)
     draw_annotation(text, where="L", xoff=xoff, yoff=yoff)
@@ -121,11 +121,12 @@ def draw_targetinfo(target, is_data, show_set_type = False):
         text += ", %s"%(set_type)
     draw_annotation(text, where="R")
 
-def draw_bininfo(bincode, limits = {}, nbin = -1, x_position = 0, y_position = 0):
+def draw_bininfo(bincode, limits = {}, nbin = -1, x_position = 0, y_position = 0,
+                 use_units = False):
 # Draw bin info such as: "0.1 GeV < nu < 1.0 GeV"
     txt = TLatex()
     txt.SetTextSize(SIZE_TEXT-4)
-    bin_range = get_bincode_explicit_range(bincode, limits, nbin)
+    bin_range = get_bincode_explicit_range(bincode, limits, nbin, use_units)
     align = 23 if not x_position else 33 # x_position: top-right; center if None
     txt.SetTextAlign(align)
     x_point = get_pad_center() if not x_position else x_position
@@ -133,7 +134,8 @@ def draw_bininfo(bincode, limits = {}, nbin = -1, x_position = 0, y_position = 0
 
     txt.DrawLatexNDC(x_point, y_point, bin_range)
 
-def get_bincode_explicit_range(bincode, dictionary_limits = {}, nbin = -1):
+def get_bincode_explicit_range(bincode, dictionary_limits = {}, nbin = -1,
+                               use_units = False):
 # Return text with variable and limits. Ex.: "N0" -> "0.1 GeV < nu < 1.0 GeV"
     if nbin >= 0:
         dictionary_limits = all_dicts[nbin]
@@ -143,14 +145,17 @@ def get_bincode_explicit_range(bincode, dictionary_limits = {}, nbin = -1):
         if char.isdigit():
             continue
         var = axis_label(char, "L")
-        unit = axis_label(char, "U")
         idx = dictionary_indices[char]
-        min = "%.2f %s"%(dictionary_limits[char][idx], unit)
-        max = "%.2f %s"%(dictionary_limits[char][idx + 1], unit)
+        min = "%.2f"%(dictionary_limits[char][idx])
+        max = "%.2f"%(dictionary_limits[char][idx + 1])
+        if use_units:
+            unit = axis_label(char, "U")
+            min += " %s"%(unit)
+            max += " %s"%(unit)
         txt = "%s #leq %s < %s"%(min, var, max)
         list_ranges.append(txt)
 
-    return ";".join(list_ranges) if len(list_ranges) > 1 else list_ranges[0]
+    return "; ".join(list_ranges) if len(list_ranges) > 1 else list_ranges[0]
 
                                 ##########################
 ##################################      Functions       ##################################
@@ -208,11 +213,13 @@ all_dicts = list(bn.Bin_List) # Copy dictionaries of bins from Bins.py (TODO: RE
 
 def axis_label(var, options = "LU"):
 # Return label of a variable. Good looking axes need "LU" (Latex + Units)!
-    label = [variable_info[var][0]] # Plain name
+    label = []
     if ("L" in options): # Use Latex form
-        label = [variable_info[var][1]]
+        label.append(variable_info[var][1])
     if ("U" in options): # Show units
         label.append(variable_info[var][2])
+    if not label: # Use plain name
+        label = [variable_info[var][0]]
 
     return " ".join(label) if len(label) > 0 else label[0]
 
@@ -221,8 +228,7 @@ def axes_title(xname, yname, zname = "", x_is_variable = False, y_is_variable = 
     xtitle = xname if not x_is_variable else axis_label(xname)
     ytitle = yname if not y_is_variable else axis_label(yname)
     ztitle = zname if not z_is_variable else axis_label(zname)
-    root_style = "" if not pad_title else "%s;"%(pad_title)
-    root_style += "%s;%s"%(xtitle, ytitle)
+    root_style = "%s;%s;%s"%(pad_title, xtitle, ytitle)
     if ztitle:
         root_style += ";%s"%(ztitle)
 

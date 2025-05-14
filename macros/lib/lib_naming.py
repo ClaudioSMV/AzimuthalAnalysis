@@ -1,30 +1,13 @@
 
-from lib_cuts import get_cuts_final, get_fit_method, get_info_tag_dictionary,\
-    get_info_tag__title_format, get_fit_method_title
+from lib_cuts import get_output_cuts, get_ordered_cuts_at_this_stage, check_valid_cuts\
+    , format_output_binvars
+from lib_info_tag import get_info_tag_dictionary, get_info_tag__title_format
+from lib_fit import check_fit_method_exists, get_fit_name
+from lib_error import info_msg, error_msg
+import os
+import sys
 
 BASEPATH = "./../"
-
-                                    #################
-######################################  Functions  #######################################
-######################################   Fitting   #######################################
-                                    #################
-
-def fit_function_name(fit_method):
-    list_of_fit_names = ["crossSectionR"]
-    if (fit_method == "LR"):
-        list_of_fit_names.append("crossSectionL")
-
-    return list_of_fit_names
-
-def fit_matrix_name(naming_info, matrix_type, reco_method, bincode,
-                    function_name = "crossSectionR"):
-# Return name for matrix objects so that they are unique
-    matrix_name = "M%s"%(matrix_type)
-    fit_name_idx = fit_function_name(naming_info.fit_method).index(function_name)
-    matrix_name += str(fit_name_idx)
-    matrix_name += "_%s_%s"%(reco_method, bincode)
-
-    return matrix_name
 
                              ###############################
 ###############################          Functions        ################################
@@ -49,13 +32,52 @@ def extract_histogram_info(hname, has_fit_info = False):
 
     return dictionary
 
+                               ##########################
+#################################      Functions       ###################################
+#################################  Manage directories  ###################################
+                               ##########################
+
+def consecutive_number(path):
+# Add a sequential number to the path
+    if (path[-1] == "/"):
+        path = path[:-1]
+    count = 1
+    while(os.path.exists(path + str(count))):
+        count += 1
+
+    return path + str(count)
+
+def create_folder(outdir, title = "", enumerate = False, silence = True):
+# Create folder: outdir/title. Enumerate adding a consecutive number at the end.
+    outpath = os.path.join(outdir, title) if title else outdir
+    if enumerate:
+        outpath = consecutive_number(outpath)
+    exists = os.path.exists(outpath)
+    if not exists:
+        info_msg("create_folder", "Creating folder: %s."%(outpath))
+        os.makedirs(outpath)
+    elif not silence:
+        info_msg("create_folder", "%s already exists!"%(outpath))
+
+    return outpath
+
+def check_file_exists(path, filename, overwrite = False):
+    full_path = os.path.join(path, filename)
+    if not os.path.exists(full_path):
+        return
+    if not overwrite:
+        error_msg("check_file_exists", "%s already exists! Left as it is."%(full_path))
+        sys.exit(1)
+    info_msg("check_file_exists", "%s already exists! Overwriting it."%(full_path))
+
                                   ######################
 ####################################  Naming classes  ####################################
                                   ######################
 
 class analysis_format:
     # Analysis format i.e. to use in plots and histograms
-    def __init__(self, stage_name, info_tag, cuts = "", run_local = False):
+    def __init__(self, stage_name, info_tag, binvars, cuts = "", fit_method = "",
+                 run_local = False):
         self.stage_name = stage_name
 
         self.info_tag = info_tag
@@ -64,11 +86,9 @@ class analysis_format:
         self.n_bin = dictionary["n_bin"]
         self.n_dim = dictionary["n_dim"]
 
-        # NOTE: Cuts are shown in a specific order, priorizing non-integrated variables
-        #       as the first element
-        self.cuts_L = get_cuts_final(cuts, stage_name)
-        self.cuts_S = get_cuts_final(cuts, stage_name, use_short_name=True)
-        self.fit_method = get_fit_method(cuts, False, False) # Fit method if available
+        self.binvars = binvars
+        self.cuts_list, _ = get_ordered_cuts_at_this_stage(stage_name, cuts)
+        self.fit_method = check_fit_method_exists(fit_method, stage_name)
         self.run_local = run_local # Choose True to work with local generated data files
 
     #####################################  Methods  ######################################
@@ -81,46 +101,57 @@ class analysis_format:
         return this_path + "/"
 
     def get_path_root_files(self):
-
-        return self.get_common_path() + "root_files/"
+        return create_folder(self.get_common_path(), "root_files")
 
     def get_path_plots(self):
         this_path = self.get_common_path()
         this_path += "plots/"
 
         folder = get_info_tag__title_format(self.info_tag, omit_target=True)
-        if (self.cuts_L):
-            folder += "_%s"%(self.cuts_L)
-        else:
-            folder += "_NoCuts"
+        folder += "_%s"%(format_output_binvars(self.binvars))
+        if (self.fit_method):
+            folder += "_%s"%(get_fit_name(self.fit_method))
+        folder += "_%s"%(get_output_cuts(self.cuts_list, self.stage_name))
         folder += "/" + self.target
 
-        return this_path + folder + "/"
+        return create_folder(this_path, folder)
 
-    def get_file_root_files(self):
-    # Format: (name)_(info_tag)-(cuts)-f(fit_method).root
+    def get_file_root_files(self, overwrite = False, check_validity = False):
+    # Format: (name)_(info_tag)-b(binvars)-(cuts)-f(fit_method).root
     # ex. Correction_Fe_10B1-Xf_FE-fFold.png
+        folder = self.get_path_root_files()
         file_name = self.stage_name
         file_name += "_%s"%(get_info_tag__title_format(self.info_tag))
-        file_name += "-%s"%(self.cuts_S)
-        if (self.fit_method) and (self.stage_name != "Correction"):
+        file_name += "-b%s"%(format_output_binvars(self.binvars))
+        if check_validity:
+            check_valid_cuts(self.cuts_list)
+        if self.cuts_list:
+            file_name += "-%s"%(get_output_cuts(self.cuts_list, self.stage_name,
+                                                use_cut_tags=True, warn_unused=True))
+        else:
+            file_name += "-NoCuts"
+        if (self.fit_method):
             file_name += "-f%s"%(self.fit_method)
+        file_name += ".root"
+        check_file_exists(folder, file_name, overwrite)
 
-        return self.get_path_root_files() + file_name + ".root"
+        return os.path.join(folder, file_name)
     
     def get_file_plots(self, reco_method = "", bincode = "", extension = "png"):
     # Format: (name)_(info_tag)-(reco_method)-f(fit_method)-(bincode).(extension)
     # ex. Correction_Fe_10B1-Reco-fFold-Q0N0Z0.png
+        folder = self.get_path_plots()
         file_name = self.stage_name
         file_name += "_%s"%(get_info_tag__title_format(self.info_tag))
         if (reco_method):
             file_name += "-%s"%(reco_method)
-        if (self.fit_method) and (self.stage_name != "Correction"):
+        if (self.fit_method):
             file_name += "-f%s"%(self.fit_method)
         if (bincode):
             file_name += "-%s"%(bincode)
+        file_name += ".%s"%(extension)
 
-        return self.get_path_plots() + file_name + "." + extension
+        return os.path.join(folder, file_name)
 
     def get_name_histogram(self, reco_method, bincode = "", fit_idx = -1,
                            fit_parameter_idx = -1):
@@ -135,31 +166,6 @@ class analysis_format:
 
         return hist_name
 
-    def get_summary_plots(self, reco_method, extension = "png", is_LR_left = False,
-                          parameters_info = ""):
-    # Summary format: (n_bin)B(n_dim)_(cuts)-(reco_method)-f(fit_method)-(bincode).(extension)
-    # ex. 10B1_FErr_AccQlt_P_Fold-Reco-NormB.pdf
-        this_path = self.get_common_path()
-        this_path += "Summary/"
-
-        folder = get_info_tag__title_format(self.info_tag, omit_target=True)
-        if (self.cuts_L):
-            folder += "_%s"%(self.cuts_L)
-        else:
-            folder += "_NoCuts"
-        this_path += folder + "/"
-
-        file_name = self.stage_name
-        if (parameters_info):
-            file_name += parameters_info
-        file_name +=  "_%s"%(get_info_tag__title_format(self.info_tag, omit_target=True))
-        file_name += "_%s"%(self.cuts_S) if (self.cuts_S) else "_NoCuts"
-        file_name += "-%s"%(reco_method)
-        if (self.fit_method):
-            file_name += "-f%s"%(get_fit_method_title(self.fit_method, is_LR_left))
-
-        return this_path + file_name + "." + extension
-
 class processed_files_format:
     # Retrieve names and paths of processed files to be used in analysis as inputs
     def __init__(self, stage_name, info_tag, cuts = "", CT_fraction = 0,
@@ -172,7 +178,7 @@ class processed_files_format:
         self.n_bin = dictionary["n_bin"]
         self.n_dim = dictionary["n_dim"]
 
-        self.cuts = get_cuts_final(cuts, stage_name, True) # Cuts separated by "_"
+        self.cuts = get_output_cuts(cuts, stage_name, processed_files=True)
         self.CT_fraction = CT_fraction # Closure Test training percentage
         self.run_local = run_local # Choose True to work with local generated data files
 
@@ -213,3 +219,49 @@ class processed_files_format:
         # Here you can add the format of other names, like in 2D maps or reco-efficiency
 
         return hist_name
+
+class summary_format: # TODO: UPDATE THIS TO WORK!
+    # Naming for summary
+    def __init__(self, stage_name, info_tag, binvars, cuts = "", fit_method = "",
+                 run_local = False):
+        self.stage_name = stage_name
+
+        self.info_tag = info_tag
+        dictionary = get_info_tag_dictionary(info_tag)
+        self.target = dictionary["Target"]
+        self.n_bin = dictionary["n_bin"]
+        self.n_dim = dictionary["n_dim"]
+
+        self.binvars = binvars
+        self.cuts_list, _ = get_ordered_cuts_at_this_stage(stage_name, cuts)
+        self.fit_method = check_fit_method_exists(fit_method, stage_name)
+
+        self.run_local = run_local # Choose True to work with local generated data files
+
+    #####################################  Methods  ######################################
+
+    def get_summary_plots(self, reco_method, extension = "png", is_LR_left = False,
+                          parameters_info = ""):
+    # Summary format: (n_bin)B(n_dim)-(binvars)-(cuts)/(stage)(parameters_info)-(cuts)-
+    # Summary format: (n_bin)B(n_dim)-(binvars)-(cuts)-(reco_method)-f(fit_method)-(bincode).(extension)
+    # ex. 10B1_FErr_AccQlt_P_Fold-Reco-NormB.pdf
+        folder = get_info_tag__title_format(self.info_tag, omit_target=True)
+        folder += "-%s"%(format_output_binvars(self.binvars, True))
+        if self.cuts_list:
+            folder += "-%s"%(get_output_cuts(self.cuts_list, self.stage_name))
+        else:
+            folder += "-NoCuts"
+        path = os.path.join(self.get_common_path(), "Summary", folder)
+
+        file = self.stage_name
+        if (parameters_info):
+            file += parameters_info
+        if self.cuts_list:
+            file += "-%s"%(get_output_cuts(self.cuts_list, self.stage_name, use_cut_tags=True))
+        else:
+            file += "-NoCuts"
+        file += "-%s"%(reco_method)
+        if (self.fit_method):
+            file += "-%s"%(get_fit_name(self.fit_method))
+
+        return path + file + "." + extension
