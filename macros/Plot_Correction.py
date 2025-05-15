@@ -10,7 +10,6 @@ import lib_histograms as hi
 import lib_naming as naming
 
 force_style() # Defining Style
-# gStyle.SetTitleYOffset(1.2)
 
 # Construct the argument parser
 parser = optparse.OptionParser("usage: %prog [options]\n")
