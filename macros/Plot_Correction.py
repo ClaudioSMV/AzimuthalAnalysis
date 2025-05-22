@@ -1,7 +1,7 @@
 import sys; sys.path.append('lib')
-from ROOT import TFile, TH1F, kBlack
+from ROOT import TFile,TH1F,kBlack
 import optparse
-from lib_style import force_style, create_canvas, draw_preliminary, draw_targetinfo,\
+from lib_style import force_style,create_canvas,draw_preliminary,draw_targetinfo,\
     draw_bininfo
 from lib_cuts import get_list_of_bincodes
 from lib_info_tag import convert_info_tag_str_to_list
@@ -38,12 +38,14 @@ inputfile = TFile(in_obj.get_file(), "READ")
 
 out_obj = naming.analysis_format("Correction", dataset, binvars, cuts=options.cuts,
                                  run_local=run_local, fit_method="Sh"*options.shift)
-outputfile_name = out_obj.get_file_root_files(options.Overwrite, True)
+outputfile_name = out_obj.get_file_root_files(options.Overwrite, True, True)
 
-reco_methods = ["Reconstru", "Raw"]
+reco_methods_input = ["Reconstru", "Raw"]
+reco_methods = ["Reconstructed", "Raw"]
 if options.save_all: # Save regular correction method and raw data only
-    reco_methods = ["Reconstru", "ReMtch_mc", "ReMtch_re", "Raw"]
-input_hnames = [in_obj.get_histogram_name(method) for method in reco_methods]
+    reco_methods_input = ["Reconstru", "ReMtch_mc", "ReMtch_re", "Raw"]
+    reco_methods = ["Reconstructed", "RecoMatchMC", "RecoMatchRec", "Raw"]
+input_hnames = [in_obj.get_histogram_name(method) for method in reco_methods_input]
 input_histograms = [inputfile.Get(name) for name in input_hnames]
 
 list_of_bincodes = get_list_of_bincodes(dataset, binvars)

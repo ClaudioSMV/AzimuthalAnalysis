@@ -133,17 +133,16 @@ ordered_stages = ["Acceptance", "Correction", "Fit", "Summary"]
 
 ordered_cuts_per_stage = [
     ("SummaryTarget", ["sl", "lq",]),
-    ("FitMethod", ["Sh", "Fd", "LR", "Ff",]),
     ("Acceptance", ["Xf", "XT", "DS", "BS", "PF", "MM", "M2",]),
     ("Correction", ["Sh", "FE", "AQ", "Pe",]),
     ("Fit", ["Fs", "NP", "Nm",]),
     ("Summary", ["MD",]),
 ]
 
-fit_methods = {
-    "Sh": {"Name": "Shift", "Legend": "Shift"},
-    "Fd": {"Name": "Fold", "Legend": "Fold"},
-    "Ff": {"Name": "Full", "Legend": "Full range"},
+available_fit_methods = {
+    "Sh": {"Name": "Shift", "Legend": "Shift", "Sides": [""]},
+    "Fd": {"Name": "Fold", "Legend": "Fold", "Sides": [""]},
+    "Ff": {"Name": "Full", "Legend": "Full range", "Sides": [""]},
     "Wg": {"Name": "Wings", "Legend": "Wings", "Sides": ["Left", "Right"]},
 }
 

@@ -18,17 +18,18 @@ def extract_histogram_info(hname, has_fit_info = False):
 # Return dictionary with info using format: h(name)(f_idx)p(par_idx)_(acc_meth)_(bincode)
     list_of_characteristics = hname.split("_")
     dictionary = {
-        "hname": list_of_characteristics[0][1:], # Exclude initial "h" in the name
-        "hreco_method": list_of_characteristics[1],
+        "Name": list_of_characteristics[0][1:], # Exclude initial "h" in the name
+        "Reco_method": list_of_characteristics[1],
+        "NoName": "_".join(list_of_characteristics[1:]), # All info excluding Name
     }
     if (len(list_of_characteristics) == 3):
-        dictionary["hbincode"] = list_of_characteristics[2]
+        dictionary["Bincode"] = list_of_characteristics[2]
     if has_fit_info:
-        dictionary["hname"] = list_of_characteristics[0][1:-3] # Exclude fit info
-        dictionary["hfit_idx"] = list_of_characteristics[0][-3]
-        dictionary["hpar_idx"] = list_of_characteristics[0][-1]
-        dictionary["hname_Full"] = list_of_characteristics[0][1:] # Include fit info
-        dictionary["hfit_info"] = list_of_characteristics[0][-3:] # (f_idx)p(par_idx)
+        dictionary["Name"] = list_of_characteristics[0][1:-3] # Exclude fit info
+        dictionary["Fit_idx"] = list_of_characteristics[0][-3]
+        dictionary["Par_idx"] = list_of_characteristics[0][-1]
+        dictionary["Name_Full"] = list_of_characteristics[0][1:] # Include fit info
+        dictionary["Fit_info"] = list_of_characteristics[0][-3:] # (f_idx)p(par_idx)
 
     return dictionary
 
@@ -116,16 +117,17 @@ class analysis_format:
 
         return create_folder(this_path, folder)
 
-    def get_file_root_files(self, overwrite = False, check_validity = False):
+    def get_file_root_files(self, overwrite = False, check_cuts_validity = False,
+                            is_output = False):
     # Format: (name)_(info_tag)-b(binvars)-(cuts)-f(fit_method).root
     # ex. Correction_Fe_10B1-Xf_FE-fFold.png
         folder = self.get_path_root_files()
         file_name = self.stage_name
         file_name += "_%s"%(get_info_tag__title_format(self.info_tag))
         file_name += "-b%s"%(format_output_binvars(self.binvars))
-        if check_validity:
+        if check_cuts_validity:
             check_valid_cuts(self.cuts_list)
-        if self.cuts_list:
+        if (self.cuts_list):
             file_name += "-%s"%(get_output_cuts(self.cuts_list, self.stage_name,
                                                 use_cut_tags=True, warn_unused=True))
         else:
@@ -133,7 +135,8 @@ class analysis_format:
         if (self.fit_method):
             file_name += "-f%s"%(self.fit_method)
         file_name += ".root"
-        check_file_exists(folder, file_name, overwrite)
+        if is_output:
+            check_file_exists(folder, file_name, overwrite)
 
         return os.path.join(folder, file_name)
     
