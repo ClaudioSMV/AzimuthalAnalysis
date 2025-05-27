@@ -1,7 +1,7 @@
 
 from lib_cuts import get_output_cuts, get_ordered_cuts_at_this_stage, check_valid_cuts\
     , format_output_binvars
-from lib_info_tag import get_info_tag_dictionary, get_info_tag__title_format
+from lib_dataset_info import get_info_tag_dictionary, get_info_tag__title_format
 from lib_fit import check_fit_method_exists, get_fit_name
 from lib_error import info_msg, error_msg
 import os

@@ -1,5 +1,5 @@
 from lib_error import error_msg, info_msg
-from lib_constants import available_targets
+from lib_constants import available_targets, reco_methods
 
                                     #################
 ######################################  Functions  #######################################
@@ -52,3 +52,35 @@ def convert_info_tag_str_to_list(tag):
     dictionary = get_info_tag_dictionary(tag)
 
     return dictionary["Target"], dictionary["n_bin"], dictionary["n_dim"]
+
+                              ##############################
+################################        Functions         ################################
+################################  Reconstruction methods  ################################
+                              ##############################
+
+def format_reco_methods(use_all, format = "Analysis", add_raw = False):
+    idx = ["Processed", "Analysis", "Title"].index(format)
+    available_methods = []
+    for (tag, names) in reco_methods:
+        if (not add_raw) and (tag == "Raw"):
+            continue
+        elif (not use_all) and ("Match" in tag):
+            continue
+        available_methods.append(names[idx])
+
+    return available_methods
+
+def methods_under_use(input_histograms):
+    available_methods = format_reco_methods(True, format="Analysis", add_raw=False)
+    methods_used = []
+    for name in input_histograms.keys():
+        if not available_methods:
+            break
+        for method in available_methods:
+            if method not in name:
+                continue
+            available_methods.remove(method)
+            methods_used.append(method)
+            break
+
+    return methods_used

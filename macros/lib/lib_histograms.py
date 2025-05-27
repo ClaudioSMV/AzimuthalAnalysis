@@ -3,10 +3,10 @@ from lib_constants import get_variables_order
 from lib_cuts import extract_indices_dict
 from ROOT import TH1D
 
-                              #############################
-################################        Functions        #################################
-################################  PhiPQ and projections  #################################
-                              #############################
+                              ##############################
+################################        Histograms        ################################
+################################  PhiPQ and projections   ################################
+                              ##############################
 
 def create_phipq_copy(input_phipq, new_name, shift_center = False):
 # Create a copy of the phi_PQ 1d projection
@@ -52,3 +52,31 @@ def create_1D_projection_from_sparse(input_histogram, new_name, bincode, shift =
     projection.Delete()
 
     return final_phipq
+
+                                  ######################
+####################################     Analysis     ####################################
+####################################  List of inputs  ####################################
+                                  ######################
+
+def get_input_histograms(inputfile):
+    histograms = {}
+    for key in inputfile.GetListOfKeys():
+        if "TH1" not in key.ReadObj().Class_Name(): # Skip if not an histogram
+            continue
+        histograms[key.GetName()] = key.ReadObj()
+
+    return histograms
+
+                                  ######################
+####################################    Histograms    ####################################
+####################################  Bincode tagged  ####################################
+                                  ######################
+
+def create_bincode_histogram(hname, list_bincodes):
+# Create histogram with bincode labels in x-axis
+    n_bincodes = len(list_bincodes)
+    histogram_with_labels = TH1D(hname, "", n_bincodes, 0, n_bincodes)
+    for b in range(1, n_bincodes + 1):
+        histogram_with_labels.GetXaxis().SetBinLabel(b, list_bincodes[b-1])
+
+    return histogram_with_labels

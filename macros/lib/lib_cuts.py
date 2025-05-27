@@ -2,7 +2,7 @@ import sys
 from lib_error import error_msg, info_msg, check_list_has_one_element
 from lib_constants import cuts_StoL, ordered_cuts_per_stage, cuts_StoL_processed_files,\
     ordered_stages, variable_info, get_variables_order
-from lib_info_tag import get_info_tag_dictionary
+from lib_dataset_info import get_info_tag_dictionary
 from Bins import Bin_List
 # TODO: Update Bin list to use csv files
 

@@ -83,6 +83,19 @@ def get_variables_order(reference, use_only_reference = True):
 
     return final_string
 
+
+                                  ######################
+####################################    CORRECTION    ####################################
+####################################  Methods titles  ####################################
+                                  ######################
+
+reco_methods = [
+    ("Reconstructed", ["Reconstru", "Reconstructed", "Reconstructed"]),
+    ("MatchMC", ["ReMtch_mc", "RecoMatchMC", "Matching MC"]),
+    ("MatchReco", ["ReMtch_re", "RecoMatchRec", "Matching Rec"]),
+    ("Raw", ["RawData", "Raw", "Raw data"]),
+]
+
                          ########################################
 ###########################                CUTS                ###########################
 ###########################  Dictionary Short to Long cut-tag  ###########################
@@ -129,13 +142,14 @@ cuts_legend = {
 ##############################  List with ordered elements  ##############################
                             ##################################
 
-ordered_stages = ["Acceptance", "Correction", "Fit", "Summary"]
+ordered_stages = ["Acceptance", "Correction", "Fit", "Parameters", "Summary"]
 
 ordered_cuts_per_stage = [
     ("SummaryTarget", ["sl", "lq",]),
     ("Acceptance", ["Xf", "XT", "DS", "BS", "PF", "MM", "M2",]),
     ("Correction", ["Sh", "FE", "AQ", "Pe",]),
     ("Fit", ["Fs", "NP", "Nm",]),
+    ("Parameters", []),
     ("Summary", ["MD",]),
 ]
 
