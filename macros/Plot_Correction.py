@@ -4,7 +4,8 @@ import optparse
 from lib_style import force_style,create_canvas,draw_preliminary,draw_targetinfo,\
     draw_bininfo
 from lib_cuts import get_list_of_bincodes
-from lib_info_tag import convert_info_tag_str_to_list
+from lib_dataset_info import convert_info_tag_str_to_list,format_reco_methods
+from lib_constants import reco_methods
 from lib_error import info_msg
 import lib_histograms as hi
 import lib_naming as naming
@@ -40,20 +41,19 @@ out_obj = naming.analysis_format("Correction", dataset, binvars, cuts=options.cu
                                  run_local=run_local, fit_method="Sh"*options.shift)
 outputfile_name = out_obj.get_file_root_files(options.Overwrite, True, True)
 
-reco_methods_input = ["Reconstru", "Raw"]
-reco_methods = ["Reconstructed", "Raw"]
-if options.save_all: # Save regular correction method and raw data only
-    reco_methods_input = ["Reconstru", "ReMtch_mc", "ReMtch_re", "Raw"]
-    reco_methods = ["Reconstructed", "RecoMatchMC", "RecoMatchRec", "Raw"]
-input_hnames = [in_obj.get_histogram_name(method) for method in reco_methods_input]
+input_reco_methods = format_reco_methods(options.save_all, "Processed", add_raw=True)
+analysis_reco_methods = format_reco_methods(options.save_all, "Analysis", add_raw=True)
+titles_reco_methods = format_reco_methods(options.save_all, "Title", add_raw=True)
+input_hnames = [in_obj.get_histogram_name(method) for method in input_reco_methods]
 input_histograms = [inputfile.Get(name) for name in input_hnames]
 
+# Create projections
 list_of_bincodes = get_list_of_bincodes(dataset, binvars)
 list_of_projections_per_method = []
 for (i, hist) in enumerate(input_histograms):
     projections_per_method = []
     for bincode in list_of_bincodes:
-        name = out_obj.get_name_histogram(reco_methods[i], bincode)
+        name = out_obj.get_name_histogram(analysis_reco_methods[i], bincode)
         projection = hi.create_1D_projection_from_sparse(hist, name, bincode,
                                                          shift=options.shift)
         projections_per_method.append(projection)
@@ -67,7 +67,7 @@ target, nbin, _ = convert_info_tag_str_to_list(dataset)
 for (i, list_projections) in enumerate(list_of_projections_per_method):
     for (j, projection) in enumerate(list_projections):
         bincode = list_of_bincodes[j]
-        reco_method = reco_methods[i]
+        reco_method = analysis_reco_methods[i]
         # Create temporary histogram with required axis style
         xmin, xmax = projection.GetXaxis().GetXmin(), projection.GetXaxis().GetXmax()
         ymax = projection.GetMaximum() * 1.2 # Make every distribution fully visible!
@@ -86,12 +86,12 @@ for (i, list_projections) in enumerate(list_of_projections_per_method):
         projection.Draw("hist e same")
 
         # Draw annotations
-        draw_preliminary(reco_method)
+        draw_preliminary(titles_reco_methods[i])
         # draw_targetinfo("%s_%i"%(target, nbin), "Data")
         draw_targetinfo(target, "Data")
         draw_bininfo(bincode, nbin=nbin)
 
-        canvas.SaveAs(out_obj.get_file_plots(reco_method, bincode))
+        canvas.SaveAs(out_obj.get_file_plots(analysis_reco_methods[i], bincode))
         projection.Write()
         haxes.Delete()
         canvas.Clear()

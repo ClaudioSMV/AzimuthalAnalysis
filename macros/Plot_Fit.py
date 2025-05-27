@@ -6,7 +6,8 @@ from lib_style import force_style,create_canvas,draw_preliminary,draw_targetinfo
 from lib_cuts import check_cut_is_included
 from lib_fit import check_fit_feasibility,get_fit_function,matrix_name,print_fit_info,\
     adapt_histogram_to_fit
-from lib_info_tag import convert_info_tag_str_to_list
+from lib_dataset_info import convert_info_tag_str_to_list
+from lib_histograms import get_input_histograms
 from lib_error import info_msg
 from lib_constants import available_fit_methods
 import lib_naming as naming
@@ -51,14 +52,9 @@ use_sin, normalize, skip_peak = check_cut_is_included(["Fs", "Nm", "NP"], option
 canvas = create_canvas()
 outputfile = TFile(outputfile_name, "RECREATE")
 target, nbin, _ = convert_info_tag_str_to_list(dataset)
-for key in inputfile.GetListOfKeys():
-    key_type = key.ReadObj().Class_Name()
-    if "TH1" not in key_type: # Skip if object is not an histogram
-        continue
-    hname = key.GetName()
+for (hname, histogram) in get_input_histograms(inputfile).items():
     if "raw" in hname.lower(): # Fit corrected histograms only
         continue
-    histogram = key.ReadObj()
     if not check_fit_feasibility(histogram, fit_method, use_sin): # Fit can be done
         continue
 
