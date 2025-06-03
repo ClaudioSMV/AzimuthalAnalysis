@@ -7,8 +7,6 @@
 MARGINS = {"T": 0.05, "R": 0.05, "B": 0.10, "L": 0.10}
 FONT = 43 # Helvetica
 SIZE_TEXT = 38
-SIZE_TITLE = SIZE_TEXT - 3
-SIZE_LABEL = SIZE_TEXT - 9
 OFFSET_TITLE = {"X": 1.0, "Y": 1.2}
 
 
@@ -90,7 +88,7 @@ def get_variables_order(reference, use_only_reference = True):
                                   ######################
 
 reco_methods = [
-    ("Reconstructed", ["Reconstru", "Reconstructed", "Reconstructed"]),
+    ("Reconstructed", ["Reconstru", "Reconstructed", "Corrected"]),
     ("MatchMC", ["ReMtch_mc", "RecoMatchMC", "Matching MC"]),
     ("MatchReco", ["ReMtch_re", "RecoMatchRec", "Matching Rec"]),
     ("Raw", ["RawData", "Raw", "Raw data"]),
@@ -111,7 +109,7 @@ cuts_StoL = {
     "Fs": "fSin", "NP": "NP", "Nm": "PreNorm",
     # Used at Summary stage
     "MD": "mergeD",
-    "sl": "Sol", "lq": "Liq",
+    # "sl": "Sol", "lq": "Liq",
 }
 
 cuts_StoL_processed_files = {
@@ -134,7 +132,6 @@ cuts_legend = {
     "Nm": "Previously normalized",
     # Used at Summary stage
     "MD": "Merge all D",
-    "sl": "Solid targets", "lq": "Liquid targets",
 }
 
                             ##################################
@@ -145,7 +142,6 @@ cuts_legend = {
 ordered_stages = ["Acceptance", "Correction", "Fit", "Parameters", "Summary"]
 
 ordered_cuts_per_stage = [
-    ("SummaryTarget", ["sl", "lq",]),
     ("Acceptance", ["Xf", "XT", "DS", "BS", "PF", "MM", "M2",]),
     ("Correction", ["Sh", "FE", "AQ", "Pe",]),
     ("Fit", ["Fs", "NP", "Nm",]),
@@ -160,14 +156,24 @@ available_fit_methods = {
     "Wg": {"Name": "Wings", "Legend": "Wings", "Sides": ["Left", "Right"]},
 }
 
-                               ###########################
-#################################         SUMMARY       ##################################
-#################################    Sets of targets    ##################################
-                               ###########################
+                                 #######################
+###################################      SUMMARY      ####################################
+###################################  Sets of targets  ####################################
+                                 #######################
 
 available_targets = ["C", "Fe", "Pb", "D", "DC", "DFe", "DPb"]
 
-list_of_targets_sets = {
-    "sl": ["C", "Fe", "Pb"], # Solid targets
-    "lq": ["DC", "DFe", "DPb"], # Liquid targets
+targets_set_info = {
+    "S": {"Tag": "Solid", "Legend": "Solid targets", "List": ["C", "Fe", "Pb"]},
+    "L": {"Tag": "Liquid", "Legend": "Liquid targets", "List": ["DC", "DFe", "DPb"]},
+}
+
+                                 #######################
+###################################      SUMMARY      ####################################
+###################################  Limits and tags  ####################################
+                                 #######################
+
+summary_y_limits = { # TODO: Update dictionary to improve some summary plots
+    "Asymmetry": {0: [0.0, 2.0], 1: [-0.599,0.099], 2: [-0.299,0.099], 3: [-0.599,0.599]},
+    "Ratio": {0: [0.0, 2.0], 1: [0.201,1.799], 2: [0.001,1.999], 3: [0.001,1.999]},
 }

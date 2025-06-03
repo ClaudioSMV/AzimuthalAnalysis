@@ -1,7 +1,7 @@
-from lib_error import error_msg,info_msg
-from lib_constants import ordered_stages,available_fit_methods,MARGINS,SIZE_TEXT
+from lib_error import error_msg, info_msg
+from lib_constants import ordered_stages, available_fit_methods, MARGINS, SIZE_TEXT
 from lib_style import axes_title
-from ROOT import TH1D,TMath,TF1,TLatex
+from ROOT import TH1D, TMath, TF1, TLatex
 from array import array
 
                                      ################
@@ -15,8 +15,11 @@ def matrix_name(matrix_name, histogram_info, idx):
 
     return "_".join([matrix_name, histogram_info, str(idx)])
 
-def get_fit_name(method_tag):
+def get_fit_method_name(method_tag):
     return available_fit_methods[method_tag]["Name"]
+
+def get_fit_unique_name(method_tag, fit_side):
+    return "%s%s"%(get_fit_method_name(method_tag), fit_side)
 
                                    ###################
 #####################################      Fits     ######################################

@@ -1,9 +1,10 @@
 
-from lib_cuts import get_output_cuts, get_ordered_cuts_at_this_stage, check_valid_cuts\
-    , format_output_binvars
+from lib_cuts import get_output_cuts, get_ordered_cuts_at_this_stage, check_valid_cuts,\
+    format_output_binvars
 from lib_dataset_info import get_info_tag_dictionary, get_info_tag__title_format
-from lib_fit import check_fit_method_exists, get_fit_name
+from lib_fit import check_fit_method_exists, get_fit_method_name, get_fit_unique_name
 from lib_error import info_msg, error_msg
+from lib_constants import targets_set_info, available_fit_methods
 import os
 import sys
 
@@ -25,11 +26,18 @@ def extract_histogram_info(hname, has_fit_info = False):
     if (len(list_of_characteristics) == 3):
         dictionary["Bincode"] = list_of_characteristics[2]
     if has_fit_info:
-        dictionary["Name"] = list_of_characteristics[0][1:-3] # Exclude fit info
-        dictionary["Fit_idx"] = list_of_characteristics[0][-3]
-        dictionary["Par_idx"] = list_of_characteristics[0][-1]
-        dictionary["Name_Full"] = list_of_characteristics[0][1:] # Include fit info
-        dictionary["Fit_info"] = list_of_characteristics[0][-3:] # (f_idx)p(par_idx)
+        fit_dictionary = extract_fit_info(dictionary["Name"])
+        dictionary.update(fit_dictionary)
+
+    return dictionary
+
+def extract_fit_info(hname):
+    dictionary = {}
+    dictionary["Name"] = hname[0:-3] # Exclude fit info
+    dictionary["Fit_idx"] = hname[-3]
+    dictionary["Par_idx"] = hname[-1]
+    dictionary["Name_Full"] = hname[1:] # Include fit info
+    dictionary["Fit_info"] = hname[-3:] # (f_idx)p(par_idx)
 
     return dictionary
 
@@ -111,7 +119,7 @@ class analysis_format:
         folder = get_info_tag__title_format(self.info_tag, omit_target=True)
         folder += "_%s"%(format_output_binvars(self.binvars))
         if (self.fit_method):
-            folder += "_%s"%(get_fit_name(self.fit_method))
+            folder += "_%s"%(get_fit_method_name(self.fit_method))
         folder += "_%s"%(get_output_cuts(self.cuts_list, self.stage_name))
         folder += "/" + self.target
 
@@ -223,48 +231,59 @@ class processed_files_format:
 
         return hist_name
 
-class summary_format: # TODO: UPDATE THIS TO WORK!
+class summary_format:
     # Naming for summary
-    def __init__(self, stage_name, info_tag, binvars, cuts = "", fit_method = "",
-                 run_local = False):
+    def __init__(self, stage_name, info_tag, binvars, targets_set, cuts = "",
+                 fit_method = "", run_local = False):
         self.stage_name = stage_name
 
         self.info_tag = info_tag
         dictionary = get_info_tag_dictionary(info_tag)
-        self.target = dictionary["Target"]
+        if (dictionary["Target"] != "None"):
+            info_msg("summary_format", "Avoid target info when calling summary!")
         self.n_bin = dictionary["n_bin"]
         self.n_dim = dictionary["n_dim"]
 
         self.binvars = binvars
-        self.cuts_list, _ = get_ordered_cuts_at_this_stage(stage_name, cuts)
-        self.fit_method = check_fit_method_exists(fit_method, stage_name)
+        self.binvars_format = format_output_binvars(self.binvars, versus_x_format=True)
+        self.targets_set = targets_set
+        self.cuts_list, _ = get_ordered_cuts_at_this_stage("Summary", cuts)
+        self.fit_method = check_fit_method_exists(fit_method, "Summary")
 
         self.run_local = run_local # Choose True to work with local generated data files
 
     #####################################  Methods  ######################################
 
-    def get_summary_plots(self, reco_method, extension = "png", is_LR_left = False,
-                          parameters_info = ""):
-    # Summary format: (n_bin)B(n_dim)-(binvars)-(cuts)/(stage)(parameters_info)-(cuts)-
-    # Summary format: (n_bin)B(n_dim)-(binvars)-(cuts)-(reco_method)-f(fit_method)-(bincode).(extension)
-    # ex. 10B1_FErr_AccQlt_P_Fold-Reco-NormB.pdf
-        folder = get_info_tag__title_format(self.info_tag, omit_target=True)
-        folder += "-%s"%(format_output_binvars(self.binvars, True))
-        if self.cuts_list:
-            folder += "-%s"%(get_output_cuts(self.cuts_list, self.stage_name))
-        else:
-            folder += "-NoCuts"
-        path = os.path.join(self.get_common_path(), "Summary", folder)
+    def get_path(self, reco_method):
+        this_path = BASEPATH + "analysis_output/"
+        if self.run_local:
+            this_path += "local/"
+        this_path += "Summary/"
+        this_path += "%s/"%(get_info_tag__title_format(self.info_tag, omit_target=True))
+        this_path += "%s/"%(reco_method)
 
-        file = self.stage_name
-        if (parameters_info):
-            file += parameters_info
-        if self.cuts_list:
-            file += "-%s"%(get_output_cuts(self.cuts_list, self.stage_name, use_cut_tags=True))
-        else:
-            file += "-NoCuts"
-        file += "-%s"%(reco_method)
+        folder = self.stage_name
+        folder += "-%s"%(self.binvars_format)
+        folder += "-%s"%(get_output_cuts(self.cuts_list, self.stage_name))
+        # if (self.fit_method):
+        #     folder += "_%s"%(get_fit_method_name(self.fit_method))
+
+        return create_folder(this_path, folder)
+
+    def get_summary_plots(self, fit_parameter_info, reco_method, bincode = "",
+                          extension = "png"): # TODO: Change the way file is created to be a LIST and append. At the end, just do "-".join(LIST)
+    # ex. Asymmetry0p1-QvNxZ-FE_AQ-Liquid-Fd-Reco.pdf
+        to_extract_fit_info = extract_fit_info("This" + fit_parameter_info)
+        file = "%s%s"%(self.stage_name, to_extract_fit_info["Par_idx"])
+        file += "-%s-"%(self.binvars_format)
+        file += "%s"%(get_output_cuts(self.cuts_list, self.stage_name, use_cut_tags=True))
         if (self.fit_method):
-            file += "-%s"%(get_fit_name(self.fit_method))
+            fit_idx = int(to_extract_fit_info["Fit_idx"])
+            fit_side = available_fit_methods[self.fit_method]["Sides"][fit_idx]
+            file += "-%s"%(get_fit_unique_name(self.fit_method, fit_side))
+        file += "-%s"%(targets_set_info[self.targets_set]["Tag"])
+        if (bincode):
+            file += "-%s"%(bincode)
+        file += ".%s"%(extension)
 
-        return path + file + "." + extension
+        return os.path.join(self.get_path(reco_method), file)

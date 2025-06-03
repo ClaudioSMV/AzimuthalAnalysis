@@ -1,12 +1,12 @@
 import sys; sys.path.append('lib')
-from ROOT import TFile,gStyle
+from ROOT import TFile, gStyle
 import optparse
-from lib_style import force_style,create_canvas,draw_preliminary,draw_targetinfo,\
-    get_color_palette,draw_bininfo
+from lib_style import force_style,create_canvas, draw_preliminary, draw_targetinfo,\
+    get_color_palette, draw_bininfo
 from lib_cuts import check_cut_is_included
-from lib_fit import check_fit_feasibility,get_fit_function,matrix_name,print_fit_info,\
+from lib_fit import check_fit_feasibility, get_fit_function, matrix_name, print_fit_info,\
     adapt_histogram_to_fit
-from lib_dataset_info import convert_info_tag_str_to_list
+from lib_dataset_info import convert_info_tag_str_to_list, title_from_analysis_name
 from lib_histograms import get_input_histograms
 from lib_error import info_msg
 from lib_constants import available_fit_methods
@@ -91,7 +91,7 @@ for (hname, histogram) in get_input_histograms(inputfile).items():
     histogram_to_fit.Write()
 
     # Draw annotations
-    draw_preliminary("Correction fit")
+    draw_preliminary(title_from_analysis_name(reco_method) + " fit")
     # draw_targetinfo("%s_%i"%(target, nbin), "Data")
     draw_targetinfo(target, "Data")
     draw_bininfo(bincode, nbin=nbin)

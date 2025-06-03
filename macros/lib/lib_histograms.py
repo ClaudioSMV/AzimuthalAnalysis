@@ -59,6 +59,7 @@ def create_1D_projection_from_sparse(input_histogram, new_name, bincode, shift =
                                   ######################
 
 def get_input_histograms(inputfile):
+# Creates dictionary with histogram name as key and the TH1 object as value
     histograms = {}
     for key in inputfile.GetListOfKeys():
         if "TH1" not in key.ReadObj().Class_Name(): # Skip if not an histogram

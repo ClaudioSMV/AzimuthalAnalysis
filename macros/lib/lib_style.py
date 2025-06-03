@@ -1,6 +1,6 @@
 from ROOT import TH1, TH1D, gROOT, gStyle, TGaxis, TCanvas, TLatex, kGray, TColor
-from lib_constants import MARGINS, FONT, SIZE_TEXT, SIZE_TITLE, SIZE_LABEL, OFFSET_TITLE,\
-    update_margins, update_font, update_size, update_offset, variable_info, color_palette
+from lib_constants import MARGINS, FONT, SIZE_TEXT, OFFSET_TITLE, update_margins, \
+    update_offset, variable_info, color_palette
 from lib_cuts import extract_indices_dict
 # import os
 import Bins as bn
@@ -16,7 +16,7 @@ def force_style(use_colz = False):
     gStyle.SetOptFit(1011)
     if use_colz: # Update values to support layout with colored z-scale
         update_margins({"T": 0.055, "R": 0.10})
-        # gStyle.SetLabelSize(SIZE_LABEL,"z")
+        # gStyle.SetLabelSize(SIZE_TEXT - 9,"z")
         update_offset({"Y": 1.3})
     # MARGINS
     gStyle.SetPadTopMargin(MARGINS["T"])
@@ -36,12 +36,12 @@ def force_style(use_colz = False):
     gStyle.SetTitleFont(FONT,"z")
     # TEXT SIZE
     gStyle.SetTextSize(SIZE_TEXT)
-    gStyle.SetLabelSize(SIZE_LABEL,"x")
-    gStyle.SetTitleSize(SIZE_TITLE,"x")
-    gStyle.SetLabelSize(SIZE_LABEL,"y")
-    gStyle.SetTitleSize(SIZE_TITLE,"y")
-    gStyle.SetLabelSize(SIZE_LABEL,"z")
-    gStyle.SetTitleSize(SIZE_TITLE,"z")
+    gStyle.SetLabelSize(SIZE_TEXT - 9,"x")
+    gStyle.SetTitleSize(SIZE_TEXT - 3,"x")
+    gStyle.SetLabelSize(SIZE_TEXT - 9,"y")
+    gStyle.SetTitleSize(SIZE_TEXT - 3,"y")
+    gStyle.SetLabelSize(SIZE_TEXT - 9,"z")
+    gStyle.SetTitleSize(SIZE_TEXT - 3,"z")
     # LEGEND
     gStyle.SetLegendFont(FONT)
     gStyle.SetLegendTextSize(SIZE_TEXT)
@@ -113,32 +113,34 @@ def draw_summary(text = "", xoff = 0.005, yoff = 0.01):
     # draw_annotation(text, "Summary", where="L", xoff=xoff, yoff=yoff)
     draw_annotation(text, where="L", xoff=xoff, yoff=yoff)
 
-def draw_targetinfo(target, is_data, show_set_type = False):
+def draw_targetinfo(text, is_data, show_set_type = False):
 # Draw top right label with target and "simulation" or "data" info
     set_type = "Data" if is_data else "Simulation"
-    text = "%s target"%(target)
+    if text in target_color.keys(): # Insert word "target" to be more clear
+        text += " target"
     if show_set_type:
         text += ", %s"%(set_type)
     draw_annotation(text, where="R")
 
-def draw_bininfo(bincode, limits = {}, nbin = -1, x_position = 0, y_position = 0,
-                 use_units = False):
+def draw_bininfo(bincode, nbin, x_position = 0, y_position = 0, use_units = False,
+                 angle = 0, reduce_text_size = 0, center = 0):
 # Draw bin info such as: "0.1 GeV < nu < 1.0 GeV"
     txt = TLatex()
-    txt.SetTextSize(SIZE_TEXT-4)
-    bin_range = get_bincode_explicit_range(bincode, limits, nbin, use_units)
+    txt.SetTextSize(SIZE_TEXT - 4 - reduce_text_size)
+    bin_range = get_bincode_explicit_range(bincode, nbin, use_units)
     align = 23 if not x_position else 33 # x_position: top-right; center if None
+    if center:
+        align = 23
     txt.SetTextAlign(align)
+    txt.SetTextAngle(angle)
     x_point = get_pad_center() if not x_position else x_position
     y_point = 1 - MARGINS["T"] - 0.02 if not y_position else y_position
 
     txt.DrawLatexNDC(x_point, y_point, bin_range)
 
-def get_bincode_explicit_range(bincode, dictionary_limits = {}, nbin = -1,
-                               use_units = False):
+def get_bincode_explicit_range(bincode, nbin, use_units = False):
 # Return text with variable and limits. Ex.: "N0" -> "0.1 GeV < nu < 1.0 GeV"
-    if nbin >= 0:
-        dictionary_limits = all_dicts[nbin]
+    dictionary_limits = all_dicts[nbin]
     list_ranges = []
     dictionary_indices = extract_indices_dict(bincode)
     for char in bincode:

@@ -64,8 +64,6 @@ def available_cuts_at_this_stage(this_stage, only_this_stage = False):
 
 def get_ordered_cuts_at_this_stage(stage, input_cuts):
 # Return ordered lists of available and unused cuts at this stage
-    if ("Asymmetry" in stage) or ("Ratio" in stage): # To handle summary macros
-        stage = "Summary"
     input_cuts = cuts_list_short(input_cuts)
     template_ordered_cuts = available_cuts_at_this_stage(stage)
     final_cut_tags = [cut for cut in template_ordered_cuts if cut in input_cuts]
@@ -126,21 +124,6 @@ def format_output_binvars(binvars, versus_x_format = False):
 
     return str(formatted_str)
 
-# def get_binvars_from_cuts(full_cut_str, use_output_format, versus_x_format = False):
-# # Returns non-integrated variables string with/without format
-#     list_cuts = cuts_list_short(full_cut_str, include_binvars=True)
-#     binvars = [item for item in list_cuts if check_binvars_input_format(item)]
-#     if not binvars:
-#         return ""
-#     elif len(list(set(binvars))) > 1: # Choose one and only one set of variables
-#         error_msg("get_binvars_from_cuts", "More than one binvar selected, choose one!")
-#         sys.exit(1)
-#     binvars = binvars[0]
-#     if use_output_format:
-#         return format_output_binvars(binvars, versus_x_format)
-
-#     return binvars[1:] # Remove initial "b" used in the format
-
                                      #################
 #######################################  Functions  ######################################
 #######################################   Bincode   ######################################
@@ -152,7 +135,7 @@ def get_variable_binning_limits(nbin, initial):
 
     return dictionary_with_limits[initial]
 
-def generate_combinations(variables, limits):
+def generate_combinations(variables, dict_max_indices):
 # Create list with all combinations of indices for bincode
     counters = {char: 0 for char in variables}
     results = []
@@ -163,7 +146,7 @@ def generate_combinations(variables, limits):
         for i in reversed(range(len(variables))):
             char = variables[i]
             counters[char] += 1
-            if counters[char] < limits[char]:
+            if counters[char] < dict_max_indices[char]:
                 break
             counters[char] = 0
             if i == 0:
@@ -171,21 +154,22 @@ def generate_combinations(variables, limits):
 
     return results
 
-def create_dictionary_of_bincode_nbins(nbin, binvars):
-# Return dictionary with number of bins for this configuration
-    nbins_per_var = {}
+def create_dictionary_binvars(nbin, binvars):
+# Create dictionary with the limits and bins number for each variable in binvars
+    dictionary = {}
     for var in binvars:
-        binvars_limits = get_variable_binning_limits(nbin, var)
-        nbins_per_var[var] = len(binvars_limits) - 1
+        limits = get_variable_binning_limits(nbin, var)
+        dictionary[var] = {"Limits": limits, "Nbins": len(limits) - 1}
 
-    return nbins_per_var
+    return dictionary
 
 def get_list_of_bincodes(info_tag, binvars):
 # Returns list with all possible bincodes for this configuration ["Q0N0Z0", "Q0N0Z1", ...]
     nbin = get_info_tag_dictionary(info_tag)["n_bin"]
-    binvars_nbins = create_dictionary_of_bincode_nbins(nbin, binvars)
+    binvars_info = create_dictionary_binvars(nbin, binvars)
+    max_indices = {var: info["Nbins"] for (var, info) in binvars_info.items()}
 
-    return generate_combinations(binvars, binvars_nbins)
+    return generate_combinations(binvars, max_indices)
 
 def extract_indices_dict(bincode):
 # Create dictionary with the indices associated to each variable in bincode
@@ -204,3 +188,10 @@ def extract_indices_dict(bincode):
         result[current_char] = int(current_number)
 
     return result
+
+def create_bincode(dictionary):
+    variables = [var for var in dictionary.keys() if var] # Skip empty elements
+    ordered_variables = format_output_binvars(variables)
+    listed_elements = [var + str(dictionary[var]) for var in ordered_variables]
+
+    return "".join(listed_elements)

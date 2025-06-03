@@ -84,3 +84,10 @@ def methods_under_use(input_histograms):
             break
 
     return methods_used
+
+def title_from_analysis_name(input_analysis_name):
+    for (_, names) in reco_methods:
+        (_, analysis_name, title) = names
+        if (input_analysis_name == analysis_name):
+            return title
+    error_msg("title_from_analysis_name", "Reconstruction method not found!")
