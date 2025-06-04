@@ -28,7 +28,7 @@ def extract_binvars_axes(formatted_binvars):
         info["canvas_x_axis"] = formatted_binvars[idx_reference - 1]
         info["canvas_y_axis"] = formatted_binvars[idx_reference + 1]
     else: # Pads in one dimension only
-        info["canvas_x_axis"] = formatted_binvars[idx_xvar - 1]
+        info["canvas_x_axis"] = formatted_binvars[idx_xvar - 2]
 
     return info
 
