@@ -112,6 +112,8 @@ def extract_value(input_histogram, bincode, liquid_input_histogram):
     if liquid_input_histogram:
         liquid_bin = liquid_input_histogram.GetXaxis().FindBin(bincode)
         liq_value = liquid_input_histogram.GetBinContent(liquid_bin)
+        if (liq_value == 0.0):
+            return 0.0, 0.0
         liq_error = liquid_input_histogram.GetBinError(liquid_bin)
         error = propagate_error_division(value, error, liq_value, liq_error)
         value = value / liq_value
@@ -331,7 +333,7 @@ def draw_ratio_reference_line(histogram_xaxis):
     xmax = histogram_xaxis.GetXaxis().GetXmax()
     line.DrawLine(xmin, 1.0, xmax, 1.0)
 
-def draw_canvas_x_bincode_range(xvar, nbin):
+def draw_canvas_x_bincode_range(xvar, nbin): # TODO: Update this to work with different pad sizes (example: when working with 2 binvars instead of 3)
     x, y = get_coordinates_in_pad(0.50, -0.20)
     draw_bininfo(xvar, nbin, x_position=x, y_position=y, reduce_text_size=12, center=True)
 

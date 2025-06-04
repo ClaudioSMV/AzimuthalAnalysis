@@ -3,6 +3,8 @@ from lib_naming import extract_histogram_info
 
 def propagate_error_division(v1, e1, v2, e2, cov = 0):
 # Propagate error using proper formula with covariance included
+    if (v1 == 0.0) or (v2 == 0.0):
+        return 0.0
     r1 = e1 / v1
     r2 = e2 / v2
     error_value = TMath.Abs(v1 / v2) * TMath.Sqrt(r1**2 + r2**2 - 2 * cov / (v1 * v2))
