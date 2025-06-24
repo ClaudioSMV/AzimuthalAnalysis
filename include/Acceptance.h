@@ -12,58 +12,33 @@
 #include "vector"
 #include "string"
 
-class Acceptance
-{
+using namespace BINNING;
+
+class Acceptance {
 private:
-    std::string _nameFormatted = "";
-    int _targTypeCut = 1;
+    // Dataset info
+    std::string _infoTag = "";
+    std::string _infoTag_Acceptance = "";
+    bool _isData = false;
+    bool _useCorrectionCuts = false;
+    bool _isClosureTest = false;
+    int _binIndex = -1;
+    int _binNdims = 0;
+    std::vector<std::string> _variables = {"Q2", "Nu", "Xb", "Zh", "Pt2", "PhiPQ"};
+    std::unordered_map<std::string, std::vector<double>> _limitsMap;
+    std::unordered_map<std::string, double> _minimum;
+    std::unordered_map<std::string, double> _maximum;
+    std::vector<bool> _irregularBins;
+    // Target info
+    int _cut_TargType = -1;
     std::string _nameTarget;
     std::string _nameSolidTarget = "";
-    std::string _cutList = "";
-    bool _isData = false;
-    bool _isClosureTest = false;
-    int _fracCT = 100;
-    int _binIndex = -1;
-    int _binNdims = 0; // 2: Leptonic, 3: Leptonic+Zh
-    int _useXb = false; // !_useNu
-
-    // Cut Acc bools
-    bool _cutXf = false; // Current Fragmentation Region
-    bool _cutXf_TFR = false; // Target Fragmentation Region
-    bool _cutDeltaSector0 = false;
-    bool _cutBadSector = false;
-    bool _cutPiFiducial = false;
-    bool _cutMirrorMtch = false;
-    bool _cutMirrorMtch2 = false;
-
-    // Cut Corr bools
-    bool _useFullError = false;
-    bool _useAccQlt = false;
-    bool _rmNpheElH = false;
+    // Closure Test info
+    int _fractionClosureTest;
+    // Cuts info
+    std::vector<std::string> _cutList = {};
 
     int _count = 0; // Usefull for debug
-
-public: // Internal values
-    void setTargTypeCut(size_t targTypeCut) { _targTypeCut = targTypeCut; }
-    std::string getNameTarget() { return _nameTarget; }
-    void setDataType() { _isData = true; }
-    void setBinningType(int binning_number) { _binIndex = binning_number; }
-    void setBinNdims(int binningNdims) { _binNdims = binningNdims; }
-    void setUseXb(bool boolXb) { _useXb = boolXb; }
-
-public: // Acc cuts
-    void useCut_Xf() { _cutXf = true; }
-    void useCut_Xf_TFR() { _cutXf_TFR = true; }
-    void useCut_DeltaSector0() { _cutDeltaSector0 = true; }
-    void useCut_rmBadSector() { _cutBadSector = true; }
-    void useCut_PiFiducial() { _cutPiFiducial = true; }
-    void useCut_MirrorMtch() { _cutMirrorMtch = true; }
-    void useCut_MirrorMtch2() { _cutMirrorMtch2 = true; }
-
-public: // Corr cuts
-    void setFullError() { _useFullError = true; }
-    void useAccQlt() { _useAccQlt = true; }
-    void rmNpheElH() { _rmNpheElH = true; }
 
 public:
     TTree *fChain;  //! pointer to the analyzed TTree or TChain
@@ -210,37 +185,31 @@ public:
     vector<float> *mc_Xf;
     vector<float> *mc_deltaZ;
 
-    Acceptance(TTree *tree = 0, bool isData = false);
+    // Declare functions
+    Acceptance(TTree*, std::string, int, int, std::string, bool, bool);
     virtual ~Acceptance();
-    virtual void setTargName(std::string name);
-    std::string getFoldNameExt();
-    virtual void setNameFormat();
-    std::string getAccFoldNameExt();
-    std::string getAccFileName();
-    void setClosureTest(int fractionAcc);
-    virtual Int_t Cut(Long64_t entry);
-    virtual Bool_t GoodElectron_MC(Long64_t entry, vector<vector<double>> DISLimits);
-    virtual Bool_t GoodPiPlus_MC(Long64_t entry, int ivec, vector<vector<double>> DISLimits);
-    virtual Bool_t GoodElectron(Long64_t entry, vector<vector<double>> DISLimits);
-    virtual Bool_t GoodPiPlus(Long64_t entry, int ivec, vector<vector<double>> DISLimits);
-    virtual Int_t GetEntry(Long64_t entry);
-    virtual Long64_t LoadTree(Long64_t entry);
-    virtual void Init(TTree *tree);
-    virtual void ActivateBranches();
-    virtual void ActivateCuts(std::string);
+    // Set info
+    virtual void set_InfoTag();
+    virtual void set_TargetInfo(std::string);
+    virtual void set_Cuts(std::string);
+    virtual void set_Binning();
+    std::string get_FormatInfoTagName();
+    void set_ClosureTest(int);
+    virtual Int_t Cut(Long64_t);
+    virtual Bool_t GoodElectron_MC(Long64_t);
+    virtual Bool_t GoodPiPlus_MC(Long64_t, int);
+    virtual Bool_t GoodElectron(Long64_t);
+    virtual Bool_t GoodPiPlus(Long64_t, int);
+    virtual Int_t GetEntry(Long64_t);
+    virtual Long64_t LoadTree(Long64_t);
+    virtual void Init(TTree*);
+    virtual void activateBranches();
+
+    virtual bool cutIsUsed(std::string);
     virtual void Loop();
-    virtual void Hist2D_KinVars();
-    virtual void Hist2D_XfVsYh();
-    virtual void Hist2D_ThetaPQ();
-    virtual void Hist2D_LabAngles();
-    virtual void Hist2D_PQVsLab();
-    virtual void Hist2D_PQVsSector();
-    virtual void Hist2D_PQVsDeltaSector();
-    virtual void Hist2D_VarsVsXb();
-    virtual void Hist2D_PiCherenkovCounter();
-    virtual void Hist2D_NpheVs();
     virtual void Correction();
-    virtual void ClosureTest();
+    // virtual void ClosureTest();
+
     virtual Bool_t Notify();
     virtual void Show(Long64_t entry = -1);
 };
@@ -248,139 +217,155 @@ public:
 #endif // #ifndef Acceptance_h
 
 #ifdef Acceptance_cxx
-Acceptance::Acceptance(TTree *tree, bool isData) : fChain(0), _nameTarget("D")
-{
-    // if parameter tree is not specified (or zero), connect the file
-    // used to generate this class and read the Tree.
-    if (tree == 0)
-    {
-        TFile *f = (TFile *)gROOT->GetListOfFiles()->FindObject("hsim_D1.root");
-        if (!f || !f->IsOpen())
-        {
+Acceptance::Acceptance(TTree *tree, std::string target, int Nbin, int Ndim,
+                                     std::string cuts, bool isData,
+                                     bool useCorrectionCuts = false)
+    : fChain(0), _binIndex(Nbin), _binNdims(Ndim), _isData(isData),
+    _useCorrectionCuts(useCorrectionCuts) {
+    // if parameter tree is not specified (or zero), connect the file used to generate this
+    // class and read the Tree.
+    if (tree == 0) {
+        TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("hsim_D1.root");
+        if (!f || !f->IsOpen()) {
             f = new TFile("hsim_D1.root");
         }
         f->GetObject("ntuple_sim", tree);
     }
-    if (isData) setDataType();
+    set_TargetInfo(target);
+    set_InfoTag();
+    set_Cuts(cuts);
+    set_Binning();
     Init(tree);
+
+    std::cout << "Attributes in this run:" << std::endl;
+    std::cout << "-----------------------" << std::endl;
+    std::cout << "_infoTag: " << _infoTag << std::endl;
+    std::cout << "_infoTag_Acceptance: " << _infoTag_Acceptance << std::endl;
+    std::cout << "_isData: " << _isData << std::endl;
+    std::cout << "_useCorrectionCuts: " << _useCorrectionCuts << std::endl;
+    std::cout << "_isClosureTest: " << _isClosureTest << std::endl;
+    std::cout << "_binIndex: " << _binIndex << std::endl;
+    std::cout << "_binNdims: " << _binNdims << std::endl;
+    std::cout << "_cut_TargType: " << _cut_TargType << std::endl;
+    std::cout << "_nameTarget: " << _nameTarget << std::endl;
+    std::cout << "_nameSolidTarget: " << _nameSolidTarget << std::endl;
 }
 
-Acceptance::~Acceptance()
-{
+Acceptance::~Acceptance() {
     if (!fChain)
         return;
     delete fChain->GetCurrentFile();
 }
 
-Int_t Acceptance::GetEntry(Long64_t entry)
-{
+Int_t Acceptance::GetEntry(Long64_t entry) {
     // Read contents of entry.
     if (!fChain)
         return 0;
     return fChain->GetEntry(entry);
 }
 
-Long64_t Acceptance::LoadTree(Long64_t entry)
-{
+Long64_t Acceptance::LoadTree(Long64_t entry) {
     // Set the environment to read one entry
     if (!fChain)
         return -5;
     Long64_t centry = fChain->LoadTree(entry);
     if (centry < 0)
         return centry;
-    if (fChain->GetTreeNumber() != fCurrent)
-    {
+    if (fChain->GetTreeNumber() != fCurrent) {
         fCurrent = fChain->GetTreeNumber();
         Notify();
     }
     return centry;
 }
 
-// Set Names
+//////////////////////////////////////////////////////////////////////////////////////////
+//  Setting class attributes
+//////////////////////////////////////////////////////////////////////////////////////////
 
-void Acceptance::setTargName(std::string name)
-{
-    if (name.find("D")!=std::string::npos)
-    {
-        if (name=="D" || name.find("S")!=std::string::npos) // "S" runs over all solid targets
-        {
-            _nameTarget = name;
-        }
-        else
-        {
-            _nameTarget = "D";
-            _nameSolidTarget = name.substr(1); // Substring gets what's after "D"
-        }
-    }
-    else
-    {
-        // Since "D" is not in the name, it's a solid target!
-        setTargTypeCut(2); // Solid
-        _nameTarget = name;
+void Acceptance::set_TargetInfo(std::string targetName) {
+    _cut_TargType = (targetName.find("D") != std::string::npos)? 1 : 2; // D: 1; Solid: 2;
+    _nameTarget = targetName;
+    if ((targetName.find("D") != std::string::npos) && (targetName.size() > 1)) {
+        _nameTarget = "D";
+        _nameSolidTarget = targetName.substr(1); // Gets what is after "D"
     }
 }
 
-// Folder and file names
-
-void Acceptance::setNameFormat()
-{
-    // <target>_<_binIndex>B<_binNdims> -> If D: DC, DFe, DPb
-    _nameFormatted = _nameTarget;
-    if (_nameTarget=="D" && _nameSolidTarget!="")
-    {
-        if (_nameSolidTarget!="All") _nameFormatted+=_nameSolidTarget;
+void Acceptance::set_InfoTag() {
+// Info tag format: <target>_<_binIndex>B<_binNdims> ; NOTE: Deuterium shows: DC, DFe, DPb
+    _infoTag = _nameTarget;
+    _infoTag_Acceptance = _nameTarget;
+    if ((_nameTarget == "D") && (_nameSolidTarget != ""))
+        _infoTag += _nameSolidTarget;
+    if (_binIndex > -1) {
+        _infoTag += "_" + std::to_string(_binIndex) + "B";
+        _infoTag_Acceptance += "_" + std::to_string(_binIndex) + "B";
     }
-    if (_binIndex>-1)
-    {
-        _nameFormatted+="_"+std::to_string(_binIndex)+"B";
-    }
-    if (_binNdims)
-    {
-        _nameFormatted+=std::to_string(_binNdims);
-    }
-    std::cout << "Name formatted extension: " << _nameFormatted << std::endl;
+    if (_useCorrectionCuts && _binNdims)
+        _infoTag += std::to_string(_binNdims);
+    std::cout << "Information tag: " << _infoTag << std::endl;
 }
 
-std::string Acceptance::getAccFoldNameExt() //getNameAccFormat() // Only cuts
-{
-    // _<extra cuts, ex. Xf>
-    std::string this_name = cutExtension(_cutList, lookuptable_cutAcc);
-
-    return this_name;
-}
-
-std::string Acceptance::getFoldNameExt() //getNameAccFormat() // Cuts + other selections
-{
-    // _<extra cuts, ex. Xf>
-    std::string this_name = getAccFoldNameExt();
-    this_name += cutExtension(_cutList, lookuptable_cutCor);
-
-    return this_name;
-}
-
-std::string Acceptance::getAccFileName()
-{
-    // <target>_<_binIndex>B
-    std::string this_name = _nameTarget;
-    if (_binIndex>-1)
-    {
-        this_name+="_"+std::to_string(_binIndex)+"B";
+void Acceptance::set_Binning() {
+    _limitsMap = BINNING::Bin_List[_binIndex];
+    for (const auto& pair : _limitsMap) {
+        _minimum.insert({pair.first, pair.second.front()});
+        _maximum.insert({pair.first, pair.second.back()});
     }
-    return this_name;
+    _irregularBins = BINNING::irregular_axes[_binNdims];
+    std::vector<std::string> temporal;
+    for (const auto& var : _variables){
+        if (!_limitsMap.count(var))
+            continue;
+        temporal.push_back(var);
+    }
+    _variables = temporal;
 }
 
-void Acceptance::setClosureTest(int fractionAcc = 50)
-{
+void Acceptance::set_Cuts(std::string str_cuts) {
+    for (const std::string& cut : cutsInOrder_Acceptance) {
+        if(str_cuts.find(cut) == std::string::npos)
+            continue;
+        cuts_LUT[cut].usingCut = true;
+        _cutList.push_back(cut);
+    }
+    if (!_useCorrectionCuts)
+        return;
+
+    for (const std::string& cut : cutsInOrder_Correction) {
+        if(str_cuts.find(cut) == std::string::npos)
+            continue;
+        cuts_LUT[cut].usingCut = true;
+        _cutList.push_back(cut);
+    }
+    return;
+}
+
+void Acceptance::set_ClosureTest(int fraction = 50) {
     _isClosureTest = true;
-    _fracCT = fractionAcc;
-    std::cout << Form("Set Closure Test to use %i%% of simulations in acceptance calculation.", fractionAcc) << std::endl;
+    _fractionClosureTest = fraction;
+    std::string percentage = Form("%i%%", fraction);
+    std::cout << "Using " << percentage << " of simulations in Closure Test";
+    std::cout << " acceptance calculation." << std::endl;
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////
+//  Useful functions
+//////////////////////////////////////////////////////////////////////////////////////////
 
-// Init
+bool Acceptance::cutIsUsed(std::string name) {
+    return (find(_cutList.begin(), _cutList.end(), name) != _cutList.end());
+}
 
-void Acceptance::Init(TTree *tree)
-{
+std::string Acceptance::get_FormatInfoTagName() {
+    std::string formatName = Form("%s_%iB", _nameTarget.c_str(), _binIndex);
+    if (_useCorrectionCuts)
+        formatName += std::to_string(_binNdims);
+
+    return formatName;
+}
+
+void Acceptance::Init(TTree *tree) {
     // The Init() function is called when the selector needs to initialize
     // a new tree or chain. Typically here the branch addresses and branch
     // pointers of the tree will be set.
@@ -570,8 +555,7 @@ void Acceptance::Init(TTree *tree)
     fChain->SetBranchAddress("NRowsSC", &NRowsSC);
     fChain->SetBranchAddress("NRowsCC", &NRowsCC);
     fChain->SetBranchAddress("evnt", &evnt);
-    if (!_isData)
-    {
+    if (!_isData) {
         fChain->SetBranchAddress("mc_Q2", &mc_Q2);
         fChain->SetBranchAddress("mc_W", &mc_W);
         fChain->SetBranchAddress("mc_Nu", &mc_Nu);
@@ -616,8 +600,7 @@ void Acceptance::Init(TTree *tree)
     Notify();
 }
 
-Bool_t Acceptance::Notify()
-{
+Bool_t Acceptance::Notify() {
     // The Notify() function is called when a new file is opened. This
     // can be either for a new TTree in a TChain or when when a new TTree
     // is started when using PROOF. It is normally not necessary to make changes
@@ -627,8 +610,7 @@ Bool_t Acceptance::Notify()
     return kTRUE;
 }
 
-void Acceptance::Show(Long64_t entry)
-{
+void Acceptance::Show(Long64_t entry) {
     // Print contents of entry.
     // If entry is not specified, print current entry
     if (!fChain)
@@ -636,156 +618,94 @@ void Acceptance::Show(Long64_t entry)
     fChain->Show(entry);
 }
 
-void Acceptance::ActivateCuts(std::string str_cuts)
-{
-    // Acc cuts
-    if (str_cuts.find("Xf")!=std::string::npos)
-    {
-        useCut_Xf();            _cutList+="_Xf";    std::cout << "Using Xf cut." << std::endl;
-    }
-    if (str_cuts.find("XT")!=std::string::npos)
-    {
-        useCut_Xf_TFR();            _cutList+="_XT";    std::cout << "Using Xf TargetFrag Region cut." << std::endl;
-    }
-    if (str_cuts.find("DS")!=std::string::npos)
-    {
-        useCut_DeltaSector0();  _cutList+="_DS";    std::cout << "Using Delta Sector != 0 cut." << std::endl;
-    }
-    if (str_cuts.find("BS")!=std::string::npos)
-    {
-        useCut_rmBadSector();   _cutList+="_BS";    std::cout << "Using rm Bad Sector (5) cut." << std::endl;
-    }
-    if (str_cuts.find("PF")!=std::string::npos)
-    {
-        useCut_PiFiducial();    _cutList+="_PF";    std::cout << "Using Pi+ fiducial cut." << std::endl;
-    }
-    if (str_cuts.find("MM")!=std::string::npos)
-    {
-        useCut_MirrorMtch();    _cutList+="_MM";    std::cout << "Using Mirror Match cut." << std::endl;
-    }
-    if (str_cuts.find("M2")!=std::string::npos)
-    {
-        useCut_MirrorMtch2();    _cutList+="_M2";    std::cout << "Using Mirror Match 2 cut." << std::endl;
-    }
+//////////////////////////////////////////////////////////////////////////////////////////
+//  Generated (MC) events selection
+//////////////////////////////////////////////////////////////////////////////////////////
+// TODO: REMEMBER TO CHANGE < TO <= . USING < JUST TO RECOVER WHAT WAS OBTAINED BEFORE!
+Bool_t Acceptance::GoodElectron_MC(Long64_t entry) {
+    std::string ref_var2 = (_limitsMap.count("Nu"))? "Nu" : "Xb";
+    double mc_var2 = (_limitsMap.count("Nu"))? mc_Nu : mc_Xb;
 
-    // Corr cuts
-    if (str_cuts.find("FE")!=std::string::npos)
-    {
-        setFullError();         _cutList+="_FE";    std::cout << "Using full error calculation." << std::endl;
-    }
-    if (str_cuts.find("AQ")!=std::string::npos)
-    {
-        useAccQlt();         _cutList+="_AQ";    std::cout << "Using Acc quality cut (err/acc < 10 %)." << std::endl;
-    }
-    if (str_cuts.find("Pe")!=std::string::npos)
-    {
-        rmNpheElH();         _cutList+="_Pe";    std::cout << "Using NpheEl != Nphe cut." << std::endl;
-    }
+    return (
+        (mc_TargType == _cut_TargType) && // Interaction with correct target
+        (mc_Yb < 0.85) && (mc_W > 2) && // Yb: Limit of P resolution; W: Avoid resonance
+        (_minimum["Q2"] < mc_Q2) && (mc_Q2 < _maximum["Q2"]) && // Q2 limits
+        (_minimum[ref_var2] < mc_var2) && (mc_var2 < _maximum[ref_var2]) // Nu/Xb
+    );
 }
 
-/////////////////////////
-//// Generated (MC) Cuts
-/////////////////////////
+Bool_t Acceptance::GoodPiPlus_MC(Long64_t entry, int ivec) {
+    // Directly return false if an extra cut is under use and is not fulfilled
+    if (cutIsUsed("Xf") && !pass_Xf(mc_Xf->at(ivec)))
+        return false;
+    if (cutIsUsed("XT") && !pass_Xf_TFR(mc_Xf->at(ivec)))
+        return false;
+    if (cutIsUsed("DS") && !pass_DeltaSect0(mc_SectorEl, mc_Sector->at(ivec)))
+        return false;
+    if (cutIsUsed("BS") && !pass_rmBadSect(mc_SectorEl, mc_Sector->at(ivec)))
+        return false;
+    // Note: Fiducial cuts and MirrorMatching are not applied in generated data
 
-Bool_t Acceptance::GoodElectron_MC(Long64_t entry, vector<vector<double>> this_limit)
-{
-    // This function may be called from Loop.
-
-    bool pass_DIS = (mc_TargType==_targTypeCut && this_limit[0][0]<mc_Q2 && mc_Q2<this_limit[1][0] && mc_Yb<0.85 && mc_W>2 &&
-                  ((!_useXb && this_limit[0][1]<mc_Nu && mc_Nu<this_limit[1][1]) || (_useXb && this_limit[0][1]<mc_Xb && mc_Xb<this_limit[1][1])));
-
-    return pass_DIS;
+    return (
+        (mc_pid->at(ivec) == 211) && // Is a pion+
+        (_minimum["Zh"] < mc_Zh->at(ivec)) &&
+            (mc_Zh->at(ivec) < _maximum["Zh"]) && // Zh limits
+        (_minimum["Pt2"] < mc_Pt2->at(ivec)) &&
+            (mc_Pt2->at(ivec) < _maximum["Pt2"]) && // Pt2 limits
+        (_minimum["PhiPQ"] < mc_PhiPQ->at(ivec)) &&
+            (mc_PhiPQ->at(ivec) < _maximum["PhiPQ"]) // PhiPQ limits
+    );
 }
 
-Bool_t Acceptance::GoodPiPlus_MC(Long64_t entry, int ivec, vector<vector<double>> this_limit)
-{
-    // This function may be called from Loop.
+//////////////////////////////////////////////////////////////////////////////////////////
+//  Data and reconstructed events seletion
+//////////////////////////////////////////////////////////////////////////////////////////
 
-    bool pass_DIS = (mc_pid->at(ivec)==211 && this_limit[0][2]<mc_Zh->at(ivec) && mc_Zh->at(ivec)<this_limit[1][2] &&
-            this_limit[0][3]<mc_Pt2->at(ivec) && mc_Pt2->at(ivec)<this_limit[1][3] && this_limit[0][4]<mc_PhiPQ->at(ivec) && mc_PhiPQ->at(ivec)<this_limit[1][4]);
-    if (_cutXf)
-    {
-        pass_DIS = pass_DIS && pass_Xf(mc_Xf->at(ivec));
-    }
-    if (_cutXf_TFR)
-    {
-        pass_DIS = pass_DIS && pass_Xf_TFR(mc_Xf->at(ivec));
-    }
-    if (_cutDeltaSector0)
-    {
-        pass_DIS = pass_DIS && pass_DeltaSect0(mc_SectorEl, mc_Sector->at(ivec));
-    }
-    if (_cutBadSector)
-    {
-        pass_DIS = pass_DIS && pass_rmBadSect(mc_SectorEl, mc_Sector->at(ivec));
-    }
+Bool_t Acceptance::GoodElectron(Long64_t entry) {
+    std::string ref_var2 = (_limitsMap.count("Nu"))? "Nu" : "Xb";
+    double var2 = (_limitsMap.count("Nu"))? Nu : Xb;
 
-    // Fiducial cuts are applied in reconstruction only, not generated!
-    // if (_cutPiFiducial) pass_DIS = pass_DIS && pass_PiFiducial(mc_Sector->at(ivec), mc_P->at(ivec), mc_ThetaLab->at(ivec), mc_PhiLab->at(ivec));
-    // Mirror Match is applied in reconstruction only!
-
-    return pass_DIS;
+    return (
+        (TargType == _cut_TargType) && // Interaction with correct target
+        (Yb < 0.85) && (W > 2) && // Yb: Limit of P resolution; W: Avoid resonance
+        (-1.4 < vyec) && (vyec < 1.4) && // Restrict vertex region
+        (_minimum["Q2"] < Q2) && (Q2 < _maximum["Q2"]) && // Q2 limits
+        (_minimum[ref_var2] < var2) && (var2 < _maximum[ref_var2]) // Nu/Xb limits
+    );
 }
 
-/////////////////////////
-//// Reconstructed Cuts
-/////////////////////////
+Bool_t Acceptance::GoodPiPlus(Long64_t entry, int ivec) {
+    // Directly return false if an extra cut is under use and is not fulfilled
+    if (cutIsUsed("Xf") && !pass_Xf(Xf->at(ivec)))
+        return false;
+    if (cutIsUsed("XT") && !pass_Xf_TFR(Xf->at(ivec)))
+        return false;
+    if (cutIsUsed("DS") && !pass_DeltaSect0(SectorEl, Sector->at(ivec)))
+        return false;
+    if (cutIsUsed("BS") && !pass_rmBadSect(SectorEl, Sector->at(ivec)))
+        return false;
+    if (cutIsUsed("PF") && !pass_PiFiducial(Sector->at(ivec), P->at(ivec),
+                                            ThetaLab->at(ivec), PhiLab->at(ivec)))
+        return false;
+    if (cutIsUsed("MM") && !pass_MirrorMatch(P->at(ivec), Nphe->at(ivec)))
+        return false;
+    if (cutIsUsed("M2") && !pass_MirrorMatch2(P->at(ivec), Nphe->at(ivec)))
+        return false;
+    if (cutIsUsed("Pe") && !pass_rmNpheElH(NpheEl, Nphe->at(ivec))) // TODO: Change name to TL: The Line
+        return false;
 
-Bool_t Acceptance::GoodElectron(Long64_t entry, vector<vector<double>> this_limit)
-{
-    // This function may be called from Loop.
-
-    bool pass_DIS = (TargType==_targTypeCut && this_limit[0][0]<Q2 && Q2<this_limit[1][0] && Yb<0.85 && W>2 && -1.4<vyec && vyec<1.4 &&
-                  ((!_useXb && this_limit[0][1]<Nu && Nu<this_limit[1][1]) || (_useXb && this_limit[0][1]<Xb && Xb<this_limit[1][1])));
-
-    return pass_DIS;
+    return (
+        (pid->at(ivec) == 211) && // Is a pion+
+        (_minimum["Zh"] < Zh->at(ivec)) &&
+            (Zh->at(ivec) < _maximum["Zh"]) && // Zh limits
+        (_minimum["Pt2"] < Pt2->at(ivec)) &&
+            (Pt2->at(ivec) < _maximum["Pt2"]) && // Pt2 limits
+        (_minimum["PhiPQ"] < PhiPQ->at(ivec)) &&
+            (PhiPQ->at(ivec) < _maximum["PhiPQ"]) // PhiPQ limits
+    );
 }
 
-Bool_t Acceptance::GoodPiPlus(Long64_t entry, int ivec, vector<vector<double>> this_limit)
-{
-    // This function may be called from Loop.
-
-    bool pass_DIS = (pid->at(ivec)==211 && this_limit[0][2]<Zh->at(ivec) && Zh->at(ivec)<this_limit[1][2] &&
-            this_limit[0][3]<Pt2->at(ivec) && Pt2->at(ivec)<this_limit[1][3] && this_limit[0][4]<PhiPQ->at(ivec) && PhiPQ->at(ivec)<this_limit[1][4]);
-
-    if (_cutXf)
-    {
-        pass_DIS = pass_DIS && pass_Xf(Xf->at(ivec));
-    }
-    if (_cutXf_TFR)
-    {
-        pass_DIS = pass_DIS && pass_Xf_TFR(Xf->at(ivec));
-    }
-    if (_cutDeltaSector0)
-    {
-        pass_DIS = pass_DIS && pass_DeltaSect0(SectorEl, Sector->at(ivec));
-    }
-    if (_cutBadSector)
-    {
-        pass_DIS = pass_DIS && pass_rmBadSect(SectorEl, Sector->at(ivec));
-    }
-    if (_cutPiFiducial)
-    {
-        pass_DIS = pass_DIS && pass_PiFiducial(Sector->at(ivec), P->at(ivec), ThetaLab->at(ivec), PhiLab->at(ivec));
-    }
-    if (_cutMirrorMtch)
-    {
-        pass_DIS = pass_DIS && pass_MirrorMatch(P->at(ivec), Nphe->at(ivec));
-    }
-    if (_cutMirrorMtch2)
-    {
-        pass_DIS = pass_DIS && pass_MirrorMatch2(P->at(ivec), Nphe->at(ivec));
-    }
-    if (_rmNpheElH)
-    {
-        pass_DIS = pass_DIS && pass_rmNpheElH(NpheEl, Nphe->at(ivec));
-    }
-
-    return pass_DIS;
-}
-
-Int_t Acceptance::Cut(Long64_t entry)
-{
+Int_t Acceptance::Cut(Long64_t entry) {
     // This function may be called from Loop.
     // returns  1 if entry is accepted.
     // returns -1 otherwise.

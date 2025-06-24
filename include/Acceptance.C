@@ -17,31 +17,33 @@
 #include <vector>
 #include <string>
 
-using namespace DIS;
+using namespace BINNING;
 
-inline float DEG2RAD(float x)
-{
+inline float DEG2RAD(float x) {
     return 0.017453293 * x;
 }
 
-void Acceptance::ActivateBranches()
-{
-    fChain->SetBranchStatus("*",0);
-    std::vector<string> activeBranches = {"TargType", "Q2", "Nu", "Xb", "Yb", "W", "vyec", "Zh", "Pt2", "PhiPQ", "pid", "Xf"}; // , "Nphe"};
-    std::vector<string> activeBranches_mc = {"mc_TargType", "mc_Q2", "mc_Nu", "mc_Xb", "mc_Yb", "mc_W", "mc_Zh", "mc_Pt2", "mc_PhiPQ", "mc_pid", "mc_Xf"};
+void Acceptance::activateBranches() {
+    fChain->SetBranchStatus("*",0); // Deactivate all branches
+    std::vector<string> activeBranches = {
+        "TargType", "Q2", "Nu", "Xb", "Yb", "W", "vyec", "Zh", "Pt2", "PhiPQ",
+        "pid", "Xf", // "Nphe"
+    };
+    std::vector<string> activeBranches_mc = {
+        "mc_TargType", "mc_Q2", "mc_Nu", "mc_Xb", "mc_Yb", "mc_W", "mc_Zh", "mc_Pt2",
+        "mc_PhiPQ", "mc_pid", "mc_Xf",
+    };
 
     //  Enable branches per cut
     /////////////////////////////
 
-    if (_cutDeltaSector0 || _cutBadSector)
-    {
+    if (cutIsUsed("DS") || cutIsUsed("BS")) {
         activeBranches.push_back("SectorEl");
         activeBranches.push_back("Sector");
         activeBranches_mc.push_back("mc_SectorEl");
         activeBranches_mc.push_back("mc_Sector");
     }
-    if (_cutPiFiducial)
-    {
+    if (cutIsUsed("PF")) {
         activeBranches.push_back("Sector");
         activeBranches.push_back("P");
         activeBranches.push_back("ThetaLab");
@@ -51,44 +53,27 @@ void Acceptance::ActivateBranches()
         activeBranches_mc.push_back("mc_ThetaLab");
         activeBranches_mc.push_back("mc_PhiLab");
     }
-    if (_cutMirrorMtch || _cutMirrorMtch2)
-    {
+    if (cutIsUsed("MM") || cutIsUsed("M2")) {
         activeBranches.push_back("P");
         activeBranches.push_back("Nphe");
     }
-    if (_rmNpheElH)
-    {
+    if (cutIsUsed("Pe")) {
         activeBranches.push_back("NpheEl");
         activeBranches.push_back("Nphe");
     }
 
     for (const auto &activeBranch : activeBranches)
-    {
         fChain->SetBranchStatus(activeBranch.c_str(), 1);
-    }
 
-    if (!_isData)
-    {
+    if (!_isData) {
         for (const auto &activeBranch : activeBranches_mc)
-        {
             fChain->SetBranchStatus(activeBranch.c_str(), 1);
-        }
     }
-
-    setNameFormat();
-
-    // Copy Bin info into a python file at /macros/
-    SaveBinningFilePy();
-    // Update binning limits for cuts
-    if (_binIndex!=-1)
-    {
-        UpdateDISLimits(DISLimits, Bin_List[_binIndex]);
-        setUseXb(list_boolXb[_binIndex]);
-    }
+    // Save binning info in .py file to use in python macros later!
+    write_python_file(BINNING::Bin_List);
 }
 
-void Acceptance::Loop()
-{
+void Acceptance::Loop() {
     //   In a ROOT session, you can do:
     //      root> .L Acceptance.C
     //      root> Acceptance t
@@ -110,337 +95,278 @@ void Acceptance::Loop()
     //    fChain->SetBranchStatus("*",0);  // disable all branches
     //    fChain->SetBranchStatus("branchname",1);  // activate branchname
 
-    ActivateBranches();
+    activateBranches();
 
-    TFile *fout;
-    if (!_isClosureTest)
-    {
-        std::string acc_folder = "../output/Acceptance" + getAccFoldNameExt();
-        CreateDir(acc_folder);
-        fout = TFile::Open(Form("%s/Acceptance_%s.root", acc_folder.c_str(), getAccFileName().c_str()), "RECREATE");
+    std::string folderName;
+    std::string fileName;
+    if (!_isClosureTest) {
+        folderName = "../output/localJul2025/Acceptance" +
+            formatCutsInName(_cutList);
+        fileName = Form("Acceptance_%s", _infoTag_Acceptance.c_str());
     }
-    else
-    {
-        std::string ct_folder = "../output/ClosureTest" + std::to_string(_fracCT) + "p" + getFoldNameExt();
-        CreateDir(ct_folder);
-        fout = TFile::Open(Form("%s/AccCT_%s.root", ct_folder.c_str(), getAccFileName().c_str()), "RECREATE");
+    else {
+        folderName = "../output/localJul2025/ClosureTest" +
+            std::to_string(_fractionClosureTest) + "p" + formatCutsInName(_cutList);
+        fileName = Form("AccCT_%s", _infoTag_Acceptance.c_str());
     }
+    create_Dir(folderName);
+    TFile *fout =
+        TFile::Open(Form("%s/%s.root", folderName.c_str(), fileName.c_str()), "RECREATE");
 
-    std::cout << "\n\nBeginning Acceptance calculations for " << _nameTarget << " target\n" << std::endl;
+    std::cout << "\n\nBeginning Acceptance calculations for ";
+    std::cout << _nameTarget << " target\n" << std::endl;
 
+    //////////////////////////////////////////////////////////////////////////////////////
+    //  Histograms definition
+    //////////////////////////////////////////////////////////////////////////////////////
 
-    auto& ThisBins = Bin_List[_binIndex];
-    // Define binning
-    // OR : Original: {3, 3, 5, 5, 12} = 2700
-	// CP : PhiPQ central peak: {3, 3, 5, 5, 40} = 9000 // PhiPQ binning is really important due to the features seen!
-	// Int_t nbins[5] = {3, 3, 5, 5, 40};
-    double* minbins = &DISLimits[0][0];
-    double* maxbins = &DISLimits[1][0];
-    int nbins[5] = {static_cast<int>(ThisBins[0].size()-1), static_cast<int>(ThisBins[1].size()-1),
-                    static_cast<int>(ThisBins[2].size()-1), static_cast<int>(ThisBins[3].size()-1),
-                    static_cast<int>(ThisBins[4].size()-1)};
+    // One-dimensional efficiency
+    // TEfficiency* efficiency_Q2 = new TEfficiency("efficiency_Q2",
+    //     ";Q^{2} (GeV^{2});Reconstruction efficiency", 20, _minimum["Q2"], _maximum["Q2"]);
+    // TEfficiency* efficiency_Nu = new TEfficiency("efficiency_Nu",
+    //     ";#nu (GeV);Reconstruction efficiency", 20, _minimum["Nu"], _maximum["Nu"]);
+    TEfficiency* efficiency_Zh = new TEfficiency("efficiency_Zh",
+        ";Z_{h};Reconstruction efficiency", 20, _minimum["Zh"], _maximum["Zh"]);
+    TEfficiency* efficiency_Pt2 = new TEfficiency("efficiency_Pt2",
+        ";p_{T}^{2} (GeV^{2});Reconstruction efficiency", 20, _minimum["Pt2"], _maximum["Pt2"]);
+    TEfficiency* efficiency_PhiPQ = new TEfficiency("efficiency_PhiPQ",
+        ";#phi_{PQ} (deg);Reconstruction efficiency", 60, _minimum["PhiPQ"], _maximum["PhiPQ"]);
 
-    // Set variable width bins
-	Double_t *Q2_Lmts    = &ThisBins[0][0]; // Q2_binng = {1.0, 1.3, 1.8, 4.1};
-	Double_t *Nu_Lmts    = &ThisBins[1][0]; // Nu_binng = {2.2, 3.2, 3.7, 4.2};
-	Double_t *Zh_Lmts    = &ThisBins[2][0]; // Zh_binng = {0.0, 0.15, 0.25, 0.4, 0.7, 1.0};
-	Double_t *Pt2_Lmts   = &ThisBins[3][0]; // Pt2_binng = {0.0, 0.03, 0.06, 0.1, 0.18, 1.0};
-    Double_t *PhiPQ_Lmts = &ThisBins[4][0]; // PhiPQ_binng 40 bins
+    // One-dimensional resolution
+    TH1F* resolution_Q2 = new TH1F("resolution_Q2", ";Q^{2}-mc_Q^{2};Counts", 64, -0.3, 0.3);
+    TH1F* resolution_Nu = new TH1F("resolution_Nu", ";#nu-mc_#nu;Counts", 64, -0.3, 0.3);
+    TH1F* resolution_Xb = new TH1F("resolution_Xb", ";X_{b}-mc_X_{b};Counts", 64, -0.3, 0.3);
+    TH1F* resolution_Zh = new TH1F("resolution_Zh", ";z_{h}-mc_z_{h};Counts", 64, -0.15, 0.15);
+    TH1F* resolution_Pt2 = new TH1F("resolution_Pt2", ";p_{T}^{2}-mc_p_{T}^{2};Counts", 64, -0.15, 0.15);
+    TH1F* resolution_PhiPQ = new TH1F("resolution_PhiPQ", ";#phi_{PQ}-mc_#phi_{PQ};Counts", 80, -4.0, 4.0);
 
-    // TH1::SetDefaultSumw2();
-
-    //// Define Histograms
-    // one-dimensional efficiency histogramss
-    // TEfficiency* effQ2 = new TEfficiency("effQ2", "effQ2;Q^{2} (GeV^{2});Reconstruction Efficiency", 20, DISLimits[0][0], DISLimits[1][0]);
-    // TEfficiency* effNu = new TEfficiency("effNu", "effNu;#nu (GeV);Reconstruction Efficiency", 20, DISLimits[0][1], DISLimits[1][1]);
-    TEfficiency* effZh = new TEfficiency("effZh", "effZh;z_{h};Reconstruction Efficiency", 20, DISLimits[0][2], DISLimits[1][2]);
-    TEfficiency* effPt2 = new TEfficiency("effPt2", "effPt2;p_{T}^{2} (GeV^{2});Reconstruction Efficiency", 20, DISLimits[0][3], DISLimits[1][3]);
-    TEfficiency* effPhiPQ = new TEfficiency("effPhiPQ", "effPhiPQ;#phi_{PQ} (deg);Reconstruction Efficiency", 60, DISLimits[0][4], DISLimits[1][4]);
-
-    // one-dimensional resolution histograms
-    TH1F* resQ2 = new TH1F("resQ2", "ResolutionQ2;Q^{2}-mc_Q^{2};Counts", 64, -0.3, 0.3);
-    TH1F* resNu = new TH1F("resNu", "ResolutionNu;#nu-mc_#nu;Counts", 64, -0.3, 0.3);
-    TH1F* resXb = new TH1F("resXb", "ResolutionXb;X_{b}-mc_X_{b};Counts", 64, -0.3, 0.3);
-    TH1F* resZh = new TH1F("resZh", "ResolutionZh;z_{h}-mc_z_{h};Counts", 64, -0.15, 0.15);
-    TH1F* resPt2 = new TH1F("resPt2", "ResolutionPt2;p_{T}^{2}-mc_p_{T}^{2};Counts", 64, -0.15, 0.15);
-    TH1F* resPhiPQ = new TH1F("resPhiPQ", "ResolutionPhiPQ;#phi_{PQ}-mc_#phi_{PQ};Counts", 80, -4.0, 4.0);
-
-    // bin Migration
-    TH2F* histMigrationMatrixQ2 = new TH2F("histMigrationMatrixQ2", "MigrationQ2;True Q^{2}; Reco Q^{2}", 50, DISLimits[0][0], DISLimits[1][0], 50, DISLimits[0][0], DISLimits[1][0]);
-    TH2F* histMigrationMatrixNu = new TH2F("histMigrationMatrixNu", "MigrationNu;True #nu; Reco #nu", 50, DISLimits[0][1], DISLimits[1][1], 50, DISLimits[0][1], DISLimits[1][1]);
-    TH2F* histMigrationMatrixXb = new TH2F("histMigrationMatrixXb", "MigrationXb;True X_{b}; Reco X_{b}", 50, DISLimits[0][1], DISLimits[1][1], 50, DISLimits[0][1], DISLimits[1][1]);
-    TH2F* histMigrationMatrixZh = new TH2F("histMigrationMatrixZh", "MigrationZh;True Z_{h}; Reco Z_{h}", 50, DISLimits[0][2], DISLimits[1][2], 50, DISLimits[0][2], DISLimits[1][2]);
-    TH2F* histMigrationMatrixPt2 = new TH2F("histMigrationMatrixPt2", "MigrationPt2;True p_{T}^{2} (GeV^{2});Reco p_{T}^{2} (GeV^{2})", 50, DISLimits[0][3], DISLimits[1][3], 50, DISLimits[0][3], DISLimits[1][3]);
-    TH2F* histMigrationMatrixPhiPQ = new TH2F("histMigrationMatrixPhiPQ", "MigrationPhiPQ;True #phi_{PQ} (deg);Reco #phi_{PQ} (deg)", 120, DISLimits[0][4], DISLimits[1][4], 120, DISLimits[0][4], DISLimits[1][4]);
+    // Bin migration map
+    TH2F* binMigrationMap_Q2 = new TH2F("binMigrationMap_Q2", ";True Q^{2}; Reco Q^{2}",
+        50, _minimum["Q2"], _maximum["Q2"], 50, _minimum["Q2"], _maximum["Q2"]);
+    TH2F* binMigrationMap_Zh = new TH2F("binMigrationMap_Zh", ";True Z_{h}; Reco Z_{h}",
+        50, _minimum["Zh"], _maximum["Zh"], 50, _minimum["Zh"], _maximum["Zh"]);
+    TH2F* binMigrationMap_Pt2 = new TH2F("binMigrationMap_Pt2", ";True p_{T}^{2} (GeV^{2});Reco p_{T}^{2} (GeV^{2})",
+        50, _minimum["Pt2"], _maximum["Pt2"], 50, _minimum["Pt2"], _maximum["Pt2"]);
+    TH2F* binMigrationMap_PhiPQ = new TH2F("binMigrationMap_PhiPQ", ";True #phi_{PQ} (deg);Reco #phi_{PQ} (deg)",
+        120, _minimum["PhiPQ"], _maximum["PhiPQ"], 120, _minimum["PhiPQ"], _maximum["PhiPQ"]);
+    double var2_min = (_minimum.count("Nu"))? _minimum["Nu"] : _minimum["Xb"];
+    double var2_max = (_maximum.count("Nu"))? _maximum["Nu"] : _maximum["Xb"];
+    TH2F* binMigrationMap_Nu = new TH2F("binMigrationMap_Nu", ";True #nu; Reco #nu",
+            50, var2_min, var2_max, 50, var2_min, var2_max);
+    TH2F* binMigrationMap_Xb = new TH2F("binMigrationMap_Xb", ";True X_{b}; Reco X_{b}",
+            50, var2_min, var2_max, 50, var2_min, var2_max);
 
     // THnSparse
-    THnSparse *histTrue = new THnSparseD("histTrue","True", 5,nbins,minbins,maxbins);
-    THnSparse *histReco_rec = new THnSparseD("histReco_rec","Reconstructed only", 5,nbins,minbins,maxbins);
-    THnSparse *histReco_mc = new THnSparseD("histReco_mc","Good reconstructed with mc_vars", 5,nbins,minbins,maxbins);
-    THnSparse *histTrue_rec = new THnSparseD("histTrue_rec","Good reconstructed with reco_vars", 5,nbins,minbins,maxbins);
-
-    SetVariableSize(histTrue, nbins, Q2_Lmts, Nu_Lmts, Zh_Lmts, Pt2_Lmts, PhiPQ_Lmts);     // Good Generated (Doesn't care of Reco), filled with Generated kinematic vars
-    SetVariableSize(histReco_rec, nbins, Q2_Lmts, Nu_Lmts, Zh_Lmts, Pt2_Lmts, PhiPQ_Lmts); // Good Reco (Doesn't care of Generated), filled with Reco kinematic vars
-    SetVariableSize(histReco_mc, nbins, Q2_Lmts, Nu_Lmts, Zh_Lmts, Pt2_Lmts, PhiPQ_Lmts);  // Good Reco & Generated, filled with Generated kinematic vars
-    SetVariableSize(histTrue_rec, nbins, Q2_Lmts, Nu_Lmts, Zh_Lmts, Pt2_Lmts, PhiPQ_Lmts); // Good Reco & Generated, filled with Reco kinematic vars
-
-	histTrue->Sumw2();
-	histReco_rec->Sumw2();
-	histReco_mc->Sumw2();
-	histTrue_rec->Sumw2();
+    std::vector<std::vector<double>> ordered_limits =
+        map_to_vector_in_order<std::vector<double>>(_limitsMap, _variables);
+    std::vector<double> ordered_min =
+        map_to_vector_in_order<double>(_minimum, _variables);
+    std::vector<double> ordered_max =
+        map_to_vector_in_order<double>(_maximum, _variables);
+    // Generated: Good Generated (Doesn't need Reco), filled with Generated kinematic vars
+    // Reconstructed: Good Reco (Doesn't need Generated), filled with Reco kinematic vars
+    // Match_GenVars: Good Reco & Generated, filled with Generated kinematic vars
+    // Match_RecoVars: Good Reco & Generated, filled with Reco kinematic vars
+    THnSparse* hGenerated = create_THnSparse("hGenerated", ordered_limits,
+        ordered_min, ordered_max, NULL, "True");
+    THnSparse* hReconstructed = create_THnSparse("hReconstructed", ordered_limits,
+        ordered_min, ordered_max, NULL, "Reconstructed only");
+    THnSparse* hMatch_GenVars = create_THnSparse("hMatch_GenVars", ordered_limits,
+        ordered_min, ordered_max, NULL, "Good reconstructed with mc_vars");
+    THnSparse* hMatch_RecoVars = create_THnSparse("hMatch_RecoVars", ordered_limits,
+        ordered_min, ordered_max, NULL, "Good reconstructed with reco_vars");
 
     if (fChain == 0)
         return;
     Long64_t nentries = fChain->GetEntries();
     Long64_t nbytes = 0, nb = 0;
-    unsigned int entries_to_process = _fracCT*nentries/100.; // _fracCT = 100. by default, 50. for ClosureTest
+    unsigned int entries_to_process = nentries;
+    if (_isClosureTest)
+        entries_to_process *= _fractionClosureTest / 100.;
 
-    int inclusive_count=0; // global_bin=-1,
-    int vec_entries_MC=0, vec_entries=0;
-    bool good_electron_mc = false, good_electron = false;
-    bool good_pion_mc = false, good_pion = false;
-    bool save_lepton_vars = true;
+    auto counterMap = create_MapCounter();
+    counterMap["Total_entries"] = nentries;
+    for (unsigned int jentry = 0; jentry < entries_to_process; jentry++) {
+        if (jentry % 1000000 == 0) {
+            printf("Processing entry %10u out of %10llu, progress at %3.2f%%\n", jentry,
+                nentries, 100. * (double)jentry / entries_to_process);
+        }
 
-    std::map<std::string, unsigned int> general_El_count = {{"Total mc_El",0}, {"Total rec_El",0}, {"Different vector size",0}};
-    std::map<std::string, unsigned int> mc_El_Reject_count = {{"Wrong mc_TargType",0}, {"Out of DIS range",0}, {"Not accepted",0}};
-    std::map<std::string, unsigned int> mc_El_Accept_count = {{"Well reconstructed",0}};
-    std::map<std::string, unsigned int> rec_El_Reject_count = {{"Wrong TargType",0}, {"Out of DIS range",0}, {"Out of VertexY Correction",0},{"Not good El",0}};
-    std::map<std::string, unsigned int> rec_El_Accept_count = {{"Good match with mc",0}, {"Bad match with mc",0}};
-    std::map<std::string, unsigned int> general_Pi_count = {{"Total mc_Pi",0}, {"Total rec_Pi",0}};
-    std::map<std::string, unsigned int> mc_Pi_Reject_count = {{"Wrong mc_pid",0}, {"Out of DIS range",0}, {"Not accepted",0}};
-    std::map<std::string, unsigned int> mc_Pi_Accept_count = {{"Well reconstructed",0}};
-    std::map<std::string, unsigned int> rec_Pi_Reject_count = {{"Wrong pid",0}, {"Out of DIS range",0}, {"Not accepted",0}};
-    std::map<std::string, unsigned int> rec_Pi_Accept_count = {{"Good match with mc",0}, {"Bad match with mc",0}};
-
-    // std::map<std::string, unsigned int> mc_Pi_Good_count = {{"Leading mc_Pion",0}, {"No Leading mc_Pion",0}};
-    // std::map<std::string, unsigned int> rec_Pi_Good_count = {{"Good Reco Pi",0}}; // ,{"Leading Pion",0}, {"No Leading Pion",0}};
-
-    std::vector<double> leptonic_vars_mc, leptonic_vars;
-    for (unsigned int jentry = 0; jentry < entries_to_process; jentry++)
-    {
-        if (jentry % 1000000 == 0)
-            printf("Processing entry %9u, progress at %6.2f%%\n",jentry,100.*(double)jentry/(entries_to_process));
-
-        // std::cout << "Processing entry " << jentry << ", progress at " << 100.*(double) jentry / (entries_to_process) << "%" << std::endl;
         Long64_t ientry = LoadTree(jentry);
         if (ientry < 0)
             break;
         nb = fChain->GetEntry(jentry);
         nbytes += nb;
         // if (Cut(ientry) < 0) continue;
-        good_electron_mc = false, good_electron = false;
-        
-        // Save leptonic variables only when there is at least one pion
-        save_lepton_vars=true;
 
-        if (GoodElectron_MC(ientry, DISLimits))
-        {
-            good_electron_mc = true;
-            general_El_count["Total mc_El"]++;
-        }
-        else
-        {
-            mc_El_Reject_count["Not accepted"]++;
-            if (mc_TargType!=_targTypeCut) mc_El_Reject_count["Wrong mc_TargType"]++;
-            if (mc_Q2<DISLimits[0][0] || DISLimits[1][0]<mc_Q2 || 0.85<mc_Yb || mc_W<2 ||
-                (!_useXb && mc_Nu<DISLimits[0][1]) || (!_useXb && DISLimits[1][1]<mc_Nu) ||
-                (_useXb && mc_Xb<DISLimits[0][1]) || (_useXb && DISLimits[1][1]<mc_Xb)) mc_El_Reject_count["Out of DIS range"]++;
-        }
+        // Clean variables
+        bool good_electron_gen = false;
+        bool good_electron_rec = false;
+        int n_pion_gen = 0;
+        int n_pion_rec = 0;
 
-        if (GoodElectron(ientry, DISLimits))
-        {
-            good_electron = true;
-            general_El_count["Total rec_El"]++;
-            if (good_electron_mc)
-            {
-                rec_El_Accept_count["Good match with mc"]++;
-                mc_El_Accept_count["Well reconstructed"]++;
-            }
-            else rec_El_Accept_count["Bad match with mc"]++;
+        if (GoodElectron_MC(ientry)) {
+            good_electron_gen = true;
+            counterMap["Gen_GoodElectron"]++;
         }
-        else
-        {
-            rec_El_Reject_count["Not good El"]++;
-            if (TargType!=_targTypeCut) rec_El_Reject_count["Wrong TargType"]++;
-            if (Q2<DISLimits[0][0] || DISLimits[1][0]<Q2 || 0.85<Yb || W<2 ||
-                (!_useXb && Nu<DISLimits[0][1]) || (!_useXb && DISLimits[1][1]<Nu) ||
-                (_useXb && Xb<DISLimits[0][1]) || (_useXb && DISLimits[1][1]<Xb)) rec_El_Reject_count["Out of DIS range"]++;
-            if (vyec<-1.4 || 1.4<vyec) rec_El_Reject_count["Out of VertexY Correction"]++;
+        else {
+            counterMap["Gen_GoodElectronNOT"]++;
+            if (mc_TargType != _cut_TargType)
+                counterMap["Gen_WrongTargType"]++;
+            else
+                counterMap["Gen_OutDISRange"]++;
         }
 
-        vec_entries = PhiPQ->size();
-        vec_entries_MC = mc_PhiPQ->size();
-        if (vec_entries!=vec_entries_MC)
-        {
-            general_El_count["Different vector size"]++;
+        if (GoodElectron(ientry)) {
+            good_electron_rec = true;
+            counterMap["Reco_GoodElectron"]++;
+        }
+        else {
+            counterMap["Reco_GoodElectronNOT"]++;
+            if (TargType != _cut_TargType)
+                counterMap["Reco_WrongTargType"]++;
+            else if ((vyec < -1.4) || (1.4 < vyec))
+                counterMap["Reco_OutVertexY"]++;
+            else
+                counterMap["Reco_OutDISRange"]++;
+        }
+
+        if (good_electron_gen && good_electron_rec)
+            counterMap["Total_MatchElectrons"]++;
+
+        if (PhiPQ->size() != mc_PhiPQ->size()) {
+            counterMap["Total_DifferentVectorSize"]++;
             continue;
         }
 
-		for (int i=0; i<vec_entries; i++)
-        {
-            good_pion_mc = false, good_pion = false;
-            bool pion_passed(false);
-            inclusive_count++;
+		for (int i = 0; i < (int)PhiPQ->size(); i++) {
+            // Clean variables
+            bool good_pion_gen = false;
+            bool good_pion_rec = false;
+            // inclusive_count++;
 
-            if (good_electron_mc && GoodPiPlus_MC(ientry, i, DISLimits))
-            {
-                good_pion_mc = true;
-                general_Pi_count["Total mc_Pi"]++;
+            if (good_electron_gen && GoodPiPlus_MC(ientry, i)) {
+                good_pion_gen = true;
+                counterMap["Gen_GoodPiPlus"]++;
+                n_pion_gen++;
+                if (n_pion_gen == 1)
+                    counterMap["Gen_Pi+Single"]++;
+                else if (n_pion_gen == 2)
+                    counterMap["Gen_Pi+Two"]++;
+                else
+                    counterMap["Gen_Pi+Three+"]++;
             }
             else
-            {
-                mc_Pi_Reject_count["Not accepted"]++;
-                if (mc_pid->at(i)!=211) mc_Pi_Reject_count["Wrong mc_pid"]++;
-                if (mc_Zh->at(i)<DISLimits[0][2] || DISLimits[1][2]<mc_Zh->at(i) || mc_Pt2->at(i)<DISLimits[0][3] || DISLimits[1][3]<mc_Pt2->at(i) ||
-                    mc_PhiPQ->at(i)<DISLimits[0][4] || DISLimits[1][4]<mc_PhiPQ->at(i)) mc_Pi_Reject_count["Out of DIS range"]++;
-            }
+                counterMap["Gen_GoodPiPlusNOT"]++;
             
-            if (good_electron && GoodPiPlus(ientry, i, DISLimits))
-            {
-                good_pion = true;
-                general_Pi_count["Total rec_Pi"]++;
-                if (good_pion_mc)
-                {
-                    mc_Pi_Accept_count["Well reconstructed"]++;
-                    rec_Pi_Accept_count["Good match with mc"]++;
-                }
-                else rec_Pi_Accept_count["Bad match with mc"]++;
+            if (good_electron_rec && GoodPiPlus(ientry, i)) {
+                good_pion_rec = true;
+                counterMap["Reco_GoodPiPlus"]++;
+                n_pion_rec++;
+                if (n_pion_rec == 1)
+                    counterMap["Reco_Pi+Single"]++;
+                else if (n_pion_rec == 2)
+                    counterMap["Reco_Pi+Two"]++;
+                else
+                    counterMap["Reco_Pi+Three+"]++;
             }
             else
-            {
-                rec_Pi_Reject_count["Not accepted"]++;
-                if (pid->at(i)!=211) rec_Pi_Reject_count["Wrong pid"]++;
-                if (Zh->at(i)<DISLimits[0][2] || DISLimits[1][2]<Zh->at(i) || Pt2->at(i)<DISLimits[0][3] || DISLimits[1][3]<Pt2->at(i) ||
-                    PhiPQ->at(i)<DISLimits[0][4] || DISLimits[1][4]<PhiPQ->at(i)) rec_Pi_Reject_count["Out of DIS range"]++;
-            }
+                counterMap["Reco_GoodPiPlusNOT"]++;
 
-            if (!good_pion_mc && !good_pion) continue;
+            if (!good_pion_gen && !good_pion_rec)
+                continue;
 
-            double mc_bin[] = {mc_Q2, mc_Nu, mc_Zh->at(i), mc_Pt2->at(i), mc_PhiPQ->at(i)};
-            double rec_bin[] = {Q2, Nu, Zh->at(i), Pt2->at(i), PhiPQ->at(i)};
+            if (good_pion_gen && good_pion_rec)
+                counterMap["Total_MatchPiPlus"]++;
 
-            if (_useXb){
-                mc_bin[1] = mc_Xb;
-                rec_bin[1] = Xb;
-            }
+            double bin_gen[] = {mc_Q2, 0, mc_Zh->at(i), mc_Pt2->at(i), mc_PhiPQ->at(i)};
+            bin_gen[1] = (_limitsMap.count("Nu"))? mc_Nu : mc_Xb;
+            double bin_rec[] = {Q2, 0, Zh->at(i), Pt2->at(i), PhiPQ->at(i)};
+            bin_rec[1] = (_limitsMap.count("Nu"))? Nu : Xb;
 
-            if (good_pion_mc)
-            {
-                histTrue->Fill(mc_bin);
-            }
-            
-            if (good_pion)
-            {
-                histReco_rec->Fill(rec_bin);
-            }
+            if (good_pion_gen)
+                hGenerated->Fill(bin_gen);
 
-            if (good_pion_mc && good_pion)
-            {
-                pion_passed = true;
-                histMigrationMatrixZh->Fill(mc_Zh->at(i), Zh->at(i));
-                histMigrationMatrixPt2->Fill(mc_Pt2->at(i), Pt2->at(i));
-                histMigrationMatrixPhiPQ->Fill(mc_PhiPQ->at(i), PhiPQ->at(i));
+            if (good_pion_rec)
+                hReconstructed->Fill(bin_rec);
 
-                resZh->Fill(Zh->at(i) - mc_Zh->at(i));
-                resPt2->Fill(Pt2->at(i) - mc_Pt2->at(i));
+            if (good_pion_gen && good_pion_rec) {
+                binMigrationMap_Zh->Fill(mc_Zh->at(i), Zh->at(i));
+                binMigrationMap_Pt2->Fill(mc_Pt2->at(i), Pt2->at(i));
+                binMigrationMap_PhiPQ->Fill(mc_PhiPQ->at(i), PhiPQ->at(i));
+
+                resolution_Zh->Fill(Zh->at(i) - mc_Zh->at(i));
+                resolution_Pt2->Fill(Pt2->at(i) - mc_Pt2->at(i));
 
                 // Save PhiPQ considering that it's a cyclic variable
                 double delta_PhiPQ = PhiPQ->at(i) - mc_PhiPQ->at(i);
                 if (abs(delta_PhiPQ) > 350.)
-                {
-                    if (delta_PhiPQ>0) resPhiPQ->Fill(delta_PhiPQ-360);
-                    else               resPhiPQ->Fill(delta_PhiPQ+360);
-                }
+                    if (delta_PhiPQ > 0)
+                        resolution_PhiPQ->Fill(delta_PhiPQ - 360);
+                    else
+                        resolution_PhiPQ->Fill(delta_PhiPQ + 360);
                 else
-                {
-                    resPhiPQ->Fill(delta_PhiPQ);
-                }
+                    resolution_PhiPQ->Fill(delta_PhiPQ);
 
-                histReco_mc->Fill(mc_bin);
-                histTrue_rec->Fill(rec_bin);
-
-                if (save_lepton_vars)
-                {
-                    histMigrationMatrixQ2->Fill(mc_Q2, Q2);
-                    histMigrationMatrixNu->Fill(mc_Nu, Nu);
-                    histMigrationMatrixXb->Fill(mc_Xb, Xb);
-
-                    resQ2->Fill(Q2 - mc_Q2);
-                    resNu->Fill(Nu - mc_Nu);
-                    resXb->Fill(Xb - mc_Xb);
-
-                    save_lepton_vars = false;
-                }
+                hMatch_GenVars->Fill(bin_gen);
+                hMatch_RecoVars->Fill(bin_rec);
             }
 
-            effZh->Fill(pion_passed, mc_Zh->at(i));
-            effPt2->Fill(pion_passed, mc_Pt2->at(i));
-            effPhiPQ->Fill(pion_passed, mc_PhiPQ->at(i));
-        }   // loop over tracks
-    }       // loop over entries
+            efficiency_Zh->Fill((good_pion_gen && good_pion_rec), mc_Zh->at(i));
+            efficiency_Pt2->Fill((good_pion_gen && good_pion_rec), mc_Pt2->at(i));
+            efficiency_PhiPQ->Fill((good_pion_gen && good_pion_rec), mc_PhiPQ->at(i));
+        }  // loop over tracks (particles associated to scattered electron)
+
+        if ((n_pion_gen >= 1) && (n_pion_rec >= 1)) {
+            binMigrationMap_Q2->Fill(mc_Q2, Q2);
+            resolution_Q2->Fill(Q2 - mc_Q2);
+            if (_limitsMap.count("Nu")) {
+                binMigrationMap_Nu->Fill(mc_Nu, Nu);
+                resolution_Nu->Fill(Nu - mc_Nu);
+            }
+            else if (_limitsMap.count("Xb")) {
+                binMigrationMap_Xb->Fill(mc_Xb, Xb);
+                resolution_Xb->Fill(Xb - mc_Xb);
+            }
+        }
+    }  // loop over entries (scattered electron)
 
     // Acceptance
-    THnSparse *histAcc_Reconstru = (THnSparse*)histReco_rec->Clone("histAcc_Reconstru");
-    histAcc_Reconstru->Divide(histReco_rec,histTrue,1,1,"B");
-    THnSparse *histAcc_ReMtch_mc = (THnSparse*)histReco_mc->Clone( "histAcc_ReMtch_mc");
-    histAcc_ReMtch_mc->Divide(histReco_mc,histTrue,1,1,"B");
-    THnSparse *histAcc_ReMtch_re = (THnSparse*)histTrue_rec->Clone("histAcc_ReMtch_re");
-    histAcc_ReMtch_re->Divide(histTrue_rec,histTrue,1,1,"B");
+    THnSparse* Acceptance_Reconstructed =
+        (THnSparse*)hReconstructed->Clone("Acceptance_Reconstructed");
+    Acceptance_Reconstructed->Divide(hReconstructed, hGenerated, 1, 1, "B");
+    THnSparse* Acceptance_Match_GenVars =
+        (THnSparse*)hMatch_GenVars->Clone( "Acceptance_Match_GenVars");
+    Acceptance_Match_GenVars->Divide(hMatch_GenVars, hGenerated, 1, 1, "B");
+    THnSparse* Acceptance_Match_RecoVars =
+        (THnSparse*)hMatch_RecoVars->Clone("Acceptance_Match_RecoVars");
+    Acceptance_Match_RecoVars->Divide(hMatch_RecoVars, hGenerated, 1, 1, "B");
 
-    // Summary tables
-    std::cout << std::endl;
-    PrintSummaryTable(general_El_count,     "General Electron Summary", entries_to_process);
-    PrintSummaryTable(mc_El_Reject_count,   "Rejected MC Electron", entries_to_process);
-    PrintSummaryTable(mc_El_Accept_count,   "Correctly reconstructed MC Electrons", general_El_count["Total mc_El"]);
-    PrintSummaryTable(rec_El_Reject_count,  "Rejected reco Electrons", entries_to_process);
-    PrintSummaryTable(rec_El_Accept_count,  "Matching of reconstructed Electrons", general_El_count["Total rec_El"]);
-    PrintSummaryTable(general_Pi_count,     "General Pion Summary", inclusive_count);
-    PrintSummaryTable(mc_Pi_Reject_count,   "Rejected MC Pion", inclusive_count);
-    PrintSummaryTable(mc_Pi_Accept_count,   "Correctly reconstructed MC Pions", general_Pi_count["Total mc_Pi"]);
-    PrintSummaryTable(rec_Pi_Reject_count,  "Rejected reco Pions", inclusive_count);
-    PrintSummaryTable(rec_Pi_Accept_count,  "Matching of reconstructed Pions", general_Pi_count["Total rec_Pi"]);
+    // Summary table
+    print_EventSummary(Form("%s/Summary_%s.txt", folderName.c_str(),
+        _infoTag_Acceptance.c_str()), counterMap);
 
-    // Save Summary tables
-    if (!_isClosureTest)
-    {
-        ofstream fileSummary;
-        std::string acc_folder = "../output/Acceptance" + getAccFoldNameExt();
-        fileSummary.open(Form("%s/Summary_%s.txt", acc_folder.c_str(), _nameFormatted.c_str()));
-        fileSummary << Form(">> Summary table %s Target:\n\n",getNameTarget().c_str());
-        SaveSummaryTable(general_El_count,     "General Electron Summary", fileSummary, entries_to_process);
-        SaveSummaryTable(mc_El_Reject_count,   "Rejected MC Electron", fileSummary, entries_to_process);
-        SaveSummaryTable(mc_El_Accept_count,   "Correctly reconstructed MC Electrons", fileSummary, general_El_count["Total mc_El"]);
-        SaveSummaryTable(rec_El_Reject_count,  "Rejected reco Electrons", fileSummary, entries_to_process);
-        SaveSummaryTable(rec_El_Accept_count,  "Matching of reconstructed Electrons", fileSummary, general_El_count["Total rec_El"]);
-        SaveSummaryTable(general_Pi_count,     "General Pion Summary", fileSummary, inclusive_count);
-        SaveSummaryTable(mc_Pi_Reject_count,   "Rejected MC Pion", fileSummary, inclusive_count);
-        SaveSummaryTable(mc_Pi_Accept_count,   "Correctly reconstructed MC Pions", fileSummary, general_Pi_count["Total mc_Pi"]);
-        SaveSummaryTable(rec_Pi_Reject_count,  "Rejected reco Pions", fileSummary, inclusive_count);
-        SaveSummaryTable(rec_Pi_Accept_count,  "Matching of reconstructed Pions", fileSummary, general_Pi_count["Total rec_Pi"]);
-        fileSummary.close();
+    if (!_limitsMap.count("Nu")) {
+        binMigrationMap_Nu->Delete();
+        resolution_Nu->Delete();
+    }
+    else if (!_limitsMap.count("Xb")) {
+        binMigrationMap_Xb->Delete();
+        resolution_Xb->Delete();
     }
 
-    if (_useXb){
-        resNu->Delete();
-        histMigrationMatrixNu->Delete();
-    }
-    else{
-        resXb->Delete();
-        histMigrationMatrixXb->Delete();
-    }
+    print_BinsFilled(Acceptance_Reconstructed);
+    print_BinsFilled(Acceptance_Match_GenVars);
+    print_BinsFilled(Acceptance_Match_RecoVars);
 
-    PrintFilledBins(histAcc_Reconstru);
-    PrintFilledBins(histAcc_ReMtch_mc);
-    PrintFilledBins(histAcc_ReMtch_re);
+    hGenerated->Write();
+    hReconstructed->Write();
+    hMatch_GenVars->Write();
+    hMatch_RecoVars->Write();
 
-    histTrue->Write();
-    histReco_rec->Write();
-    histReco_mc->Write();
-    histTrue_rec->Write();
-
-    histAcc_Reconstru->Write();
-    histAcc_ReMtch_mc->Write();
-    histAcc_ReMtch_re->Write();
+    Acceptance_Reconstructed->Write();
+    Acceptance_Match_GenVars->Write();
+    Acceptance_Match_RecoVars->Write();
 
     std::cout << "Made it to the end. Saving..." << std::endl;
 
@@ -448,101 +374,88 @@ void Acceptance::Loop()
     fout->Close();
 }
 
-void Acceptance::Correction()
-{
-    // Remember to call Acceptance::setDataType() before, so "mc_" branches are not set (ERROR)
-    ActivateBranches();
+void Acceptance::Correction() {
+    activateBranches();
 
-    auto& ThisBins = Bin_List[_binIndex];
-    int nbins[5] = {static_cast<int>(ThisBins[0].size()-1), static_cast<int>(ThisBins[1].size()-1),
-                    static_cast<int>(ThisBins[2].size()-1), static_cast<int>(ThisBins[3].size()-1),
-                    static_cast<int>(ThisBins[4].size()-1)};
+    std::string folderName;
+    std::string fileName;
+    // Opening Acceptance file
+    folderName = "../output/localJul2025/Acceptance" + formatCutsInName(_cutList);
+    fileName = Form("Acceptance_%s", _infoTag_Acceptance.c_str());
+    create_Dir(folderName);
+    TFile *facc =
+        TFile::Open(Form("%s/%s.root", folderName.c_str(), fileName.c_str()), "READ");
+    // Creating Correction file
+    folderName = "../output/localJul2025/Correction" + formatCutsInName(_cutList, true);
+    fileName = Form("Correction_%s", _infoTag.c_str());
+    create_Dir(folderName);
+    TFile *fout =
+        TFile::Open(Form("%s/%s.root", folderName.c_str(), fileName.c_str()), "RECREATE");
 
-    // Begin Correction
-    std::cout << "\n\nBeginning Correction "<< getNameTarget() <<" target:\n" << std::endl;
-
-    std::string acc_folder = "../output/Acceptance" + getAccFoldNameExt();
-    std::string cor_folder = "../output/Correction" + getFoldNameExt();
-    CreateDir(cor_folder);
-
-    TFile *facc = TFile::Open(Form("%s/Acceptance_%s.root", acc_folder.c_str(), getAccFileName().c_str()), "READ");
-    TFile *fout = TFile::Open(Form("%s/Corrected_%s.root", cor_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
+    std::cout << "\n\nBeginning Correction of data for ";
+    std::cout << _nameTarget << " target\n" << std::endl;
 
     // Get Acceptance THnSparse
-    THnSparse *histAcc_Reconstru = (THnSparse*)facc->Get("histAcc_Reconstru");
-    THnSparse *histAcc_ReMtch_mc = (THnSparse*)facc->Get("histAcc_ReMtch_mc");
-    THnSparse *histAcc_ReMtch_re = (THnSparse*)facc->Get("histAcc_ReMtch_re");
+    THnSparse *hAcc_Reconstructed = (THnSparse*)facc->Get("Acceptance_Reconstructed");
+    THnSparse *hAcc_Match_GenVars = (THnSparse*)facc->Get("Acceptance_Match_GenVars");
+    THnSparse *hAcc_Match_RecoVars = (THnSparse*)facc->Get("Acceptance_Match_RecoVars");
 
     // Create Final THnSparse
-    THnSparse *histCorr_Reconstru = CreateFinalHist("Corr_Reconstru", nbins, &(Correction::NIrregBins[_binNdims]), ThisBins, DISLimits);
-    THnSparse *histCorr_ReMtch_mc = CreateFinalHist("Corr_ReMtch_mc", nbins, &(Correction::NIrregBins[_binNdims]), ThisBins, DISLimits);
-    THnSparse *histCorr_ReMtch_re = CreateFinalHist("Corr_ReMtch_re", nbins, &(Correction::NIrregBins[_binNdims]), ThisBins, DISLimits);
-    THnSparse *histRaw            = CreateFinalHist("Raw_data",       nbins, &(Correction::NIrregBins[_binNdims]), ThisBins, DISLimits);
+    std::vector<std::vector<double>> ordered_limits =
+        map_to_vector_in_order<std::vector<double>>(_limitsMap, _variables);
+    std::vector<double> ordered_min =
+        map_to_vector_in_order<double>(_minimum, _variables);
+    std::vector<double> ordered_max =
+        map_to_vector_in_order<double>(_maximum, _variables);
+
+    THnSparse *hCorr_Reconstructed = create_THnSparse("Correction_Reconstructed",
+        ordered_limits, ordered_min, ordered_max, &_irregularBins);
+    THnSparse *hCorr_Match_GenVars = create_THnSparse("Correction_Match_GenVars",
+        ordered_limits, ordered_min, ordered_max, &_irregularBins);
+    THnSparse *hCorr_Match_RecoVars = create_THnSparse("Correction_Match_RecoVars",
+        ordered_limits, ordered_min, ordered_max, &_irregularBins);
+    THnSparse *hRawData = create_THnSparse("Raw_data",
+        ordered_limits, ordered_min, ordered_max, &_irregularBins);
 
     Long64_t nentries = fChain->GetEntries();
-    // unsigned int entries_to_process = nentries/2;
-
     Long64_t nbytes = 0, nb = 0;
-    
-    int global_bin=-1;
-    int vec_entries=0;
-    bool good_electron = false;
-    bool good_pion = false;
-    std::vector<double> binKinVars;
-    for (unsigned int jentry = 0; jentry < nentries; jentry++)
-    {
-        if (jentry % 1000000 == 0)
-            printf("Processing entry %9u, progress at %6.2f%%\n",jentry,100.*(double)jentry/(nentries));
+
+    for (unsigned int jentry = 0; jentry < nentries; jentry++) {
+        if (jentry % 1000000 == 0) {
+            printf("Processing entry %10u out of %10llu, progress at %3.2f%%\n", jentry,
+                nentries, 100. * (double)jentry / nentries);
+        }
 
         Long64_t ientry = LoadTree(jentry);
         if (ientry < 0)
             break;
         nb = fChain->GetEntry(jentry);
         nbytes += nb;
-        good_electron = false;
 
-        if (GoodElectron(ientry, DISLimits))
-        {
-            good_electron = true;
-        }
+        if (!GoodElectron(ientry))
+            continue;
 
-        if (!good_electron) continue;
-        
-        vec_entries = PhiPQ->size();
+		for (int i = 0; i < (int)PhiPQ->size(); i++) {
+            if (!GoodPiPlus(ientry, i))
+                continue;
 
-		for (int i=0; i<vec_entries; i++)
-        {
-            good_pion = false;
+            std::vector<double> bin = {Q2, 0, Zh->at(i), Pt2->at(i), PhiPQ->at(i)};
+            bin[1] = (_limitsMap.count("Nu"))? Nu : Xb;
 
-            if (good_electron && GoodPiPlus(ientry, i, DISLimits))
-            {
-                good_pion = true;
-                binKinVars = {Q2, Nu, Zh->at(i), Pt2->at(i), PhiPQ->at(i)};
-                if (_useXb) binKinVars[1] = Xb;
-            }
+            correct_Histogram(bin, hAcc_Reconstructed, hCorr_Reconstructed,
+                cutIsUsed("FE"), cutIsUsed("AQ"));
+            correct_Histogram(bin, hAcc_Match_GenVars, hCorr_Match_GenVars,
+                cutIsUsed("FE"), cutIsUsed("AQ"));
+            correct_Histogram(bin, hAcc_Match_RecoVars, hCorr_Match_RecoVars,
+                cutIsUsed("FE"), cutIsUsed("AQ"));
+            hRawData->Fill(bin.data());
+        }  // loop over tracks (particles associated to scattered electron)
+    }  // loop over entries (scattered electron)
 
-            if (!good_pion) continue;
-
-            if (good_pion)
-            {
-                // Reconstru
-                CorrectBin(binKinVars, histAcc_Reconstru, histCorr_Reconstru, _useFullError, _useAccQlt);
-
-                // ReMtch_mc
-                CorrectBin(binKinVars, histAcc_ReMtch_mc, histCorr_ReMtch_mc, _useFullError, _useAccQlt);
-
-                // ReMtch_re
-                CorrectBin(binKinVars, histAcc_ReMtch_re, histCorr_ReMtch_re, _useFullError, _useAccQlt);
-
-                histRaw->Fill(&binKinVars[0]);
-            }
-        }   // loop over tracks
-    }       // loop over entries
-
-    histCorr_Reconstru->Write();
-    histCorr_ReMtch_mc->Write();
-    histCorr_ReMtch_re->Write();
-    histRaw->Write();
+    hCorr_Reconstructed->Write();
+    hCorr_Match_GenVars->Write();
+    hCorr_Match_RecoVars->Write();
+    hRawData->Write();
 
     std::cout << "Made it to the end. Saving..." << std::endl;
 
@@ -551,13 +464,14 @@ void Acceptance::Correction()
     facc->Close();
 }
 
+/*
 void Acceptance::ClosureTest()
-{
+{ // TODO: LEFT HERE! UPDATE THIS FUNCTION AND THE NEXT ONES!
     // Run over half of the sim and save in "../output/ClosureTest/AccCT_%s_B%i_%iD.root"
     // setClosureTest();
 
     std::string ct_folder = "../output/ClosureTest" + std::to_string(_fracCT) + "p" + getFoldNameExt();
-    if (!FileExists(Form("%s/AccCT_%s.root", ct_folder.c_str(), getAccFileName().c_str())))
+    if (!check_Existence(Form("%s/AccCT_%s.root", ct_folder.c_str(), getAccFileName().c_str())))
     {
         std::cout << "Acceptance for ClosureTest doesn't exist. Creating file." << std::endl;
         Loop();
@@ -565,7 +479,7 @@ void Acceptance::ClosureTest()
     else
     {
         std::cout << "Acceptance for ClosureTest already exists! Using it." << std::endl;
-        ActivateBranches();
+        activateBranches();
     }
 
     auto& ThisBins = Bin_List[_binIndex];
@@ -577,7 +491,7 @@ void Acceptance::ClosureTest()
     std::cout << "\n\nBeginning Closure Test for " << _nameTarget << " target\n" << std::endl;
 
     TFile *facc = TFile::Open(Form("%s/AccCT_%s.root", ct_folder.c_str(), getAccFileName().c_str()), "READ");
-    TFile *fout = TFile::Open(Form("%s/ClosureTest_%s.root", ct_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
+    TFile *fout = TFile::Open(Form("%s/ClosureTest_%s.root", ct_folder.c_str(), _infoTag.c_str()), "RECREATE");
 
     // Get Acceptance THnSparse
     THnSparse *histAcc_Reconstru = (THnSparse*)facc->Get("histAcc_Reconstru");
@@ -690,14 +604,14 @@ void Acceptance::ClosureTest()
 
 void Acceptance::Hist2D_KinVars()
 {
-    ActivateBranches();
+    activateBranches();
 
     TFile *fout;
     std::string h2d_folder = "../output/Hist2D" + getFoldNameExt();
-    CreateDir(h2d_folder);
+    create_Dir(h2d_folder);
 
-    if (_isData) fout = TFile::Open(Form("%s/KinematicVars_%s_data.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
-    else         fout = TFile::Open(Form("%s/KinematicVars_%s_hsim.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
+    if (_isData) fout = TFile::Open(Form("%s/KinematicVars_%s_data.root", h2d_folder.c_str(), _infoTag.c_str()), "RECREATE");
+    else         fout = TFile::Open(Form("%s/KinematicVars_%s_hsim.root", h2d_folder.c_str(), _infoTag.c_str()), "RECREATE");
 
     //// Define Histograms
     // Reconstructed or data
@@ -910,7 +824,7 @@ void Acceptance::Hist2D_KinVars()
 
 void Acceptance::Hist2D_XfVsYh()
 {
-    ActivateBranches();
+    activateBranches();
     fChain->SetBranchStatus("Pl2", 1);
 
     if (!_isData)
@@ -926,9 +840,9 @@ void Acceptance::Hist2D_XfVsYh()
 
     TFile *fout;
     std::string h2d_folder = "../output/Hist2D" + getFoldNameExt();
-    CreateDir(h2d_folder);
-    if (_isData) fout = TFile::Open(Form("%s/XfVsYh_%s_data.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
-    else         fout = TFile::Open(Form("%s/XfVsYh_%s_hsim.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
+    create_Dir(h2d_folder);
+    if (_isData) fout = TFile::Open(Form("%s/XfVsYh_%s_data.root", h2d_folder.c_str(), _infoTag.c_str()), "RECREATE");
+    else         fout = TFile::Open(Form("%s/XfVsYh_%s_hsim.root", h2d_folder.c_str(), _infoTag.c_str()), "RECREATE");
 
     //// Define Histograms
     // Simple TH1
@@ -1067,7 +981,7 @@ void Acceptance::Hist2D_XfVsYh()
 
 void Acceptance::Hist2D_ThetaPQ()
 {
-    ActivateBranches();
+    activateBranches();
     fChain->SetBranchStatus("ThetaPQ", 1);
     fChain->SetBranchStatus("Pl2", 1);
 
@@ -1085,9 +999,9 @@ void Acceptance::Hist2D_ThetaPQ()
 
     TFile *fout;
     std::string h2d_folder = "../output/Hist2D" + getFoldNameExt();
-    CreateDir(h2d_folder);
-    if (_isData) fout = TFile::Open(Form("%s/ThetaPQ_%s_data.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
-    else         fout = TFile::Open(Form("%s/ThetaPQ_%s_hsim.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
+    create_Dir(h2d_folder);
+    if (_isData) fout = TFile::Open(Form("%s/ThetaPQ_%s_data.root", h2d_folder.c_str(), _infoTag.c_str()), "RECREATE");
+    else         fout = TFile::Open(Form("%s/ThetaPQ_%s_hsim.root", h2d_folder.c_str(), _infoTag.c_str()), "RECREATE");
 
     //// Define Histograms
     // Simple TH1
@@ -1242,7 +1156,7 @@ void Acceptance::Hist2D_ThetaPQ()
 
 void Acceptance::Hist2D_LabAngles()
 {
-    ActivateBranches();
+    activateBranches();
     fChain->SetBranchStatus("PhiLabEl", 1);
     fChain->SetBranchStatus("ThetaLabEl", 1);
     fChain->SetBranchStatus("PhiLab", 1);
@@ -1258,9 +1172,9 @@ void Acceptance::Hist2D_LabAngles()
 
     TFile *fout;
     std::string h2d_folder = "../output/Hist2D" + getFoldNameExt();
-    CreateDir(h2d_folder);
-    if (_isData) fout = TFile::Open(Form("%s/LabAngles_%s_data.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
-    else         fout = TFile::Open(Form("%s/LabAngles_%s_hsim.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
+    create_Dir(h2d_folder);
+    if (_isData) fout = TFile::Open(Form("%s/LabAngles_%s_data.root", h2d_folder.c_str(), _infoTag.c_str()), "RECREATE");
+    else         fout = TFile::Open(Form("%s/LabAngles_%s_hsim.root", h2d_folder.c_str(), _infoTag.c_str()), "RECREATE");
 
     //// Define Histograms
     // Simple TH1
@@ -1468,7 +1382,7 @@ void Acceptance::Hist2D_LabAngles()
 
 void Acceptance::Hist2D_PQVsLab()
 {
-    ActivateBranches();
+    activateBranches();
     fChain->SetBranchStatus("PhiLabEl", 1);
     fChain->SetBranchStatus("ThetaLabEl", 1);
     fChain->SetBranchStatus("PhiLab", 1);
@@ -1486,9 +1400,9 @@ void Acceptance::Hist2D_PQVsLab()
 
     TFile *fout;
     std::string h2d_folder = "../output/Hist2D" + getFoldNameExt();
-    CreateDir(h2d_folder);
-    if (_isData) fout = TFile::Open(Form("%s/PQVsLab_%s_data.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
-    else         fout = TFile::Open(Form("%s/PQVsLab_%s_hsim.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
+    create_Dir(h2d_folder);
+    if (_isData) fout = TFile::Open(Form("%s/PQVsLab_%s_data.root", h2d_folder.c_str(), _infoTag.c_str()), "RECREATE");
+    else         fout = TFile::Open(Form("%s/PQVsLab_%s_hsim.root", h2d_folder.c_str(), _infoTag.c_str()), "RECREATE");
 
     //// Define Histograms
     // Simple TH1
@@ -1677,7 +1591,7 @@ void Acceptance::Hist2D_PQVsLab()
 
 void Acceptance::Hist2D_PQVsSector()
 {
-    ActivateBranches();
+    activateBranches();
     fChain->SetBranchStatus("SectorEl", 1);
     fChain->SetBranchStatus("Sector", 1);
     fChain->SetBranchStatus("ThetaPQ", 1);
@@ -1690,9 +1604,9 @@ void Acceptance::Hist2D_PQVsSector()
     }
 
     std::string acc_folder = "../output/JLab_cluster/Acceptance" + getAccFoldNameExt();
-    if (!FileExists(Form("%s/Acceptance_%s.root", acc_folder.c_str(), getAccFileName().c_str())))
+    if (!check_Existence(Form("%s/Acceptance_%s.root", acc_folder.c_str(), getAccFileName().c_str())))
     {
-        if (!FileExists(Form("../output/Acceptance%s/Acceptance_%s.root", getAccFoldNameExt().c_str(), getAccFileName().c_str())))
+        if (!check_Existence(Form("../output/Acceptance%s/Acceptance_%s.root", getAccFoldNameExt().c_str(), getAccFileName().c_str())))
         {
             std::cout << "Acceptance file not found. Run getAcceptance before!" << std::endl;
             exit(0);
@@ -1710,9 +1624,9 @@ void Acceptance::Hist2D_PQVsSector()
     setBinningType(-1);
     TFile *fout;
     std::string h2d_folder = "../output/Hist2D" + getFoldNameExt();
-    CreateDir(h2d_folder);
-    if (_isData) fout = TFile::Open(Form("%s/PQVsSector_%s_data.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
-    else         fout = TFile::Open(Form("%s/PQVsSector_%s_hsim.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
+    create_Dir(h2d_folder);
+    if (_isData) fout = TFile::Open(Form("%s/PQVsSector_%s_data.root", h2d_folder.c_str(), _infoTag.c_str()), "RECREATE");
+    else         fout = TFile::Open(Form("%s/PQVsSector_%s_hsim.root", h2d_folder.c_str(), _infoTag.c_str()), "RECREATE");
 
     //// Define Histograms
     // Simple TH1
@@ -1939,7 +1853,7 @@ void Acceptance::Hist2D_PQVsSector()
 
 void Acceptance::Hist2D_PQVsDeltaSector()
 {
-    ActivateBranches();
+    activateBranches();
     fChain->SetBranchStatus("SectorEl", 1);
     fChain->SetBranchStatus("Sector", 1);
     fChain->SetBranchStatus("ThetaPQ", 1);
@@ -1952,9 +1866,9 @@ void Acceptance::Hist2D_PQVsDeltaSector()
     }
 
     std::string acc_folder = "../output/JLab_cluster/Acceptance" + getAccFoldNameExt();
-    if (!FileExists(Form("%s/Acceptance_%s.root", acc_folder.c_str(), getAccFileName().c_str())))
+    if (!check_Existence(Form("%s/Acceptance_%s.root", acc_folder.c_str(), getAccFileName().c_str())))
     {
-        if (!FileExists(Form("../output/Acceptance%s/Acceptance_%s.root", getAccFoldNameExt().c_str(), getAccFileName().c_str())))
+        if (!check_Existence(Form("../output/Acceptance%s/Acceptance_%s.root", getAccFoldNameExt().c_str(), getAccFileName().c_str())))
         {
             std::cout << "Acceptance file not found. Run getAcceptance before!" << std::endl;
             exit(0);
@@ -1972,9 +1886,9 @@ void Acceptance::Hist2D_PQVsDeltaSector()
     setBinningType(-1);
     TFile *fout;
     std::string h2d_folder = "../output/Hist2D" + getFoldNameExt();
-    CreateDir(h2d_folder);
-    if (_isData) fout = TFile::Open(Form("%s/PQVsDeltaSector_%s_data.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
-    else         fout = TFile::Open(Form("%s/PQVsDeltaSector_%s_hsim.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
+    create_Dir(h2d_folder);
+    if (_isData) fout = TFile::Open(Form("%s/PQVsDeltaSector_%s_data.root", h2d_folder.c_str(), _infoTag.c_str()), "RECREATE");
+    else         fout = TFile::Open(Form("%s/PQVsDeltaSector_%s_hsim.root", h2d_folder.c_str(), _infoTag.c_str()), "RECREATE");
 
     //// Define Histograms
     // Simple TH1
@@ -2142,14 +2056,14 @@ void Acceptance::Hist2D_PQVsDeltaSector()
 
 void Acceptance::Hist2D_VarsVsXb()
 {
-    ActivateBranches();
+    activateBranches();
 
     TFile *fout;
     std::string h2d_folder = "../output/Hist2D" + getFoldNameExt();
-    CreateDir(h2d_folder);
+    create_Dir(h2d_folder);
 
-    if (_isData) fout = TFile::Open(Form("%s/VarsVsXb_%s_data.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
-    else         fout = TFile::Open(Form("%s/VarsVsXb_%s_hsim.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
+    if (_isData) fout = TFile::Open(Form("%s/VarsVsXb_%s_data.root", h2d_folder.c_str(), _infoTag.c_str()), "RECREATE");
+    else         fout = TFile::Open(Form("%s/VarsVsXb_%s_hsim.root", h2d_folder.c_str(), _infoTag.c_str()), "RECREATE");
 
     //// Define Histograms
     // Reconstructed or data
@@ -2323,7 +2237,7 @@ void Acceptance::Hist2D_VarsVsXb()
 
 void Acceptance::Hist2D_PiCherenkovCounter()
 {
-    ActivateBranches();
+    activateBranches();
     fChain->SetBranchStatus("Nphe", 1);
     fChain->SetBranchStatus("P", 1);
 
@@ -2334,10 +2248,10 @@ void Acceptance::Hist2D_PiCherenkovCounter()
 
     TFile *fout;
     std::string h2d_folder = "../output/Hist2D" + getFoldNameExt();
-    CreateDir(h2d_folder);
+    create_Dir(h2d_folder);
 
-    if (_isData) fout = TFile::Open(Form("%s/CC_NpheVsP_%s_data.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
-    else         fout = TFile::Open(Form("%s/CC_NpheVsP_%s_hsim.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
+    if (_isData) fout = TFile::Open(Form("%s/CC_NpheVsP_%s_data.root", h2d_folder.c_str(), _infoTag.c_str()), "RECREATE");
+    else         fout = TFile::Open(Form("%s/CC_NpheVsP_%s_hsim.root", h2d_folder.c_str(), _infoTag.c_str()), "RECREATE");
 
     //// Define Histograms
     // Reconstructed or data
@@ -2447,7 +2361,7 @@ void Acceptance::Hist2D_PiCherenkovCounter()
 
 void Acceptance::Hist2D_NpheVs()
 {
-    ActivateBranches();
+    activateBranches();
     fChain->SetBranchStatus("Nphe", 1);
     fChain->SetBranchStatus("NpheEl", 1);
 
@@ -2464,10 +2378,10 @@ void Acceptance::Hist2D_NpheVs()
 
     TFile *fout;
     std::string h2d_folder = "../output/Hist2D" + getFoldNameExt();
-    CreateDir(h2d_folder);
+    create_Dir(h2d_folder);
 
-    if (_isData) fout = TFile::Open(Form("%s/NpheVs_%s_data.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
-    else         fout = TFile::Open(Form("%s/NpheVs_%s_hsim.root", h2d_folder.c_str(), _nameFormatted.c_str()), "RECREATE");
+    if (_isData) fout = TFile::Open(Form("%s/NpheVs_%s_data.root", h2d_folder.c_str(), _infoTag.c_str()), "RECREATE");
+    else         fout = TFile::Open(Form("%s/NpheVs_%s_hsim.root", h2d_folder.c_str(), _infoTag.c_str()), "RECREATE");
 
     //// Define Histograms
     // Reconstructed or data
@@ -2682,3 +2596,4 @@ void Acceptance::Hist2D_NpheVs()
     fout->Write();
     fout->Close();
 }
+*/

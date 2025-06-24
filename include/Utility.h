@@ -3,361 +3,244 @@
 #include <TH1.h>
 #include <THnSparse.h>
 
+#include "Cuts.h"
+#include <cmath>    // for std::isnan
+#include <iomanip>  // for std::fixed and std::setprecision
 #include <iostream>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include <fstream>
+#include <sstream>
+#include <string>
 
-// Files and folders
-bool FileExists(const std::string& name) // Also works with folders
-{
-  struct stat buffer;
-  return (stat (name.c_str(), &buffer) == 0);
+//////////////////////////////////////////////////////////////////////////////////////////
+//  Files, folders, and names format
+//////////////////////////////////////////////////////////////////////////////////////////
+
+bool check_Existence(const std::string& name) { // Also works with folders!
+    struct stat buffer;
+    return (stat (name.c_str(), &buffer) == 0);
 }
 
-void CreateDir(std::string path)
-{
+void create_Dir(std::string path) {
     int i = system(Form("mkdir -p %s",path.c_str()));
     return;
 }
 
-std::string cutExtension(std::string str_list, std::string dict_name[][2])
-{
-    std::string this_name = "";
-    for(int i=0; i<20; i++)
-    {
-        if((str_list.find(dict_name[i][0]))!=std::string::npos && (dict_name[i][0] != ""))
-        {
-            this_name+="_"+dict_name[i][1];
-        }
-    }
-    return this_name;
-}
-
-// Branches and leaves
-int VarPosition(double var, std::vector<double> *var_limits)
-{
-	for (unsigned int ivar=0; ivar<(var_limits->size()-1); ivar++)
-    {
-		if (var_limits->at(ivar)<=var && var<var_limits->at(ivar+1))
-        {
-			return ivar;
-		}
-	}
-	return -9999;
-}
-
-int VarPosition(double var, double var_limits[], int nlimts)
-{
-	for (int ivar=0; ivar<nlimts; ivar++)
-    {
-		if (var_limits[ivar]<=var && var<var_limits[ivar+1])
-        {
-			return ivar;
-		}
-	}
-	return -9999;
-}
-
-// GlobalVarPosition() Gives the position in an ordered vector following ibin = iA + iB*Total_A + iC*Total_B*Total_A + ...
-int GlobalVarPosition(std::vector<double> *var_values, std::vector<std::vector<double>> *var_limits)
-{
-    int global_position = 0, pos_tmp = -1;
-    unsigned int nVars = var_values->size();
-    double total_size = 1;
-    for (unsigned int i=0; i<nVars; i++)
-    {
-        total_size*=((var_limits->at(i)).size()-1);
-    }
-    for (unsigned int i=0; i<nVars; i++)
-    {
-        pos_tmp = VarPosition(var_values->at(i), &(var_limits->at(i)));
-        if (pos_tmp!=-9999)
-        {
-            total_size/=((var_limits->at(i)).size()-1);
-            global_position+= pos_tmp*total_size;
-        }
-        else return -9999;
-    }
-
-    return global_position;
-}
-
-void UpdateDISLimits(std::vector<std::vector<double>> &the_limits, std::vector<std::vector<double>> this_binning)
-{
-    int i_var = 0;
-    for (auto &var_binning : this_binning)
-    {
-        if (the_limits[0][i_var] != var_binning.front())
-        {
-            the_limits[0][i_var] = var_binning.front();
-        }
-        if (the_limits[1][i_var] != var_binning.back())
-        {
-            the_limits[1][i_var] = var_binning.back();
-        }
-
-        i_var++;
-    }
-}
-
-// Histograms
-void SetVariableSize(THnSparse *hist, Int_t nbins[], Double_t Q2_limits[], Double_t Nu_limits[],
-					Double_t Zh_limits[], Double_t Pt2_limits[], Double_t PhiPQ_limits[], std::vector<int> *IrregBinBool = NULL)
-{
-    std::vector<int> v_tmp = {nbins[0], nbins[1], nbins[2], nbins[3], nbins[4]};
-    if (!IrregBinBool)
-    {
-        IrregBinBool = &v_tmp;
-    }
-	if(IrregBinBool->at(0)) hist->GetAxis(0)->Set(nbins[0], Q2_limits);
-	if(IrregBinBool->at(1)) hist->GetAxis(1)->Set(nbins[1], Nu_limits);
-	if(IrregBinBool->at(2)) hist->GetAxis(2)->Set(nbins[2], Zh_limits);
-	if(IrregBinBool->at(3)) hist->GetAxis(3)->Set(nbins[3], Pt2_limits);
-	if(IrregBinBool->at(4)) hist->GetAxis(4)->Set(nbins[4], PhiPQ_limits);
-}
-
-THnSparse* CreateFinalHist(TString name, int nbins[], std::vector<int> *reBinBool, std::vector<std::vector<double>> thisBinning, vector<vector<double>> DISLimits)
-{
-    int nbins_tmp[] = {10,10,10,10,40};
-    for (unsigned int b=0; b<(reBinBool->size()); b++)
-    {
-        if ((reBinBool->at(b))!=0) nbins_tmp[b] = nbins[b];
-    }
-
-    THnSparse* hist_tmp = new THnSparseD(name,name, 5,nbins_tmp,&DISLimits[0][0],&DISLimits[1][0]);
-
-    Double_t *Q2_Lmts    = &thisBinning[0][0];
-	Double_t *Nu_Lmts    = &thisBinning[1][0];
-	Double_t *Zh_Lmts    = &thisBinning[2][0];
-	Double_t *Pt2_Lmts   = &thisBinning[3][0];
-    Double_t *PhiPQ_Lmts = &thisBinning[4][0];
-
-    SetVariableSize(hist_tmp, nbins, Q2_Lmts, Nu_Lmts, Zh_Lmts, Pt2_Lmts, PhiPQ_Lmts, reBinBool);
-
-	hist_tmp->Sumw2();
-    return hist_tmp;
-}
-
-pair<double, double> GetCorrectValue(std::vector<double> this_bin, THnSparse *histAcc)
-{
-    int binAcc = histAcc->GetBin(&this_bin[0]);
-    double acc_value = histAcc->GetBinContent(binAcc);
-    pair<double, double> this_pair;
-
-    if (acc_value != 0)
-    {
-        double acc_error  = histAcc->GetBinError(binAcc);
-        this_pair.first = acc_value;
-        this_pair.second = acc_error;
-    }
-    return this_pair;
-}
-
-void CorrectBin(std::vector<double> this_bin, THnSparse *histAcc, THnSparse *histCorr, bool useFErr, bool useAccQlt)
-{
-    int binAcc = histAcc->GetBin(&this_bin[0]);
-    double valueAcc = histAcc->GetBinContent(binAcc);
-
-    if (valueAcc != 0)
-    {
-        double acc_error  = histAcc->GetBinError(binAcc);
-
-        // Skip bad behaved acc values
-        if (useAccQlt && ((acc_error/valueAcc)>0.1)) return;
-
-        int binCorr = histCorr->GetBin(&this_bin[0]);
-        double this_content = histCorr->GetBinContent(binCorr) + 1./valueAcc;
-        histCorr->SetBinContent(binCorr, this_content);
-
-        // Get error propagation
-        if (useFErr)
-        {
-            double this_error = TMath::Sqrt(this_content / valueAcc * (1 + this_content*acc_error*acc_error/valueAcc));
-
-            histCorr->SetBinError(binCorr, this_error);
-        }
-        else
-        {
-            acc_error = TMath::Sqrt(1.0 + acc_error*acc_error/(valueAcc*valueAcc))/valueAcc;
-            double old_error = histCorr->GetBinError(binCorr);
-            // Assuming no correlation in event by event
-            double this_error = TMath::Sqrt(old_error*old_error + acc_error*acc_error);
-
-            histCorr->SetBinError(binCorr, this_error);
-        }
-    }
-}
-
-// Printout messages
-void PrintFilledBins(THnSparse *hSparse)
-{
-    double fracFilled = hSparse->GetSparseFractionBins();
-
-    long nBins_noEdges = 1;
-    long nBins_withEdges = 1;
-
-    for (int i=0; i<5; i++)
-    {
-        nBins_noEdges *= hSparse->GetAxis(i)->GetNbins();
-        nBins_withEdges *= hSparse->GetAxis(i)->GetNbins() + 2;
-    }
-
-    std::cout << Form("THnSparse name: %s", hSparse->GetName()) << std::endl;
-    std::cout << Form("\tFilled bins: %i (%.4f %%)", (int)(fracFilled*nBins_withEdges), 100*fracFilled*nBins_withEdges/nBins_noEdges) << std::endl;
-}
-
-// Copy Binning from .C to .py
-void SaveBinningFilePy()
-{
-    std::string vars[5] = {"Q","N","Z","P","I"}; // Q2, Nu, Zh, Pt2, PhiPQ
-    ofstream MyWriteFile("../macros/Bins.py", std::ofstream::trunc);
-
-    // Create a text string, which is used to output the text file
-    std::string myText;
-    // Read from the text file
-    ifstream MyReadFile("Binning.h", std::ifstream::in);
-
-    // Format:
-    // // // B 0
-    // // std::vector<std::vector<double>> Bin_Origin = {{1.00, 1.30, 1.80, 4.10}, // 3   -> Total = 9,000
-    // //                                                {2.20, 3.20, 3.70, 4.20}, // 3 ...
-    // //                                                {-180.00, -171.00, -162.00, -153.00, -144.00,
-    // //                                                  -90.00,  -81.00,  -72.00,  -63.00,  -54.00,
-    // //                                                   90.00,   99.00,  108.00,  117.00,  126.00}}; // 40 bins
-
-    bool in_new_bin = false;
-    int var_count = 0;
-    bool write_bin = false;
-    bool init_line = false, end_line = false;
-    bool using_Xb = false;
-    std::string list_line = "";
-    std::vector<std::string> bin_list;
-
-    // Use a while loop together with the getline() function to read the file line by line
-    while (getline (MyReadFile, myText))
-    {
-        // Gets: // B 0
-        if (myText.find("// B") != string::npos)
-        {
-            in_new_bin = true;
-            var_count = 0;
-            if (myText.find("Xb") != string::npos) using_Xb = true;
-            else using_Xb = false;
-
-            // Writes: "# // B 0"
-            list_line+= "#" + myText + "\n";
+std::string formatCutsInName(std::vector<std::string> cuts, bool use_correction = false) {
+    std::string finalName = "";
+    for (const std::string& cut : cuts) {
+        if (use_correction &&
+            (std::find(cutsInOrder_Correction.begin(), cutsInOrder_Correction.end(), cut) != cutsInOrder_Correction.end()))
             continue;
-        }
-
-        // Gets: std::vector<std::vector<double>> Bin_Origin = {{1.00, 1.30, 1.80, 4.10}, ...
-        if (in_new_bin && myText.find("or<std::vector<double>> Bin_") != string::npos)
-        {
-            write_bin = true;
-            in_new_bin = false;
-
-            std::string bin_name = "";
-            // Gets "Bin_Origin" (37 is the position of the "B")
-            bin_name.append(myText, 37, myText.find('=')-37-1);
-
-            // Writes: "Bin_Origin = {"
-            list_line.append(bin_name);
-            list_line.append(" = {");
-
-            // Adds name of the bin to the final list
-            bin_list.push_back(bin_name);
-        }
-
-        if (write_bin)
-        {
-            if (myText.find("{") != string::npos)
-            {
-                init_line = true;
-            }
-            if (myText.find("}") != string::npos)
-            {
-                end_line = true;
-            }
-            if (myText.find("};") != string::npos)
-            {
-                write_bin = false;
-            }
-
-            // Gets "  {2.20, 3.20, 3.70, 4.20}, // 3 ..."
-            if (init_line && end_line)
-            {
-                int pos_open = myText.find_last_of("{")+1;
-
-                // Writes: "'N': [2.20, 3.20, 3.70, 4.20]"
-                std::string this_var = vars[var_count];
-                if (using_Xb && var_count==1) this_var = "X";
-                list_line+= "\'" + this_var + "\': [";
-                list_line.append(myText, pos_open, myText.find("}")-pos_open);
-                list_line.append("],\n");
-
-                init_line = false;
-                var_count++;
-                end_line = false;
-            }
-            // Gets "  {-180.00, -171.00, -162.00, -153.00, -144.00,"
-            else if (init_line)
-            {
-                int pos_elem = myText.find_last_of("{") +1;
-
-                // Writes: "'I': [-180.00, -171.00, -162.00, -153.00, -144.00,"
-                std::string this_var = vars[var_count];
-                if (using_Xb && var_count==1) this_var = "X";
-                list_line+= "\'" + this_var + "\': [";
-                list_line.append(myText, pos_elem, myText.find_last_of(",")-pos_elem+1);
-
-                init_line = false;
-                var_count++;
-            }
-            // Gets "  (...), 108.00,  117.00,  126.00}}; // 40 bins"
-            else if (end_line)
-            {
-                int pos_elem_in = myText.find(",") -7;
-
-                // Writes: "'I': [-180.00, -171.00, ...,  108.00,  117.00,  126.00]"
-                list_line.append(myText, pos_elem_in, myText.find("}")-pos_elem_in);
-                list_line.append("],\n");
-
-                end_line = false;
-            }
-            // Gets "  (...), -81.00, -72.00, -63.00, -54.00,"
-            else
-            {
-                int pos_elem_in = myText.find(",") -7;
-
-                // Writes: "'I': [-180.00, -171.00, ...,  -81.00, -72.00, -63.00, -54.00,"
-                list_line.append(myText, pos_elem_in, myText.find_last_of(",")-pos_elem_in+1);
-            }
-
-            if (!write_bin)
-            {
-                list_line.append("}\n\n");
-                MyWriteFile << list_line;
-                list_line = "";
-            }
-        }
+        finalName += "_" + cuts_LUT[cut].folderName;
     }
 
-    // Writes "Bin_List = [Bin_Origin, Bin_SplitZ, ..., Bin_OddPhi]"
-    list_line = "Bin_List = [";
-    for (auto &str : bin_list)
-    {
-        list_line+= str + ", ";
-    }
-    list_line.pop_back();
-    list_line.pop_back();
-    list_line+= "]\n\n";
-    MyWriteFile << list_line;
+    return finalName;
+}
 
-    // Close the file
-    MyReadFile.close();
-    MyWriteFile.close();
+//////////////////////////////////////////////////////////////////////////////////////////
+//  Histograms
+//////////////////////////////////////////////////////////////////////////////////////////
+
+void set_AxesBinning(THnSparse *histogram, const std::vector<std::vector<double>> ordered_limits,
+    const std::vector<bool> *is_irregular) {
+    int index = 0;
+    for (const auto& bins : ordered_limits) {
+        if (is_irregular->at(index))
+            histogram->GetAxis(index)->Set((bins.size() - 1), bins.data());
+        index++;
+    }
+}
+
+template <class T>
+std::vector<T> map_to_vector_in_order(const std::unordered_map<std::string, T>& input_map,
+    const std::vector<std::string>& reference) {
+    std::vector<T> output;
+    for (const std::string& variable : reference)
+        output.push_back(input_map.at(variable));
+    return output;
+}
+
+THnSparse* create_THnSparse(TString name, const std::vector<std::vector<double>> ordered_limits,
+    const std::vector<double> ordered_mins, const std::vector<double> ordered_maxs,
+    const std::vector<bool> *is_irregular, TString title = "") {
+    if (!title)
+        title = name;
+    if (!is_irregular)
+        is_irregular = new std::vector<bool>(ordered_mins.size(), true);
+    std::vector<int> n_bins;
+    for (const auto& bins : ordered_limits)
+        n_bins.push_back(bins.size() - 1);
+    THnSparse* histogram =
+        new THnSparseD(name, title, 5, n_bins.data(), ordered_mins.data(), ordered_maxs.data());
+    set_AxesBinning(histogram, ordered_limits, is_irregular);
+	histogram->Sumw2();
+
+    return histogram;
+}
+
+pair<double, double> get_Value(std::vector<double> bin_vector, THnSparse *acceptance) {
+    int bin = acceptance->GetBin(bin_vector.data());
+    double value = acceptance->GetBinContent(bin);
+    pair<double, double> value_error;
+    if (value != 0) {
+        value_error.first = value;
+        value_error.second = acceptance->GetBinError(bin);
+    }
+    else {
+        value_error.first = NAN;
+        value_error.second = 0;
+    }
+
+    return value_error;
+}
+
+void correct_Histogram(std::vector<double> bin_vector, THnSparse *acceptance,
+    THnSparse *histogram, bool full_error, bool quality) {
+    pair<double, double> acceptance_pair = get_Value(bin_vector, acceptance);
+    if (std::isnan(acceptance_pair.first) && (acceptance_pair.second == 0))
+        return;
+
+    double acceptance_value = acceptance_pair.first;
+    double acceptance_error = acceptance_pair.second;
+
+    if (quality && ((acceptance_error / acceptance_value) > 0.1))
+        return;
+
+    int bin = histogram->GetBin(bin_vector.data());
+    double new_value = histogram->GetBinContent(bin) + 1. / acceptance_value;
+    histogram->SetBinContent(bin, new_value);
+
+    double new_error;
+    if (full_error) {
+        new_error = TMath::Sqrt(new_value / acceptance_value *
+            (1 + new_value * acceptance_error * acceptance_error / acceptance_value));
+    }
+    else { // This assumes no correlation in event by event
+        acceptance_error = TMath::Sqrt(1.0 + acceptance_error * acceptance_error /
+            (acceptance_value * acceptance_value)) / acceptance_value;
+        double old_error = histogram->GetBinError(bin);
+        new_error = TMath::Sqrt(old_error * old_error +
+            acceptance_error * acceptance_error);
+    }
+    histogram->SetBinError(bin, new_error);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+//  Print messages
+//////////////////////////////////////////////////////////////////////////////////////////
+
+void print_BinsFilled(THnSparse *hSparse) {
+    double fraction_filled = hSparse->GetSparseFractionBins();
+    long totalBins_NoEdges = 1;
+    long totalBins_WithEdges = 1;
+    for (int i = 0; i < 5; i++) {
+        totalBins_NoEdges *= hSparse->GetAxis(i)->GetNbins();
+        totalBins_WithEdges *= hSparse->GetAxis(i)->GetNbins() + 2;
+    }
+    int n_filled = fraction_filled * totalBins_WithEdges;
+    double percentage = 100. * n_filled / totalBins_NoEdges;
+    std::cout << Form("THnSparse name: %s", hSparse->GetName()) << std::endl;
+    std::cout << Form("\tFilled bins: %i (%.4f %%)", n_filled, percentage) << std::endl;
+}
+
+std::unordered_map<std::string, unsigned int> create_MapCounter() {
+    std::unordered_map<std::string, unsigned int> counter;
+    counter.insert({"Total_entries", 0});
+    // counter.insert({"Total Generated electrons (MC)", 0});
+        counter.insert({"Gen_GoodElectron", 0});
+        counter.insert({"Gen_GoodElectronNOT", 0});
+            counter.insert({"Gen_WrongTargType", 0});
+            counter.insert({"Gen_OutDISRange", 0});
+    // counter.insert({"Total Reconstructed electrons", 0});
+        counter.insert({"Reco_GoodElectron", 0});
+        counter.insert({"Reco_GoodElectronNOT", 0});
+            counter.insert({"Reco_WrongTargType", 0});
+            counter.insert({"Reco_OutVertexY", 0});
+            counter.insert({"Reco_OutDISRange", 0});
+    counter.insert({"Total_MatchElectrons", 0});
+    counter.insert({"Total_DifferentVectorSize", 0});
+
+    // counter.insert({"Total Generated Pi+ (MC)", 0});
+    counter.insert({"Gen_Pi+Single", 0});
+    counter.insert({"Gen_Pi+Two", 0});
+    counter.insert({"Gen_Pi+Three+", 0});
+        counter.insert({"Gen_GoodPiPlus", 0});
+        counter.insert({"Gen_GoodPiPlusNOT", 0});
+    // counter.insert({"Total Reconstructed Pi+", 0});
+    counter.insert({"Reco_Pi+Single", 0});
+    counter.insert({"Reco_Pi+Two", 0});
+    counter.insert({"Reco_Pi+Three+", 0});
+        counter.insert({"Reco_GoodPiPlus", 0});
+        counter.insert({"Reco_GoodPiPlusNOT", 0});
+    counter.insert({"Total_MatchPiPlus", 0});
+
+    return counter;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+//  Copy Bins info from C++ maps to Python dictionary (.py file)
+//////////////////////////////////////////////////////////////////////////////////////////
+
+// Converts a C++ vector<int> to a Python-style list string
+std::string vector_to_python_list(const std::vector<double>& vec) {
+    std::ostringstream oss;
+    oss << "[";
+    oss << std::fixed << std::setprecision(3);
+    for (size_t i = 0; i < vec.size(); ++i) {
+        oss << vec[i];
+        if (i != vec.size() - 1) oss << ", ";
+    }
+    oss << "]";
+    return oss.str();
+}
+
+// Converts a C++ unordered_map<string, vector<int>> to a Python-style dict string
+std::string map_to_python_dict(const std::unordered_map<std::string, std::vector<double>>& m) {
+    std::ostringstream oss;
+    oss << "{";
+    size_t count = 0;
+    std::vector<std::string> ordered_variables = {"Q2", "Nu", "Xb", "Zh", "Pt2", "PhiPQ"};
+    for (const auto& variable : ordered_variables) {
+        if (!m.count(variable))
+            continue;
+        oss << "\"" << variable << "\": " << vector_to_python_list(m.at(variable));
+        if (++count != m.size())
+            oss << ", ";
+    }
+    oss << "}";
+    return oss.str();
+}
+
+// Converts the full list of maps to a Python-style list of dicts
+std::string to_python_literal(const std::vector<std::unordered_map<std::string, std::vector<double>>>& data) {
+    std::ostringstream oss;
+    oss << "List_of_binning = [\n";
+    for (size_t i = 0; i < data.size(); ++i) {
+        oss << "    # B" << i << "\n";
+        oss << "    " << map_to_python_dict(data[i]);
+        if (i != data.size() - 1) oss << ",";
+        oss << "\n";
+    }
+    oss << "]\n";
+    return oss.str();
+}
+
+// Writes the Python file only if the content has changed
+void write_python_file(const std::vector<std::unordered_map<std::string, std::vector<double>>>& data) {
+    std::string new_content = to_python_literal(data);
+
+    std::ofstream out_file("../macros/Bins_testing.py");
+    if (!out_file) {
+        std::cerr << "Error: could not open file for writing.\n";
+        return;
+    }
+
+    out_file << new_content;
+    std::cout << "Python file updated.\n";
 }
 
 #endif // #ifdef Utility_h
