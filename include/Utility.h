@@ -32,8 +32,9 @@ void create_Dir(std::string path) {
 std::string formatCutsInName(std::vector<std::string> cuts, bool use_correction = false) {
     std::string finalName = "";
     for (const std::string& cut : cuts) {
-        if (use_correction &&
-            (std::find(cutsInOrder_Correction.begin(), cutsInOrder_Correction.end(), cut) != cutsInOrder_Correction.end()))
+        if (!use_correction &&
+            (std::find(cutsOrder_CORR.begin(), cutsOrder_CORR.end(), cut)
+                != cutsOrder_CORR.end()))
             continue;
         finalName += "_" + cuts_LUT[cut].folderName;
     }

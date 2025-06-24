@@ -323,7 +323,7 @@ void Acceptance::set_Binning() {
 }
 
 void Acceptance::set_Cuts(std::string str_cuts) {
-    for (const std::string& cut : cutsInOrder_Acceptance) {
+    for (const std::string& cut : cutsOrder_ACC) {
         if(str_cuts.find(cut) == std::string::npos)
             continue;
         cuts_LUT[cut].usingCut = true;
@@ -332,7 +332,7 @@ void Acceptance::set_Cuts(std::string str_cuts) {
     if (!_useCorrectionCuts)
         return;
 
-    for (const std::string& cut : cutsInOrder_Correction) {
+    for (const std::string& cut : cutsOrder_CORR) {
         if(str_cuts.find(cut) == std::string::npos)
             continue;
         cuts_LUT[cut].usingCut = true;

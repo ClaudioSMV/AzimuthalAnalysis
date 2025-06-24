@@ -150,10 +150,10 @@ struct Cuts_Info {
     std::string description;
 };
 
-std::vector<std::string> cutsInOrder_Acceptance = {
+std::vector<std::string> cutsOrder_ACC = {
     "Xf", "XT", "DS", "BS", "PF", "MM", "M2",
 };
-std::vector<std::string> cutsInOrder_Correction = {
+std::vector<std::string> cutsOrder_CORR = {
     "FE", "AQ", "Pe",
 };
 
