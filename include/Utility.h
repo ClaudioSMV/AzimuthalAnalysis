@@ -234,7 +234,7 @@ std::string to_python_literal(const std::vector<std::unordered_map<std::string, 
 void write_python_file(const std::vector<std::unordered_map<std::string, std::vector<double>>>& data) {
     std::string new_content = to_python_literal(data);
 
-    std::ofstream out_file("../macros/Bins_testing.py");
+    std::ofstream out_file("../macros/Bins.py");
     if (!out_file) {
         std::cerr << "Error: could not open file for writing.\n";
         return;

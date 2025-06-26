@@ -3,7 +3,7 @@ from lib_constants import MARGINS, FONT, SIZE_TEXT, OFFSET_TITLE, update_margins
     update_offset, variable_info, color_palette
 from lib_cuts import extract_indices_dict
 # import os
-from Bins_testing import List_of_binning
+from Bins import List_of_binning
 
                                ############################
 #################################         Style          #################################
