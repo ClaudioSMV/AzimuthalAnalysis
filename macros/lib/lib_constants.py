@@ -87,11 +87,17 @@ def get_variables_order(reference, use_only_reference = True):
 ####################################  Methods titles  ####################################
                                   ######################
 
-reco_methods = [
-    ("Reconstructed", ["Reconstru", "Reconstructed", "Corrected"]),
-    ("MatchMC", ["ReMtch_mc", "RecoMatchMC", "Matching MC"]),
-    ("MatchReco", ["ReMtch_re", "RecoMatchRec", "Matching Rec"]),
-    ("Raw", ["RawData", "Raw", "Raw data"]),
+# Old processed files names (DEPRECATED):
+# ["Reconstru", ...]
+# ["ReMtch_mc", "RecoMatchMC", "Matching MC"]
+# ["ReMtch_re", "RecoMatchRec", "Matching Rec"]
+# ["RawData", "Raw", "Raw data"]
+
+reco_methods = [ # ["Processed", "Analysis", "Title"]
+    ("Reconstructed", ["Reconstructed", "Reconstructed", "Corrected"]),
+    ("MatchMC", ["Match_GenVars", "RecoMatchGenVars", "Matching Gen vars"]),
+    ("MatchReco", ["Match_RecoVars", "RecoMatchRecoVars", "Matching Reco vars"]),
+    ("Raw", ["Raw_data", "Raw", "Raw data"]),
 ]
 
                          ########################################

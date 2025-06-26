@@ -184,18 +184,6 @@ def get_color_palette(only_this_color = ""):
 
     return {name: rgb_to_root(rgb) for (name, rgb) in color_palette.items()}
 
-# def get_color(color_blind = True):
-# # Get list with 7-color pallete (colorblind friendly by default)
-#     # [#kGreen+2, #kCyan+2, #kBlue, #kViolet, #kRed, #kYellow+2, #kBlue-3]
-#     list_color_regular = [416+2, 432+2, 600, 880, 632, 400+2, 600-3]
-#     # [indigo, cyan, green, olive, rose, wine]
-#     list_color_blind = [rgb_to_root(51,34,136), rgb_to_root(51,187,238),
-#                         rgb_to_root(17,119,51), rgb_to_root(153,153,51),
-#                         rgb_to_root(204,102,119), rgb_to_root(136,34,85),
-#                         rgb_to_root(128,128,128)]
-#     this_pallete = list_color_blind if color_blind else list_color_regular
-#     return this_pallete
-
 target_color = {
     'C': get_color_palette("blue"),
     'Fe': get_color_palette("green"),

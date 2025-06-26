@@ -209,8 +209,8 @@ class processed_files_format:
 
     def get_file(self):
         file_name = self.stage_name
-        if (self.stage_name == "Correction"):
-            file_name = "Corrected"
+        # if (self.stage_name == "Correction"): (old processed files DEPRECATED)
+        #     file_name = "Corrected"
         not_acceptance = (self.stage_name != "Acceptance")
         file_name += "_%s"%(get_info_tag__title_format(self.info_tag, not_acceptance))
 
@@ -220,13 +220,17 @@ class processed_files_format:
         if (self.stage_name == "Acceptance"):
             hist_name = "histAcc_%s"%(reco_method)
         elif (self.stage_name == "Correction") or (self.stage_name == "ClosureTest"):
-            hist_name = "Corr_" + reco_method
-            if ("Pion" in reco_method):
-                hist_name = "True_PionReco"
-            elif ("True" in reco_method):
-                hist_name = "True"
-            elif ("Raw" in reco_method):
-                hist_name = "Raw_data"
+            # (old processed files DEPRECATED)
+            # hist_name = "Corr_" + reco_method
+            # if ("Pion" in reco_method):
+            #     hist_name = "True_PionReco"
+            # elif ("True" in reco_method):
+            #     hist_name = "True"
+            # elif ("Raw" in reco_method):
+            #     hist_name = "Raw_data"
+            hist_name =self.stage_name + "_" + reco_method
+            if ("Raw" in hist_name):
+                hist_name = reco_method
         # Here you can add the format of other names, like in 2D maps or reco-efficiency
 
         return hist_name
