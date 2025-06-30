@@ -23,10 +23,11 @@ fi
 source ~/.bashrc
 
 # set main dirs
-SCRIPTDIR=${HOME}/work/AzimuthalAnalysis/run/sh
+SCRIPTDIR=${HOME}/work/AzimuthalAnalysis/run
 # JOBDIR=/volatile/clas/claseg2/csanmart/acceptance-files
 # OUTDIR=${REPODIR}/run/sh
-TMPDIR=${SCRIPTDIR}/tmp
+JOBDIR=${SCRIPTDIR}/jobs
+TMPDIR=${JOBDIR}/tmp
 mkdir -p ${TMPDIR}
 
 # setting jobname
@@ -50,7 +51,7 @@ echo "#SBATCH --mail-type=BEGIN,END,FAIL"                                       
 echo ""                                                                         >> ${jobfile}
 echo "source ${HOME}/.bashrc"                                                   >> ${jobfile}
 echo "loadClas12modules"                                                        >> ${jobfile}
-echo "cd ${SCRIPTDIR}/.."                                                       >> ${jobfile}
+echo "cd ${SCRIPTDIR}"                                                          >> ${jobfile}
 echo "root -l -b 'getAcceptance.C(\"${TARNAME}\", ${BINNAME}, \"${CUTLIST}\")'" >> ${jobfile}
 
 echo "Submitting job: ${jobfile}"
