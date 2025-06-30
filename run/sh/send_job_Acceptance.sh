@@ -30,7 +30,7 @@ TMPDIR=${OUTDIR}/tmp
 mkdir -p ${OUTDIR} ${TMPDIR}
 
 # setting jobname
-jobname="GetAcc_${TARNAME}_${BINNAME}B"
+jobname="Acceptance_${TARNAME}_${BINNAME}B"
 if [[ -n $CUTLIST ]]; then
     jobname="${jobname}_${CUTLIST}"
 fi
@@ -49,8 +49,9 @@ echo "#SBATCH --mail-user=claudio.sanmartinval@gmail.com"                       
 echo "#SBATCH --mail-type=BEGIN,END,FAIL"                                       >> ${jobfile}
 echo ""                                                                         >> ${jobfile}
 echo "source ${HOME}/.bashrc"                                                   >> ${jobfile}
+echo "loadClas12modules"                                                        >> ${jobfile}
 echo "cd ${REPODIR}/run"                                                        >> ${jobfile}
-echo "root -l -b 'getAcceptance.C(\"${TARNAME}\",${BINNAME},\"${CUTLIST}\")'"   >> ${jobfile}
+echo "root -l -b 'getAcceptance.C(\"${TARNAME}\", ${BINNAME}, \"${CUTLIST}\")'" >> ${jobfile}
 
 echo "Submitting job: ${jobfile}"
 sbatch ${jobfile} # submit job!
