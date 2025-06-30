@@ -23,18 +23,18 @@ fi
 source ~/.bashrc
 
 # set main dirs
-# REPODIR=${HOME}/work/AzimuthalAnalysis
-REPODIR=/volatile/clas/claseg2/csanmart/AzimuthalAnalysis
-OUTDIR=${REPODIR}/run/sh
-TMPDIR=${OUTDIR}/tmp
-mkdir -p ${OUTDIR} ${TMPDIR}
+SCRIPTDIR=${HOME}/work/AzimuthalAnalysis/run/sh
+# JOBDIR=/volatile/clas/claseg2/csanmart/acceptance-files
+# OUTDIR=${REPODIR}/run/sh
+TMPDIR=${SCRIPTDIR}/tmp
+mkdir -p ${TMPDIR}
 
 # setting jobname
 jobname="Acceptance_${TARNAME}_${BINNAME}B"
 if [[ -n $CUTLIST ]]; then
     jobname="${jobname}_${CUTLIST}"
 fi
-jobfile="${TMPDIR}/${jobname}.sh"
+jobfile="${JOBDIR}/${jobname}.sh"
 
 echo ${jobname}
 
@@ -50,7 +50,7 @@ echo "#SBATCH --mail-type=BEGIN,END,FAIL"                                       
 echo ""                                                                         >> ${jobfile}
 echo "source ${HOME}/.bashrc"                                                   >> ${jobfile}
 echo "loadClas12modules"                                                        >> ${jobfile}
-echo "cd ${REPODIR}/run"                                                        >> ${jobfile}
+echo "cd ${SCRIPTDIR}/.."                                                       >> ${jobfile}
 echo "root -l -b 'getAcceptance.C(\"${TARNAME}\", ${BINNAME}, \"${CUTLIST}\")'" >> ${jobfile}
 
 echo "Submitting job: ${jobfile}"
