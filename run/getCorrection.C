@@ -8,7 +8,7 @@ void getCorrection(std::string target, int Nbin, int Ndim, std::string cuts = ""
 
     if (target.find("D") != std::string::npos) {
         std::cout << "Remember to include the solid target name after D to use a single ";
-        std::cout << "dataset. Omit it if you want to mix all datasets.\n" << std::endl;
+        std::cout << "dataset. Omitting it will mix all datasets.\n" << std::endl;
     }
 
     if (check_Existence("../../clas-data")) {

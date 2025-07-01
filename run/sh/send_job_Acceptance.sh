@@ -1,8 +1,6 @@
 #!/bin/bash
 
-#####
-# Input
-###
+#########  Input  #########
 
 INPUTARRAY=("$@")
 
@@ -15,17 +13,13 @@ if [[ -z $TARNAME ]]; then
     exit
 fi
 
-#####
-# Main
-###
-
+#########  Main  #########
 # set env
 source ~/.bashrc
 
 # set main dirs
 SCRIPTDIR=${HOME}/work/AzimuthalAnalysis/run
 # JOBDIR=/volatile/clas/claseg2/csanmart/acceptance-files
-# OUTDIR=${REPODIR}/run/sh
 JOBDIR=${SCRIPTDIR}/jobs
 TMPDIR=${JOBDIR}/tmp
 mkdir -p ${TMPDIR}
@@ -50,7 +44,6 @@ echo "#SBATCH --mail-user=claudio.sanmartinval@gmail.com"                       
 echo "#SBATCH --mail-type=BEGIN,END,FAIL"                                       >> ${jobfile}
 echo ""                                                                         >> ${jobfile}
 echo "source ${HOME}/.bashrc"                                                   >> ${jobfile}
-echo "loadClas12modules"                                                        >> ${jobfile}
 echo "cd ${SCRIPTDIR}"                                                          >> ${jobfile}
 echo "root -l -b 'getAcceptance.C(\"${TARNAME}\", ${BINNAME}, \"${CUTLIST}\")'" >> ${jobfile}
 
