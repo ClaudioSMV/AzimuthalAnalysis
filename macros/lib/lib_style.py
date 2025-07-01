@@ -1,4 +1,4 @@
-from ROOT import TH1, TH1D, gROOT, gStyle, TGaxis, TCanvas, TLatex, kGray, TColor
+from ROOT import TH1, gROOT, gStyle, TGaxis, TCanvas, TLatex, kGray, TColor
 from lib_constants import MARGINS, FONT, SIZE_TEXT, OFFSET_TITLE, update_margins, \
     update_offset, variable_info, color_palette
 from lib_cuts import extract_indices_dict
