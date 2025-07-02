@@ -100,14 +100,13 @@ void Acceptance::Loop() {
     std::string folderName;
     std::string fileName;
     if (!_isClosureTest) {
-        folderName = "../output/localJul2025/Acceptance" +
-            formatCutsInName(_cutList);
+        folderName = "../output/Acceptance" + formatCutsInName(_cutList);
         fileName = Form("Acceptance_%s", _infoTag_Acceptance.c_str());
     }
     else {
-        folderName = "../output/localJul2025/ClosureTest" +
-            std::to_string(_fractionClosureTest) + "p" + formatCutsInName(_cutList);
-        fileName = Form("AccCT_%s", _infoTag_Acceptance.c_str());
+        folderName = "../output/ClosureTest" + formatCutsInName(_cutList);
+        fileName = Form("Acceptance_%ip_%s", _fractionClosureTest,
+            _infoTag_Acceptance.c_str());
     }
     create_Dir(folderName);
     TFile *fout =
@@ -185,11 +184,11 @@ void Acceptance::Loop() {
         entries_to_process *= _fractionClosureTest / 100.;
 
     auto counterMap = create_MapCounter();
-    counterMap["Total_entries"] = nentries;
+    counterMap["Total_entries"] = entries_to_process;
     for (unsigned int jentry = 0; jentry < entries_to_process; jentry++) {
         if (jentry % 1000000 == 0) {
             printf("Processing entry %10u out of %10llu, progress at %3.2f%%\n", jentry,
-                nentries, 100. * (double)jentry / entries_to_process);
+                entries_to_process, 100. * (double)jentry / entries_to_process);
         }
 
         Long64_t ientry = LoadTree(jentry);
@@ -377,22 +376,41 @@ void Acceptance::Loop() {
 void Acceptance::Correction() {
     activateBranches();
 
-    std::string folderName;
+    std::string folderName = "../output/";
     std::string fileName;
     // Opening Acceptance file
-    folderName = "../output/localJul2025/Acceptance" + formatCutsInName(_cutList);
-    fileName = Form("Acceptance_%s", _infoTag_Acceptance.c_str());
-    create_Dir(folderName);
+    if (!_isClosureTest) {
+        folderName += "Acceptance" + formatCutsInName(_cutList);
+        fileName = Form("Acceptance_%s", _infoTag_Acceptance.c_str());
+    }
+    else {
+        folderName += "ClosureTest" + formatCutsInName(_cutList);
+        fileName = Form("Acceptance_%ip_%s", _fractionClosureTest,
+            _infoTag_Acceptance.c_str());
+    }
     TFile *facc =
         TFile::Open(Form("%s/%s.root", folderName.c_str(), fileName.c_str()), "READ");
+
     // Creating Correction file
-    folderName = "../output/localJul2025/Correction" + formatCutsInName(_cutList, true);
-    fileName = Form("Correction_%s", _infoTag.c_str());
+    folderName = "../output/";
+    if (!_isClosureTest) {
+        folderName += "Correction" + formatCutsInName(_cutList, true);
+        fileName = Form("Correction_%s", _infoTag.c_str());
+    }
+    else {
+        folderName += "ClosureTest" + formatCutsInName(_cutList, true);
+        fileName = Form("ClosureTest_%ip_%s", _fractionClosureTest, _infoTag.c_str());
+    }
     create_Dir(folderName);
     TFile *fout =
         TFile::Open(Form("%s/%s.root", folderName.c_str(), fileName.c_str()), "RECREATE");
 
-    std::cout << "\n\nBeginning Correction of data for ";
+    if (!_isClosureTest) {
+        std::cout << "\n\nBeginning Correction of data for ";
+    }
+    else {
+        std::cout << "\n\nBeginning Correction of pseudo-data for ";
+    }
     std::cout << _nameTarget << " target\n" << std::endl;
 
     // Get Acceptance THnSparse
@@ -420,10 +438,15 @@ void Acceptance::Correction() {
     Long64_t nentries = fChain->GetEntries();
     Long64_t nbytes = 0, nb = 0;
 
-    for (unsigned int jentry = 0; jentry < nentries; jentry++) {
+    unsigned int entry0 = 0;
+    if (_isClosureTest)
+        entry0 = _fractionClosureTest * nentries / 100.;
+
+    for (unsigned int jentry = entry0; jentry < nentries; jentry++) {
         if (jentry % 1000000 == 0) {
-            printf("Processing entry %10u out of %10llu, progress at %3.2f%%\n", jentry,
-                nentries, 100. * (double)jentry / nentries);
+            printf("Processing entry %10u out of %10llu, progress at %3.2f%%\n",
+                jentry - entry0, nentries - entry0,
+                100. * (double)(jentry - entry0) / (nentries - entry0));
         }
 
         Long64_t ientry = LoadTree(jentry);
@@ -464,144 +487,22 @@ void Acceptance::Correction() {
     facc->Close();
 }
 
-/*
-void Acceptance::ClosureTest()
-{ // TODO: LEFT HERE! UPDATE THIS FUNCTION AND THE NEXT ONES!
-    // Run over half of the sim and save in "../output/ClosureTest/AccCT_%s_B%i_%iD.root"
-    // setClosureTest();
+void Acceptance::ClosureTest(int fraction) {
+    set_ClosureTest(fraction);
+    std::string folder = "../output/ClosureTest" + formatCutsInName(_cutList);
+    std::string fileAcceptance = Form("Acceptance_%ip_%s", _fractionClosureTest,
+        _infoTag_Acceptance.c_str());
 
-    std::string ct_folder = "../output/ClosureTest" + std::to_string(_fracCT) + "p" + getFoldNameExt();
-    if (!check_Existence(Form("%s/AccCT_%s.root", ct_folder.c_str(), getAccFileName().c_str())))
-    {
-        std::cout << "Acceptance for ClosureTest doesn't exist. Creating file." << std::endl;
+    if (!check_Existence(Form("%s/%s.root", folder.c_str(), fileAcceptance.c_str()))) {
+        std::cout << "Closure Test Acceptance doesn't exist. Creating file." << std::endl;
         Loop();
     }
-    else
-    {
-        std::cout << "Acceptance for ClosureTest already exists! Using it." << std::endl;
-        activateBranches();
-    }
+    _useCorrectionCuts = true;
+    Correction();
 
-    auto& ThisBins = Bin_List[_binIndex];
-    int nbins[5] = {static_cast<int>(ThisBins[0].size()-1), static_cast<int>(ThisBins[1].size()-1),
-                    static_cast<int>(ThisBins[2].size()-1), static_cast<int>(ThisBins[3].size()-1),
-                    static_cast<int>(ThisBins[4].size()-1)};
-
-    // Begin Closure Test
-    std::cout << "\n\nBeginning Closure Test for " << _nameTarget << " target\n" << std::endl;
-
-    TFile *facc = TFile::Open(Form("%s/AccCT_%s.root", ct_folder.c_str(), getAccFileName().c_str()), "READ");
-    TFile *fout = TFile::Open(Form("%s/ClosureTest_%s.root", ct_folder.c_str(), _infoTag.c_str()), "RECREATE");
-
-    // Get Acceptance THnSparse
-    THnSparse *histAcc_Reconstru = (THnSparse*)facc->Get("histAcc_Reconstru");
-    THnSparse *histAcc_ReMtch_mc = (THnSparse*)facc->Get("histAcc_ReMtch_mc");
-    THnSparse *histAcc_ReMtch_re = (THnSparse*)facc->Get("histAcc_ReMtch_re");
-
-    // Create Final THnSparse
-    THnSparse *histCorr_Reconstru = CreateFinalHist("Corr_Reconstru", nbins, &(Correction::NIrregBins[_binNdims]), ThisBins, DISLimits);
-    THnSparse *histCorr_ReMtch_mc = CreateFinalHist("Corr_ReMtch_mc", nbins, &(Correction::NIrregBins[_binNdims]), ThisBins, DISLimits);
-    THnSparse *histCorr_ReMtch_re = CreateFinalHist("Corr_ReMtch_re", nbins, &(Correction::NIrregBins[_binNdims]), ThisBins, DISLimits);
-    THnSparse *histTrue           = CreateFinalHist("True",           nbins, &(Correction::NIrregBins[_binNdims]), ThisBins, DISLimits);
-    THnSparse *histTrue_PionReco  = CreateFinalHist("True_PionReco",  nbins, &(Correction::NIrregBins[_binNdims]), ThisBins, DISLimits);
-
-    Long64_t nentries = fChain->GetEntries();
-    unsigned int first_entry = _fracCT*nentries/100.; // Default for ClosureTest is 50.
-
-    Long64_t nbytes = 0, nb = 0;
-    
-    int global_bin=-1, global_bin_True=-1;
-    int vec_entries=0, count = 0;
-    bool good_electron_mc = false, good_electron = false;
-    bool good_pion_mc = false, good_pion = false;
-    std::vector<double> binKinVars, binKinVars_mc;
-    for (unsigned int jentry = first_entry; jentry < nentries; jentry++)
-    {
-        count++;
-        if ((jentry-first_entry) % 1000000 == 0)
-            printf("Processing entry %9u, progress at %6.2f%%\n",jentry-first_entry,100.*(double)(jentry-first_entry)/(nentries-first_entry));
-
-        Long64_t ientry = LoadTree(jentry);
-        if (ientry < 0)
-            break;
-        nb = fChain->GetEntry(jentry);
-        nbytes += nb;
-        good_electron_mc = false, good_electron = false;
-
-        if (GoodElectron_MC(ientry, DISLimits))
-        {
-            good_electron_mc = true;
-        }
-
-        if (GoodElectron(ientry, DISLimits))
-        {
-            good_electron = true;
-        }
-
-        if (!good_electron && !good_electron_mc) continue;
-        
-        vec_entries = PhiPQ->size();
-
-		for (int i=0; i<vec_entries; i++)
-        {
-            good_pion_mc = false, good_pion = false;
-
-            if (good_electron_mc && GoodPiPlus_MC(ientry, i, DISLimits))
-            {
-                good_pion_mc = true;
-                binKinVars_mc = {mc_Q2, mc_Nu, mc_Zh->at(i), mc_Pt2->at(i), mc_PhiPQ->at(i)};
-                if (_useXb) binKinVars_mc[1] = mc_Xb;
-            }
-
-            if (good_electron && GoodPiPlus(ientry, i, DISLimits))
-            {
-                good_pion = true;
-                binKinVars = {Q2, Nu, Zh->at(i), Pt2->at(i), PhiPQ->at(i)};
-                if (_useXb) binKinVars[1] = Xb;
-            }
-
-            if (!good_pion_mc && !good_pion) continue;
-
-            if (good_pion_mc)
-            {
-                histTrue->Fill(&binKinVars_mc[0]);
-            }
-
-            if (good_pion)
-            {
-                // Reconstructed
-                CorrectBin(binKinVars, histAcc_Reconstru, histCorr_Reconstru, _useFullError, _useAccQlt);
-
-                // ReMtch_mc
-                CorrectBin(binKinVars, histAcc_ReMtch_mc, histCorr_ReMtch_mc, _useFullError, _useAccQlt);
-
-                // ReMtch_re
-                CorrectBin(binKinVars, histAcc_ReMtch_re, histCorr_ReMtch_re, _useFullError, _useAccQlt);
-            }
-
-            if (good_pion_mc && good_pion)
-            {
-                histTrue_PionReco->Fill(&binKinVars_mc[0]);
-            }
-
-        }   // loop over tracks
-    }       // loop over entries
-
-    std::cout << "There are " << count << " entries!" << std::endl;
-
-    histCorr_Reconstru->Write();
-    histCorr_ReMtch_mc->Write();
-    histCorr_ReMtch_re->Write();
-    histTrue->Write();
-    histTrue_PionReco->Write();
-
-    std::cout << "Made it to the end. Saving..." << std::endl;
-
-    fout->Write();
-    fout->Close();
-    facc->Close();
 }
 
+/*
 void Acceptance::Hist2D_KinVars()
 {
     activateBranches();

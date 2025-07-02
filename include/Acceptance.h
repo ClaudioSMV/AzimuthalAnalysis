@@ -208,7 +208,7 @@ public:
     virtual bool cutIsUsed(std::string);
     virtual void Loop();
     virtual void Correction();
-    // virtual void ClosureTest();
+    virtual void ClosureTest(int);
 
     virtual Bool_t Notify();
     virtual void Show(Long64_t entry = -1);

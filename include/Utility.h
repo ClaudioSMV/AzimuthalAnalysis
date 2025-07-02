@@ -241,7 +241,7 @@ void write_python_file(const std::vector<std::unordered_map<std::string, std::ve
     }
 
     out_file << new_content;
-    std::cout << "Python file updated.\n";
+    std::cout << "Bins.py python file updated.\n";
 }
 
 #endif // #ifdef Utility_h
