@@ -1,5 +1,5 @@
-#ifndef Acceptance_h
-#define Acceptance_h
+#ifndef AzimuthalAnalysis_h
+#define AzimuthalAnalysis_h
 
 #include "Cuts.h"
 #include "Utility.h"
@@ -14,7 +14,7 @@
 
 using namespace BINNING;
 
-class Acceptance {
+class AzimuthalAnalysis {
 private:
     // Dataset info
     std::string _infoTag = "";
@@ -186,8 +186,8 @@ public:
     vector<float> *mc_deltaZ;
 
     // Declare functions
-    Acceptance(TTree*, std::string, int, int, std::string, bool, bool);
-    virtual ~Acceptance();
+    AzimuthalAnalysis(TTree*, std::string, int, int, std::string, bool, bool);
+    virtual ~AzimuthalAnalysis();
     // Set info
     virtual void set_InfoTag();
     virtual void set_TargetInfo(std::string);
@@ -216,8 +216,8 @@ public:
 
 #endif // #ifndef Acceptance_h
 
-#ifdef Acceptance_cxx
-Acceptance::Acceptance(TTree *tree, std::string target, int Nbin, int Ndim,
+#ifdef AzimuthalAnalysis_cxx
+AzimuthalAnalysis::AzimuthalAnalysis(TTree *tree, std::string target, int Nbin, int Ndim,
                                      std::string cuts, bool isData,
                                      bool useCorrectionCuts = false)
     : fChain(0), _binIndex(Nbin), _binNdims(Ndim), _isData(isData),
@@ -251,20 +251,20 @@ Acceptance::Acceptance(TTree *tree, std::string target, int Nbin, int Ndim,
     std::cout << "_nameSolidTarget: " << _nameSolidTarget << std::endl;
 }
 
-Acceptance::~Acceptance() {
+AzimuthalAnalysis::~AzimuthalAnalysis() {
     if (!fChain)
         return;
     delete fChain->GetCurrentFile();
 }
 
-Int_t Acceptance::GetEntry(Long64_t entry) {
+Int_t AzimuthalAnalysis::GetEntry(Long64_t entry) {
     // Read contents of entry.
     if (!fChain)
         return 0;
     return fChain->GetEntry(entry);
 }
 
-Long64_t Acceptance::LoadTree(Long64_t entry) {
+Long64_t AzimuthalAnalysis::LoadTree(Long64_t entry) {
     // Set the environment to read one entry
     if (!fChain)
         return -5;
@@ -282,7 +282,7 @@ Long64_t Acceptance::LoadTree(Long64_t entry) {
 //  Setting class attributes
 //////////////////////////////////////////////////////////////////////////////////////////
 
-void Acceptance::set_TargetInfo(std::string targetName) {
+void AzimuthalAnalysis::set_TargetInfo(std::string targetName) {
     _cut_TargType = (targetName.find("D") != std::string::npos)? 1 : 2; // D: 1; Solid: 2;
     _nameTarget = targetName;
     if ((targetName.find("D") != std::string::npos) && (targetName.size() > 1)) {
@@ -291,7 +291,7 @@ void Acceptance::set_TargetInfo(std::string targetName) {
     }
 }
 
-void Acceptance::set_InfoTag() {
+void AzimuthalAnalysis::set_InfoTag() {
 // Info tag format: <target>_<_binIndex>B<_binNdims> ; NOTE: Deuterium shows: DC, DFe, DPb
     _infoTag = _nameTarget;
     _infoTag_Acceptance = _nameTarget;
@@ -306,7 +306,7 @@ void Acceptance::set_InfoTag() {
     std::cout << "Information tag: " << _infoTag << std::endl;
 }
 
-void Acceptance::set_Binning() {
+void AzimuthalAnalysis::set_Binning() {
     _limitsMap = BINNING::Bin_List[_binIndex];
     for (const auto& pair : _limitsMap) {
         _minimum.insert({pair.first, pair.second.front()});
@@ -322,7 +322,7 @@ void Acceptance::set_Binning() {
     _variables = temporal;
 }
 
-void Acceptance::set_Cuts(std::string str_cuts) {
+void AzimuthalAnalysis::set_Cuts(std::string str_cuts) {
     for (const std::string& cut : cutsOrder_ACC) {
         if(str_cuts.find(cut) == std::string::npos)
             continue;
@@ -341,7 +341,7 @@ void Acceptance::set_Cuts(std::string str_cuts) {
     return;
 }
 
-void Acceptance::set_ClosureTest(int fraction = 50) {
+void AzimuthalAnalysis::set_ClosureTest(int fraction = 50) {
     _isClosureTest = true;
     _fractionClosureTest = fraction;
     std::string percentage = Form("%i%%", fraction);
@@ -353,11 +353,11 @@ void Acceptance::set_ClosureTest(int fraction = 50) {
 //  Useful functions
 //////////////////////////////////////////////////////////////////////////////////////////
 
-bool Acceptance::cutIsUsed(std::string name) {
+bool AzimuthalAnalysis::cutIsUsed(std::string name) {
     return (find(_cutList.begin(), _cutList.end(), name) != _cutList.end());
 }
 
-std::string Acceptance::get_FormatInfoTagName() {
+std::string AzimuthalAnalysis::get_FormatInfoTagName() {
     std::string formatName = Form("%s_%iB", _nameTarget.c_str(), _binIndex);
     if (_useCorrectionCuts)
         formatName += std::to_string(_binNdims);
@@ -365,7 +365,7 @@ std::string Acceptance::get_FormatInfoTagName() {
     return formatName;
 }
 
-void Acceptance::Init(TTree *tree) {
+void AzimuthalAnalysis::Init(TTree *tree) {
     // The Init() function is called when the selector needs to initialize
     // a new tree or chain. Typically here the branch addresses and branch
     // pointers of the tree will be set.
@@ -600,7 +600,7 @@ void Acceptance::Init(TTree *tree) {
     Notify();
 }
 
-Bool_t Acceptance::Notify() {
+Bool_t AzimuthalAnalysis::Notify() {
     // The Notify() function is called when a new file is opened. This
     // can be either for a new TTree in a TChain or when when a new TTree
     // is started when using PROOF. It is normally not necessary to make changes
@@ -610,7 +610,7 @@ Bool_t Acceptance::Notify() {
     return kTRUE;
 }
 
-void Acceptance::Show(Long64_t entry) {
+void AzimuthalAnalysis::Show(Long64_t entry) {
     // Print contents of entry.
     // If entry is not specified, print current entry
     if (!fChain)
@@ -622,7 +622,7 @@ void Acceptance::Show(Long64_t entry) {
 //  Generated (MC) events selection
 //////////////////////////////////////////////////////////////////////////////////////////
 // TODO: REMEMBER TO CHANGE < TO <= . USING < JUST TO RECOVER WHAT WAS OBTAINED BEFORE!
-Bool_t Acceptance::GoodElectron_MC(Long64_t entry) {
+Bool_t AzimuthalAnalysis::GoodElectron_MC(Long64_t entry) {
     std::string ref_var2 = (_limitsMap.count("Nu"))? "Nu" : "Xb";
     double mc_var2 = (_limitsMap.count("Nu"))? mc_Nu : mc_Xb;
 
@@ -634,7 +634,7 @@ Bool_t Acceptance::GoodElectron_MC(Long64_t entry) {
     );
 }
 
-Bool_t Acceptance::GoodPiPlus_MC(Long64_t entry, int ivec) {
+Bool_t AzimuthalAnalysis::GoodPiPlus_MC(Long64_t entry, int ivec) {
     // Directly return false if an extra cut is under use and is not fulfilled
     if (cutIsUsed("Xf") && !pass_Xf(mc_Xf->at(ivec)))
         return false;
@@ -661,7 +661,7 @@ Bool_t Acceptance::GoodPiPlus_MC(Long64_t entry, int ivec) {
 //  Data and reconstructed events seletion
 //////////////////////////////////////////////////////////////////////////////////////////
 
-Bool_t Acceptance::GoodElectron(Long64_t entry) {
+Bool_t AzimuthalAnalysis::GoodElectron(Long64_t entry) {
     std::string ref_var2 = (_limitsMap.count("Nu"))? "Nu" : "Xb";
     double var2 = (_limitsMap.count("Nu"))? Nu : Xb;
 
@@ -674,7 +674,7 @@ Bool_t Acceptance::GoodElectron(Long64_t entry) {
     );
 }
 
-Bool_t Acceptance::GoodPiPlus(Long64_t entry, int ivec) {
+Bool_t AzimuthalAnalysis::GoodPiPlus(Long64_t entry, int ivec) {
     // Directly return false if an extra cut is under use and is not fulfilled
     if (cutIsUsed("Xf") && !pass_Xf(Xf->at(ivec)))
         return false;
@@ -705,10 +705,10 @@ Bool_t Acceptance::GoodPiPlus(Long64_t entry, int ivec) {
     );
 }
 
-Int_t Acceptance::Cut(Long64_t entry) {
+Int_t AzimuthalAnalysis::Cut(Long64_t entry) {
     // This function may be called from Loop.
     // returns  1 if entry is accepted.
     // returns -1 otherwise.
     return 1;
 }
-#endif // #ifdef Acceptance_cxx
+#endif // #ifdef AzimuthalAnalysis_cxx

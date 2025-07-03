@@ -1,6 +1,6 @@
 
 //
-R__LOAD_LIBRARY(../include/Acceptance_C.so)
+R__LOAD_LIBRARY(../include/AzimuthalAnalysis_C.so)
 #include "../include/Utility.h"
 
 void getClosureTest(std::string target, int Nbin, int Ndim, std::string cuts = "",
@@ -34,6 +34,6 @@ void getClosureTest(std::string target, int Nbin, int Ndim, std::string cuts = "
             ch.Add(Form("%s/%s5_yshiftm03/pruned%s_*.root", homepath.c_str(), folder.c_str(), target.c_str()));
     }
 
-    Acceptance acc(&ch, target, Nbin, Ndim, cuts, false, false);
-    acc.ClosureTest(fraction);
+    AzimuthalAnalysis analysis(&ch, target, Nbin, Ndim, cuts, false, false);
+    analysis.ClosureTest(fraction);
 }

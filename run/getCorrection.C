@@ -1,6 +1,6 @@
 
 //
-R__LOAD_LIBRARY(../include/Acceptance_C.so)
+R__LOAD_LIBRARY(../include/AzimuthalAnalysis_C.so)
 #include "../include/Utility.h"
 
 void getCorrection(std::string target, int Nbin, int Ndim, std::string cuts = "") {
@@ -39,6 +39,6 @@ void getCorrection(std::string target, int Nbin, int Ndim, std::string cuts = ""
         }
     }
 
-    Acceptance acc(&ch, target, Nbin, Ndim, cuts, true, true);
-    acc.Correction();
+    AzimuthalAnalysis analysis(&ch, target, Nbin, Ndim, cuts, true, true);
+    analysis.Correction();
 }

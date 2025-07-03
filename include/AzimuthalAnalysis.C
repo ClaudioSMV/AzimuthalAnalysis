@@ -1,6 +1,6 @@
-#define Acceptance_cxx
+#define AzimuthalAnalysis_cxx
 #include "Binning.h"
-#include "Acceptance.h"
+#include "AzimuthalAnalysis.h"
 #include "Utility.h"
 #include "Style.h"
 #include <TEfficiency.h>
@@ -23,7 +23,7 @@ inline float DEG2RAD(float x) {
     return 0.017453293 * x;
 }
 
-void Acceptance::activateBranches() {
+void AzimuthalAnalysis::activateBranches() {
     fChain->SetBranchStatus("*",0); // Deactivate all branches
     std::vector<string> activeBranches = {
         "TargType", "Q2", "Nu", "Xb", "Yb", "W", "vyec", "Zh", "Pt2", "PhiPQ",
@@ -73,7 +73,7 @@ void Acceptance::activateBranches() {
     write_python_file(BINNING::Bin_List);
 }
 
-void Acceptance::Loop() {
+void AzimuthalAnalysis::Loop() {
     //   In a ROOT session, you can do:
     //      root> .L Acceptance.C
     //      root> Acceptance t
@@ -187,7 +187,7 @@ void Acceptance::Loop() {
     counterMap["Total_entries"] = entries_to_process;
     for (unsigned int jentry = 0; jentry < entries_to_process; jentry++) {
         if (jentry % 1000000 == 0) {
-            printf("Processing entry %10u out of %10llu, progress at %3.2f%%\n", jentry,
+            printf("Processing entry %10u out of %10u, progress at %3.2f%%\n", jentry,
                 entries_to_process, 100. * (double)jentry / entries_to_process);
         }
 
@@ -373,7 +373,7 @@ void Acceptance::Loop() {
     fout->Close();
 }
 
-void Acceptance::Correction() {
+void AzimuthalAnalysis::Correction() {
     activateBranches();
 
     std::string folderName = "../output/";
@@ -487,7 +487,7 @@ void Acceptance::Correction() {
     facc->Close();
 }
 
-void Acceptance::ClosureTest(int fraction) {
+void AzimuthalAnalysis::ClosureTest(int fraction) {
     set_ClosureTest(fraction);
     std::string folder = "../output/ClosureTest" + formatCutsInName(_cutList);
     std::string fileAcceptance = Form("Acceptance_%ip_%s", _fractionClosureTest,
@@ -503,7 +503,7 @@ void Acceptance::ClosureTest(int fraction) {
 }
 
 /*
-void Acceptance::Hist2D_KinVars()
+void AzimuthalAnalysis::Hist2D_KinVars()
 {
     activateBranches();
 
@@ -723,7 +723,7 @@ void Acceptance::Hist2D_KinVars()
     fout->Close();
 }
 
-void Acceptance::Hist2D_XfVsYh()
+void AzimuthalAnalysis::Hist2D_XfVsYh()
 {
     activateBranches();
     fChain->SetBranchStatus("Pl2", 1);
@@ -880,7 +880,7 @@ void Acceptance::Hist2D_XfVsYh()
     fout->Close();
 }
 
-void Acceptance::Hist2D_ThetaPQ()
+void AzimuthalAnalysis::Hist2D_ThetaPQ()
 {
     activateBranches();
     fChain->SetBranchStatus("ThetaPQ", 1);
@@ -1055,7 +1055,7 @@ void Acceptance::Hist2D_ThetaPQ()
     fout->Close();
 }
 
-void Acceptance::Hist2D_LabAngles()
+void AzimuthalAnalysis::Hist2D_LabAngles()
 {
     activateBranches();
     fChain->SetBranchStatus("PhiLabEl", 1);
@@ -1281,7 +1281,7 @@ void Acceptance::Hist2D_LabAngles()
     fout->Close();
 }
 
-void Acceptance::Hist2D_PQVsLab()
+void AzimuthalAnalysis::Hist2D_PQVsLab()
 {
     activateBranches();
     fChain->SetBranchStatus("PhiLabEl", 1);
@@ -1490,7 +1490,7 @@ void Acceptance::Hist2D_PQVsLab()
     fout->Close();
 }
 
-void Acceptance::Hist2D_PQVsSector()
+void AzimuthalAnalysis::Hist2D_PQVsSector()
 {
     activateBranches();
     fChain->SetBranchStatus("SectorEl", 1);
@@ -1752,7 +1752,7 @@ void Acceptance::Hist2D_PQVsSector()
     facc->Close();
 }
 
-void Acceptance::Hist2D_PQVsDeltaSector()
+void AzimuthalAnalysis::Hist2D_PQVsDeltaSector()
 {
     activateBranches();
     fChain->SetBranchStatus("SectorEl", 1);
@@ -1955,7 +1955,7 @@ void Acceptance::Hist2D_PQVsDeltaSector()
     facc->Close();
 }
 
-void Acceptance::Hist2D_VarsVsXb()
+void AzimuthalAnalysis::Hist2D_VarsVsXb()
 {
     activateBranches();
 
@@ -2136,7 +2136,7 @@ void Acceptance::Hist2D_VarsVsXb()
     fout->Close();
 }
 
-void Acceptance::Hist2D_PiCherenkovCounter()
+void AzimuthalAnalysis::Hist2D_PiCherenkovCounter()
 {
     activateBranches();
     fChain->SetBranchStatus("Nphe", 1);
@@ -2260,7 +2260,7 @@ void Acceptance::Hist2D_PiCherenkovCounter()
     fout->Close();
 }
 
-void Acceptance::Hist2D_NpheVs()
+void AzimuthalAnalysis::Hist2D_NpheVs()
 {
     activateBranches();
     fChain->SetBranchStatus("Nphe", 1);

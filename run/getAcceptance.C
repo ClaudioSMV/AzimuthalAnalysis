@@ -1,6 +1,6 @@
 
 //
-R__LOAD_LIBRARY(../include/Acceptance_C.so)
+R__LOAD_LIBRARY(../include/AzimuthalAnalysis_C.so)
 #include "../include/Utility.h"
 
 void getAcceptance(std::string target, int Nbin, std::string cuts = "", std::string nfold = "*") {
@@ -32,6 +32,6 @@ void getAcceptance(std::string target, int Nbin, std::string cuts = "", std::str
             ch.Add(Form("%s/%s5_yshiftm03/pruned%s_*.root", homepath.c_str(), folder.c_str(), target.c_str()));
     }
 
-    Acceptance acc(&ch, target, Nbin, 0, cuts, false, false);
-    acc.Loop();
+    AzimuthalAnalysis analysis(&ch, target, Nbin, 0, cuts, false, false);
+    analysis.Loop();
 }
