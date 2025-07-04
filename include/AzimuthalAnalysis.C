@@ -73,28 +73,7 @@ void AzimuthalAnalysis::activateBranches() {
     write_python_file(BINNING::Bin_List);
 }
 
-void AzimuthalAnalysis::Loop() {
-    //   In a ROOT session, you can do:
-    //      root> .L Acceptance.C
-    //      root> Acceptance t
-    //      root> t.GetEntry(12); // Fill t data members with entry number 12
-    //      root> t.Show();       // Show values of entry 12
-    //      root> t.Show(16);     // Read and show values of entry 16
-    //      root> t.Loop();       // Loop on all entries
-    //
-
-    //     This is the loop skeleton where:
-    //    jentry is the global entry number in the chain
-    //    ientry is the entry number in the current Tree
-    //  Note that the argument to GetEntry must be:
-    //    jentry for TChain::GetEntry
-    //    ientry for TTree::GetEntry and TBranch::GetEntry
-    //
-    //       To read only selected branches, Insert statements like:
-    // METHOD1:
-    //    fChain->SetBranchStatus("*",0);  // disable all branches
-    //    fChain->SetBranchStatus("branchname",1);  // activate branchname
-
+void AzimuthalAnalysis::Acceptance() {
     activateBranches();
 
     std::string folderName;
@@ -495,7 +474,7 @@ void AzimuthalAnalysis::ClosureTest(int fraction) {
 
     if (!check_Existence(Form("%s/%s.root", folder.c_str(), fileAcceptance.c_str()))) {
         std::cout << "Closure Test Acceptance doesn't exist. Creating file." << std::endl;
-        Loop();
+        Acceptance();
     }
     _useCorrectionCuts = true;
     Correction();

@@ -33,5 +33,5 @@ void getAcceptance(std::string target, int Nbin, std::string cuts = "", std::str
     }
 
     AzimuthalAnalysis analysis(&ch, target, Nbin, 0, cuts, false, false);
-    analysis.Loop();
+    analysis.Acceptance();
 }

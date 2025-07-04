@@ -195,7 +195,6 @@ public:
     virtual void set_Binning();
     std::string get_FormatInfoTagName();
     void set_ClosureTest(int);
-    virtual Int_t Cut(Long64_t);
     virtual Bool_t GoodElectron_MC(Long64_t);
     virtual Bool_t GoodPiPlus_MC(Long64_t, int);
     virtual Bool_t GoodElectron(Long64_t);
@@ -206,7 +205,7 @@ public:
     virtual void activateBranches();
 
     virtual bool cutIsUsed(std::string);
-    virtual void Loop();
+    virtual void Acceptance();
     virtual void Correction();
     virtual void ClosureTest(int);
 
@@ -705,10 +704,4 @@ Bool_t AzimuthalAnalysis::GoodPiPlus(Long64_t entry, int ivec) {
     );
 }
 
-Int_t AzimuthalAnalysis::Cut(Long64_t entry) {
-    // This function may be called from Loop.
-    // returns  1 if entry is accepted.
-    // returns -1 otherwise.
-    return 1;
-}
 #endif // #ifdef AzimuthalAnalysis_cxx
