@@ -20,6 +20,7 @@ private:
     std::string _infoTag = "";
     std::string _infoTag_Acceptance = "";
     bool _isData = false;
+    bool _isClas12;
     bool _useCorrectionCuts = false;
     bool _isClosureTest = false;
     int _binIndex = -1;
@@ -186,7 +187,7 @@ public:
     vector<float> *mc_deltaZ;
 
     // Declare functions
-    AzimuthalAnalysis(TTree*, std::string, int, int, std::string, bool, bool);
+    AzimuthalAnalysis(TTree*, std::string, int, int, std::string, bool, bool, bool);
     virtual ~AzimuthalAnalysis();
     // Set info
     virtual void set_InfoTag();
@@ -202,6 +203,8 @@ public:
     virtual Int_t GetEntry(Long64_t);
     virtual Long64_t LoadTree(Long64_t);
     virtual void Init(TTree*);
+    virtual void SetBranchesClas6(TTree*);
+    virtual void SetBranchesClas12(TTree*);
     virtual void activateBranches();
 
     virtual bool cutIsUsed(std::string);
@@ -217,10 +220,9 @@ public:
 
 #ifdef AzimuthalAnalysis_cxx
 AzimuthalAnalysis::AzimuthalAnalysis(TTree *tree, std::string target, int Nbin, int Ndim,
-                                     std::string cuts, bool isData,
-                                     bool useCorrectionCuts = false)
+    std::string cuts, bool isData, bool useCorrectionCuts = false, bool isClas12 = false)
     : fChain(0), _binIndex(Nbin), _binNdims(Ndim), _isData(isData),
-    _useCorrectionCuts(useCorrectionCuts) {
+    _useCorrectionCuts(useCorrectionCuts), _isClas12(isClas12) {
     // if parameter tree is not specified (or zero), connect the file used to generate this
     // class and read the Tree.
     if (tree == 0) {
@@ -457,6 +459,13 @@ void AzimuthalAnalysis::Init(TTree *tree) {
     fCurrent = -1;
     // fChain->SetMakeClass(1);
 
+    if (!_isClas12)
+        SetBranchesClas6(fChain);
+    else
+        SetBranchesClas12(fChain);
+}
+
+void AzimuthalAnalysis::SetBranchesClas6(TTree *fChain) {
     fChain->SetBranchAddress("Q2", &Q2);
     fChain->SetBranchAddress("W", &W);
     fChain->SetBranchAddress("Nu", &Nu);
@@ -596,6 +605,10 @@ void AzimuthalAnalysis::Init(TTree *tree) {
         fChain->SetBranchAddress("mc_Xf", &mc_Xf);
         fChain->SetBranchAddress("mc_deltaZ", &mc_deltaZ);
     }
+    Notify();
+}
+
+void AzimuthalAnalysis::SetBranchesClas12(TTree *fChain) {
     Notify();
 }
 
