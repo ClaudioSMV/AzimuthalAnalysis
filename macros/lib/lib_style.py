@@ -1,9 +1,9 @@
-from ROOT import TH1, TH1D, gROOT, gStyle, TGaxis, TCanvas, TLatex, kGray, TColor
+from ROOT import TH1, gROOT, gStyle, TGaxis, TCanvas, TLatex, kGray, TColor
 from lib_constants import MARGINS, FONT, SIZE_TEXT, OFFSET_TITLE, update_margins, \
     update_offset, variable_info, color_palette
 from lib_cuts import extract_indices_dict
 # import os
-import Bins as bn
+from Bins import List_of_binning
 
                                ############################
 #################################         Style          #################################
@@ -140,21 +140,22 @@ def draw_bininfo(bincode, nbin, x_position = 0, y_position = 0, use_units = Fals
 
 def get_bincode_explicit_range(bincode, nbin, use_units = False):
 # Return text with variable and limits. Ex.: "N0" -> "0.1 GeV < nu < 1.0 GeV"
-    dictionary_limits = all_dicts[nbin]
+    dictionary_limits = list(List_of_binning)[nbin]
     list_ranges = []
     dictionary_indices = extract_indices_dict(bincode)
     for char in bincode:
         if char.isdigit():
             continue
-        var = axis_label(char, "L")
+        latex_var = axis_label(char, "L")
+        var = variable_info[char][0]
         idx = dictionary_indices[char]
-        min = "%.2f"%(dictionary_limits[char][idx])
-        max = "%.2f"%(dictionary_limits[char][idx + 1])
+        min = "%.2f"%(dictionary_limits[var][idx])
+        max = "%.2f"%(dictionary_limits[var][idx + 1])
         if use_units:
             unit = axis_label(char, "U")
             min += " %s"%(unit)
             max += " %s"%(unit)
-        txt = "%s #leq %s < %s"%(min, var, max)
+        txt = "%s #leq %s < %s"%(min, latex_var, max)
         list_ranges.append(txt)
 
     return "; ".join(list_ranges) if len(list_ranges) > 1 else list_ranges[0]
@@ -184,18 +185,6 @@ def get_color_palette(only_this_color = ""):
 
     return {name: rgb_to_root(rgb) for (name, rgb) in color_palette.items()}
 
-# def get_color(color_blind = True):
-# # Get list with 7-color pallete (colorblind friendly by default)
-#     # [#kGreen+2, #kCyan+2, #kBlue, #kViolet, #kRed, #kYellow+2, #kBlue-3]
-#     list_color_regular = [416+2, 432+2, 600, 880, 632, 400+2, 600-3]
-#     # [indigo, cyan, green, olive, rose, wine]
-#     list_color_blind = [rgb_to_root(51,34,136), rgb_to_root(51,187,238),
-#                         rgb_to_root(17,119,51), rgb_to_root(153,153,51),
-#                         rgb_to_root(204,102,119), rgb_to_root(136,34,85),
-#                         rgb_to_root(128,128,128)]
-#     this_pallete = list_color_blind if color_blind else list_color_regular
-#     return this_pallete
-
 target_color = {
     'C': get_color_palette("blue"),
     'Fe': get_color_palette("green"),
@@ -210,8 +199,6 @@ target_color = {
 #####################################   Functions   ######################################
 #####################################  Axes labels  ######################################
                                    ###################
-
-all_dicts = list(bn.Bin_List) # Copy dictionaries of bins from Bins.py (TODO: REMOVE!)
 
 def axis_label(var, options = "LU"):
 # Return label of a variable. Good looking axes need "LU" (Latex + Units)!

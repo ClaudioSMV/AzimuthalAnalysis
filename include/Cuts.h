@@ -5,10 +5,13 @@
 
 #include <iostream>
 #include <stdlib.h>
+#include <map>
 #include <vector>
 
 
-/*** PiPlus Parameters for DC Fiducial Cuts ***/
+//////////////////////////////////////////////////////////////////////////////////////////
+// *** PiPlus Parameters for DC Fiducial Cuts
+//////////////////////////////////////////////////////////////////////////////////////////
 
 // For parameter 0 of the FidPhiMinPiPlus calculation for pi+
 const Double_t kFidPar0Low0_PiPlus[6] = {25., 25., 25., 25., 25., 25.};
@@ -42,35 +45,31 @@ const Double_t kFidPar1High1_PiPlus[6] = {0.442034, 0.201149, 1.27519, 1.76076, 
 const Double_t kFidPar2High1_PiPlus[6] = {-2., -0.179631, -2., -1.89436, -2., -2.};
 const Double_t kFidPar3High1_PiPlus[6] = {1.02806, 1.6, 0.5, 1.03961, 0.815707, 1.31013};
 
+//////////////////////////////////////////////////////////////////////////////////////////
+// *** PiPlus DC Fiducial Cuts
+//////////////////////////////////////////////////////////////////////////////////////////
 
-/*** PiPlus DC Fiducial Cuts ***/
-
-Double_t FidThetaMinPiPlus(Int_t sector, float momentum)
-{
+Double_t FidThetaMinPiPlus(Int_t sector, float momentum) {
     return kThetaMinPar0_PiPlus[sector] + kThetaMinPar1_PiPlus[sector] / TMath::Power(momentum, 2) +
             kThetaMinPar2_PiPlus[sector] * momentum + kThetaMinPar3_PiPlus[sector] / momentum +
             kThetaMinPar4_PiPlus[sector] * TMath::Exp(kThetaMinPar5_PiPlus[sector] * momentum);
 }
 
-Double_t FidFuncPiPlus(Int_t sector, float momentum, Int_t side, Int_t param)
-{
-    if (side == 0 && param == 0)
-    {
+Double_t FidFuncPiPlus(Int_t sector, float momentum, Int_t side, Int_t param) {
+    if (side == 0 && param == 0) {
         return kFidPar0Low0_PiPlus[sector] +
                 kFidPar1Low0_PiPlus[sector] * TMath::Exp(kFidPar2Low0_PiPlus[sector] * (momentum - kFidPar3Low0_PiPlus[sector]));
     }
-    else if (side == 1 && param == 0)
-    {
+    else if (side == 1 && param == 0) {
         return kFidPar0High0_PiPlus[sector] +
                 kFidPar1High0_PiPlus[sector] * TMath::Exp(kFidPar2High0_PiPlus[sector] * (momentum - kFidPar3High0_PiPlus[sector]));
     }
-    else if (side == 0 && param == 1)
-    {
+    else if (side == 0 && param == 1) {
         return kFidPar0Low1_PiPlus[sector] +
                 kFidPar1Low1_PiPlus[sector] * momentum *
                     TMath::Exp(kFidPar2Low1_PiPlus[sector] * TMath::Power((momentum - kFidPar3Low1_PiPlus[sector]), 2));
-    } else if (side == 1 && param == 1)
-    {
+    }
+    else if (side == 1 && param == 1) {
         return kFidPar0High1_PiPlus[sector] +
                 kFidPar1High1_PiPlus[sector] * momentum *
                     TMath::Exp(kFidPar2High1_PiPlus[sector] * TMath::Power((momentum - kFidPar3High1_PiPlus[sector]), 2));
@@ -78,88 +77,99 @@ Double_t FidFuncPiPlus(Int_t sector, float momentum, Int_t side, Int_t param)
     return 0.0;
 }
 
-Double_t FidPhiMinPiPlus(Int_t sector, float momentum, float ThetaLab)
-{
-    if (ThetaLab > FidThetaMinPiPlus(sector, momentum))
-    {
+Double_t FidPhiMinPiPlus(Int_t sector, float momentum, float ThetaLab) {
+    if (ThetaLab > FidThetaMinPiPlus(sector, momentum)) {
         return 60. * sector - FidFuncPiPlus(sector, momentum, 0, 0) *
                 (1 - 1 / (1 + (ThetaLab - FidThetaMinPiPlus(sector, momentum)) / FidFuncPiPlus(sector, momentum, 0, 1)));
     }  // closure
     return 60. * sector;
 }
 
-Double_t FidPhiMaxPiPlus(Int_t sector, float momentum, float ThetaLab)
-{
-    if (ThetaLab > FidThetaMinPiPlus(sector, momentum))
-    {
+Double_t FidPhiMaxPiPlus(Int_t sector, float momentum, float ThetaLab) {
+    if (ThetaLab > FidThetaMinPiPlus(sector, momentum)) {
         return 60. * sector + FidFuncPiPlus(sector, momentum, 1, 0) *
                 (1 - 1 / (1 + (ThetaLab - FidThetaMinPiPlus(sector, momentum)) / FidFuncPiPlus(sector, momentum, 1, 1)));
     }  // closure
     return 60. * sector;
 }
 
-Bool_t FidCheckCutPiPlus(Int_t sector, float momentum, float ThetaLab, float PhiLab)
-{
+Bool_t FidCheckCutPiPlus(Int_t sector, float momentum, float ThetaLab, float PhiLab) {
     // checks DC fiducial cut for pi+
     if (ThetaLab > FidThetaMinPiPlus(sector, momentum) && PhiLab > FidPhiMinPiPlus(sector, momentum, ThetaLab) &&
-        PhiLab < FidPhiMaxPiPlus(sector, momentum, ThetaLab))
-    {
+        PhiLab < FidPhiMaxPiPlus(sector, momentum, ThetaLab)) {
         return 1;
     }  // closure
     return 0;
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////
+// *** Pass functions definition
+//////////////////////////////////////////////////////////////////////////////////////////
 
-
-
-
-/*** Pass functions definition ***/
-
-bool pass_Xf(float this_Xf)
-{
+bool pass_Xf(float this_Xf) {
     return this_Xf > 0;
 }
 
-bool pass_Xf_TFR(float this_Xf)
-{
+bool pass_Xf_TFR(float this_Xf) {
     return this_Xf < 0;
 }
 
-bool pass_DeltaSect0(float this_SectorEl, float this_SectorPi)
-{
+bool pass_DeltaSect0(float this_SectorEl, float this_SectorPi) {
     return abs(this_SectorEl - this_SectorPi)>0;
 }
 
-bool pass_rmBadSect(float this_SectorEl, float this_SectorPi)
-{
+bool pass_rmBadSect(float this_SectorEl, float this_SectorPi) {
     return ((this_SectorEl != 5) && (this_SectorPi != 5));
 }
 
-bool pass_PiFiducial(int sector, float momentum, float ThetaLab, float PhiLab)
-{
+bool pass_PiFiducial(int sector, float momentum, float ThetaLab, float PhiLab) {
     return FidCheckCutPiPlus(sector, momentum, ThetaLab, PhiLab);
 }
 
-bool pass_MirrorMatch(float momentum, float Nph)
-{
+bool pass_MirrorMatch(float momentum, float Nph) {
     return ((momentum < 2.7 && Nph < 25) || (momentum > 2.7));
 }
 
-bool pass_MirrorMatch2(float momentum, float Nph)
-{
+bool pass_MirrorMatch2(float momentum, float Nph) {
     // return ((momentum < 2.7 && Nph < 25) || (momentum > 2.7));
     return (momentum > 0.41); // REMOVE NPHE MINIMUM! // && 0.0 < Nph && Nph < 300);
 }
 
-bool pass_rmNpheElH(float NphEl, float NphH)
-{
+bool pass_rmNpheElH(float NphEl, float NphH) {
     return (NphEl != NphH);
 }
 
-/*** Cut name info ***/
+//////////////////////////////////////////////////////////////////////////////////////////
+// *** Cut naming lookup tables (LUT)
+//////////////////////////////////////////////////////////////////////////////////////////
+// Add cuts in pairs, associating short name with folder name
 
-// Add cuts in pairs with short name first and folder name next {XX, XXXXX}
-std::string lookuptable_cutAcc[20][2] = {{"Xf","Xf"}, {"XT","XTFR"}, {"DS","DSect0"}, {"BS","NoBadSec"}, {"PF","PiFid"}, {"MM","MMtch"}, {"M2","MMtch2"}};
-std::string lookuptable_cutCor[20][2] = {{"FE","FErr"}, {"AQ","AccQlt"}, {"Pe","dfNphe"}};
+struct Cuts_Info {
+    std::string folderName;
+    bool usingCut;
+    std::string description;
+};
+
+std::vector<std::string> cutsOrder_ACC = {
+    "Xf", "XT", "DS", "BS", "PF", "MM", "M2",
+};
+std::vector<std::string> cutsOrder_CORR = {
+    "FE", "AQ", "Pe",
+};
+
+std::unordered_map<std::string, Cuts_Info> cuts_LUT = {
+    // Acceptance
+    {"Xf", {"Xf", false, "Use Current Fragmentation Region (X_Feynman > 0)"}},
+    {"XT", {"XTFR", false, "Use Target Fragmentation Region (X_Feynman < 0)"}},
+    {"DS", {"DSect0", false, "Exclude events with El-Pi in same sector (DSector != 0)"}},
+    {"BS", {"NoBadSec", false, "Remove malfunctioning sector (Sector 5)"}},
+    {"PF", {"PiFid", false, "Apply Fiducial cuts to Pions (Default: Electrons only)"}},
+    {"MM", {"MMtch", false, "Use correction with similar effect to Mirror Matching"}},
+    {"M2", {"MMtch2", false, "Exclude low momentum events with non-reliable CC info"}},
+    // Correction
+    {"FE", {"FErr", false, "Use error propagation formula defined in SMoran thesis"}},
+    {"AQ", {"AccQlt", false, "Skip bins where acceptance error-value ratio > 10%"}},
+    {"Pe", {"dfNphe", false, "Skip events where Electron-Hadron have the same Nph"}}, // TODO: Change name to TL: The Line
+};
 
 #endif // #ifdef Cuts_h

@@ -53,7 +53,7 @@
 #                                                                                        #
 #  ----------------------------------  From ~/macro  ----------------------------------  #
 #                                                                                        #
-# run_analysis: <target> <Nbin> <binDim> <BINVARS> <CUTS> <FITMETHOD>                    #
-#  ** runClosureTest    : <target> <Nbin> <binDim> <CUTS> <fAcc> -> TO BE UPDATED **     #
+#  run_analysis: <target> <Nbin> <binDim> <BINVARS> <CUTS> <FITMETHOD>                   #
+#   ** runClosureTest    : <target> <Nbin> <binDim> <CUTS> <fAcc> -> TO BE UPDATED **    #
 #                                                                                        #
 ##########################################################################################

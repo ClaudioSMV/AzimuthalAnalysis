@@ -1,10 +1,8 @@
-import sys
-from lib_error import error_msg, info_msg, check_list_has_one_element
+from lib_error import error_msg, info_msg
 from lib_constants import cuts_StoL, ordered_cuts_per_stage, cuts_StoL_processed_files,\
     ordered_stages, variable_info, get_variables_order
 from lib_dataset_info import get_info_tag_dictionary
-from Bins import Bin_List
-# TODO: Update Bin list to use csv files
+from Bins import List_of_binning
 
 
                                     #################
@@ -131,9 +129,10 @@ def format_output_binvars(binvars, versus_x_format = False):
 
 def get_variable_binning_limits(nbin, initial):
 # Create dictionary with list of bins limits for each variable
-    dictionary_with_limits = list(Bin_List)[nbin]
+    dictionary_with_limits = list(List_of_binning)[nbin]
+    var = variable_info[initial][0]
 
-    return dictionary_with_limits[initial]
+    return dictionary_with_limits[var]
 
 def generate_combinations(variables, dict_max_indices):
 # Create list with all combinations of indices for bincode
