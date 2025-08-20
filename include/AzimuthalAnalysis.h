@@ -64,6 +64,7 @@ public:
     Float_t Pe;
     Float_t BettaEl;
     Float_t Etote;
+    Float_t EPreE;
     Float_t Eine;
     Float_t Eoute;
     Float_t vxec;
@@ -94,6 +95,7 @@ public:
     Float_t NRowsECEl;
     Float_t NRowsSCEl;
     Float_t NRowsCCEl;
+    Float_t BeamEnergy;
     vector<float> *Eh;
     vector<float> *Zh;
     vector<float> *ThetaPQ;
@@ -115,6 +117,7 @@ public:
     vector<float> *Betta;
     vector<float> *Mass2;
     vector<float> *Etot;
+    vector<float> *EPre;
     vector<float> *Ein;
     vector<float> *Eout;
     vector<float> *XEC;
@@ -203,8 +206,7 @@ public:
     virtual Int_t GetEntry(Long64_t);
     virtual Long64_t LoadTree(Long64_t);
     virtual void Init(TTree*);
-    virtual void SetBranchesClas6(TTree*);
-    virtual void SetBranchesClas12(TTree*);
+    virtual void SetBranches(TTree*);
     virtual void activateBranches();
 
     virtual bool cutIsUsed(std::string);
@@ -243,6 +245,7 @@ AzimuthalAnalysis::AzimuthalAnalysis(TTree *tree, std::string target, int Nbin, 
     std::cout << "_infoTag: " << _infoTag << std::endl;
     std::cout << "_infoTag_Acceptance: " << _infoTag_Acceptance << std::endl;
     std::cout << "_isData: " << _isData << std::endl;
+    std::cout << "_isClas12: " << _isClas12 << std::endl;
     std::cout << "_useCorrectionCuts: " << _useCorrectionCuts << std::endl;
     std::cout << "_isClosureTest: " << _isClosureTest << std::endl;
     std::cout << "_binIndex: " << _binIndex << std::endl;
@@ -397,6 +400,7 @@ void AzimuthalAnalysis::Init(TTree *tree) {
     Betta = 0;
     Mass2 = 0;
     Etot = 0;
+    EPre = 0;
     Ein = 0;
     Eout = 0;
     XEC = 0;
@@ -426,8 +430,7 @@ void AzimuthalAnalysis::Init(TTree *tree) {
     NRowsEC = 0;
     NRowsSC = 0;
     NRowsCC = 0;
-    if (!_isData)
-    {
+    if (!_isData) {
         mc_Eh = 0;
         mc_Zh = 0;
         mc_ThetaPQ = 0;
@@ -459,13 +462,10 @@ void AzimuthalAnalysis::Init(TTree *tree) {
     fCurrent = -1;
     // fChain->SetMakeClass(1);
 
-    if (!_isClas12)
-        SetBranchesClas6(fChain);
-    else
-        SetBranchesClas12(fChain);
+    SetBranches(fChain);
 }
 
-void AzimuthalAnalysis::SetBranchesClas6(TTree *fChain) {
+void AzimuthalAnalysis::SetBranches(TTree *fChain) {
     fChain->SetBranchAddress("Q2", &Q2);
     fChain->SetBranchAddress("W", &W);
     fChain->SetBranchAddress("Nu", &Nu);
@@ -487,31 +487,11 @@ void AzimuthalAnalysis::SetBranchesClas6(TTree *fChain) {
     fChain->SetBranchAddress("vxec", &vxec);
     fChain->SetBranchAddress("vyec", &vyec);
     fChain->SetBranchAddress("vzec", &vzec);
-    fChain->SetBranchAddress("XECe", &XECe);
-    fChain->SetBranchAddress("YECe", &YECe);
-    fChain->SetBranchAddress("ZECe", &ZECe);
     fChain->SetBranchAddress("PhiLabEl", &PhiLabEl);
     fChain->SetBranchAddress("ThetaLabEl", &ThetaLabEl);
-    fChain->SetBranchAddress("StatDCEl", &StatDCEl);
-    fChain->SetBranchAddress("DCStatusEl", &DCStatusEl);
-    fChain->SetBranchAddress("StatECEl", &StatECEl);
-    fChain->SetBranchAddress("ECStatusEl", &ECStatusEl);
-    fChain->SetBranchAddress("TimeECEl", &TimeECEl);
-    fChain->SetBranchAddress("PathECEl", &PathECEl);
-    fChain->SetBranchAddress("Chi2ECEl", &Chi2ECEl);
-    fChain->SetBranchAddress("StatSCEl", &StatSCEl);
-    fChain->SetBranchAddress("SCStatusEl", &SCStatusEl);
-    fChain->SetBranchAddress("TimeSCEl", &TimeSCEl);
-    fChain->SetBranchAddress("PathSCEl", &PathSCEl);
-    fChain->SetBranchAddress("StatCCEl", &StatCCEl);
-    fChain->SetBranchAddress("CCStatusEl", &CCStatusEl);
     fChain->SetBranchAddress("NpheEl", &NpheEl);
     fChain->SetBranchAddress("Chi2CCEl", &Chi2CCEl);
     fChain->SetBranchAddress("StatusEl", &StatusEl);
-    fChain->SetBranchAddress("NRowsDCEl", &NRowsDCEl);
-    fChain->SetBranchAddress("NRowsECEl", &NRowsECEl);
-    fChain->SetBranchAddress("NRowsSCEl", &NRowsSCEl);
-    fChain->SetBranchAddress("NRowsCCEl", &NRowsCCEl);
     fChain->SetBranchAddress("Eh", &Eh);
     fChain->SetBranchAddress("Zh", &Zh);
     fChain->SetBranchAddress("ThetaPQ", &ThetaPQ);
@@ -535,34 +515,62 @@ void AzimuthalAnalysis::SetBranchesClas6(TTree *fChain) {
     fChain->SetBranchAddress("Etot", &Etot);
     fChain->SetBranchAddress("Ein", &Ein);
     fChain->SetBranchAddress("Eout", &Eout);
-    fChain->SetBranchAddress("XEC", &XEC);
-    fChain->SetBranchAddress("YEC", &YEC);
-    fChain->SetBranchAddress("ZEC", &ZEC);
     fChain->SetBranchAddress("pid", &pid);
-    fChain->SetBranchAddress("T4", &T4);
     fChain->SetBranchAddress("Xf", &Xf);
     fChain->SetBranchAddress("deltaZ", &deltaZ);
-    fChain->SetBranchAddress("StatDC", &StatDC);
-    fChain->SetBranchAddress("DCStatus", &DCStatus);
-    fChain->SetBranchAddress("StatEC", &StatEC);
-    fChain->SetBranchAddress("ECStatus", &ECStatus);
-    fChain->SetBranchAddress("TimeEC", &TimeEC);
-    fChain->SetBranchAddress("PathEC", &PathEC);
-    fChain->SetBranchAddress("Chi2EC", &Chi2EC);
-    fChain->SetBranchAddress("StatSC", &StatSC);
-    fChain->SetBranchAddress("SCStatus", &SCStatus);
-    fChain->SetBranchAddress("TimeSC", &TimeSC);
-    fChain->SetBranchAddress("PathSC", &PathSC);
-    fChain->SetBranchAddress("StatCC", &StatCC);
-    fChain->SetBranchAddress("CCStatus", &CCStatus);
     fChain->SetBranchAddress("Nphe", &Nphe);
     fChain->SetBranchAddress("Chi2CC", &Chi2CC);
     fChain->SetBranchAddress("Status", &Status);
-    fChain->SetBranchAddress("NRowsDC", &NRowsDC);
-    fChain->SetBranchAddress("NRowsEC", &NRowsEC);
-    fChain->SetBranchAddress("NRowsSC", &NRowsSC);
-    fChain->SetBranchAddress("NRowsCC", &NRowsCC);
     fChain->SetBranchAddress("evnt", &evnt);
+
+    if (!_isClas12){ // Exclusive Clas6 branches
+        fChain->SetBranchAddress("XECe", &XECe);
+        fChain->SetBranchAddress("YECe", &YECe);
+        fChain->SetBranchAddress("ZECe", &ZECe);
+        fChain->SetBranchAddress("StatDCEl", &StatDCEl);
+        fChain->SetBranchAddress("DCStatusEl", &DCStatusEl);
+        fChain->SetBranchAddress("StatECEl", &StatECEl);
+        fChain->SetBranchAddress("ECStatusEl", &ECStatusEl);
+        fChain->SetBranchAddress("TimeECEl", &TimeECEl);
+        fChain->SetBranchAddress("PathECEl", &PathECEl);
+        fChain->SetBranchAddress("Chi2ECEl", &Chi2ECEl);
+        fChain->SetBranchAddress("StatSCEl", &StatSCEl);
+        fChain->SetBranchAddress("SCStatusEl", &SCStatusEl);
+        fChain->SetBranchAddress("TimeSCEl", &TimeSCEl);
+        fChain->SetBranchAddress("PathSCEl", &PathSCEl);
+        fChain->SetBranchAddress("StatCCEl", &StatCCEl);
+        fChain->SetBranchAddress("CCStatusEl", &CCStatusEl);
+        fChain->SetBranchAddress("NRowsDCEl", &NRowsDCEl);
+        fChain->SetBranchAddress("NRowsECEl", &NRowsECEl);
+        fChain->SetBranchAddress("NRowsSCEl", &NRowsSCEl);
+        fChain->SetBranchAddress("NRowsCCEl", &NRowsCCEl);
+        fChain->SetBranchAddress("XEC", &XEC);
+        fChain->SetBranchAddress("YEC", &YEC);
+        fChain->SetBranchAddress("ZEC", &ZEC);
+        fChain->SetBranchAddress("T4", &T4);
+        fChain->SetBranchAddress("StatDC", &StatDC);
+        fChain->SetBranchAddress("DCStatus", &DCStatus);
+        fChain->SetBranchAddress("StatEC", &StatEC);
+        fChain->SetBranchAddress("ECStatus", &ECStatus);
+        fChain->SetBranchAddress("TimeEC", &TimeEC);
+        fChain->SetBranchAddress("PathEC", &PathEC);
+        fChain->SetBranchAddress("Chi2EC", &Chi2EC);
+        fChain->SetBranchAddress("StatSC", &StatSC);
+        fChain->SetBranchAddress("SCStatus", &SCStatus);
+        fChain->SetBranchAddress("TimeSC", &TimeSC);
+        fChain->SetBranchAddress("PathSC", &PathSC);
+        fChain->SetBranchAddress("StatCC", &StatCC);
+        fChain->SetBranchAddress("CCStatus", &CCStatus);
+        fChain->SetBranchAddress("NRowsDC", &NRowsDC);
+        fChain->SetBranchAddress("NRowsEC", &NRowsEC);
+        fChain->SetBranchAddress("NRowsSC", &NRowsSC);
+        fChain->SetBranchAddress("NRowsCC", &NRowsCC);
+    }
+    else { // Exclusive Clas12 branches
+        fChain->SetBranchAddress("EPreE", &EPreE);
+        fChain->SetBranchAddress("BeamEnergy", &BeamEnergy);
+        fChain->SetBranchAddress("EPre", &EPre);
+    }
     if (!_isData) {
         fChain->SetBranchAddress("mc_Q2", &mc_Q2);
         fChain->SetBranchAddress("mc_W", &mc_W);
@@ -605,10 +613,6 @@ void AzimuthalAnalysis::SetBranchesClas6(TTree *fChain) {
         fChain->SetBranchAddress("mc_Xf", &mc_Xf);
         fChain->SetBranchAddress("mc_deltaZ", &mc_deltaZ);
     }
-    Notify();
-}
-
-void AzimuthalAnalysis::SetBranchesClas12(TTree *fChain) {
     Notify();
 }
 
